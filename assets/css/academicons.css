@@ -1,22 +1,22 @@
 /*
- *  Academicons 1.9.4 by James Walsh (https://github.com/jpswalsh) and Katja Bercic (https://github.com/katjabercic)
+ *  sl-wenons 1.9.4 by James Walsh (https://github.com/jpswalsh) and Katja Bercic (https://github.com/katjabercic)
  *  Fonts generated using FontForge - https://fontforge.org
  *  Square icons designed to be used alongside Font Awesome square icons - https://fortawesome.github.io/Font-Awesome/
  *  Licenses - Font: SIL OFL 1.1, CSS: MIT License
  */
 @font-face {
-    font-family: 'Academicons';
+    font-family: 'sl-wenons';
     font-style: normal;
     font-weight: 400;
     font-display: block;
-    src:url('../fonts/academicons.eot');
-    src:url('../fonts/academicons.eot') format('embedded-opentype'),
-        url('../fonts/academicons.ttf') format('truetype'),
-        url('../fonts/academicons.woff') format('woff'),
-        url('../fonts/academicons.svg') format('svg');
+    src:url('../fonts/sl-wenons.eot');
+    src:url('../fonts/sl-wenons.eot') format('embedded-opentype'),
+        url('../fonts/sl-wenons.ttf') format('truetype'),
+        url('../fonts/sl-wenons.woff') format('woff'),
+        url('../fonts/sl-wenons.svg') format('svg');
 }
 .ai {
-  font-family: 'Academicons';
+  font-family: 'sl-wenons';
   font-weight: 400;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;

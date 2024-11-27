@@ -1,7 +1,7 @@
 {
-  "name": "academic-pages",
+  "name": "sl-wen-pages",
   "version": "0.8.1.1",
-  "description": "Academic Pages Mistakes Jekyll theme npm build scripts",
+  "description": "sl-wen Pages Mistakes Jekyll theme npm build scripts",
   "repository": {
     "type": "git",
     "url": "https://github.com/sl-wen/sl-wen.github.io"

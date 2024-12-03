@@ -3,7 +3,7 @@
   var style1 = 'background:#4BB596;color:#ffffff;border-radius: 2px;'
   var style2 = 'color:auto;'
   var author = ' slwen'
-  var github = ' https://github.com/slwen/slwen-blog'
+  var github = ' https://github.com/sl-wen/'
   var build = ' ' + blog.buildAt.substr(0, 4)
   build += '/' + blog.buildAt.substr(4, 2)
   build += '/' + blog.buildAt.substr(6, 2)

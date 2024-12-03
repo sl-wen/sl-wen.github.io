@@ -1,16 +1,16 @@
 # 介绍
 
-[![Language](https://img.shields.io/badge/Jekyll-Theme-blue)](https://github.com/slwen/slwen-blog)
-[![license](https://img.shields.io/github/license/slwen/slwen-blog)](https://github.com/slwen/slwen-blog)
-[![GitHub stars](https://img.shields.io/github/stars/slwen/slwen-blog?style=social)](https://github.com/slwen/slwen-blog)
+[![Language](https://img.shields.io/badge/Jekyll-Theme-blue)](https://github.com/sl-wen/slwen)
+[![license](https://img.shields.io/github/license/slwen/slwen)](https://github.com/sl-wen/slwen)
+[![GitHub stars](https://img.shields.io/github/stars/slwen/?style=social)](https://github.com/sl-wen/)
 
-一款 jekyll 主题（[GitHub 地址](https://github.com/slwen/slwen-blog)），简洁纯净(主题资源请求<20KB)，未引入任何框架，秒开页面，支持自适应，支持全文检索，支持夜间模式
+一款 jekyll 主题（[GitHub 地址](https://github.com/sl-wen/)），简洁纯净(主题资源请求<20KB)，未引入任何框架，秒开页面，支持自适应，支持全文检索，支持夜间模式
 
 你可以到[slwen Blog](https://blog.slwen.net/)查看主题效果 ，欢迎添加友链
 
 ## 感谢
 
-[JetBrains](https://www.jetbrains.com/?from=slwen-blog) 免费提供的开发工具[![JetBrains](./static/img/jetbrains.svg)](https://www.jetbrains.com/?from=slwen-blog)
+[JetBrains](https://www.jetbrains.com/) 免费提供的开发工具[![JetBrains](./static/img/jetbrains.svg)](https://www.jetbrains.com/?from=slwen-blog)
 
 [夜间模式代码高亮配色](https://github.com/mgyongyosi/OneDarkJekyll)
 

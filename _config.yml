@@ -24,7 +24,7 @@ domainUrl: 'https://sl-wen.github.io/'
 baseurl: ''
 
 # 吐个槽地址，会在chat页面中重定向到该地址
-tucaoUrl: sl-wen.github.io
+tucaoUrl: https://sl-wen.github.io/
 
 # 菜单
 # 必填字段 title: '文本' url: '链接'
@@ -54,7 +54,7 @@ extAdsense: false
 extMath: false
 
 # 显示访问量统计，由不蒜子提供服务
-extCount: true
+extCount: false
 
 # 友情链接
 links:

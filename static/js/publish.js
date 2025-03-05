@@ -58,31 +58,12 @@ async function createGitHubFile(fileName, content, token) {
         });
 
         if (!repoResponse.ok) {
-            throw new Error('仓库不存在或无法访问');
+            const errorData = await repoResponse.json();
+            console.error('获取仓库信息失败:', errorData);
+            throw new Error(`仓库不存在或无法访问: ${errorData.message}`);
         }
 
-        // 2. 获取默认分支名称
-        const repoData = await repoResponse.json();
-        const defaultBranch = repoData.default_branch; // 这将获取仓库的默认分支名称
-        console.log('仓库默认分支:', defaultBranch);
-
-        // 3. 获取最新的commit SHA
-        const branchResponse = await fetch(`https://api.github.com/repos/sl-wen/sl-wen.github.io/branches/${defaultBranch}`, {
-            headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-        
-        if (!branchResponse.ok) {
-            throw new Error(`获取分支信息失败: ${defaultBranch}`);
-        }
-        
-        const branchData = await branchResponse.json();
-        const latestCommitSha = branchData.commit.sha;
-        console.log('最新commit SHA:', latestCommitSha);
-
-        // 4. 创建文件
+        // 2. 直接创建文件，不依赖分支信息
         const response = await fetch(`https://api.github.com/repos/sl-wen/sl-wen.github.io/contents/_posts/${fileName}`, {
             method: 'PUT',
             headers: {
@@ -93,27 +74,59 @@ async function createGitHubFile(fileName, content, token) {
             body: JSON.stringify({
                 message: `Add new post: ${fileName}`,
                 content: btoa(unescape(encodeURIComponent(content))),
-                branch: defaultBranch,
-                sha: latestCommitSha
+                branch: 'master'  // 直接使用master分支
             })
         });
 
         if (!response.ok) {
             const errorData = await response.json();
+            console.error('创建文件失败:', errorData);
             throw new Error(errorData.message);
         }
 
         const responseData = await response.json();
         console.log('文件创建成功:', responseData);
 
-        // 5. 触发GitHub Pages部署
-        await deployToGitHubPages(token);
+        // 3. 触发GitHub Actions工作流
+        await triggerWorkflow(token);
 
         updatePublishStatus('文章发布成功！', true);
         return true;
     } catch (error) {
         console.error('创建文件失败:', error);
         throw error;
+    }
+}
+
+// 触发GitHub Actions工作流
+async function triggerWorkflow(token) {
+    try {
+        const response = await fetch('https://api.github.com/repos/sl-wen/sl-wen.github.io/dispatches', {
+            method: 'POST',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                event_type: 'deploy',
+                client_payload: {
+                    unit: false,
+                    integration: true,
+                    timestamp: new Date().toISOString()
+                }
+            })
+        });
+
+        if (!response.ok) {
+            console.warn('触发工作流失败。状态码:', response.status);
+            const errorData = await response.json();
+            console.warn('工作流错误详情:', errorData);
+        } else {
+            console.log('成功触发工作流');
+        }
+    } catch (error) {
+        console.warn('触发工作流失败:', error);
     }
 }
 
@@ -126,28 +139,5 @@ function updatePublishStatus(message, isSuccess) {
         messageElement.className = isSuccess ? 'status-valid' : 'status-invalid';
         statusDiv.innerHTML = '';
         statusDiv.appendChild(messageElement);
-    }
-}
-
-// 修改deployToGitHubPages函数
-async function deployToGitHubPages(token) {
-    try {
-        const response = await fetch('https://api.github.com/repos/sl-wen/sl-wen.github.io/pages/builds', {
-            method: 'POST',
-            headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-
-        if (!response.ok) {
-            console.warn('触发部署失败，但文件已保存。状态码:', response.status);
-            const errorData = await response.json();
-            console.warn('部署错误详情:', errorData);
-        } else {
-            console.log('成功触发部署');
-        }
-    } catch (error) {
-        console.warn('触发部署失败，但文件已保存:', error);
     }
 } 

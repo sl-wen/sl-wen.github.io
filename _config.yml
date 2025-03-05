@@ -21,7 +21,7 @@ exclude: ['CNAME', 'README.md', 'LICENSE', '_site', 'dist', 'Gemfile', 'Gemfile.
 # 域名配置
 # baseurl配置,如果网站部署在根目录下的其他目录中，请设置为 /目录名
 domainUrl: 'https://sl-wen.github.io/'
-baseurl: ''
+baseurl: "/sl-wen.github.io"  # 如果你的仓库名是 username.github.io，则设置为空
 
 # 吐个槽地址，会在chat页面中重定向到该地址
 tucaoUrl: https://sl-wen.github.io/
@@ -108,3 +108,5 @@ links:
 webrick:
   headers:
     X-Frame-Options: SAMEORIGIN
+
+url: "https://sl-wen.github.io"  # 替换为你的GitHub Pages URL

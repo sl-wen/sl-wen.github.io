@@ -142,21 +142,48 @@ async function testToken() {
         const data = await response.json();
         
         if (response.ok) {
-            statusDiv.innerHTML = `
-                <p style="color: green;">Token有效</p>
-                <p>用户名: ${data.login}</p>
-                <p>Token权限: ${Object.keys(data.permissions || {}).join(', ')}</p>
-            `;
+            // 使用CSS类而不是内联样式
+            statusDiv.innerHTML = '';
+            
+            const statusP = document.createElement('p');
+            statusP.className = 'status-valid';
+            statusP.textContent = 'Token有效';
+            
+            const userP = document.createElement('p');
+            userP.textContent = `用户名: ${data.login}`;
+            
+            const permissionsP = document.createElement('p');
+            permissionsP.textContent = `Token权限: ${Object.keys(data.permissions || {}).join(', ')}`;
+            
+            statusDiv.appendChild(statusP);
+            statusDiv.appendChild(userP);
+            statusDiv.appendChild(permissionsP);
         } else {
-            statusDiv.innerHTML = `
-                <p style="color: red;">Token无效</p>
-                <p>错误信息: ${data.message}</p>
-            `;
+            // 使用CSS类而不是内联样式
+            statusDiv.innerHTML = '';
+            
+            const statusP = document.createElement('p');
+            statusP.className = 'status-invalid';
+            statusP.textContent = 'Token无效';
+            
+            const errorP = document.createElement('p');
+            errorP.textContent = `错误信息: ${data.message}`;
+            
+            statusDiv.appendChild(statusP);
+            statusDiv.appendChild(errorP);
         }
     } catch (error) {
-        statusDiv.innerHTML = `
-            <p style="color: red;">测试失败</p>
-            <p>错误信息: ${error.message}</p>
-        `;
+        // 使用CSS类而不是内联样式
+        statusDiv.innerHTML = '';
+        
+        const statusP = document.createElement('p');
+        statusP.className = 'status-invalid';
+        statusP.textContent = '测试失败';
+        
+        const errorP = document.createElement('p');
+        errorP.textContent = `错误信息: ${error.message}`;
+        
+        statusDiv.appendChild(statusP);
+        statusDiv.appendChild(errorP);
     }
 } 

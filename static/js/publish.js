@@ -1,4 +1,6 @@
-function publishPost() {
+async function publishPost() {
+  console.log('开始发布文章...');
+  
   const title = document.getElementById('post-title').value;
   const categories = document.getElementById('post-categories').value;
   const content = document.getElementById('post-content').value;
@@ -21,72 +23,134 @@ categories: [${categories}]
 
 ${content}`;
 
-  // 获取GitHub Token
-  const githubToken = localStorage.getItem('github_token');
-  if(!githubToken) {
-    alert('请先配置GitHub Token!');
-    return;
-  }
-
-  // 先获取主分支的最新commit SHA
-  getMainBranchSHA(githubToken)
-    .then(sha => createGitHubFile(fileName, postContent, githubToken, sha))
-    .catch(error => {
-      console.error('Error:', error);
-      alert('发布出错!');
-    });
-}
-
-// 获取主分支最新commit SHA
-async function getMainBranchSHA(token) {
-  const apiUrl = 'https://api.github.com/repos/sl-wen/sl-wen.github.io/branches/main';
-  
-  const response = await fetch(apiUrl, {
-    headers: {
-      'Authorization': `token ${token}`,
-      'Accept': 'application/vnd.github.v3+json'
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error('获取分支信息失败');
-  }
-
-  const data = await response.json();
-  return data.commit.sha;
-}
-
-async function createGitHubFile(fileName, content, token, parentSHA) {
-  const apiUrl = `https://api.github.com/repos/sl-wen/sl-wen.github.io/contents/_posts/${fileName}`;
-  
   try {
-    // 创建文件
-    const response = await fetch(apiUrl, {
-      method: 'PUT',
+    // 直接创建commit
+    await createCommit(fileName, postContent);
+    alert('文章发布成功！');
+    window.location.href = '/';
+  } catch (error) {
+    console.error('发布失败:', error);
+    alert('发布失败: ' + error.message);
+  }
+}
+
+async function createCommit(fileName, content) {
+  const token = localStorage.getItem('github_token');
+  if (!token) {
+    throw new Error('请先配置GitHub Token');
+  }
+
+  const owner = 'sl-wen'; // 替换为你的GitHub用户名
+  const repo = 'sl-wen.github.io'; // 替换为你的仓库名
+  const path = `_posts/${fileName}`;
+
+  // 1. 获取最新的commit信息
+  const refResponse = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/main`,
+    {
       headers: {
         'Authorization': `token ${token}`,
-        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    }
+  );
+  const refData = await refResponse.json();
+  const latestCommitSha = refData.object.sha;
+
+  // 2. 获取当前树信息
+  const treeResponse = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/git/trees/${latestCommitSha}`,
+    {
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    }
+  );
+  const treeData = await treeResponse.json();
+
+  // 3. 创建新的blob
+  const blobResponse = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/git/blobs`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        content: content,
+        encoding: 'utf-8'
+      })
+    }
+  );
+  const blobData = await blobResponse.json();
+
+  // 4. 创建新的树
+  const newTreeResponse = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/git/trees`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        base_tree: treeData.sha,
+        tree: [{
+          path: path,
+          mode: '100644',
+          type: 'blob',
+          sha: blobData.sha
+        }]
+      })
+    }
+  );
+  const newTreeData = await newTreeResponse.json();
+
+  // 5. 创建新的commit
+  const commitResponse = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/git/commits`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         message: `Add new post: ${fileName}`,
-        content: btoa(unescape(encodeURIComponent(content))),
-        branch: 'main',
-        sha: parentSHA
+        tree: newTreeData.sha,
+        parents: [latestCommitSha]
       })
-    });
-
-    if(response.ok) {
-      // 文件创建成功后自动部署
-      await deployToGitHubPages(token);
-      alert('发布成功!');
-      window.location.href = '/';
-    } else {
-      alert('发布失败,请检查GitHub配置!');
     }
-  } catch(error) {
-    console.error('Error:', error);
-    alert('发布出错!');
+  );
+  const commitData = await commitResponse.json();
+
+  // 6. 更新引用
+  const updateRefResponse = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/main`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sha: commitData.sha,
+        force: true
+      })
+    }
+  );
+
+  if (!updateRefResponse.ok) {
+    throw new Error('更新分支失败');
   }
+
+  return commitData;
 }
 
 // 触发GitHub Pages部署

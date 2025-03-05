@@ -9,7 +9,10 @@ title: 设置
       <label for="github-token">GitHub Token</label>
       <input type="password" id="github-token" placeholder="请输入GitHub Token" />
       <p class="help-text">请在GitHub Settings -> Developer settings -> Personal access tokens生成token</p>
+      <p class="help-text">需要的权限: repo, workflow</p>
     </div>
     <button onclick="saveSettings()">保存设置</button>
+    <button onclick="testToken()" style="margin-left: 10px;">测试Token</button>
   </div>
+  <div id="token-status" style="margin-top: 20px;"></div>
 </div> 

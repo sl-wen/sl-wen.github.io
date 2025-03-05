@@ -10,9 +10,11 @@ title: 设置
       <input type="password" id="github-token" placeholder="请输入GitHub Token" />
       <p class="help-text">请在GitHub Settings -> Developer settings -> Personal access tokens生成token</p>
       <p class="help-text">需要的权限: repo, workflow</p>
+      <p class="help-text">Token格式示例: ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>
     </div>
     <button onclick="saveSettings()">保存设置</button>
     <button onclick="testToken()" style="margin-left: 10px;">测试Token</button>
+    <button onclick="clearToken()" style="margin-left: 10px;">清除Token</button>
     <div style="margin-top: 20px;">
       <button onclick="debugLocalStorage()">调试存储</button>
     </div>
@@ -45,6 +47,20 @@ function debugLocalStorage() {
     } catch (error) {
         console.error('localStorage测试失败:', error);
         alert('localStorage测试失败: ' + error.message);
+    }
+}
+
+// 添加清除Token的功能
+function clearToken() {
+    try {
+        localStorage.removeItem('github_token');
+        localStorage.removeItem('github_user');
+        document.getElementById('github-token').value = '';
+        updateTokenStatus('Token已清除', false);
+        alert('Token已清除');
+    } catch (error) {
+        console.error('清除Token失败:', error);
+        alert('清除Token失败: ' + error.message);
     }
 }
 </script> 

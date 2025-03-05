@@ -20,6 +20,12 @@ document.addEventListener('DOMContentLoaded', function() {
             tokenInput.value = savedToken;
         }
     }
+
+    // 添加页面加载完成后的自动测试
+    if (savedToken) {
+        console.log('找到已保存的Token，正在验证...');
+        testToken();
+    }
 });
 
 // 保存设置
@@ -38,35 +44,21 @@ function saveSettings() {
     }
 
     try {
-        // 检查localStorage是否可用
-        if (typeof localStorage === 'undefined') {
-            throw new Error('浏览器不支持localStorage');
-        }
-
-        // 测试localStorage
-        localStorage.setItem('test', 'test');
-        localStorage.removeItem('test');
-
-        // 保存token到localStorage
-        localStorage.setItem('github_token', token);
-        console.log('Token已保存到localStorage');
-        
-        // 立即验证是否保存成功
-        const savedToken = localStorage.getItem('github_token');
-        console.log('保存后立即读取Token:', savedToken ? '成功' : '失败');
-        
-        if (!savedToken) {
-            throw new Error('Token保存失败');
-        }
-
-        // 验证token
+        // 先验证token
         validateGitHubToken(token).then(valid => {
             if (valid) {
-                alert('Token保存成功并验证有效！');
-                updateTokenStatus('Token有效', true);
+                // 验证成功后再保存
+                try {
+                    localStorage.setItem('github_token', token);
+                    console.log('Token已保存到localStorage');
+                    alert('Token保存成功并验证有效！');
+                    updateTokenStatus('Token有效', true);
+                } catch (storageError) {
+                    console.error('Token存储失败:', storageError);
+                    alert('Token验证成功但存储失败：' + storageError.message);
+                }
             } else {
                 alert('Token无效，请检查Token权限是否正确！');
-                localStorage.removeItem('github_token');
                 updateTokenStatus('Token无效', false);
             }
         }).catch(error => {
@@ -96,11 +88,12 @@ async function validateGitHubToken(token) {
         if (response.ok) {
             const data = await response.json();
             console.log('Token验证成功，用户:', data.login);
+            // 存储用户信息
+            localStorage.setItem('github_user', data.login);
             return true;
         }
         
-        const errorData = await response.json();
-        console.log('Token验证失败，错误信息:', errorData);
+        console.log('Token验证失败，状态码:', response.status);
         return false;
     } catch (error) {
         console.error('Token验证出错:', error);
@@ -139,9 +132,8 @@ async function testToken() {
             }
         });
         
-        const data = await response.json();
-        
         if (response.ok) {
+            const data = await response.json();
             statusDiv.innerHTML = '';
             
             const statusP = document.createElement('p');
@@ -151,13 +143,15 @@ async function testToken() {
             const userP = document.createElement('p');
             userP.textContent = `用户名: ${data.login}`;
             
-            const permissionsP = document.createElement('p');
-            permissionsP.textContent = `Token权限: ${Object.keys(data.permissions || {}).join(', ')}`;
+            const scopesP = document.createElement('p');
+            const scopes = response.headers.get('X-OAuth-Scopes');
+            scopesP.textContent = `Token权限: ${scopes || '未获取到权限信息'}`;
             
             statusDiv.appendChild(statusP);
             statusDiv.appendChild(userP);
-            statusDiv.appendChild(permissionsP);
+            statusDiv.appendChild(scopesP);
         } else {
+            const errorData = await response.json();
             statusDiv.innerHTML = '';
             
             const statusP = document.createElement('p');
@@ -165,22 +159,13 @@ async function testToken() {
             statusP.textContent = 'Token无效';
             
             const errorP = document.createElement('p');
-            errorP.textContent = `错误信息: ${data.message}`;
+            errorP.textContent = `错误信息: ${errorData.message}`;
             
             statusDiv.appendChild(statusP);
             statusDiv.appendChild(errorP);
         }
     } catch (error) {
-        statusDiv.innerHTML = '';
-        
-        const statusP = document.createElement('p');
-        statusP.className = 'status-invalid';
-        statusP.textContent = '测试失败';
-        
-        const errorP = document.createElement('p');
-        errorP.textContent = `错误信息: ${error.message}`;
-        
-        statusDiv.appendChild(statusP);
-        statusDiv.appendChild(errorP);
+        console.error('测试失败:', error);
+        updateTokenStatus(`测试失败: ${error.message}`, false);
     }
 } 

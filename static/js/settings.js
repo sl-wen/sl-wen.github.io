@@ -38,10 +38,27 @@ function saveSettings() {
     }
 
     try {
+        // 检查localStorage是否可用
+        if (typeof localStorage === 'undefined') {
+            throw new Error('浏览器不支持localStorage');
+        }
+
+        // 测试localStorage
+        localStorage.setItem('test', 'test');
+        localStorage.removeItem('test');
+
         // 保存token到localStorage
         localStorage.setItem('github_token', token);
         console.log('Token已保存到localStorage');
         
+        // 立即验证是否保存成功
+        const savedToken = localStorage.getItem('github_token');
+        console.log('保存后立即读取Token:', savedToken ? '成功' : '失败');
+        
+        if (!savedToken) {
+            throw new Error('Token保存失败');
+        }
+
         // 验证token
         validateGitHubToken(token).then(valid => {
             if (valid) {
@@ -52,10 +69,13 @@ function saveSettings() {
                 localStorage.removeItem('github_token');
                 updateTokenStatus('Token无效', false);
             }
+        }).catch(error => {
+            console.error('Token验证过程出错:', error);
+            updateTokenStatus('验证过程出错: ' + error.message, false);
         });
     } catch (error) {
         console.error('保存设置失败:', error);
-        alert('保存设置失败！');
+        alert('保存设置失败：' + error.message);
         updateTokenStatus('保存失败: ' + error.message, false);
     }
 }
@@ -64,23 +84,27 @@ function saveSettings() {
 async function validateGitHubToken(token) {
     try {
         console.log('开始验证Token');
-        const response = await fetch('https://api.github.com/user', {
+        const response = await fetch('https://api.github.com/sl-wen', {
             headers: {
-                'Authorization': `token ${token}`,
+                'Authorization': `Bearer ${token}`, // 修改为Bearer认证
                 'Accept': 'application/vnd.github.v3+json'
             }
         });
+        
+        console.log('API响应状态:', response.status);
         
         if (response.ok) {
             const data = await response.json();
             console.log('Token验证成功，用户:', data.login);
             return true;
         }
-        console.log('Token验证失败，状态码:', response.status);
+        
+        const errorData = await response.json();
+        console.log('Token验证失败，错误信息:', errorData);
         return false;
     } catch (error) {
         console.error('Token验证出错:', error);
-        return false;
+        throw error;
     }
 }
 
@@ -104,7 +128,7 @@ async function testToken() {
     }
 
     try {
-        const response = await fetch('https://api.github.com/user', {
+        const response = await fetch('https://api.github.com/sl-wen', {
             headers: {
                 'Authorization': `token ${token}`,
                 'Accept': 'application/vnd.github.v3+json'

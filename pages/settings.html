@@ -13,9 +13,38 @@ title: 设置
     </div>
     <button onclick="saveSettings()">保存设置</button>
     <button onclick="testToken()" style="margin-left: 10px;">测试Token</button>
+    <div style="margin-top: 20px;">
+      <button onclick="debugLocalStorage()">调试存储</button>
+    </div>
   </div>
   <div id="token-status" style="margin-top: 20px;"></div>
 </div>
 
 <!-- 添加脚本引用 -->
-<script type="text/javascript" src="{{site.baseurl}}/static/js/settings.js"></script> 
+<script type="text/javascript" src="{{site.baseurl}}/static/js/settings.js"></script>
+
+<script>
+function debugLocalStorage() {
+    console.log('调试localStorage:');
+    try {
+        console.log('localStorage可用:', typeof localStorage !== 'undefined');
+        console.log('当前token:', localStorage.getItem('github_token'));
+        
+        // 测试写入
+        localStorage.setItem('debug_test', 'test_value');
+        console.log('测试写入成功');
+        
+        // 测试读取
+        const testValue = localStorage.getItem('debug_test');
+        console.log('测试读取:', testValue);
+        
+        // 清理测试数据
+        localStorage.removeItem('debug_test');
+        
+        alert('localStorage测试完成，请查看控制台输出');
+    } catch (error) {
+        console.error('localStorage测试失败:', error);
+        alert('localStorage测试失败: ' + error.message);
+    }
+}
+</script> 

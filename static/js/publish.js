@@ -50,7 +50,7 @@ ${content}`;
 async function createGitHubFile(fileName, content, token) {
     try {
         // 1. 获取最新的commit SHA
-        const branchResponse = await fetch('https://api.github.com/repos/sl-wen/sl-wen.github.io/branches/main', {
+        const branchResponse = await fetch('https://api.github.com/repos/sl-wen/sl-wen.github.io/branches/master', {
             headers: {
                 'Authorization': `token ${token}`,
                 'Accept': 'application/vnd.github.v3+json'

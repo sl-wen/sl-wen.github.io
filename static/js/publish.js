@@ -75,7 +75,7 @@ async function createGitHubFile(fileName, content, token) {
             body: JSON.stringify({
                 message: `Add new post: ${fileName}`,
                 content: btoa(unescape(encodeURIComponent(content))),
-                branch: 'main'
+                branch: 'master'
             })
         });
 

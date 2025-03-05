@@ -42,6 +42,10 @@ menu:
  #    url: /pages/chat.html
   - title: 关于
     url: /pages/about.html
+  - title: 发布
+    url: /pages/publish.html
+  - title: 设置
+    url: /pages/settings.html
 
 # 点击页面文字冒出特效,不需要请设置为false
 extClickEffect: true
@@ -74,7 +78,7 @@ links:
     url: https://www.dadapush.com
   - title: 祈雨的博客
     url: https://wakzz.cn
-  - title: hongCYu’s Blog
+  - title: hongCYu's Blog
     url: https://hongcyu.cn
   - title: Sorryfu
     url: https://fushaolei.github.io

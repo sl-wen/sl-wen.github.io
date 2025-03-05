@@ -51,13 +51,13 @@ button:hover {
 }
 
 .status-valid {
-  color: green;
+  color: #28a745;
   font-weight: bold;
   margin-bottom: 10px;
 }
 
 .status-invalid {
-  color: red;
+  color: #dc3545;
   font-weight: bold;
   margin-bottom: 10px;
 }
@@ -71,4 +71,15 @@ button:hover {
   padding: 10px;
   border-radius: 4px;
   background-color: #f5f5f5;
+}
+
+.token-status {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+}
+
+.token-status p {
+    margin: 5px 0;
 } 

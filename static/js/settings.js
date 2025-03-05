@@ -84,9 +84,9 @@ function saveSettings() {
 async function validateGitHubToken(token) {
     try {
         console.log('开始验证Token');
-        const response = await fetch('https://api.github.com/sl-wen', {
+        const response = await fetch('https://api.github.com/user', {
             headers: {
-                'Authorization': `Bearer ${token}`, // 修改为Bearer认证
+                'Authorization': `token ${token}`,
                 'Accept': 'application/vnd.github.v3+json'
             }
         });
@@ -132,7 +132,7 @@ async function testToken() {
     }
 
     try {
-        const response = await fetch('https://api.github.com/sl-wen', {
+        const response = await fetch('https://api.github.com/user', {
             headers: {
                 'Authorization': `token ${token}`,
                 'Accept': 'application/vnd.github.v3+json'
@@ -142,7 +142,6 @@ async function testToken() {
         const data = await response.json();
         
         if (response.ok) {
-            // 使用CSS类而不是内联样式
             statusDiv.innerHTML = '';
             
             const statusP = document.createElement('p');
@@ -159,7 +158,6 @@ async function testToken() {
             statusDiv.appendChild(userP);
             statusDiv.appendChild(permissionsP);
         } else {
-            // 使用CSS类而不是内联样式
             statusDiv.innerHTML = '';
             
             const statusP = document.createElement('p');
@@ -173,7 +171,6 @@ async function testToken() {
             statusDiv.appendChild(errorP);
         }
     } catch (error) {
-        // 使用CSS类而不是内联样式
         statusDiv.innerHTML = '';
         
         const statusP = document.createElement('p');

@@ -112,7 +112,11 @@ async function validateGitHubToken(token) {
 function updateTokenStatus(message, isValid) {
     const statusDiv = document.getElementById('token-status');
     if (statusDiv) {
-        statusDiv.innerHTML = `<p style="color: ${isValid ? 'green' : 'red'}">${message}</p>`;
+        const messageElement = document.createElement('p');
+        messageElement.textContent = message;
+        messageElement.className = isValid ? 'status-valid' : 'status-invalid';
+        statusDiv.innerHTML = '';
+        statusDiv.appendChild(messageElement);
     }
 }
 

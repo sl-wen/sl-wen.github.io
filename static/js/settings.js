@@ -1,3 +1,6 @@
+// 在文件顶部声明全局变量
+let savedToken;
+
 // 确保DOM加载完成后再执行
 document.addEventListener('DOMContentLoaded', function() {
     console.log('页面加载完成');
@@ -11,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 检查已保存的token
-    const savedToken = localStorage.getItem('github_token');
+    savedToken = localStorage.getItem('github_token'); // 使用已声明的变量
     if (savedToken) {
         console.log('找到已保存的Token，正在验证...');
         // 确保DOM完全加载后再测试token
@@ -32,8 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
         testButton.addEventListener('click', testToken);
     }
 
-    // 加载已保存的token
-    const savedToken = localStorage.getItem('github_token');
+    // 加载已保存的token到输入框
     if (savedToken) {
         const tokenInput = document.getElementById('github-token');
         if (tokenInput) {
@@ -197,24 +199,5 @@ async function testToken() {
     } catch (error) {
         console.error('测试失败:', error);
         updateTokenStatus(`测试失败: ${error.message}`, false);
-    }
-}
-
-let savedToken; // 只声明一次
-
-function saveToken() {
-    const token = document.getElementById('github-token').value.trim();
-    if (token) {
-        localStorage.setItem('github_token', token);
-        alert('Token保存成功！');
-    } else {
-        alert('请输入有效的Token！');
-    }
-}
-
-function loadToken() {
-    savedToken = localStorage.getItem('github_token');
-    if (savedToken) {
-        document.getElementById('github-token').value = savedToken;
     }
 } 

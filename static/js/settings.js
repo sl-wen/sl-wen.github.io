@@ -1,6 +1,3 @@
-// 在文件顶部声明全局变量
-let savedToken;
-
 // 确保DOM加载完成后再执行
 document.addEventListener('DOMContentLoaded', function() {
     console.log('页面加载完成');
@@ -13,11 +10,14 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('找到token-status元素');
     }
 
-    // 检查已保存的token
-    savedToken = localStorage.getItem('github_token'); // 使用已声明的变量
-    if (savedToken) {
+    // 直接使用 localStorage 获取 token，不需要全局变量
+    const token = localStorage.getItem('github_token');
+    if (token) {
         console.log('找到已保存的Token，正在验证...');
-        // 确保DOM完全加载后再测试token
+        const tokenInput = document.getElementById('github-token');
+        if (tokenInput) {
+            tokenInput.value = token;
+        }
         setTimeout(() => {
             testToken();
         }, 100);
@@ -33,14 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const testButton = document.querySelector('button[onclick="testToken()"]');
     if (testButton) {
         testButton.addEventListener('click', testToken);
-    }
-
-    // 加载已保存的token到输入框
-    if (savedToken) {
-        const tokenInput = document.getElementById('github-token');
-        if (tokenInput) {
-            tokenInput.value = savedToken;
-        }
     }
 });
 

@@ -11,8 +11,8 @@ title: 设置
       <p class="help-text">请在GitHub Settings -> Developer settings -> Personal access tokens生成token</p>
       <p class="help-text">需要的权限: repo, workflow</p>
     </div>
-    <button onclick="saveSettings()">保存设置</button>
-    <button onclick="testToken()">测试Token</button>
+    <button id="saveButton">保存设置</button>
+    <button id="testButton">测试Token</button>
   </div>
   <div id="token-status" class="token-status"></div>
 </div>
@@ -85,4 +85,10 @@ async function testToken() {
         alert(`测试出错：${error.message}`);
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 使用事件监听器绑定按钮事件
+    document.getElementById('saveButton').addEventListener('click', saveSettings);
+    document.getElementById('testButton').addEventListener('click', testToken);
+});
 </script> 

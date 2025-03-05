@@ -12,6 +12,9 @@
   console.info('%c Author %c' + author, style1, style2)
   console.info('%c Build  %c' + build, style1, style2)
   console.info('%c GitHub %c' + github, style1, style2)
+  console.log('Author', 'slwen');
+  console.log('Build', new Date().toLocaleString());
+  console.log('GitHub', 'https://github.com/sl-wen/');
 })()
 
 /**

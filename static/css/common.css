@@ -1,15 +1,31 @@
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --link-color: #007bff;
+    --border-color: #dee2e6;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 html {
-  color: #333333;
-  background: #ffffff;
-  scroll-behavior: smooth;
-  -ms-text-size-adjust: 100%;
-  -webkit-text-size-adjust: 100%;
-  -moz-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-family: 'Cascadia Code', Consolas, Helvetica, 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
-  overflow-y: overlay;
+    font-size: 16px;
+    color: #333333;
+    background: #ffffff;
+    scroll-behavior: smooth;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: 'Cascadia Code', Consolas, Helvetica, 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    overflow-y: overlay;
 }
 html[transition] {
   transition: all 500ms ease;
@@ -18,6 +34,10 @@ body {
   max-width: 680px;
   padding: 0 14px;
   margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--background-color);
 }
 * {
   -webkit-tap-highlight-color: transparent;
@@ -40,8 +60,11 @@ blockquote {
   margin: 0;
 }
 a {
-  color: inherit;
   text-decoration: none;
+  color: var(--link-color);
+}
+a:hover {
+  text-decoration: underline;
 }
 input,
 select,
@@ -210,4 +233,41 @@ input:-webkit-autofill {
     margin: 2px 5px;
     font-size: 15px;
   }
+}
+
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.nav {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav a {
+    margin: 0 10px;
+    color: var(--text-color);
+}
+
+.nav a:hover {
+    color: var(--primary-color);
+}
+
+.post-list {
+    list-style: none;
+    padding: 0;
+}
+
+.post-list li {
+    margin: 1rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 1.5rem 0 1rem;
+    font-weight: 600;
+    line-height: 1.25;
 }

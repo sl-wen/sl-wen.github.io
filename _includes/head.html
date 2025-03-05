@@ -21,18 +21,19 @@
   <link rel="icon" href="{{site.baseurl}}/static/img/logo.jpg" />
   <link rel="apple-touch-icon" href="{{site.baseurl}}/static/img/logo.jpg" />
   <link rel="stylesheet" href="{{site.baseurl}}/static/css/common.css?t={{buildAt}}" />
+  <link rel="stylesheet" href="{{site.baseurl}}/static/css/style.css?t={{buildAt}}" />
+  <link rel="stylesheet" href="{{site.baseurl}}/static/css/theme.css?t={{buildAt}}" />
   <link rel="stylesheet" href="{{site.baseurl}}/static/css/theme-dark.css?t={{buildAt}}" />
   {%- if page.layout == "mypost" %}
   <link rel="stylesheet" href="{{site.baseurl}}/static/css/post.css?t={{buildAt}}" />
   <link rel="stylesheet" href="{{site.baseurl}}/static/css/code-dark.css?t={{buildAt}}" />
   <link rel="stylesheet" href="{{site.baseurl}}/static/css/code-light.css?t={{buildAt}}" />
-  {%- endif %} {%- if page.layout == "page" %}
+  {%- endif %}
+  {%- if page.layout == "page" %}
   <link rel="stylesheet" href="{{site.baseurl}}/static/css/page.css?t={{buildAt}}" />
   {%- endif %}
   <link rel="stylesheet" href="{{site.baseurl}}/static/css/publish.css?t={{buildAt}}" />
   <link rel="stylesheet" href="{{site.baseurl}}/static/css/settings.css?t={{buildAt}}" />
-  <link rel="stylesheet" href="{{site.baseurl}}/static/css/style.css">
-  <link rel="stylesheet" href="{{site.baseurl}}/static/css/theme.css">
   <link rel="canonical" href="{{ site.url }}{{ page.url }}" />
   <meta property="og:title" content="{{ page.title }}" />
   <meta property="og:description" content="{{ page.description }}" />
@@ -53,7 +54,7 @@
   </script>
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self'; 
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://busuanzi.ibruce.info; 
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' http://busuanzi.ibruce.info https://busuanzi.ibruce.info; 
     style-src 'self' 'unsafe-inline'; 
     connect-src 'self' https://api.github.com; 
     img-src 'self' data:; 

@@ -198,4 +198,23 @@ async function testToken() {
         console.error('测试失败:', error);
         updateTokenStatus(`测试失败: ${error.message}`, false);
     }
+}
+
+let savedToken; // 只声明一次
+
+function saveToken() {
+    const token = document.getElementById('github-token').value.trim();
+    if (token) {
+        localStorage.setItem('github_token', token);
+        alert('Token保存成功！');
+    } else {
+        alert('请输入有效的Token！');
+    }
+}
+
+function loadToken() {
+    savedToken = localStorage.getItem('github_token');
+    if (savedToken) {
+        document.getElementById('github-token').value = savedToken;
+    }
 } 

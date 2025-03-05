@@ -1,0 +1,42 @@
+/* 主题颜色 */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --link-color: #007bff;
+    --border-color: #dee2e6;
+}
+
+/* 页面布局 */
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+/* 导航栏样式 */
+.nav {
+    background-color: var(--background-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav a {
+    color: var(--text-color);
+}
+
+.nav a:hover {
+    color: var(--primary-color);
+}
+
+/* 文章列表样式 */
+.post-list li {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.post-list a {
+    color: var(--text-color);
+}
+
+.post-list a:hover {
+    color: var(--primary-color);
+} 

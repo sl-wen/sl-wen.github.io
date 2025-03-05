@@ -1,9 +1,10 @@
 :root {
-    --primary-color: #007bff;
+    --primary-color: #333333;
     --secondary-color: #6c757d;
     --background-color: #ffffff;
     --text-color: #333333;
-    --link-color: #007bff;
+    --link-color: #333333;
+    --link-hover-color: #000000;
     --border-color: #dee2e6;
 }
 
@@ -60,11 +61,14 @@ blockquote {
   margin: 0;
 }
 a {
-  text-decoration: none;
   color: var(--link-color);
+  text-decoration: none;
+  transition: color 0.3s ease;
+  position: relative;
 }
 a:hover {
-  text-decoration: underline;
+  color: var(--link-hover-color);
+  text-decoration: none;
 }
 input,
 select,
@@ -118,10 +122,10 @@ input:-webkit-autofill {
   height: 1px;
   bottom: -2px;
   left: 0;
-  background-color: #333333;
+  background-color: var(--link-hover-color);
   visibility: hidden;
   transform: scaleX(0);
-  transition: transform 200ms ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 .hover-underline:hover:after {
   visibility: visible;
@@ -162,10 +166,13 @@ input:-webkit-autofill {
 }
 
 .footer a {
-  text-decoration: underline;
-  color: #000000;
+  color: var(--link-color);
+  text-decoration: none;
   padding: 0 4px;
-  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+.footer a:hover {
+  color: var(--link-hover-color);
 }
 .footer-btn {
   position: fixed;
@@ -247,12 +254,14 @@ input:-webkit-autofill {
 }
 
 .nav a {
-    margin: 0 10px;
-    color: var(--text-color);
+    color: var(--link-color);
+    text-decoration: none;
+    padding: 5px 10px;
+    transition: color 0.3s ease;
 }
 
 .nav a:hover {
-    color: var(--primary-color);
+    color: var(--link-hover-color);
 }
 
 .post-list {
@@ -264,6 +273,17 @@ input:-webkit-autofill {
     margin: 1rem 0;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--border-color);
+}
+
+.post-list a {
+    color: var(--link-color);
+    text-decoration: none;
+    font-size: 1.2em;
+    transition: color 0.3s ease;
+}
+
+.post-list a:hover {
+    color: var(--link-hover-color);
 }
 
 h1, h2, h3, h4, h5, h6 {

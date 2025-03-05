@@ -36,13 +36,13 @@ body {
 }
 
 .post-list a {
-    color: #333;
+    color: var(--link-color) !important;
     text-decoration: none;
     font-size: 1.2em;
 }
 
 .post-list a:hover {
-    color: #007bff;
+    color: var(--link-hover-color) !important;
 }
 
 /* 年份标题样式 */
@@ -75,12 +75,12 @@ footer {
 
 /* 链接样式 */
 a {
-    color: #007bff;
+    color: var(--link-color) !important;
     text-decoration: none;
 }
 
 a:hover {
-    text-decoration: underline;
+    color: var(--link-hover-color) !important;
 }
 
 /* 容器样式 */

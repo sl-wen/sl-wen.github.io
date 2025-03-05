@@ -93,3 +93,17 @@ html.dark .footer-btn {
 html.dark .footer-btn i {
   opacity: 0.7;
 }
+
+/* 深色主题的链接颜色 */
+.dark {
+    --link-color: #cccccc;
+    --link-hover-color: #ffffff;
+}
+
+.dark a {
+    color: var(--link-color) !important;
+}
+
+.dark a:hover {
+    color: var(--link-hover-color) !important;
+}

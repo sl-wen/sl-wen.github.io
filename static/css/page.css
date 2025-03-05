@@ -122,3 +122,9 @@
     font-size: 14px;
   }
 }
+.page a {
+  color: var(--link-color) !important;
+}
+.page a:hover {
+  color: var(--link-hover-color) !important;
+}

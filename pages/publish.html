@@ -5,9 +5,22 @@ title: 发布文章
 
 <div class="page page-publish">
   <div class="publish-form">
-    <input id="post-title" type="text" placeholder="文章标题" />
-    <input id="post-categories" type="text" placeholder="分类(用逗号分隔)" />
-    <textarea id="post-content" placeholder="文章内容(Markdown格式)"></textarea>
-    <button onclick="publishPost()">发布</button>
+    <div class="form-group">
+      <label for="post-title">文章标题</label>
+      <input type="text" id="post-title" placeholder="请输入文章标题" />
+    </div>
+    <div class="form-group">
+      <label for="post-categories">文章分类</label>
+      <input type="text" id="post-categories" placeholder="分类用逗号分隔，如: 技术,随笔" />
+    </div>
+    <div class="form-group">
+      <label for="post-content">文章内容</label>
+      <textarea id="post-content" placeholder="请输入文章内容（支持Markdown格式）"></textarea>
+    </div>
+    <button onclick="publishPost()">发布文章</button>
   </div>
-</div> 
+  <div id="publish-status" style="margin-top: 20px;"></div>
+</div>
+
+<!-- 添加脚本引用 -->
+<script type="text/javascript" src="{{site.baseurl}}/static/js/publish.js"></script> 

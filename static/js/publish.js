@@ -1,21 +1,32 @@
+// 发布文章
 async function publishPost() {
-  console.log('开始发布文章...');
-  
-  const title = document.getElementById('post-title').value;
-  const categories = document.getElementById('post-categories').value;
-  const content = document.getElementById('post-content').value;
-  
-  if(!title || !content) {
-    alert('标题和内容不能为空!');
-    return;
-  }
+    console.log('开始发布文章...');
+    
+    // 获取token
+    const token = localStorage.getItem('github_token');
+    if (!token) {
+        alert('请先在设置页面配置GitHub Token！');
+        window.location.href = '/pages/settings.html';
+        return;
+    }
 
-  // 生成文章文件名
-  const date = new Date();
-  const fileName = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}-${title.toLowerCase().replace(/\s+/g, '-')}.md`;
+    // 获取表单数据
+    const title = document.getElementById('post-title').value.trim();
+    const categories = document.getElementById('post-categories').value.trim();
+    const content = document.getElementById('post-content').value.trim();
+    
+    if (!title || !content) {
+        alert('标题和内容不能为空！');
+        return;
+    }
 
-  // 生成文章内容
-  const postContent = `---
+    try {
+        // 生成文件名
+        const date = new Date();
+        const fileName = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}-${title.toLowerCase().replace(/\s+/g, '-')}.md`;
+
+        // 生成文章内容
+        const postContent = `---
 layout: mypost
 title: ${title}
 categories: [${categories}]
@@ -23,134 +34,74 @@ categories: [${categories}]
 
 ${content}`;
 
-  try {
-    // 直接创建commit
-    await createCommit(fileName, postContent);
-    alert('文章发布成功！');
-    window.location.href = '/';
-  } catch (error) {
-    console.error('发布失败:', error);
-    alert('发布失败: ' + error.message);
-  }
+        // 创建文件
+        await createGitHubFile(fileName, postContent, token);
+        
+        alert('文章发布成功！');
+        window.location.href = '/';
+    } catch (error) {
+        console.error('发布失败:', error);
+        alert('发布失败: ' + error.message);
+        updatePublishStatus('发布失败: ' + error.message, false);
+    }
 }
 
-async function createCommit(fileName, content) {
-  const token = localStorage.getItem('github_token');
-  if (!token) {
-    throw new Error('请先配置GitHub Token');
-  }
+// 创建GitHub文件
+async function createGitHubFile(fileName, content, token) {
+    try {
+        // 1. 获取最新的commit SHA
+        const branchResponse = await fetch('https://api.github.com/repos/sl-wen/sl-wen.github.io/branches/main', {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (!branchResponse.ok) {
+            throw new Error('获取分支信息失败');
+        }
+        
+        const branchData = await branchResponse.json();
+        const latestCommitSha = branchData.commit.sha;
 
-  const owner = 'sl-wen'; // 替换为你的GitHub用户名
-  const repo = 'sl-wen.github.io'; // 替换为你的仓库名
-  const path = `_posts/${fileName}`;
+        // 2. 创建文件
+        const response = await fetch(`https://api.github.com/repos/sl-wen/sl-wen.github.io/contents/_posts/${fileName}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Add new post: ${fileName}`,
+                content: btoa(unescape(encodeURIComponent(content))),
+                branch: 'main'
+            })
+        });
 
-  // 1. 获取最新的commit信息
-  const refResponse = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/main`,
-    {
-      headers: {
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json'
-      }
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message);
+        }
+
+        updatePublishStatus('文章发布成功！', true);
+        return true;
+    } catch (error) {
+        console.error('创建文件失败:', error);
+        throw error;
     }
-  );
-  const refData = await refResponse.json();
-  const latestCommitSha = refData.object.sha;
+}
 
-  // 2. 获取当前树信息
-  const treeResponse = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/git/trees/${latestCommitSha}`,
-    {
-      headers: {
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json'
-      }
+// 更新发布状态显示
+function updatePublishStatus(message, isSuccess) {
+    const statusDiv = document.getElementById('publish-status');
+    if (statusDiv) {
+        const messageElement = document.createElement('p');
+        messageElement.textContent = message;
+        messageElement.className = isSuccess ? 'status-valid' : 'status-invalid';
+        statusDiv.innerHTML = '';
+        statusDiv.appendChild(messageElement);
     }
-  );
-  const treeData = await treeResponse.json();
-
-  // 3. 创建新的blob
-  const blobResponse = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/git/blobs`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        content: content,
-        encoding: 'utf-8'
-      })
-    }
-  );
-  const blobData = await blobResponse.json();
-
-  // 4. 创建新的树
-  const newTreeResponse = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/git/trees`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        base_tree: treeData.sha,
-        tree: [{
-          path: path,
-          mode: '100644',
-          type: 'blob',
-          sha: blobData.sha
-        }]
-      })
-    }
-  );
-  const newTreeData = await newTreeResponse.json();
-
-  // 5. 创建新的commit
-  const commitResponse = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/git/commits`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: `Add new post: ${fileName}`,
-        tree: newTreeData.sha,
-        parents: [latestCommitSha]
-      })
-    }
-  );
-  const commitData = await commitResponse.json();
-
-  // 6. 更新引用
-  const updateRefResponse = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/git/refs/heads/main`,
-    {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `token ${token}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        sha: commitData.sha,
-        force: true
-      })
-    }
-  );
-
-  if (!updateRefResponse.ok) {
-    throw new Error('更新分支失败');
-  }
-
-  return commitData;
 }
 
 // 触发GitHub Pages部署

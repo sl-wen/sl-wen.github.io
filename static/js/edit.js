@@ -203,8 +203,22 @@ function disableForm(disabled) {
     elements.forEach(element => {
         if (element) {
             element.disabled = disabled;
+            // 添加或移除禁用状态的类
+            if (disabled) {
+                element.classList.add('disabled');
+            } else {
+                element.classList.remove('disabled');
+            }
         }
     });
+
+    // 如果是禁用状态，滚动到状态消息
+    if (disabled) {
+        const statusDiv = document.getElementById('edit-status');
+        if (statusDiv) {
+            statusDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
 }
 
 // 触发 GitHub Actions 工作流

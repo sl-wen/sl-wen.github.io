@@ -1,0 +1,168 @@
+.page-edit {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 状态显示区域 */
+.edit-status {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.status-message {
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-message.updating,
+.status-message.deploying {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.status-message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.status-message.warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+/* 加载动画 */
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 表单样式 */
+.edit-form {
+    background-color: var(--background-color);
+    border-radius: 4px;
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.form-group input[type="text"],
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+.form-group textarea {
+    min-height: 300px;
+    resize: vertical;
+}
+
+/* 禁用状态样式 */
+.form-group input[disabled],
+.form-group textarea[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 按钮组样式 */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.button-group button {
+    padding: 10px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.button-group button:hover {
+    background: var(--text-color);
+    color: var(--background-color);
+}
+
+.button-group button[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 暗色模式适配 */
+[data-theme="dark"] .edit-form {
+    background-color: var(--background-color);
+}
+
+[data-theme="dark"] .status-message.updating,
+[data-theme="dark"] .status-message.deploying {
+    background-color: #2d2d2d;
+    color: #ffd700;
+    border-color: #4d4d00;
+}
+
+[data-theme="dark"] .status-message.success {
+    background-color: #1e4620;
+    color: #98ff98;
+    border-color: #2f6f2f;
+}
+
+[data-theme="dark"] .status-message.error {
+    background-color: #4c1f1f;
+    color: #ff9999;
+    border-color: #6f2f2f;
+}
+
+[data-theme="dark"] .status-message.warning {
+    background-color: #4d4000;
+    color: #ffd700;
+    border-color: #6f5500;
+}
+
+[data-theme="dark"] .form-group input[disabled],
+[data-theme="dark"] .form-group textarea[disabled] {
+    background-color: rgba(255, 255, 255, 0.05);
+} 

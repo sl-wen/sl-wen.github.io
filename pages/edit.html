@@ -1,0 +1,26 @@
+---
+layout: page
+title: 编辑文章
+---
+
+<div class="page page-edit">
+  <div class="edit-form">
+    <div class="form-group">
+      <label for="post-title">文章标题</label>
+      <input type="text" id="post-title" placeholder="请输入文章标题" />
+    </div>
+    <div class="form-group">
+      <label for="post-categories">分类</label>
+      <input type="text" id="post-categories" placeholder="请输入分类，多个分类用逗号分隔" />
+    </div>
+    <div class="form-group">
+      <label for="post-content">文章内容</label>
+      <textarea id="post-content" rows="20" placeholder="请输入文章内容（支持 Markdown 格式）"></textarea>
+    </div>
+    <button id="updateButton">更新文章</button>
+    <button id="cancelButton">取消</button>
+  </div>
+  <div id="edit-status" class="edit-status"></div>
+</div>
+
+<script type="text/javascript" src="{{site.baseurl}}/static/js/edit.js"></script> 

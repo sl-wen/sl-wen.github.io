@@ -162,3 +162,86 @@
     margin: 15px 0;
   }
 }
+
+/* 文章操作按钮样式 */
+.post-actions {
+    margin: 10px 0;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.post-actions .edit-button,
+.post-actions .delete-button {
+    display: inline-block;
+    padding: 5px 15px;
+    margin-right: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-color);
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.post-actions .edit-button:hover {
+    background: var(--text-color);
+    color: var(--background-color);
+}
+
+.post-actions .delete-button {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.post-actions .delete-button:hover {
+    background: #dc3545;
+    color: #fff;
+}
+
+/* 编辑页面样式 */
+.page-edit .edit-form {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.page-edit .form-group {
+    margin-bottom: 20px;
+}
+
+.page-edit label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.page-edit input[type="text"],
+.page-edit textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--background-color);
+    color: var(--text-color);
+}
+
+.page-edit textarea {
+    min-height: 300px;
+    resize: vertical;
+}
+
+.page-edit button {
+    padding: 8px 20px;
+    margin-right: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.page-edit button:hover {
+    background: var(--text-color);
+    color: var(--background-color);
+}

@@ -5,6 +5,10 @@
 {% include header.html -%}
 <div class="page page-post">
   <h1 class="title" id="{{ page.title }}">{{ page.title }}</h1>
+  <div class="post-actions">
+    <a href="/pages/edit.html?file={{ page.path | split: '/' | last }}" class="edit-button">编辑</a>
+    <button onclick="deletePost('{{ page.path | split: '/' | last }}')" class="delete-button">删除</button>
+  </div>
   {% if page.date %}
   <div class="subtitle">
     <span>{{site.author}} 于 {{ page.date | date: "%Y-%m-%d" }} 发布</span>
@@ -25,5 +29,6 @@
 </div>
 {% include footer.html -%}
 {% include script.html -%}
+<script type="text/javascript" src="{{site.baseurl}}/static/js/post.js"></script>
 </body>
 </html>

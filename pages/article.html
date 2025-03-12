@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章详情 - 我的博客</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .article-container {
+            padding: 0;
+        }
+        
+        .article-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: normal;
+            text-align: center;
+        }
+        
+        .article-meta {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .article-content {
+            line-height: 1.8;
+        }
+        
+        .article-content p {
+            margin-bottom: 15px;
+        }
+        
+        .article-content h1, 
+        .article-content h2, 
+        .article-content h3, 
+        .article-content h4, 
+        .article-content h5, 
+        .article-content h6 {
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: normal;
+        }
+        
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .article-content pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .article-content code {
+            background-color: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+        }
+        
+        .article-content blockquote {
+            border-left: 4px solid #ddd;
+            padding-left: 15px;
+            color: #666;
+            margin: 15px 0;
+        }
+        
+        .back-link {
+            display: none;
+        }
+        
+        .loading, .error {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .error {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <a href="/" class="logo">
+                <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
+            </a>
+            <div class="nav">
+                <a href="/">首页</a>
+                <a href="/pages/post.html">发布文章</a>
+                <a href="/about.html">关于</a>
+            </div>
+        </div>
+        <div class="container">
+            <div id="article-container" class="article-container">
+                <div class="loading">加载中...</div>
+            </div>
+            <div id="status-messages" style="display: none;"></div>
+        </div>
+        <div class="footer">
+            <span class="copyright">&copy; 2023 我的博客. All rights reserved.</span>
+        </div>
+    </div>
+
+    <!-- 文章详情页面脚本 -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { marked } from 'https://cdn.jsdelivr.net/npm/marked@4.0.0/lib/marked.esm.js';
+        
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuXDfNvLwiISoMwzcUIwUbaPTl69uRnao",
+            authDomain: "slwen-45838.firebaseapp.com",
+            projectId: "slwen-45838",
+            storageBucket: "slwen-45838.appspot.com",
+            messagingSenderId: "734137620659",
+            appId: "1:734137620659:web:81ce8b971dce766d67b8c6",
+            measurementId: "G-WEBZLW3S59"
+        };
+        
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // 格式化日期
+        function formatDate(timestamp) {
+            const date = timestamp.toDate();
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+        
+        // 获取URL参数
+        function getUrlParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+        
+        // 获取文章详情
+        async function getArticle() {
+            const articleId = getUrlParam('id');
+            const container = document.getElementById('article-container');
+            const statusDiv = document.getElementById('status-messages');
+            
+            if (!articleId) {
+                container.innerHTML = '<div class="error">文章ID不存在，请返回首页</div>';
+                return;
+            }
+            
+            try {
+                if (statusDiv) {
+                    statusDiv.innerHTML += `<p>开始获取文章ID: ${articleId}</p>`;
+                }
+                
+                const docRef = doc(db, "posts", articleId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const date = data.createdAt ? formatDate(data.createdAt) : '未知日期';
+                    
+                    // 设置页面标题
+                    document.title = `${data.title} - 我的博客`;
+                    
+                    // 渲染文章
+                    container.innerHTML = `
+                        <h1 class="article-title">${data.title || '无标题'}</h1>
+                        <div class="article-meta">
+                            ${data.author || '未知'} 于 ${date} 发布
+                        </div>
+                        <div class="article-content">
+                            ${marked.parse(data.content || '无内容')}
+                        </div>
+                    `;
+                    
+                    if (statusDiv) {
+                        statusDiv.innerHTML += `<p>文章加载完成</p>`;
+                    }
+                } else {
+                    container.innerHTML = '<div class="error">文章不存在或已被删除</div>';
+                    if (statusDiv) {
+                        statusDiv.innerHTML += `<p>文章不存在</p>`;
+                    }
+                }
+            } catch (error) {
+                console.error('获取文章失败:', error);
+                container.innerHTML = `<div class="error">加载文章失败: ${error.message}</div>`;
+                
+                if (statusDiv) {
+                    statusDiv.innerHTML += `
+                        <p style="color: red;">错误: ${error.message}</p>
+                        <p>错误详情: ${JSON.stringify(error)}</p>
+                    `;
+                }
+            }
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', () => {
+            getArticle();
+            
+            // 添加调试按钮
+            const footer = document.querySelector('.footer');
+            const debugButton = document.createElement('button');
+            debugButton.textContent = '显示调试信息';
+            debugButton.style.marginTop = '10px';
+            debugButton.addEventListener('click', function() {
+                const statusDiv = document.getElementById('status-messages');
+                if (statusDiv.style.display === 'none') {
+                    statusDiv.style.display = 'block';
+                    debugButton.textContent = '隐藏调试信息';
+                } else {
+                    statusDiv.style.display = 'none';
+                    debugButton.textContent = '显示调试信息';
+                }
+            });
+            footer.appendChild(debugButton);
+        });
+    </script>
+</body>
+</html> 

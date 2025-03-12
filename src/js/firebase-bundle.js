@@ -107,7 +107,7 @@ async function getPosts() {
                 postsHtml += `
                     <li>
                         <span class="post-date">${date}</span>
-                        <a href="#">${post.title}</a>
+                        <a href="/pages/article.html?id=${post.id}">${post.title}</a>
                     </li>
                 `;
             });

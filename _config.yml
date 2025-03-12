@@ -43,7 +43,7 @@ menu:
   - title: 关于
     url: /pages/about.html
   - title: 发布
-    url: /pages/publish.html
+    url: /pages/post.html
   - title: 设置
     url: /pages/settings.html
 

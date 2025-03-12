@@ -55,6 +55,7 @@ title: 首页
                     container.innerHTML = '<div class="loading">加载中...</div>';
                 }
 
+                console.log('正在从Firestore获取文章...');
                 const postsRef = collection(db, "posts");
                 let q = query(postsRef, orderBy("createdAt", "desc"), limit(postsPerPage));
                 
@@ -63,9 +64,11 @@ title: 首页
                 }
 
                 const querySnapshot = await getDocs(q);
+                console.log(`查询结果: 找到 ${querySnapshot.size} 篇文章`);
 
                 if (querySnapshot.empty && !isLoadMore) {
-                    container.innerHTML = '<div class="no-posts">暂无文章</div>';
+                    console.log('没有找到文章');
+                    container.innerHTML = '<div class="no-posts">暂无文章，请先<a href="/pages/post.html">发布一篇文章</a></div>';
                     loadMoreBtn.style.display = 'none';
                     return;
                 }

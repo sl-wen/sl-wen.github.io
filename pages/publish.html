@@ -4,23 +4,15 @@ title: 发布文章
 ---
 
 <div class="page page-publish">
-  <div class="publish-form">
-    <div class="form-group">
-      <label for="post-title">文章标题</label>
-      <input type="text" id="post-title" placeholder="请输入文章标题" />
-    </div>
-    <div class="form-group">
-      <label for="post-categories">文章分类</label>
-      <input type="text" id="post-categories" placeholder="分类用逗号分隔，如: 技术,随笔" />
-    </div>
-    <div class="form-group">
-      <label for="post-content">文章内容</label>
-      <textarea id="post-content" placeholder="请输入文章内容（支持Markdown格式）"></textarea>
-    </div>
-    <button onclick="publishPost()">发布文章</button>
+  <div style="text-align: center; margin-top: 50px;">
+    <h2>发布系统已升级</h2>
+    <p>我们的文章发布系统已经升级为基于Firebase的云端存储方案</p>
+    <p>请点击下面的按钮访问新版发布页面</p>
+    <a href="/pages/post.html" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">前往新版发布页面</a>
   </div>
-  <div id="publish-status" style="margin-top: 20px;"></div>
 </div>
 
-<!-- 添加脚本引用 -->
-<script type="text/javascript" src="{{site.baseurl}}/static/js/publish.js"></script> 
+<script>
+  // 自动重定向到新页面
+  window.location.href = '/pages/post.html';
+</script> 

@@ -24,10 +24,26 @@ function formatDate(timestamp) {
     return date.toLocaleDateString('zh-CN', {
         year: 'numeric',
         month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
+        day: '2-digit'
     });
+}
+
+// 按年份分组文章
+function groupPostsByYear(posts) {
+    const groupedPosts = {};
+    
+    posts.forEach(post => {
+        const date = post.createdAt.toDate();
+        const year = date.getFullYear();
+        
+        if (!groupedPosts[year]) {
+            groupedPosts[year] = [];
+        }
+        
+        groupedPosts[year].push(post);
+    });
+    
+    return groupedPosts;
 }
 
 // 获取文章
@@ -48,7 +64,7 @@ async function getPosts() {
         const postsRef = collection(db, "posts");
         
         // 创建查询，按创建时间降序排列
-        const q = query(postsRef, orderBy("createdAt", "desc"), limit(10));
+        const q = query(postsRef, orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
         
         if (statusDiv) {
@@ -60,24 +76,43 @@ async function getPosts() {
             return;
         }
         
-        // 显示文章
-        let postsHtml = '';
+        // 收集所有文章
+        const posts = [];
         querySnapshot.forEach(doc => {
             const data = doc.data();
-            if (statusDiv) {
-                statusDiv.innerHTML += `<p>找到文章: ID=${doc.id}, 标题=${data.title || '无标题'}</p>`;
-            }
+            posts.push({
+                id: doc.id,
+                title: data.title || '无标题',
+                author: data.author || '未知',
+                createdAt: data.createdAt,
+                content: data.content
+            });
+        });
+        
+        // 按年份分组
+        const groupedPosts = groupPostsByYear(posts);
+        
+        // 显示文章
+        let postsHtml = '';
+        
+        // 按年份降序排列
+        const years = Object.keys(groupedPosts).sort((a, b) => b - a);
+        
+        years.forEach(year => {
+            postsHtml += `<h1>${year}</h1><ul class="post-list">`;
             
-            const date = data.createdAt ? data.createdAt.toDate() : new Date();
-            const dateStr = date.toLocaleDateString();
+            groupedPosts[year].forEach(post => {
+                const date = formatDate(post.createdAt);
+                
+                postsHtml += `
+                    <li>
+                        <span class="post-date">${date}</span>
+                        <a href="#">${post.title}</a>
+                    </li>
+                `;
+            });
             
-            postsHtml += `
-                <div class="post-item">
-                    <h3>${data.title || '无标题'}</h3>
-                    <p>作者: ${data.author || '未知'} | 日期: ${dateStr}</p>
-                    <div>${data.content ? marked.parse(data.content) : '无内容'}</div>
-                </div>
-            `;
+            postsHtml += '</ul>';
         });
         
         container.innerHTML = postsHtml;

@@ -1,14 +1,10 @@
----
-layout: page
-title: 发布文章
----
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>发布文章 - 我的博客</title>
-    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/style.css">
     <style>
         .container {
             max-width: 800px;
@@ -87,18 +83,17 @@ title: 发布文章
     </style>
 </head>
 <body>
-    <header>
-        <h1>我的博客</h1>
-        <nav>
-            <ul>
-                <li><a href="/">首页</a></li>
-                <li><a href="/pages/post.html">发布文章</a></li>
-                <li><a href="/about.html">关于</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main>
+    <div class="page">
+        <div class="header">
+            <a href="/" class="logo">
+                <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
+            </a>
+            <div class="nav">
+                <a href="/">首页</a>
+                <a href="/pages/post.html">发布文章</a>
+                <a href="/about.html">关于</a>
+            </div>
+        </div>
         <div class="container">
             <h2>发布新文章</h2>
             <form id="post-form">
@@ -128,11 +123,10 @@ title: 发布文章
 
             <div id="status-messages" style="display: none;"></div>
         </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2023 我的博客. All rights reserved.</p>
-    </footer>
+        <div class="footer">
+            <span class="copyright">&copy; 2023 我的博客. All rights reserved.</span>
+        </div>
+    </div>
 
     <!-- 使用webpack打包后的Post bundle -->
     <script src="/static/js/bundles/post.bundle.js"></script>
@@ -140,7 +134,7 @@ title: 发布文章
     <!-- 调试按钮 -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const footer = document.querySelector('footer');
+            const footer = document.querySelector('.footer');
             const debugButton = document.createElement('button');
             debugButton.textContent = '显示调试信息';
             debugButton.style.marginTop = '10px';

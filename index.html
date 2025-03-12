@@ -1,86 +1,31 @@
----
-layout: page
-title: 首页
----
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的博客</title>
-    <link rel="stylesheet" href="/static/css/main.css">
-    <style>
-        .post-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .post {
-            margin-bottom: 30px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .post-title {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        .post-meta {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-        .post-content {
-            line-height: 1.6;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            font-style: italic;
-            color: #666;
-        }
-        .error {
-            color: red;
-            text-align: center;
-            padding: 20px;
-        }
-        .debug-info {
-            margin-top: 30px;
-            padding: 10px;
-            background-color: #f5f5f5;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 12px;
-            white-space: pre-wrap;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <header>
-        <h1>我的博客</h1>
-        <nav>
-            <ul>
-                <li><a href="/">首页</a></li>
-                <li><a href="/pages/post.html">发布文章</a></li>
-                <li><a href="/about.html">关于</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main>
-        <div class="post-container">
-            <h2>最新文章</h2>
-            <div id="loading" class="loading">加载中...</div>
-            <div id="error" class="error" style="display: none;"></div>
-            <div id="posts"></div>
-            <div id="debug-info" class="debug-info" style="display: none;"></div>
+    <div class="page">
+        <div class="header">
+            <a href="/" class="logo">
+                <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
+            </a>
+            <div class="nav">
+                <a href="/">首页</a>
+                <a href="/pages/post.html">发布文章</a>
+                <a href="/about.html">关于</a>
+            </div>
         </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2023 我的博客. All rights reserved.</p>
-    </footer>
+        <div class="container">
+            <div id="status-messages" style="display: none;"></div>
+            <div id="posts-container"></div>
+        </div>
+        <div class="footer">
+            <span class="copyright">&copy; 2023 我的博客. All rights reserved.</span>
+        </div>
+    </div>
 
     <!-- 使用webpack打包后的Firebase bundle -->
     <script src="/static/js/bundles/firebase.bundle.js"></script>
@@ -89,17 +34,17 @@ title: 首页
     <script>
         // 添加调试按钮
         document.addEventListener('DOMContentLoaded', function() {
-            const footer = document.querySelector('footer');
+            const footer = document.querySelector('.footer');
             const debugButton = document.createElement('button');
             debugButton.textContent = '显示调试信息';
             debugButton.style.marginTop = '10px';
             debugButton.addEventListener('click', function() {
-                const debugInfo = document.getElementById('debug-info');
-                if (debugInfo.style.display === 'none') {
-                    debugInfo.style.display = 'block';
+                const statusDiv = document.getElementById('status-messages');
+                if (statusDiv.style.display === 'none') {
+                    statusDiv.style.display = 'block';
                     debugButton.textContent = '隐藏调试信息';
                 } else {
-                    debugInfo.style.display = 'none';
+                    statusDiv.style.display = 'none';
                     debugButton.textContent = '显示调试信息';
                 }
             });

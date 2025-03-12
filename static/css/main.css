@@ -1,0 +1,164 @@
+/* 基础样式 */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+/* 头部样式 */
+header {
+    background-color: #fff;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    margin: 0;
+    padding: 0 20px;
+    font-size: 1.8em;
+}
+
+/* 导航菜单样式 */
+nav {
+    padding: 0 20px;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+    display: flex;
+}
+
+nav li {
+    margin-right: 20px;
+}
+
+nav a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+nav a:hover {
+    color: #007bff;
+}
+
+/* 主内容区域样式 */
+main {
+    padding: 0;
+    background-color: #fff;
+    max-width: 800px;
+    margin: 0 auto 20px auto;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* 文章容器 */
+.post-container {
+    padding: 20px;
+}
+
+/* 文章列表样式 */
+.post-container h2 {
+    font-size: 1.5em;
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.post-item {
+    margin-bottom: 10px;
+    padding: 0;
+    border-bottom: none;
+    list-style: none;
+}
+
+.post-item h3 {
+    margin: 0;
+    font-size: 1em;
+    font-weight: normal;
+    display: inline;
+}
+
+.post-item p {
+    color: #666;
+    font-size: 0.9em;
+    margin: 0;
+    display: inline;
+    margin-right: 10px;
+}
+
+/* 年份标题 */
+.year-title {
+    font-size: 1.3em;
+    margin: 30px 0 15px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+}
+
+/* 页脚样式 */
+footer {
+    margin-top: 20px;
+    padding: 15px 0;
+    text-align: center;
+    color: #666;
+    font-size: 0.9em;
+    background-color: #fff;
+    border-top: 1px solid #eee;
+}
+
+/* 链接样式 */
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #0056b3;
+}
+
+/* 按钮样式 */
+button {
+    padding: 5px 10px;
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover {
+    background-color: #e9ecef;
+}
+
+/* 加载和错误提示 */
+.loading, .error, .no-posts {
+    padding: 20px;
+    text-align: center;
+}
+
+.error {
+    color: #dc3545;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    nav ul {
+        flex-direction: column;
+    }
+    
+    nav li {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .post-container {
+        padding: 15px;
+    }
+} 

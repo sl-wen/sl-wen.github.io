@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Firebase 测试</title>
+    <style>
+        .post-item {
+            border: 1px solid #ccc;
+            margin: 10px;
+            padding: 10px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Firebase 测试页面</h1>
+    <button id="addTestPost">添加测试文章</button>
+    <div id="posts"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, addDoc, Timestamp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuXDfNvLwiISoMwzcUIwUbaPTl69uRnao",
+            authDomain: "slwen-45838.firebaseapp.com",
+            projectId: "slwen-45838",
+            storageBucket: "slwen-45838.appspot.com",
+            messagingSenderId: "734137620659",
+            appId: "1:734137620659:web:81ce8b971dce766d67b8c6",
+            measurementId: "G-WEBZLW3S59"
+        };
+
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 添加测试文章
+        async function addTestPost() {
+            try {
+                const testPost = {
+                    title: '测试文章 ' + new Date().toLocaleString(),
+                    content: '这是一篇测试文章的内容',
+                    author: '测试作者',
+                    tags: ['测试', 'Firebase'],
+                    createdAt: Timestamp.fromDate(new Date()),
+                    updatedAt: Timestamp.fromDate(new Date())
+                };
+
+                const docRef = await addDoc(collection(db, "posts"), testPost);
+                console.log('测试文章添加成功，ID:', docRef.id);
+                // 重新加载文章列表
+                await getPosts();
+            } catch (error) {
+                console.error('添加测试文章失败:', error);
+                alert('添加文章失败: ' + error.message);
+            }
+        }
+
+        // 获取所有文章
+        async function getPosts() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "posts"));
+                const postsDiv = document.getElementById('posts');
+                
+                if (querySnapshot.empty) {
+                    postsDiv.innerHTML = '<p>数据库中没有文章</p>';
+                    return;
+                }
+
+                let html = '<h2>文章列表：</h2>';
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    html += `
+                        <div class="post-item">
+                            <h3>${data.title || '无标题'}</h3>
+                            <p>ID: ${doc.id}</p>
+                            <p>作者: ${data.author || '未知'}</p>
+                            <p>创建时间: ${data.createdAt ? data.createdAt.toDate().toLocaleString() : '未知'}</p>
+                            <p>内容: ${data.content || '无内容'}</p>
+                            <p>标签: ${data.tags ? data.tags.join(', ') : '无标签'}</p>
+                        </div>
+                    `;
+                });
+                postsDiv.innerHTML = html;
+            } catch (error) {
+                console.error("Error getting documents: ", error);
+                document.getElementById('posts').innerHTML = `<p style="color: red;">获取文章失败: ${error.message}</p>`;
+            }
+        }
+
+        // 设置按钮点击事件
+        document.getElementById('addTestPost').onclick = addTestPost;
+
+        // 页面加载完成后执行
+        window.addEventListener('load', getPosts);
+    </script>
+</body>
+</html> 

@@ -6,40 +6,229 @@ title: 首页
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Your Blog Title</title>
+    <title>{{ site.title }}</title>
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-auth-compat.js"></script>
-    <!-- 你的其他 head 内容 -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js" type="module"></script>
+    <style>
+        .firebase-posts {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .post-item {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .post-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .post-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .post-meta {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .post-content {
+            margin: 15px 0;
+            color: #444;
+            line-height: 1.6;
+        }
+        .post-tags {
+            margin-top: 15px;
+        }
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            margin-right: 8px;
+            background-color: #f0f0f0;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: #666;
+            transition: all 0.2s ease;
+        }
+        .tag:hover {
+            background-color: #e0e0e0;
+        }
+        .year-divider {
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        .year-divider h2 {
+            color: #333;
+            font-size: 1.8em;
+            margin: 0;
+        }
+        .load-more {
+            display: block;
+            width: 200px;
+            margin: 30px auto;
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .load-more:hover {
+            background-color: #45a049;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .no-posts {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.2em;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
 <div class="page page-index">
-  {% for post in site.posts  -%}
-    {%- capture post_year %}{{ post.date | date: "%Y" }}{% endcapture -%}
-    {%- capture post_previous_year %}{{ post.previous.date | date: "%Y" }}{% endcapture -%}
-    {%- capture post_next_year %}{{ post.next.date | date: "%Y" }}{% endcapture -%}
-    {%- if forloop.first or post_next_year != post_year -%}
-    <div class="list-post">
-      <h2 id="{{post_year}}">{{post_year}}</h2>
-      <ul>
-    {%- endif %}
-        <li>
-          <span class="date">{{ post.date | date: "%Y/%m/%d" }}</span>
-          <div class="title">
-            <a href="{{ site.baseurl | append: post.url }}" class="hover-underline">{{ post.title }}</a>
-          </div>
-          <div class="categories">
-            {% for categorie in post.categories -%}
-            <a href="{{site.baseurl}}/pages/categories.html#{{ categorie }}" class="hover-underline">{{ categorie }}</a>
-            {%- endfor %}
-          </div>
-        </li>
-    {%- if forloop.last or post_previous_year != post_year %}
-      </ul>
+    <div class="firebase-posts">
+        <div id="posts-container"></div>
+        <button id="load-more" class="load-more" style="display: none;">加载更多</button>
     </div>
-    {%- endif %}
-  {%- endfor %}
 </div>
+
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+    import { getFirestore, collection, getDocs, query, orderBy, limit, startAfter } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
+    // Firebase 配置
+    const firebaseConfig = {
+        apiKey: "AIzaSyCuXDfNvLwiISoMwzcUIwUbaPTl69uRnao",
+        authDomain: "slwen-45838.firebaseapp.com",
+        projectId: "slwen-45838",
+        storageBucket: "slwen-45838.appspot.com",
+        messagingSenderId: "734137620659",
+        appId: "1:734137620659:web:81ce8b971dce766d67b8c6",
+        measurementId: "G-WEBZLW3S59"
+    };
+
+    // 初始化 Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 全局变量
+    let lastDoc = null;
+    const postsPerPage = 10;
+    let currentYear = null;
+
+    // 格式化日期
+    function formatDate(timestamp) {
+        const date = timestamp.toDate();
+        return date.toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    // 获取文章
+    async function getPosts(isLoadMore = false) {
+        try {
+            const container = document.getElementById('posts-container');
+            const loadMoreBtn = document.getElementById('load-more');
+            
+            if (!isLoadMore) {
+                container.innerHTML = '<div class="loading">加载中...</div>';
+            }
+
+            const postsRef = collection(db, "posts");
+            let q = query(postsRef, orderBy("createdAt", "desc"), limit(postsPerPage));
+            
+            if (isLoadMore && lastDoc) {
+                q = query(postsRef, orderBy("createdAt", "desc"), startAfter(lastDoc), limit(postsPerPage));
+            }
+
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty && !isLoadMore) {
+                container.innerHTML = '<div class="no-posts">暂无文章</div>';
+                loadMoreBtn.style.display = 'none';
+                return;
+            }
+
+            let postsHtml = isLoadMore ? container.innerHTML : '';
+            
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                const postYear = data.createdAt.toDate().getFullYear();
+
+                // 添加年份分隔
+                if (postYear !== currentYear) {
+                    currentYear = postYear;
+                    postsHtml += `
+                        <div class="year-divider">
+                            <h2>${currentYear}年</h2>
+                        </div>
+                    `;
+                }
+
+                postsHtml += `
+                    <div class="post-item">
+                        <div class="post-title">${data.title || '无标题'}</div>
+                        <div class="post-meta">
+                            <span>作者: ${data.author || '未知'}</span> | 
+                            <span>发布时间: ${formatDate(data.createdAt)}</span>
+                        </div>
+                        <div class="post-content">${data.content || '无内容'}</div>
+                        <div class="post-tags">
+                            ${(data.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = postsHtml;
+
+            // 更新最后一篇文章的引用
+            const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+            lastDoc = lastVisible;
+
+            // 显示/隐藏加载更多按钮
+            loadMoreBtn.style.display = querySnapshot.size >= postsPerPage ? 'block' : 'none';
+        } catch (error) {
+            console.error('获取文章失败:', error);
+            document.getElementById('posts-container').innerHTML = `
+                <p style="color: red;">获取文章失败: ${error.message}</p>
+            `;
+        }
+    }
+
+    // 页面加载完成后执行
+    window.addEventListener('load', () => {
+        getPosts();
+        
+        // 添加加载更多事件监听
+        document.getElementById('load-more').addEventListener('click', () => {
+            getPosts(true);
+        });
+    });
+</script>
 </body>
 </html>

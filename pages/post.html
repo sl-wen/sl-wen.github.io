@@ -1,0 +1,25 @@
+---
+layout: page
+title: 发布文章
+---
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>发布文章 - {{ site.title }}</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js" type="module"></script>
+</head>
+<body>
+    <div id="editor-container"></div>
+
+    <script type="module">
+        import { PostEditor } from '/static/js/post-editor.js';
+        
+        // 页面加载完成后初始化编辑器
+        window.addEventListener('load', () => {
+            new PostEditor('editor-container');
+        });
+    </script>
+</body>
+</html> 

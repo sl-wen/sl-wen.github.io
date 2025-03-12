@@ -8,15 +8,15 @@ title: 首页
     <meta charset="utf-8">
     <title>{{ site.title }}</title>
     <!-- Firebase SDK -->
-    <script src="{{site.baseurl}}/static/js/firebase-app.js" type="module"></script>
-    <script src="{{site.baseurl}}/static/js/firebase-firestore.js" type="module"></script>
-    <script src="{{site.baseurl}}/static/js/marked.esm.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js" type="module"></script>
     
     <script type="module">
-        // 加载本地模块
-        import { initializeApp } from '{{site.baseurl}}/static/js/firebase-app.js';
-        import { getFirestore, collection, getDocs } from '{{site.baseurl}}/static/js/firebase-firestore.js';
-        import { marked } from '{{site.baseurl}}/static/js/marked.esm.js';
+        // 导入Firebase模块
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js';
+        import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
 
         // Firebase 配置
         const firebaseConfig = {
@@ -47,7 +47,10 @@ title: 首页
                 // 尝试获取文章
                 statusDiv.innerHTML += '<p>开始从 Firestore 获取文章数据...</p>';
                 const postsRef = collection(db, "posts");
-                const querySnapshot = await getDocs(postsRef);
+                
+                // 创建查询，按创建时间降序排列
+                const q = query(postsRef, orderBy("createdAt", "desc"), limit(10));
+                const querySnapshot = await getDocs(q);
                 
                 statusDiv.innerHTML += `<p>查询完成，找到 ${querySnapshot.size} 篇文章</p>`;
                 

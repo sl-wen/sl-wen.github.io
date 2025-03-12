@@ -8,15 +8,15 @@ title: 发布文章
     <meta charset="utf-8">
     <title>发布文章</title>
     <!-- Firebase SDK -->
-    <script src="{{site.baseurl}}/static/js/firebase-app.js" type="module"></script>
-    <script src="{{site.baseurl}}/static/js/firebase-firestore.js" type="module"></script>
-    <script src="{{site.baseurl}}/static/js/marked.esm.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js" type="module"></script>
     
     <script type="module">
-        // 加载本地模块
-        import { initializeApp } from '{{site.baseurl}}/static/js/firebase-app.js';
-        import { getFirestore, collection, addDoc, Timestamp } from '{{site.baseurl}}/static/js/firebase-firestore.js';
-        import { marked } from '{{site.baseurl}}/static/js/marked.esm.js';
+        // 导入Firebase模块
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js';
+        import { getFirestore, collection, addDoc, Timestamp } from 'https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js';
+        import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
 
         // Firebase 配置
         const firebaseConfig = {

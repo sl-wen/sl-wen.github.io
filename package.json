@@ -2,7 +2,12 @@
   "name": "sl-wen-blog",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "migrate": "node static/js/migrate-posts.js"
+  },
   "dependencies": {
-    "firebase": "^9.x.x"
+    "firebase": "^10.7.2",
+    "glob": "^10.3.10",
+    "gray-matter": "^4.0.3"
   }
 } 

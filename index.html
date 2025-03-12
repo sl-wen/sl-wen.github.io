@@ -8,8 +8,129 @@ title: 首页
     <meta charset="utf-8">
     <title>{{ site.title }}</title>
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js" type="module"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js" type="module"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, orderBy, limit, startAfter } from 'https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js';
+        import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
+
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuXDfNvLwiISoMwzcUIwUbaPTl69uRnao",
+            authDomain: "slwen-45838.firebaseapp.com",
+            projectId: "slwen-45838",
+            storageBucket: "slwen-45838.appspot.com",
+            messagingSenderId: "734137620659",
+            appId: "1:734137620659:web:81ce8b971dce766d67b8c6",
+            measurementId: "G-WEBZLW3S59"
+        };
+
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 全局变量
+        let lastDoc = null;
+        const postsPerPage = 10;
+        let currentYear = null;
+
+        // 格式化日期
+        function formatDate(timestamp) {
+            const date = timestamp.toDate();
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // 获取文章
+        async function getPosts(isLoadMore = false) {
+            try {
+                const container = document.getElementById('posts-container');
+                const loadMoreBtn = document.getElementById('load-more');
+                
+                if (!isLoadMore) {
+                    container.innerHTML = '<div class="loading">加载中...</div>';
+                }
+
+                const postsRef = collection(db, "posts");
+                let q = query(postsRef, orderBy("createdAt", "desc"), limit(postsPerPage));
+                
+                if (isLoadMore && lastDoc) {
+                    q = query(postsRef, orderBy("createdAt", "desc"), startAfter(lastDoc), limit(postsPerPage));
+                }
+
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty && !isLoadMore) {
+                    container.innerHTML = '<div class="no-posts">暂无文章</div>';
+                    loadMoreBtn.style.display = 'none';
+                    return;
+                }
+
+                let postsHtml = isLoadMore ? container.innerHTML : '';
+                
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const postYear = data.createdAt.toDate().getFullYear();
+
+                    // 添加年份分隔
+                    if (postYear !== currentYear) {
+                        currentYear = postYear;
+                        postsHtml += `
+                            <div class="year-divider">
+                                <h2>${currentYear}年</h2>
+                            </div>
+                        `;
+                    }
+
+                    postsHtml += `
+                        <div class="post-item">
+                            <div class="post-title">${data.title || '无标题'}</div>
+                            <div class="post-meta">
+                                <span>作者: ${data.author || '未知'}</span> | 
+                                <span>发布时间: ${formatDate(data.createdAt)}</span>
+                            </div>
+                            <div class="post-content">${marked(data.content || '')}</div>
+                            <div class="post-tags">
+                                ${(data.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (!isLoadMore) {
+                    container.innerHTML = postsHtml;
+                } else {
+                    container.innerHTML += postsHtml;
+                }
+
+                // 更新最后一篇文章的引用
+                const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+                lastDoc = lastVisible;
+
+                // 显示/隐藏加载更多按钮
+                loadMoreBtn.style.display = querySnapshot.size >= postsPerPage ? 'block' : 'none';
+            } catch (error) {
+                console.error('获取文章失败:', error);
+                document.getElementById('posts-container').innerHTML = `
+                    <p style="color: red;">获取文章失败: ${error.message}</p>
+                `;
+            }
+        }
+
+        // 页面加载完成后执行
+        window.addEventListener('load', () => {
+            getPosts();
+            
+            // 添加加载更多事件监听
+            document.getElementById('load-more').addEventListener('click', () => {
+                getPosts(true);
+            });
+        });
+    </script>
     <style>
         .firebase-posts {
             max-width: 1200px;
@@ -46,6 +167,21 @@ title: 首页
             margin: 15px 0;
             color: #444;
             line-height: 1.6;
+        }
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+        }
+        .post-content pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .post-content code {
+            background: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
         }
         .post-tags {
             margin-top: 15px;
@@ -111,124 +247,5 @@ title: 首页
         <button id="load-more" class="load-more" style="display: none;">加载更多</button>
     </div>
 </div>
-
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-    import { getFirestore, collection, getDocs, query, orderBy, limit, startAfter } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
-
-    // Firebase 配置
-    const firebaseConfig = {
-        apiKey: "AIzaSyCuXDfNvLwiISoMwzcUIwUbaPTl69uRnao",
-        authDomain: "slwen-45838.firebaseapp.com",
-        projectId: "slwen-45838",
-        storageBucket: "slwen-45838.appspot.com",
-        messagingSenderId: "734137620659",
-        appId: "1:734137620659:web:81ce8b971dce766d67b8c6",
-        measurementId: "G-WEBZLW3S59"
-    };
-
-    // 初始化 Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // 全局变量
-    let lastDoc = null;
-    const postsPerPage = 10;
-    let currentYear = null;
-
-    // 格式化日期
-    function formatDate(timestamp) {
-        const date = timestamp.toDate();
-        return date.toLocaleDateString('zh-CN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-
-    // 获取文章
-    async function getPosts(isLoadMore = false) {
-        try {
-            const container = document.getElementById('posts-container');
-            const loadMoreBtn = document.getElementById('load-more');
-            
-            if (!isLoadMore) {
-                container.innerHTML = '<div class="loading">加载中...</div>';
-            }
-
-            const postsRef = collection(db, "posts");
-            let q = query(postsRef, orderBy("createdAt", "desc"), limit(postsPerPage));
-            
-            if (isLoadMore && lastDoc) {
-                q = query(postsRef, orderBy("createdAt", "desc"), startAfter(lastDoc), limit(postsPerPage));
-            }
-
-            const querySnapshot = await getDocs(q);
-
-            if (querySnapshot.empty && !isLoadMore) {
-                container.innerHTML = '<div class="no-posts">暂无文章</div>';
-                loadMoreBtn.style.display = 'none';
-                return;
-            }
-
-            let postsHtml = isLoadMore ? container.innerHTML : '';
-            
-            querySnapshot.forEach(doc => {
-                const data = doc.data();
-                const postYear = data.createdAt.toDate().getFullYear();
-
-                // 添加年份分隔
-                if (postYear !== currentYear) {
-                    currentYear = postYear;
-                    postsHtml += `
-                        <div class="year-divider">
-                            <h2>${currentYear}年</h2>
-                        </div>
-                    `;
-                }
-
-                postsHtml += `
-                    <div class="post-item">
-                        <div class="post-title">${data.title || '无标题'}</div>
-                        <div class="post-meta">
-                            <span>作者: ${data.author || '未知'}</span> | 
-                            <span>发布时间: ${formatDate(data.createdAt)}</span>
-                        </div>
-                        <div class="post-content">${data.content || '无内容'}</div>
-                        <div class="post-tags">
-                            ${(data.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = postsHtml;
-
-            // 更新最后一篇文章的引用
-            const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
-            lastDoc = lastVisible;
-
-            // 显示/隐藏加载更多按钮
-            loadMoreBtn.style.display = querySnapshot.size >= postsPerPage ? 'block' : 'none';
-        } catch (error) {
-            console.error('获取文章失败:', error);
-            document.getElementById('posts-container').innerHTML = `
-                <p style="color: red;">获取文章失败: ${error.message}</p>
-            `;
-        }
-    }
-
-    // 页面加载完成后执行
-    window.addEventListener('load', () => {
-        getPosts();
-        
-        // 添加加载更多事件监听
-        document.getElementById('load-more').addEventListener('click', () => {
-            getPosts(true);
-        });
-    });
-</script>
 </body>
 </html>

@@ -1,30 +1,247 @@
----
-layout: page
-title: 文章分类
----
-
-<div class="page page-categories">
-  <div class="list-category">
-    <h2>所有分类</h2>
-    <div>
-      {%- for category in site.categories %}
-      <a href="javascript:document.getElementById('{{ category[0] }}').scrollIntoView()">{{ category[0] }}</a>
-      {%- endfor %}
-    </div>
-  </div>
-  {%- for category in site.categories %}
-  <div class="list-post">
-    <h2 id="{{ category[0] }}">{{ category[0] }}</h2>
-    <ul>
-      {%- for post in category[1] %}
-      <li>
-        <span class="date">{{ post.date | date: "%Y/%m/%d" }}</span>
-        <div class="title">
-          <a href="{{ site.baseurl | append: post.url }}" class="hover-underline">{{ post.title }}</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>归类 - 我的博客</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .categories-container {
+            padding: 20px 0;
+        }
+        
+        .categories-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: normal;
+            text-align: center;
+        }
+        
+        .category-list {
+            margin-bottom: 30px;
+        }
+        
+        .category-name {
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: normal;
+        }
+        
+        .post-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .post-list li {
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            display: flex;
+            align-items: baseline;
+        }
+        
+        .post-date {
+            color: #666;
+            font-size: 14px;
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+        
+        .post-list a {
+            color: #333;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        
+        .post-list a:hover {
+            color: #007bff;
+        }
+        
+        .loading, .error {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .error {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <a href="/" class="logo">
+                <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
+            </a>
+            <div class="nav">
+                <a href="/">首页</a>
+                <a href="/pages/categories.html">归类</a>
+                <a href="/pages/search.html">搜索</a>
+                <a href="/pages/links.html">友链</a>
+                <a href="/about.html">关于</a>
+                <a href="/pages/post.html">发布</a>
+            </div>
         </div>
-      </li>
-      {%- endfor %}
-    </ul>
-  </div>
-  {%- endfor %}
-</div>
+        <div class="container">
+            <div class="categories-container">
+                <h1 class="categories-title">文章分类</h1>
+                <div id="categories-container">
+                    <div class="loading">加载中...</div>
+                </div>
+                <div id="status-messages" style="display: none;"></div>
+            </div>
+        </div>
+        <div class="footer">
+            <span class="copyright">&copy; 2023 我的博客. All rights reserved.</span>
+        </div>
+    </div>
+
+    <!-- 分类页面脚本 -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuXDfNvLwiISoMwzcUIwUbaPTl69uRnao",
+            authDomain: "slwen-45838.firebaseapp.com",
+            projectId: "slwen-45838",
+            storageBucket: "slwen-45838.appspot.com",
+            messagingSenderId: "734137620659",
+            appId: "1:734137620659:web:81ce8b971dce766d67b8c6",
+            measurementId: "G-WEBZLW3S59"
+        };
+        
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // 格式化日期
+        function formatDate(timestamp) {
+            const date = timestamp.toDate();
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+        
+        // 获取文章分类
+        async function getCategories() {
+            const container = document.getElementById('categories-container');
+            const statusDiv = document.getElementById('status-messages');
+            
+            try {
+                if (statusDiv) {
+                    statusDiv.innerHTML += '<p>开始从 Firestore 获取文章数据...</p>';
+                }
+                
+                // 获取所有文章
+                const postsRef = collection(db, "posts");
+                const q = query(postsRef, orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                if (statusDiv) {
+                    statusDiv.innerHTML += `<p>查询完成，找到 ${querySnapshot.size} 篇文章</p>`;
+                }
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<div class="no-posts">暂无文章，请先<a href="/pages/post.html">发布一篇文章</a></div>';
+                    return;
+                }
+                
+                // 按标签分组文章
+                const categorizedPosts = {};
+                
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const tags = data.tags || ['未分类'];
+                    
+                    tags.forEach(tag => {
+                        if (!categorizedPosts[tag]) {
+                            categorizedPosts[tag] = [];
+                        }
+                        
+                        categorizedPosts[tag].push({
+                            id: doc.id,
+                            title: data.title || '无标题',
+                            createdAt: data.createdAt
+                        });
+                    });
+                });
+                
+                // 显示分类
+                let categoriesHtml = '';
+                
+                // 按分类名称排序
+                const categories = Object.keys(categorizedPosts).sort();
+                
+                categories.forEach(category => {
+                    const posts = categorizedPosts[category];
+                    
+                    categoriesHtml += `
+                        <div class="category-list">
+                            <h2 class="category-name">${category}</h2>
+                            <ul class="post-list">
+                    `;
+                    
+                    posts.forEach(post => {
+                        const date = post.createdAt ? formatDate(post.createdAt) : '未知日期';
+                        
+                        categoriesHtml += `
+                            <li>
+                                <span class="post-date">${date}</span>
+                                <a href="/pages/article.html?id=${post.id}">${post.title}</a>
+                            </li>
+                        `;
+                    });
+                    
+                    categoriesHtml += `
+                            </ul>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = categoriesHtml;
+                
+                if (statusDiv) {
+                    statusDiv.innerHTML += '<p>分类渲染完成</p>';
+                }
+                
+            } catch (error) {
+                console.error('获取分类失败:', error);
+                container.innerHTML = `<div class="error">加载分类失败: ${error.message}</div>`;
+                
+                if (statusDiv) {
+                    statusDiv.innerHTML += `
+                        <p style="color: red;">错误: ${error.message}</p>
+                        <p>错误详情: ${JSON.stringify(error)}</p>
+                    `;
+                }
+            }
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', () => {
+            getCategories();
+            
+            // 添加调试按钮
+            const footer = document.querySelector('.footer');
+            const debugButton = document.createElement('button');
+            debugButton.textContent = '显示调试信息';
+            debugButton.style.marginTop = '10px';
+            debugButton.addEventListener('click', function() {
+                const statusDiv = document.getElementById('status-messages');
+                if (statusDiv.style.display === 'none') {
+                    statusDiv.style.display = 'block';
+                    debugButton.textContent = '隐藏调试信息';
+                } else {
+                    statusDiv.style.display = 'none';
+                    debugButton.textContent = '显示调试信息';
+                }
+            });
+            footer.appendChild(debugButton);
+        });
+    </script>
+</body>
+</html>

@@ -7,91 +7,6 @@ title: 首页
 <head>
     <meta charset="utf-8">
     <title>{{ site.title }}</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js" type="module"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js" type="module"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js" type="module"></script>
-    
-    <script type="module">
-        // 导入Firebase模块
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js';
-        import { getFirestore, collection, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js';
-        import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
-
-        // Firebase 配置
-        const firebaseConfig = {
-            apiKey: "AIzaSyCuXDfNvLwiISoMwzcUIwUbaPTl69uRnao",
-            authDomain: "slwen-45838.firebaseapp.com",
-            projectId: "slwen-45838",
-            storageBucket: "slwen-45838.appspot.com",
-            messagingSenderId: "734137620659",
-            appId: "1:734137620659:web:81ce8b971dce766d67b8c6",
-            measurementId: "G-WEBZLW3S59"
-        };
-
-        // 页面加载完成后执行
-        window.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const statusDiv = document.getElementById('status-messages');
-                statusDiv.innerHTML += '<p>开始初始化 Firebase...</p>';
-                
-                // 初始化 Firebase
-                const app = initializeApp(firebaseConfig);
-                const db = getFirestore(app);
-                statusDiv.innerHTML += '<p>Firebase 初始化成功</p>';
-                
-                // 获取文章列表容器
-                const container = document.getElementById('posts-container');
-                container.innerHTML = '<div class="loading">加载中...</div>';
-                
-                // 尝试获取文章
-                statusDiv.innerHTML += '<p>开始从 Firestore 获取文章数据...</p>';
-                const postsRef = collection(db, "posts");
-                
-                // 创建查询，按创建时间降序排列
-                const q = query(postsRef, orderBy("createdAt", "desc"), limit(10));
-                const querySnapshot = await getDocs(q);
-                
-                statusDiv.innerHTML += `<p>查询完成，找到 ${querySnapshot.size} 篇文章</p>`;
-                
-                if (querySnapshot.empty) {
-                    container.innerHTML = '<div class="no-posts">暂无文章，请先<a href="/pages/post.html">发布一篇文章</a></div>';
-                    return;
-                }
-                
-                // 显示文章
-                let postsHtml = '';
-                querySnapshot.forEach(doc => {
-                    const data = doc.data();
-                    statusDiv.innerHTML += `<p>找到文章: ID=${doc.id}, 标题=${data.title || '无标题'}</p>`;
-                    
-                    const date = data.createdAt ? data.createdAt.toDate() : new Date();
-                    const dateStr = date.toLocaleDateString();
-                    
-                    postsHtml += `
-                        <div class="post-item">
-                            <h3>${data.title || '无标题'}</h3>
-                            <p>作者: ${data.author || '未知'} | 日期: ${dateStr}</p>
-                            <div>${data.content ? marked(data.content) : '无内容'}</div>
-                        </div>
-                    `;
-                });
-                
-                container.innerHTML = postsHtml;
-                statusDiv.innerHTML += '<p>文章渲染完成</p>';
-                
-            } catch (error) {
-                console.error('出错:', error);
-                document.getElementById('status-messages').innerHTML += `
-                    <p style="color: red;">错误: ${error.message}</p>
-                    <p>错误详情: ${JSON.stringify(error)}</p>
-                `;
-                document.getElementById('posts-container').innerHTML = `
-                    <div class="error">加载文章失败，请查看控制台和下方错误信息</div>
-                `;
-            }
-        });
-    </script>
     <style>
         .debug-panel {
             margin: 20px;
@@ -141,5 +56,122 @@ title: 首页
         <div id="posts-container"></div>
     </div>
 </div>
+
+<!-- 使用内联脚本代替外部脚本 -->
+<script>
+    // 简单的Markdown转HTML函数
+    function marked(markdown) {
+        if (!markdown) return '';
+        
+        // 处理标题
+        let html = markdown
+            .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
+            .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
+            .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+            .replace(/^#### (.*?)$/gm, '<h4>$1</h4>');
+        
+        // 处理段落
+        html = html.replace(/^([^<\n].*?)$/gm, '<p>$1</p>');
+        
+        // 处理加粗
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        
+        // 处理斜体
+        html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        
+        // 处理列表
+        html = html.replace(/^- (.*?)$/gm, '<li>$1</li>');
+        html = html.replace(/(<li>.*?<\/li>\n?)+/g, '<ul>$&</ul>');
+        
+        // 处理代码
+        html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+        
+        // 处理链接
+        html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+        
+        return html;
+    }
+
+    // 模拟数据
+    const mockPosts = [
+        {
+            id: 'post1',
+            data: {
+                title: '测试文章1',
+                content: '# 这是一个测试文章\n\n这是正文内容，支持Markdown格式。',
+                author: '测试用户',
+                createdAt: {
+                    toDate: function() { return new Date('2024-03-12T10:00:00'); }
+                },
+                tags: ['测试', 'Markdown']
+            }
+        },
+        {
+            id: 'post2',
+            data: {
+                title: '测试文章2',
+                content: '## 第二篇测试文章\n\n- 项目1\n- 项目2\n- 项目3',
+                author: '测试用户',
+                createdAt: {
+                    toDate: function() { return new Date('2024-03-11T15:30:00'); }
+                },
+                tags: ['测试', '列表']
+            }
+        }
+    ];
+
+    // 页面加载完成后执行
+    window.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const statusDiv = document.getElementById('status-messages');
+            statusDiv.innerHTML += '<p>开始加载模拟数据...</p>';
+            
+            // 获取文章列表容器
+            const container = document.getElementById('posts-container');
+            container.innerHTML = '<div class="loading">加载中...</div>';
+            
+            // 使用模拟数据
+            statusDiv.innerHTML += '<p>使用模拟数据代替Firebase...</p>';
+            
+            statusDiv.innerHTML += `<p>找到 ${mockPosts.length} 篇文章</p>`;
+            
+            if (mockPosts.length === 0) {
+                container.innerHTML = '<div class="no-posts">暂无文章，请先<a href="/pages/post.html">发布一篇文章</a></div>';
+                return;
+            }
+            
+            // 显示文章
+            let postsHtml = '';
+            mockPosts.forEach(doc => {
+                const data = doc.data;
+                statusDiv.innerHTML += `<p>找到文章: ID=${doc.id}, 标题=${data.title || '无标题'}</p>`;
+                
+                const date = data.createdAt ? data.createdAt.toDate() : new Date();
+                const dateStr = date.toLocaleDateString();
+                
+                postsHtml += `
+                    <div class="post-item">
+                        <h3>${data.title || '无标题'}</h3>
+                        <p>作者: ${data.author || '未知'} | 日期: ${dateStr}</p>
+                        <div>${data.content ? marked(data.content) : '无内容'}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = postsHtml;
+            statusDiv.innerHTML += '<p>文章渲染完成</p>';
+            
+        } catch (error) {
+            console.error('出错:', error);
+            document.getElementById('status-messages').innerHTML += `
+                <p style="color: red;">错误: ${error.message}</p>
+                <p>错误详情: ${JSON.stringify(error)}</p>
+            `;
+            document.getElementById('posts-container').innerHTML = `
+                <div class="error">加载文章失败，请查看控制台和下方错误信息</div>
+            `;
+        }
+    });
+</script>
 </body>
 </html>

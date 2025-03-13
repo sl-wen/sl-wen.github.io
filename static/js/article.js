@@ -18,12 +18,21 @@ if (articleId) {
       document.querySelector('.article-content').innerHTML = article.content;
     })
     .catch(error => {
-      console.error('加载文章失败:', error);
-      document.querySelector('.article-content').innerHTML = `
-        <div class="error">
-          <p>加载文章失败，请稍后重试。</p>
-        </div>
-      `;
+      if (error.message === 'FirebaseError: Failed to get document because the client is offline.') {
+        console.error('加载文章失败:', error);
+        document.querySelector('.article-content').innerHTML = `
+          <div class="error">
+            <p>网络连接不可用，请检查您的网络连接。</p>
+          </div>
+        `;
+      } else {
+        console.error('加载文章失败:', error);
+        document.querySelector('.article-content').innerHTML = `
+          <div class="error">
+            <p>加载文章失败，请稍后重试。</p>
+          </div>
+        `;
+      }
     });
 } else {
   document.querySelector('.article-content').innerHTML = `

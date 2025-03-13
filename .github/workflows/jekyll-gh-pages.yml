@@ -2,7 +2,7 @@ name: Deploy Jekyll site to Pages
 
 on:
   push:
-    branches: ["main"]  # 设置为你的默认分支
+    branches: ["master"]  # 设置为你的默认分支
   workflow_dispatch:    # 允许手动触发
 
 # 设置GITHUB_TOKEN的权限

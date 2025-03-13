@@ -1,3 +1,137 @@
+# Firebase Jekyll 博客系统
+
+这是一个基于Firebase和Jekyll的博客系统，将静态网站生成与动态内容管理相结合。本系统使用Firebase Firestore作为数据库存储文章内容，同时保留了Jekyll的静态网站生成能力，实现了一个简洁、高效的博客平台。
+
+## 功能特点
+
+- **Firebase集成**：使用Firestore数据库存储和管理博客文章
+- **Markdown支持**：使用Marked.js解析Markdown格式的文章内容
+- **实时预览**：在发布页面支持Markdown实时预览
+- **文章分类**：支持按标签对文章进行分类
+- **响应式设计**：适配各种屏幕尺寸的设备
+- **简洁界面**：参考blog.tmaize.net的简洁设计风格
+- **Webpack打包**：使用Webpack打包JavaScript代码，解决CSP问题
+
+## 技术栈
+
+- **前端**：HTML, CSS, JavaScript
+- **数据库**：Firebase Firestore
+- **静态生成**：Jekyll
+- **构建工具**：Webpack, Babel
+- **Markdown解析**：Marked.js
+- **依赖管理**：npm
+
+## 项目结构
+
+```
+├── _site/                  # Jekyll生成的静态网站文件
+├── pages/                  # 网站页面
+│   ├── article.html        # 文章详情页
+│   ├── categories.html     # 文章分类页
+│   ├── post.html           # 文章发布页
+     ── about.html          # 关于页面
+│   └── search.html         # 搜索页面
+├── src/                    # 源代码
+│   └── js/                 # JavaScript源文件
+│       ├── firebase-bundle.js  # 主页Firebase功能
+│       └── post-bundle.js      # 发布页Firebase功能
+├── static/                 # 静态资源
+│   ├── css/                # 样式表
+│   ├── img/                # 图片资源
+│   └── js/                 # JavaScript文件
+│       ├── bundles/        # Webpack打包后的文件
+│       └── migrate-posts.js # 迁移脚本
+├── index.html              # 主页
+├── package.json            # npm配置文件
+├── webpack.config.js       # Webpack配置
+└── _config.yml             # Jekyll配置
+```
+
+## 安装与使用
+
+### 前提条件
+
+- Node.js 和 npm
+- Ruby 和 Jekyll
+- Firebase 账号和项目
+
+### 安装步骤
+
+1. 克隆仓库
+   ```
+   git clone https://github.com/yourusername/your-repo.git
+   cd your-repo
+   ```
+
+2. 安装依赖
+   ```
+   npm install
+   ```
+
+3. 配置Firebase
+   - 在Firebase控制台创建一个新项目
+   - 获取Firebase配置信息
+   - 更新`src/js/firebase-bundle.js`和`src/js/post-bundle.js`中的Firebase配置
+
+4. 构建JavaScript包
+   ```
+   npx webpack
+   ```
+
+5. 构建Jekyll网站
+   ```
+   jekyll build
+   ```
+
+6. 本地运行
+   ```
+   jekyll serve
+   ```
+
+### 迁移现有Markdown文章
+
+如果您有现有的Jekyll Markdown文章，可以使用迁移脚本将它们导入到Firestore：
+
+```
+npm run migrate
+```
+
+## 使用方法
+
+### 发布文章
+
+1. 访问 `/pages/post.html` 页面
+2. 填写文章标题、作者和标签（用逗号分隔）
+3. 在编辑器中使用Markdown格式编写文章内容
+4. 实时预览区域会显示文章的渲染效果
+5. 点击"发布文章"按钮将文章保存到Firestore数据库
+6. 发布成功后会自动跳转到首页
+
+### 浏览文章
+
+1. **浏览文章**：访问主页查看所有文章列表
+2. **查看文章**：点击文章标题查看详细内容
+3. **分类浏览**：访问`/pages/categories.html`按分类查看文章
+
+## 自定义
+
+- **样式**：修改`static/css/style.css`自定义网站外观
+- **布局**：修改HTML文件自定义页面布局
+- **配置**：修改`_config.yml`调整Jekyll配置
+
+## 部署
+
+1. 构建生产版本
+   ```
+   jekyll build
+   ```
+
+2. 将`_site`目录部署到您的Web服务器或静态网站托管服务（如Netlify、GitHub Pages等）
+
+## 许可证
+
+本项目基于MIT许可证开源。
+
 # 介绍
 
 [![Language](https://img.shields.io/badge/Jekyll-Theme-blue)](https://github.com/sl-wen/slwen)

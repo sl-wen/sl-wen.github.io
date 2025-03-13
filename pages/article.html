@@ -24,6 +24,41 @@
             text-align: center;
         }
         
+        .article-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .edit-button, .delete-button {
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+        }
+        
+        .edit-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+        
+        .delete-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+        }
+        
+        .edit-button:hover {
+            background-color: #45a049;
+        }
+        
+        .delete-button:hover {
+            background-color: #d32f2f;
+        }
+        
         .article-content {
             line-height: 1.8;
         }
@@ -95,7 +130,7 @@
                 <a href="/pages/categories.html">归类</a>
                 <a href="/pages/search.html">搜索</a>
                 <a href="/pages/links.html">友链</a>
-                <a href="/about.html">关于</a>
+                <a href="/pages/about.html">关于</a>
                 <a href="/pages/post.html">发布</a>
             </div>
         </div>
@@ -179,6 +214,10 @@
                         <div class="article-meta">
                             ${data.author || '未知'} 于 ${date} 发布
                         </div>
+                        <div class="article-actions">
+                            <a href="/pages/edit.html?id=${articleId}" class="edit-button">编辑</a>
+                            <button onclick="deleteArticle('${articleId}')" class="delete-button">删除</button>
+                        </div>
                         <div class="article-content">
                             ${marked.parse(data.content || '无内容')}
                         </div>
@@ -209,7 +248,60 @@
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', () => {
             getArticle();
+        });
+    </script>
+    
+    <!-- 添加点击特效 -->
+    <script src="/static/js/click-effect.js"></script>
+    
+    <!-- 删除文章功能 -->
+    <script>
+        // 删除文章
+        async function deleteArticle(articleId) {
+            if (!confirm('确定要删除这篇文章吗？此操作不可恢复！')) {
+                return;
+            }
             
+            try {
+                // 等待Firebase操作模块加载完成
+                await waitForFirebaseOperations();
+                
+                // 删除文章
+                await window.firebaseArticleOperations.deleteArticle(articleId);
+                
+                alert('文章删除成功！');
+                
+                // 跳转到首页
+                window.location.href = '/';
+                
+            } catch (error) {
+                console.error('删除文章失败:', error);
+                alert(`删除文章失败: ${error.message}`);
+            }
+        }
+        
+        // 等待Firebase操作模块加载完成
+        function waitForFirebaseOperations() {
+            return new Promise((resolve) => {
+                if (window.firebaseArticleOperations) {
+                    resolve();
+                    return;
+                }
+                
+                // 加载Firebase操作脚本
+                const script = document.createElement('script');
+                script.type = 'module';
+                script.src = '/static/js/firebase-article-operations.js';
+                document.body.appendChild(script);
+                
+                const checkInterval = setInterval(() => {
+                    if (window.firebaseArticleOperations) {
+                        clearInterval(checkInterval);
+                        resolve();
+                    }
+                }, 100);
+            });
+        }
     </script>
 </body>
 </html> 

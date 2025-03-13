@@ -7,13 +7,13 @@ const __dirname = path.dirname(__filename);
 export default {
   mode: 'production',
   entry: {
-    firebase: './src/js/firebase-bundle.js',
-    post: './src/js/post-bundle.js'
+    article: './static/js/article.js',
+    firebase: './static/js/firebase.js',
+    articleService: './static/js/articleService.js'
   },
   output: {
     filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'static/js/bundles'),
-    publicPath: '/static/js/bundles/'
+    path: path.resolve(__dirname, 'static/js/dist'),
   },
   module: {
     rules: [
@@ -29,7 +29,7 @@ export default {
       }
     ]
   },
-  optimization: {
-    minimize: true
+  resolve: {
+    extensions: ['.js']
   }
 }; 

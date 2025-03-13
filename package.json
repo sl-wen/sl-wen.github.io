@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "migrate": "node static/js/migrate-posts.js"
+    "migrate": "node static/js/migrate-posts.js",
+    "build": "webpack",
+    "watch": "webpack --watch"
   },
   "dependencies": {
     "firebase": "^10.14.1",

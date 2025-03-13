@@ -1,7 +1,5 @@
 /*
   Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://firebase.googleapis.com https://firestore.googleapis.com; frame-src 'self' https://*.firebaseapp.com https://*.firebase.com; img-src 'self' https://*.google.com https://www.gstatic.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net;
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
-  X-Content-Type-Options: nosniff 
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin 

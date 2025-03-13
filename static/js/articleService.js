@@ -19,7 +19,7 @@ export async function getArticle(id) {
     
     // 使用重试逻辑获取文章
     const article = await retry(async () => {
-      const docRef = doc(db, 'articles', id);
+      const docRef = doc(db, 'posts', id);
       console.log('文档引用创建成功');
       
       const docSnap = await getDoc(docRef);
@@ -51,7 +51,7 @@ export async function getArticle(id) {
 // 获取所有文章
 export async function getAllArticles() {
   try {
-    const articlesRef = collection(db, 'articles');
+    const articlesRef = collection(db, 'posts');
     const querySnapshot = await getDocs(articlesRef);
     const articles = [];
     
@@ -72,7 +72,7 @@ export async function getAllArticles() {
 // 按标签获取文章
 export async function getArticlesByTag(tag) {
   try {
-    const articlesRef = collection(db, 'articles');
+    const articlesRef = collection(db, 'posts');
     const q = query(articlesRef, where('tags', 'array-contains', tag));
     const querySnapshot = await getDocs(q);
     const articles = [];

@@ -4,20 +4,40 @@ import { getArticle } from './articleService.js';
 const urlParams = new URLSearchParams(window.location.search);
 const articleId = urlParams.get('id');
 
+// 获取容器元素
+const articleContainer = document.getElementById('article-container');
+const statusMessages = document.getElementById('status-messages');
+
+// 显示错误信息
+function showError(message, details = '') {
+  if (articleContainer) {
+    articleContainer.innerHTML = `
+      <div class="error">
+        <p>${message}</p>
+        ${details ? `<p class="error-details">错误详情: ${details}</p>` : ''}
+      </div>
+    `;
+  }
+}
+
 if (articleId) {
   console.log('正在加载文章:', articleId);
   // 获取文章内容
   getArticle(articleId)
     .then(article => {
       console.log('文章加载成功:', article);
-      // 更新页面内容
-      document.title = article.title;
-      document.querySelector('h1').textContent = article.title;
-      document.querySelector('.article-meta').innerHTML = `
-        <span class="date">${new Date(article.date).toLocaleDateString()}</span>
-        <span class="tags">${article.tags.join(', ')}</span>
-      `;
-      document.querySelector('.article-content').innerHTML = article.content;
+      if (articleContainer) {
+        // 更新页面内容
+        document.title = `${article.title} - 我的博客`;
+        articleContainer.innerHTML = `
+          <h1 class="article-title">${article.title}</h1>
+          <div class="article-meta">
+            <span class="date">${new Date(article.createdAt?.toDate() || new Date()).toLocaleDateString('zh-CN')}</span>
+            ${article.tags ? `<span class="tags">标签：${article.tags.join(', ')}</span>` : ''}
+          </div>
+          <div class="article-content">${article.content || ''}</div>
+        `;
+      }
     })
     .catch(error => {
       console.error('加载文章失败:', error);
@@ -29,17 +49,8 @@ if (articleId) {
         errorMessage = '未找到该文章。';
       }
       
-      document.querySelector('.article-content').innerHTML = `
-        <div class="error">
-          <p>${errorMessage}</p>
-          <p class="error-details">错误详情: ${error.message}</p>
-        </div>
-      `;
+      showError(errorMessage, error.message);
     });
 } else {
-  document.querySelector('.article-content').innerHTML = `
-    <div class="error">
-      <p>未找到文章 ID。</p>
-    </div>
-  `;
+  showError('未找到文章 ID。');
 } 

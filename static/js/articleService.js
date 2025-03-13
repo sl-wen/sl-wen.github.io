@@ -1,27 +1,44 @@
 import { db } from './firebase.js';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 
+// 重试函数
+async function retry(fn, retries = 3, delay = 1000) {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries === 0) throw error;
+    await new Promise(resolve => setTimeout(resolve, delay));
+    return retry(fn, retries - 1, delay);
+  }
+}
+
 // 获取单篇文章
 export async function getArticle(id) {
   try {
     console.log('开始获取文章:', id);
-    const docRef = doc(db, 'articles', id);
-    console.log('文档引用创建成功');
     
-    const docSnap = await getDoc(docRef);
-    console.log('文档快照获取成功:', docSnap.exists());
-    
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      console.log('文章数据:', data);
-      return {
-        id: docSnap.id,
-        ...data
-      };
-    } else {
-      console.warn('文章不存在:', id);
-      throw new Error('文章不存在');
-    }
+    // 使用重试逻辑获取文章
+    const article = await retry(async () => {
+      const docRef = doc(db, 'articles', id);
+      console.log('文档引用创建成功');
+      
+      const docSnap = await getDoc(docRef);
+      console.log('文档快照获取成功:', docSnap.exists());
+      
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        console.log('文章数据:', data);
+        return {
+          id: docSnap.id,
+          ...data
+        };
+      } else {
+        console.warn('文章不存在:', id);
+        throw new Error('文章不存在');
+      }
+    });
+
+    return article;
   } catch (error) {
     console.error('获取文章失败:', error);
     if (error.code === 'unavailable') {

@@ -26,33 +26,12 @@
             <div id="posts-container"></div>
         </div>
         <div class="footer">
-            <span class="copyright">&copy; 2023 我的博客. All rights reserved.</span>
+            <span class="copyright">&copy; 2025 我的博客. All rights reserved.</span>
         </div>
     </div>
 
     <!-- 使用webpack打包后的Firebase bundle -->
     <script src="/static/js/bundles/firebase.bundle.js"></script>
     
-    <!-- 调试按钮 -->
-    <script>
-        // 添加调试按钮
-        document.addEventListener('DOMContentLoaded', function() {
-            const footer = document.querySelector('.footer');
-            const debugButton = document.createElement('button');
-            debugButton.textContent = '显示调试信息';
-            debugButton.style.marginTop = '10px';
-            debugButton.addEventListener('click', function() {
-                const statusDiv = document.getElementById('status-messages');
-                if (statusDiv.style.display === 'none') {
-                    statusDiv.style.display = 'block';
-                    debugButton.textContent = '隐藏调试信息';
-                } else {
-                    statusDiv.style.display = 'none';
-                    debugButton.textContent = '显示调试信息';
-                }
-            });
-            footer.appendChild(debugButton);
-        });
-    </script>
 </body>
 </html>

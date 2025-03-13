@@ -106,7 +106,7 @@
             <div id="status-messages" style="display: none;"></div>
         </div>
         <div class="footer">
-            <span class="copyright">&copy; 2023 我的博客. All rights reserved.</span>
+            <span class="copyright">&copy; 2025 我的博客. All rights reserved.</span>
         </div>
     </div>
 
@@ -210,23 +210,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             getArticle();
             
-            // 添加调试按钮
-            const footer = document.querySelector('.footer');
-            const debugButton = document.createElement('button');
-            debugButton.textContent = '显示调试信息';
-            debugButton.style.marginTop = '10px';
-            debugButton.addEventListener('click', function() {
-                const statusDiv = document.getElementById('status-messages');
-                if (statusDiv.style.display === 'none') {
-                    statusDiv.style.display = 'block';
-                    debugButton.textContent = '隐藏调试信息';
-                } else {
-                    statusDiv.style.display = 'none';
-                    debugButton.textContent = '显示调试信息';
-                }
-            });
-            footer.appendChild(debugButton);
-        });
     </script>
 </body>
 </html> 

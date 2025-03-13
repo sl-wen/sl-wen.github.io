@@ -7,9 +7,15 @@ const __dirname = path.dirname(__filename);
 export default {
   mode: 'production',
   entry: {
-    article: './static/js/article.js',
+    // 基础服务
     firebase: './static/js/firebase.js',
-    articleService: './static/js/articleService.js'
+    articleService: './static/js/articleService.js',
+    
+    // 文章相关页面
+    article: './static/js/article.js',
+    edit: './static/js/edit.js',
+    post: './static/js/post.js',
+    categories: './static/js/categories.js'
   },
   output: {
     filename: '[name].bundle.js',

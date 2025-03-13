@@ -15,7 +15,10 @@ export default {
     article: './static/js/article.js',
     edit: './static/js/edit.js',
     post: './static/js/post.js',
-    categories: './static/js/categories.js'
+    categories: './static/js/categories.js',
+    
+    // 测试工具
+    'test-firebase': './static/js/test-firebase.js'
   },
   output: {
     filename: '[name].bundle.js',

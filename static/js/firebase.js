@@ -1,12 +1,12 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore, initializeFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCuXDfNvLwiISoMwzcUIwUbaPTl69uRnao",
   authDomain: "slwen-45838.firebaseapp.com",
   projectId: "slwen-45838",
-  storageBucket: "slwen-45838.firebasestorage.app",
+  storageBucket: "slwen-45838.appspot.com",
   messagingSenderId: "734137620659",
   appId: "1:734137620659:web:81ce8b971dce766d67b8c6",
   measurementId: "G-WEBZLW3S59"
@@ -15,8 +15,12 @@ const firebaseConfig = {
 // 初始化 Firebase
 const app = initializeApp(firebaseConfig);
 
-// 初始化 Firestore
-const db = getFirestore(app);
+// 使用新的缓存配置初始化 Firestore
+const db = initializeFirestore(app, {
+    cache: {
+        sizeBytes: 100 * 1024 * 1024 // 100MB 缓存大小
+    }
+});
 
 // 启用离线持久化
 enableIndexedDbPersistence(db)

@@ -4,16 +4,29 @@ import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firesto
 // 获取单篇文章
 export async function getArticle(id) {
   try {
+    console.log('开始获取文章:', id);
     const docRef = doc(db, 'articles', id);
+    console.log('文档引用创建成功');
+    
     const docSnap = await getDoc(docRef);
+    console.log('文档快照获取成功:', docSnap.exists());
     
     if (docSnap.exists()) {
-      return docSnap.data();
+      const data = docSnap.data();
+      console.log('文章数据:', data);
+      return {
+        id: docSnap.id,
+        ...data
+      };
     } else {
+      console.warn('文章不存在:', id);
       throw new Error('文章不存在');
     }
   } catch (error) {
     console.error('获取文章失败:', error);
+    if (error.code === 'unavailable') {
+      console.error('Firestore 服务不可用，可能是网络问题或 CSP 限制');
+    }
     throw error;
   }
 }

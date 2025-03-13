@@ -1,6 +1,5 @@
 // Firebase文章操作函数
-import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, getDoc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
+// 使用非模块方式定义，避免导入问题
 
 // Firebase 配置
 const firebaseConfig = {
@@ -14,12 +13,27 @@ const firebaseConfig = {
 };
 
 // 初始化 Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+let app, db;
+
+// 初始化函数
+async function initFirebase() {
+    if (!app) {
+        // 动态导入Firebase模块
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js');
+        const { getFirestore } = await import('https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js');
+        
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+    }
+    return { app, db };
+}
 
 // 获取文章详情
-export async function getArticle(articleId) {
+async function getArticle(articleId) {
     try {
+        const { db } = await initFirebase();
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js');
+        
         const docRef = doc(db, "posts", articleId);
         const docSnap = await getDoc(docRef);
         
@@ -38,8 +52,11 @@ export async function getArticle(articleId) {
 }
 
 // 更新文章
-export async function updateArticle(articleId, articleData) {
+async function updateArticle(articleId, articleData) {
     try {
+        const { db } = await initFirebase();
+        const { doc, updateDoc, Timestamp } = await import('https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js');
+        
         const docRef = doc(db, "posts", articleId);
         await updateDoc(docRef, {
             ...articleData,
@@ -53,8 +70,11 @@ export async function updateArticle(articleId, articleData) {
 }
 
 // 删除文章
-export async function deleteArticle(articleId) {
+async function deleteArticle(articleId) {
     try {
+        const { db } = await initFirebase();
+        const { doc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js');
+        
         const docRef = doc(db, "posts", articleId);
         await deleteDoc(docRef);
         return true;

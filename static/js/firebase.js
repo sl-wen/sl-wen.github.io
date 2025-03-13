@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, initializeFirestore } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -15,12 +15,8 @@ const firebaseConfig = {
 // 初始化 Firebase
 const app = initializeApp(firebaseConfig);
 
-// 使用新的缓存配置初始化 Firestore
-const db = initializeFirestore(app, {
-    cache: {
-        sizeBytes: 100 * 1024 * 1024 // 100MB 缓存大小
-    }
-});
+// 初始化 Firestore
+const db = getFirestore(app);
 
 // 启用离线持久化
 enableIndexedDbPersistence(db)

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的博客</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
+
 <body>
     <div class="page">
         <div class="header">
@@ -27,13 +29,18 @@
         </div>
         <div class="footer">
             <span class="copyright">&copy; 2025 我的博客. All rights reserved.</span>
+            {%- if site.extCount %}
+            <span>总访问量</span>
+            <span id="busuanzi_value_site_pv"></span>
+            {% endif %}
         </div>
     </div>
 
     <!-- 使用webpack打包后的Firebase bundle -->
     <script src="/static/js/bundles/firebase.bundle.js"></script>
-    
+
     <!-- 添加点击特效 -->
     <script src="/static/js/click-effect.js"></script>
 </body>
+
 </html>

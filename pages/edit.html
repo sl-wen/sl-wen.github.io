@@ -256,7 +256,7 @@
                         await waitForFirebaseOperations();
 
                         const article = await window.firebaseArticleOperations.getArticle(id);
-
+                        console.log(article);
                         // 填充表单
                         titleInput.value = article.title || '';
                         authorInput.value = article.author || '';

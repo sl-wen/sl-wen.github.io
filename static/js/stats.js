@@ -18,7 +18,8 @@ async function updateTotalViews() {
             await updateDoc(statsRef, {
                 total: increment(1)
             });
-            return statsDoc.data().total + 1;
+            const updatedDoc = await getDoc(statsRef);
+            return updatedDoc.data().total;
         }
     } catch (error) {
         console.error('更新总访问量失败:', error);

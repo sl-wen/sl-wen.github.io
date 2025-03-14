@@ -1,5 +1,5 @@
 // Firebase文章操作函数
-import { doc, getDoc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc, Timestamp, increment } from '@firebase/firestore';
 import { db } from './firebase.js';
 
 // 获取文章详情
@@ -9,9 +9,16 @@ async function getArticle(articleId) {
         const docSnap = await getDoc(docRef);
         
         if (docSnap.exists()) {
+            // 增加访问量
+            await updateDoc(docRef, {
+                views: increment(1)
+            });
+            
+            const data = docSnap.data();
             return {
                 id: docSnap.id,
-                ...docSnap.data()
+                ...data,
+                views: (data.views || 0) + 1 // 立即更新显示的访问量
             };
         } else {
             throw new Error("文章不存在");

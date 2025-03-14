@@ -76,8 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
     articleContainer.innerHTML = `
       <h1 class="article-title">${article.title}</h1>
       <div class="article-meta">
-        <span class="date">${new Date(article.createdAt?.toDate() || new Date()).toLocaleDateString('zh-CN')}</span>
+        <span class="date">发布于：${new Date(article.createdAt?.toDate() || new Date()).toLocaleDateString('zh-CN')}</span>
         ${article.tags ? `<span class="tags">标签：${article.tags.join(', ')}</span>` : ''}
+        <span class="views">阅读量：${article.views || 0}</span>
       </div>
       <div class="article-content">${renderedContent}</div>
     `;

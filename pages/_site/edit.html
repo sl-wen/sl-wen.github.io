@@ -214,12 +214,6 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const articleId = urlParams.get('id');
                 console.log(articleId);
-
-                if (!articleId) {
-                    showMessage('错误：未指定文章ID', 'error');
-                    return;
-                }
-
                 const titleInput = document.getElementById('title');
                 const authorInput = document.getElementById('author');
                 const tagsInput = document.getElementById('tags');
@@ -229,7 +223,14 @@
                 const updateButton = document.getElementById('update-button');
                 const deleteButton = document.getElementById('delete-button');
                 const cancelButton = document.getElementById('cancel-button');
-
+                // 实时预览
+                editor.addEventListener('input', () => {
+                    preview.innerHTML = marked(editor.value);
+                });
+                if (!articleId) {
+                    showMessage('错误：未指定文章ID', 'error');
+                    return;
+                }
                 // 加载文章
                 loadArticle(articleId);
 
@@ -378,7 +379,7 @@
             } catch (error) {
                 console.log('加载文章失败:', error);
             }
-        }
+        });
     </script>
     <!-- 使用webpack打包后的文件 -->
     <script src="/static/js/dist/firebase.bundle.js"></script>

@@ -208,25 +208,75 @@
         // 页面加载完成后执行
         window.addEventListener('DOMContentLoaded', async () => {
             try {
+
                 const statusDiv = document.getElementById('status-messages');
                 statusDiv.innerHTML += '<p>页面初始化...</p>';
+                const urlParams = new URLSearchParams(window.location.search);
+                const articleId = urlParams.get('id');
 
+                if (!articleId) {
+                    showMessage('错误：未指定文章ID', 'error');
+                    return;
+                }
+
+                const titleInput = document.getElementById('title');
+                const authorInput = document.getElementById('author');
+                const tagsInput = document.getElementById('tags');
                 const editor = document.getElementById('editor');
                 const preview = document.getElementById('preview');
                 const form = document.getElementById('post-form');
-                const tagsInput = document.getElementById('tags');
+                const updateButton = document.getElementById('update-button');
+                const deleteButton = document.getElementById('delete-button');
+                const cancelButton = document.getElementById('cancel-button');
 
-                // 实时预览
-                editor.addEventListener('input', () => {
-                    preview.innerHTML = marked(editor.value);
+                // 加载文章
+                loadArticle(articleId);
+
+                // 更新文章
+                updateButton.addEventListener('click', function () {
+                    updateArticle(articleId);
                 });
+
+                // 删除文章
+                deleteButton.addEventListener('click', function () {
+                    deleteArticle(articleId);
+                });
+
+                // 取消编辑
+                cancelButton.addEventListener('click', function () {
+                    window.location.href = `/pages/article.html?id=${articleId}`;
+                });
+
+                // 加载文章内容
+                async function loadArticle(id) {
+                    try {
+                        // 等待Firebase操作模块加载完成
+                        await waitForFirebaseOperations();
+
+                        const article = await window.firebaseArticleOperations.getArticle(id);
+
+                        // 填充表单
+                        titleInput.value = article.title || '';
+                        authorInput.value = article.author || '';
+                        tagsInput.value = (article.tags || []).join(', ');
+                        editorTextarea.value = article.content || '';
+
+                        // 触发预览
+                        previewDiv.innerHTML = marked.parse(editorTextarea.value);
+
+                    } catch (error) {
+                        console.error('加载文章失败:', error);
+                        showMessage(`加载文章失败: ${error.message}`, 'error');
+                    }
+
+                    // 触发预览
+                    previewDiv.innerHTML = marked.parse(editorTextarea.value);
+                }
             } catch (error) {
-                console.error('初始化失败:', error);
-                document.getElementById('status-messages').innerHTML += `
-                <p style="color: red;">初始化失败: ${error.message}</p>
-            `;
+                console.error('加载文章失败:', error);
+                showMessage(`加载文章失败: ${error.message}`, 'error');
             }
-        });
+        }
     </script>
     <!-- 使用webpack打包后的文件 -->
     <script src="/static/js/dist/firebase.bundle.js"></script>

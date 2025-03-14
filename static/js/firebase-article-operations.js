@@ -1,5 +1,5 @@
 // Firebase文章操作函数
-import { doc, getDoc, updateDoc, deleteDoc, Timestamp, increment } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc, Timestamp, increment } from '@firebase/firestore';
 import { db } from './firebase.js';
 
 // 获取文章详情

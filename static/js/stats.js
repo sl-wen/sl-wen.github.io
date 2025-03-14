@@ -1,5 +1,5 @@
 import { db } from './firebase.js';
-import { doc, getDoc, updateDoc, increment, setDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, increment, setDoc } from '@firebase/firestore';
 
 // 获取并更新总访问量
 async function updateTotalViews() {

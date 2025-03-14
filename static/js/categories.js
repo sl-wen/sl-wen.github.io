@@ -1,5 +1,5 @@
 import { db } from './firebase.js';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from '@firebase/firestore';
 
 // 格式化日期
 function formatDate(timestamp) {

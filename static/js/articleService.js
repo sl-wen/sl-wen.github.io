@@ -1,5 +1,4 @@
-import { db } from './firebase.js';
-import { collection, doc, getDoc, getDocs, query, where, increment, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where, increment, updateDoc } from '@firebase/firestore';
 
 // 重试函数
 async function retry(fn, retries = 3, delay = 1000) {

@@ -1,5 +1,5 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, Timestamp, doc, setDoc } from 'firebase/firestore';
+import { initializeApp } from '@firebase/app';
+import { getFirestore, collection, addDoc, Timestamp, doc, setDoc } from '@firebase/firestore';
 
 // 初始化 Firebase
 const firebaseConfig = {

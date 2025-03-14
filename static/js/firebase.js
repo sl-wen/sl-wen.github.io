@@ -21,4 +21,8 @@ const db = getFirestore(app);
 // 初始化 Auth
 const auth = getAuth(app);
 
+// 将 db 添加到全局变量
+window.db = db;
+window.auth = auth;
+
 export { db, auth }; 

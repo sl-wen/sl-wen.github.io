@@ -11,10 +11,27 @@ async function retry(fn, retries = 3, delay = 1000) {
   }
 }
 
+// 等待 Firebase 初始化完成
+async function waitForFirebase() {
+  return new Promise(resolve => {
+    const checkFirebase = () => {
+      if (window.db) {
+        resolve(window.db);
+      } else {
+        setTimeout(checkFirebase, 100);
+      }
+    };
+    checkFirebase();
+  });
+}
+
 // 获取单篇文章
 export async function getArticle(id) {
   try {
     console.log('开始获取文章:', id);
+    
+    // 等待 Firebase 初始化
+    const db = await waitForFirebase();
     
     // 使用重试逻辑获取文章
     const article = await retry(async () => {
@@ -57,6 +74,7 @@ export async function getArticle(id) {
 // 获取所有文章
 export async function getAllArticles() {
   try {
+    const db = await waitForFirebase();
     const articlesRef = collection(db, 'posts');
     const querySnapshot = await getDocs(articlesRef);
     const articles = [];
@@ -78,6 +96,7 @@ export async function getAllArticles() {
 // 按标签获取文章
 export async function getArticlesByTag(tag) {
   try {
+    const db = await waitForFirebase();
     const articlesRef = collection(db, 'posts');
     const q = query(articlesRef, where('tags', 'array-contains', tag));
     const querySnapshot = await getDocs(q);

@@ -14,12 +14,47 @@ marked.setOptions({
 // 创建自定义渲染器
 const renderer = new marked.Renderer();
 renderer.image = function(href, title, text) {
-    // 如果是相对路径，添加基础URL
-    if (href && !href.startsWith('http') && !href.startsWith('data:')) {
-        href = '/static/img/' + href;
+    try {
+        // 如果 href 是对象，尝试获取其 toString 方法的结果
+        if (href && typeof href === 'object') {
+            console.warn('图片链接是对象类型:', href);
+            href = '';
+        }
+        
+        // 确保所有参数都是字符串
+        href = String(href || '').trim();
+        title = String(title || '').trim();
+        text = String(text || '').trim();
+        
+        // 如果没有有效的 href，直接使用默认图片
+        if (!href) {
+            return `<img src="/static/img/logo.png" alt="${text}" title="${title}">`;
+        }
+        
+        // 如果是相对路径，添加基础URL
+        if (!href.startsWith('http') && !href.startsWith('data:')) {
+            href = '/static/img/' + href;
+        }
+        
+        return `<img src="${href}" alt="${text}" title="${title}" onerror="this.src='/static/img/logo.png'">`;
+    } catch (error) {
+        console.error('图片渲染错误:', error);
+        return `<img src="/static/img/logo.png" alt="图片加载失败" title="图片加载失败">`;
     }
-    return `<img src="${href}" alt="${text}" title="${title || ''}" onerror="this.src='/static/img/default.png'">`;
 };
+
+// 安全的 marked 解析函数
+function safeMarked(content) {
+    if (!content || typeof content !== 'string') {
+        return '';
+    }
+    try {
+        return marked(content);
+    } catch (error) {
+        console.error('Markdown 解析错误:', error);
+        return '内容解析错误';
+    }
+}
 
 marked.setOptions({ renderer });
 
@@ -83,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.title = `${article.title} - 我的博客`;
     
     // 渲染 Markdown 内容
-    const renderedContent = marked(article.content || '');
+    const renderedContent = safeMarked(article.content);
     
     articleContainer.innerHTML = `
       <h1 class="article-title">${article.title}</h1>

@@ -25,7 +25,6 @@
 </head>
 <body>
     <h1>Firebase 测试页面</h1>
-    <button id="addTestPost">添加测试文章</button>
     <div id="posts"></div>
 
     <script type="module">
@@ -45,28 +44,6 @@
         // 初始化 Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
-        // 添加测试文章
-        async function addTestPost() {
-            try {
-                const testPost = {
-                    title: '测试文章 ' + new Date().toLocaleString(),
-                    content: '这是一篇测试文章的内容',
-                    author: '测试作者',
-                    tags: ['测试', 'Firebase'],
-                    createdAt: Timestamp.fromDate(new Date()),
-                    updatedAt: Timestamp.fromDate(new Date())
-                };
-
-                const docRef = await addDoc(collection(db, "posts"), testPost);
-                console.log('测试文章添加成功，ID:', docRef.id);
-                // 重新加载文章列表
-                await getPosts();
-            } catch (error) {
-                console.error('添加测试文章失败:', error);
-                alert('添加文章失败: ' + error.message);
-            }
-        }
 
         // 获取所有文章
         async function getPosts() {
@@ -99,9 +76,6 @@
                 document.getElementById('posts').innerHTML = `<p style="color: red;">获取文章失败: ${error.message}</p>`;
             }
         }
-
-        // 设置按钮点击事件
-        document.getElementById('addTestPost').onclick = addTestPost;
 
         // 页面加载完成后执行
         window.addEventListener('load', getPosts);

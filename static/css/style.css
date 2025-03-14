@@ -103,15 +103,22 @@ h1 {
 
 /* 页脚样式 */
 .footer {
-    margin-top: 30px;
+    margin-top: 50px;
     padding: 20px 0;
+    border-top: 1px solid #eee;
     text-align: center;
     color: #666;
-    font-size: 14px;
-    border-top: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
-/* 版权信息样式 */
+.footer-stats {
+    font-size: 14px;
+    color: #666;
+}
+
 .copyright {
     font-size: 14px;
     color: #666;

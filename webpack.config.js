@@ -10,6 +10,7 @@ export default {
     // 基础服务
     firebase: './static/js/firebase.js',
     articleService: './static/js/articleService.js',
+    stats: './static/js/stats.js',
     
     // 文章相关页面
     article: './static/js/article.js',

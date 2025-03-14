@@ -1,5 +1,5 @@
 import { db } from './firebase.js';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where, increment, updateDoc } from 'firebase/firestore';
 
 // 重试函数
 async function retry(fn, retries = 3, delay = 1000) {
@@ -28,9 +28,16 @@ export async function getArticle(id) {
       if (docSnap.exists()) {
         const data = docSnap.data();
         console.log('文章数据:', data);
+
+        // 增加访问量
+        await updateDoc(docRef, {
+          views: increment(1)
+        });
+
         return {
           id: docSnap.id,
-          ...data
+          ...data,
+          views: (data.views || 0) + 1 // 立即更新显示的访问量
         };
       } else {
         console.warn('文章不存在:', id);

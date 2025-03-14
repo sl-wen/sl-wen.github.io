@@ -206,13 +206,14 @@
             return html;
         }
         // 页面加载完成后执行
-        window.addEventListener('DOMContentLoaded', async () => {
+        window.addEventListener('DOMContentLoaded', function ()  {
             try {
 
                 const statusDiv = document.getElementById('status-messages');
                 statusDiv.innerHTML += '<p>页面初始化...</p>';
                 const urlParams = new URLSearchParams(window.location.search);
                 const articleId = urlParams.get('id');
+                console.log(articleId);
 
                 if (!articleId) {
                     showMessage('错误：未指定文章ID', 'error');

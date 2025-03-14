@@ -9,42 +9,47 @@
     <!-- 添加代码高亮样式 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <style>
-        .article-container {
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
+            position: relative;
+        }
+        
+        .article-container {
             max-width: 800px;
             margin: 0 auto;
+            padding: 20px;
+            position: relative;
         }
         
         .article-title {
             font-size: 24px;
             margin-bottom: 10px;
             font-weight: normal;
-            /* text-align: center; */
-            left: -160px;
         }
         
         .article-meta {
             color: #666;
             font-size: 14px;
-            /* margin-bottom: 30px; */
-            /* text-align: center; */
-            left: -160px;
+            margin-bottom: 20px;
         }
         
         .article-actions {
+            position: absolute;
+            right: 20px;
+            top: 20px;
             display: flex;
-            justify-content: flex-start;
             gap: 10px;
-            /* margin-bottom: 20px; */
-            margin-left: 50px;
         }
         
-        .edit-button, .delete-button, .test-button {
-            padding: 5px 15px;
+        .edit-button, .delete-button {
+            padding: 8px 16px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
             text-decoration: none;
+            transition: background-color 0.3s;
         }
         
         .edit-button {
@@ -59,7 +64,6 @@
             border: none;
         }
         
-        
         .edit-button:hover {
             background-color: #45a049;
         }
@@ -68,16 +72,13 @@
             background-color: #d32f2f;
         }
         
-        .test-button:hover {
-            background-color: #1976D2;
-        }
-        
         .article-content {
             line-height: 1.8;
             color: #abb2bf;
             background-color: #282c34;
             padding: 20px;
             border-radius: 8px;
+            margin-top: 20px;
         }
         
         /* Markdown 样式 */
@@ -298,11 +299,8 @@
                 <a href="/pages/post.html">发布</a>
             </div>
         </div>
-        <div class="article-actions">
-            <a href="/pages/edit.html?id=${articleId}" class="edit-button">编辑</a>
-            <button onclick="deleteArticle('${articleId}')" class="delete-button">删除</button>
-        </div>
         <div class="container">
+            <div class="article-actions"></div>
             <div id="article-container" class="article-container">
                 <div class="loading">加载中...</div>
             </div>

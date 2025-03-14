@@ -1,5 +1,7 @@
 import { getArticle } from './articleService.js';
 import { marked } from 'marked';
+import { deleteDoc, doc } from 'firebase/firestore';
+import { db } from './firebase.js';
 
 // 配置 marked 选项
 marked.setOptions({
@@ -14,11 +16,38 @@ marked.setOptions({
 const urlParams = new URLSearchParams(window.location.search);
 const articleId = urlParams.get('id');
 
+// 删除文章
+async function deleteArticle(id) {
+  if (!confirm('确定要删除这篇文章吗？此操作不可恢复！')) {
+    return;
+  }
+  
+  try {
+    const docRef = doc(db, 'posts', id);
+    await deleteDoc(docRef);
+    alert('文章删除成功！');
+    window.location.href = '/';
+  } catch (error) {
+    console.error('删除文章失败:', error);
+    alert(`删除文章失败: ${error.message}`);
+  }
+}
+
 // 等待 DOM 加载完成
 document.addEventListener('DOMContentLoaded', () => {
   // 获取容器元素
   const articleContainer = document.getElementById('article-container');
-  const statusMessages = document.getElementById('status-messages');
+  const articleActions = document.querySelector('.article-actions');
+
+  // 更新文章操作按钮
+  function updateArticleActions(id) {
+    if (articleActions) {
+      articleActions.innerHTML = `
+        <a href="/pages/edit.html?id=${id}" class="edit-button">编辑</a>
+        <button onclick="deleteArticle('${id}')" class="delete-button">删除</button>
+      `;
+    }
+  }
 
   // 显示错误信息
   function showError(message, details = '') {
@@ -88,6 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (articleId) {
     console.log('正在加载文章:', articleId);
     showLoading();
+    updateArticleActions(articleId);
+    
+    // 将删除函数添加到全局作用域
+    window.deleteArticle = deleteArticle;
     
     // 获取文章内容
     getArticle(articleId)

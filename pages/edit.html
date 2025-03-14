@@ -206,7 +206,7 @@
             return html;
         }
         // 页面加载完成后执行
-        window.addEventListener('DOMContentLoaded', function ()  {
+        window.addEventListener('DOMContentLoaded', function () {
             try {
 
                 const statusDiv = document.getElementById('status-messages');
@@ -262,9 +262,6 @@
                         tagsInput.value = (article.tags || []).join(', ');
                         editorTextarea.value = article.content || '';
 
-                        // 触发预览
-                        previewDiv.innerHTML = marked.parse(editorTextarea.value);
-
                     } catch (error) {
                         console.error('加载文章失败:', error);
                         showMessage(`加载文章失败: ${error.message}`, 'error');
@@ -309,7 +306,7 @@
                         // 3秒后跳转到文章页面
                         setTimeout(() => {
                             window.location.href = `/pages/article.html?id=${id}`;
-                        }, 2000);
+                        }, 3000);
 
                     } catch (error) {
                         console.error('更新文章失败:', error);
@@ -379,8 +376,7 @@
                     });
                 }
             } catch (error) {
-                console.error('加载文章失败:', error);
-                showMessage(`加载文章失败: ${error.message}`, 'error');
+                console.log('加载文章失败:', error);
             }
         }
     </script>

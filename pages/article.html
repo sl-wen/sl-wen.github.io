@@ -26,16 +26,17 @@
         .article-meta {
             color: #666;
             font-size: 14px;
-            margin-bottom: 30px;
+            /* margin-bottom: 30px; */
             /* text-align: center; */
             left: -160px;
         }
         
         .article-actions {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 10px;
-            margin-bottom: 20px;
+            /* margin-bottom: 20px; */
+            margin-left: 50px;
         }
         
         .edit-button, .delete-button, .test-button {
@@ -58,11 +59,6 @@
             border: none;
         }
         
-        .test-button {
-            background-color: #2196F3;
-            color: white;
-            border: none;
-        }
         
         .edit-button:hover {
             background-color: #45a049;
@@ -301,6 +297,10 @@
                 <a href="/pages/about.html">关于</a>
                 <a href="/pages/post.html">发布</a>
             </div>
+        </div>
+        <div class="article-actions">
+            <a href="/pages/edit.html?id=${articleId}" class="edit-button">编辑</a>
+            <button onclick="deleteArticle('${articleId}')" class="delete-button">删除</button>
         </div>
         <div class="container">
             <div id="article-container" class="article-container">

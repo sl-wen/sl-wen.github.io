@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于 - 我的博客</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .about-container {
+            padding: 20px 0;
+        }
+        
+        .about-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: normal;
+            text-align: left;
+        }
+        
+        .about-content {
+            line-height: 1.8;
+        }
+        
+        .about-content p {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <a href="/" class="logo">
+                <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
+            </a>
+            <div class="nav">
+                <a href="/">首页</a>
+                <a href="/pages/categories.html">归类</a>
+                <a href="/pages/search.html">搜索</a>
+                <!-- <a href="/pages/links.html">友链</a> -->
+                <a href="/pages/about.html">关于</a>
+                <a href="/pages/post.html">发布</a>
+            </div>
+        </div>
+        <div class="container">
+            <div class="about-container">
+                <h1 class="about-title">关于我的博客</h1>
+                <div class="about-content">
+                    <p>欢迎来到我的博客！这是一个基于Firebase和Jekyll构建的个人博客系统。</p>
+                    <p>本博客使用了以下技术：</p>
+                    <ul>
+                        <li>Firebase Firestore - 用于存储文章数据</li>
+                        <li>Jekyll - 用于生成静态网站</li>
+                        <li>Webpack - 用于打包JavaScript代码</li>
+                        <li>Marked - 用于Markdown解析</li>
+                    </ul>
+                    <p>如果您有任何问题或建议，请随时联系我。</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <span class="copyright">&copy; 2025 我的博客. All rights reserved.</span>
+        </div>
+    </div>
+    
+    <!-- 添加点击特效 -->
+    <script src="/static/js/click-effect.js"></script>
+</body>
+</html> 

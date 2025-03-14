@@ -1,4 +1,4 @@
-import { getFirestore, doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../static/js/firebase.js';
 import { marked } from 'marked';
 

@@ -8,9 +8,29 @@
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
         .container {
-            max-width: 800px;
+            max-width: 100%;
             margin: 0 auto;
             padding: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .editor-container {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .preview-container {
+            flex: 1;
+            min-width: 0;
+            position: sticky;
+            top: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
         }
 
         .form-group {
@@ -34,7 +54,7 @@
         }
 
         textarea {
-            min-height: 200px;
+            min-height: 400px;
             resize: vertical;
         }
 
@@ -67,14 +87,6 @@
 
         button.cancel-btn:hover {
             background-color: #757575;
-        }
-
-        .preview-container {
-            margin-top: 30px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #f9f9f9;
         }
 
         .preview-container h3 {
@@ -134,38 +146,39 @@
             </div>
         </div>
         <div class="container">
-            <h2>编辑文章</h2>
-            <div id="message-container"></div>
-            <form id="edit-form">
-                <div class="form-group">
-                    <label for="title">标题</label>
-                    <input type="text" id="title" name="title" required>
-                </div>
-                <div class="form-group">
-                    <label for="author">作者</label>
-                    <input type="text" id="author" name="author">
-                </div>
-                <div class="form-group">
-                    <label for="tags">标签 (用逗号分隔)</label>
-                    <input type="text" id="tags" name="tags">
-                </div>
-                <div class="form-group">
-                    <label for="editor">内容 (支持Markdown)</label>
-                    <textarea id="editor" name="content" required></textarea>
-                </div>
-                <div class="button-group">
-                    <button type="button" id="update-button">更新文章</button>
-                    <button type="button" id="delete-button" class="delete-btn">删除文章</button>
-                    <button type="button" id="cancel-button" class="cancel-btn">取消</button>
-                </div>
-            </form>
+            <div class="editor-container">
+                <h2>编辑文章</h2>
+                <div id="message-container"></div>
+                <form id="edit-form">
+                    <div class="form-group">
+                        <label for="title">标题</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="author">作者</label>
+                        <input type="text" id="author" name="author">
+                    </div>
+                    <div class="form-group">
+                        <label for="tags">标签 (用逗号分隔)</label>
+                        <input type="text" id="tags" name="tags">
+                    </div>
+                    <div class="form-group">
+                        <label for="editor">内容 (支持Markdown)</label>
+                        <textarea id="editor" name="content" required></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" id="update-button">更新文章</button>
+                        <button type="button" id="delete-button" class="delete-btn">删除文章</button>
+                        <button type="button" id="cancel-button" class="cancel-btn">取消</button>
+                    </div>
+                </form>
+                <div id="status-messages" style="display: none;"></div>
+            </div>
 
             <div class="preview-container">
                 <h3>预览</h3>
                 <div id="preview" class="preview-section"></div>
             </div>
-
-            <div id="status-messages" style="display: none;"></div>
         </div>
         <div class="footer">
             <span class="copyright">&copy; 2025 我的博客. All rights reserved.</span>

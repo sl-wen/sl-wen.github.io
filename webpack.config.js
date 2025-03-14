@@ -40,6 +40,10 @@ export default {
     ]
   },
   resolve: {
-    extensions: ['.js']
+    extensions: ['.js', '.jsx'],
+    alias: {
+      'firebase': path.resolve(__dirname, 'node_modules/firebase'),
+      '@firebase': path.resolve(__dirname, 'node_modules/@firebase')
+    }
   }
 }; 

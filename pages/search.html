@@ -1,22 +1,108 @@
----
-layout: page
-title: 搜索
----
+<!DOCTYPE html>
+<html lang="en">
 
-<div class="page page-search">
-  <input id="search-input" type="text" placeholder="请在这里输入关键词^_^"></input>
-  <h1>
-    <span>搜索结果</span>
-    <i class="svg-icon icon-loading"></i>
-  </h1>
-  <ul class="list-search">
-    {%- for post in site.posts  %}
-    <li hidden>
-      <a href="{{site.baseurl}}{{ post.url }}">
-        <p class="title">{{ post.title }}</p>
-        <p class="content"></p>
-      </a>
-    </li>
-    {%- endfor %}
-  </ul>
-</div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>搜索 - 我的博客</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .categories-container {
+      padding: 20px 0;
+    }
+
+    .categories-title {
+      font-size: 24px;
+      margin-bottom: 20px;
+      font-weight: normal;
+      text-align: center;
+    }
+
+    .category-list {
+      margin-bottom: 30px;
+    }
+
+    .category-name {
+      font-size: 18px;
+      margin-bottom: 10px;
+      font-weight: normal;
+    }
+
+    .post-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .post-list li {
+      margin-bottom: 5px;
+      padding-bottom: 5px;
+      display: flex;
+      align-items: baseline;
+    }
+
+    .post-date {
+      color: #666;
+      font-size: 14px;
+      margin-right: 10px;
+      white-space: nowrap;
+    }
+
+    .post-list a {
+      color: #333;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    .post-list a:hover {
+      color: #007bff;
+    }
+
+    .loading,
+    .error {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .error {
+      color: #dc3545;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page page-search">
+    <input id="search-input" type="text" placeholder="请在这里输入关键词^_^"></input>
+    <h1>
+      <span>搜索结果</span>
+      <i class="svg-icon icon-loading"></i>
+    </h1>
+    <ul class="list-search">
+      {%- for post in site.posts %}
+      <li hidden>
+        <a href="{{site.baseurl}}{{ post.url }}">
+          <p class="title">{{ post.title }}</p>
+          <p class="content"></p>
+        </a>
+      </li>
+      {%- endfor %}
+    </ul>
+  </div>
+  <div class="footer">
+    <span class="copyright">&copy; 2025 我的博客. All rights reserved.</span>
+  </div>
+  <!-- 代码高亮 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <!-- 使用webpack打包后的文件 -->
+  <script src="/static/js/dist/firebase.bundle.js"></script>
+  <script src="/static/js/dist/articleService.bundle.js"></script>
+  <script src="/static/js/dist/article.bundle.js"></script>
+  <script src="/static/js/dist/test-firebase.bundle.js"></script>
+
+  <!-- 添加点击特效 -->
+  <script src="/static/js/click-effect.js"></script>
+
+</body>
+
+</html>

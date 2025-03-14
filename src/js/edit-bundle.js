@@ -81,7 +81,7 @@ async function updateArticle(articleId) {
 }
 
 // 删除文章
-async function deleteArticle(articleId) {
+async function handleDeleteArticle(articleId) {
     if (!confirm('确定要删除这篇文章吗？此操作不可恢复！')) {
         return;
     }
@@ -98,6 +98,9 @@ async function deleteArticle(articleId) {
         showMessage(`删除文章失败: ${error.message}`, 'error');
     }
 }
+
+// 将删除函数暴露到全局作用域
+window.deleteArticle = handleDeleteArticle;
 
 // 页面加载完成后执行
 window.addEventListener('DOMContentLoaded', () => {
@@ -125,7 +128,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         
         if (deleteButton) {
-            deleteButton.addEventListener('click', () => deleteArticle(articleId));
+            deleteButton.addEventListener('click', () => handleDeleteArticle(articleId));
         }
         
         if (cancelButton) {

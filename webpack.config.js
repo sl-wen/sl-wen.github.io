@@ -14,7 +14,7 @@ export default {
     // 文章相关页面
     article: './static/js/article.js',
     edit: './static/js/edit.js',
-    post: './static/js/post-bundle.js',
+    post: './src/js/post-bundle.js',
     categories: './static/js/categories.js',
     
     // 测试工具

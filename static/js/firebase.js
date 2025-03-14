@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -15,22 +15,19 @@ const firebaseConfig = {
 // 初始化 Firebase
 const app = initializeApp(firebaseConfig);
 
-// 初始化 Firestore
+// 初始化 Firestore，并配置缓存
 const db = getFirestore(app);
 
-// 启用离线持久化
-enableIndexedDbPersistence(db)
-  .catch((err) => {
-    if (err.code === 'failed-precondition') {
-      // 多个标签页同时打开时可能会失败
-      console.warn('离线持久化启用失败：多个标签页同时打开');
-    } else if (err.code === 'unimplemented') {
-      // 当前浏览器不支持
-      console.warn('离线持久化启用失败：浏览器不支持');
-    } else {
-      console.error('离线持久化启用失败：', err);
-    }
-  });
+// 设置 Firestore 缓存配置
+const settings = {
+  cacheSizeBytes: 40 * 1024 * 1024, // 40MB
+  experimentalForceLongPolling: true, // 强制使用长轮询
+  ignoreUndefinedProperties: true, // 忽略未定义的属性
+  cache: 'persistent' // 启用持久化缓存
+};
+
+// 应用设置
+db.settings(settings);
 
 // 初始化 Auth
 const auth = getAuth(app);

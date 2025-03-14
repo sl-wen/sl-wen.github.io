@@ -13,7 +13,7 @@ export default {
     
     // 文章相关页面
     article: './static/js/article.js',
-    edit: './static/js/edit.js',
+    edit: './src/js/edit-bundle.js',
     post: './src/js/post-bundle.js',
     categories: './static/js/categories.js',
     

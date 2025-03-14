@@ -10,7 +10,7 @@ body {
 
 /* 页面布局 */
 .page {
-    max-width: 750px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 0 10px;
 }
@@ -39,18 +39,21 @@ body {
 /* 导航菜单样式 */
 .nav {
     display: flex;
+    text-align: left; 
     justify-content: center;
     margin-top: 10px;
 }
 
 .nav a {
     color: #333;
+    font-size: 30px;
     text-decoration: none;
-    padding: 5px 10px;
+    padding: 10px 20px;
 }
 
 .nav a:hover {
-    color: #007bff;
+    color: #676d72;
+    text-decoration: underline;
 }
 
 /* 主内容区域样式 */
@@ -95,6 +98,7 @@ h1 {
 
 .post-list a:hover {
     color: #007bff;
+    text-decoration: underline;
 }
 
 /* 页脚样式 */
@@ -120,7 +124,8 @@ a {
 }
 
 a:hover {
-    color: #007bff;
+    color: #797d81;
+    text-decoration: underline;
 }
 
 /* 按钮样式 */

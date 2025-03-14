@@ -1,23 +1,23 @@
 document.addEventListener('DOMContentLoaded', function() {
     // 从 URL 参数获取文章信息
     const params = new URLSearchParams(window.location.search);
-    const fileName = params.get('file');
+    const articleId = urlParams.get('id');
     
-    if (!fileName) {
+    if (!articleId) {
         alert('未指定要编辑的文章！');
         window.location.href = '/';
         return;
     }
 
     // 加载文章内容
-    loadPost(fileName);
+    // loadPost(articleId);
 
     // 绑定按钮事件
-    document.getElementById('updateButton').addEventListener('click', () => updatePost(fileName));
-    document.getElementById('cancelButton').addEventListener('click', () => window.history.back());
+    // document.getElementById('updateButton').addEventListener('click', () => updatePost(articleId));
+    // document.getElementById('cancelButton').addEventListener('click', () => window.history.back());
 });
 
-async function loadPost(fileName) {
+async function loadPost(articleId) {
     const token = localStorage.getItem('github_token');
     if (!token) {
         alert('请先在设置页面配置 GitHub Token！');
@@ -27,7 +27,7 @@ async function loadPost(fileName) {
 
     try {
         // 获取文件内容
-        const response = await fetch(`https://api.github.com/repos/sl-wen/sl-wen.github.io/contents/_posts/${fileName}`, {
+        const response = await fetch(`https://api.github.com/repos/sl-wen/sl-wen.github.io/contents/_posts/${articleId}`, {
             headers: {
                 'Authorization': `token ${token}`,
                 'Accept': 'application/vnd.github.v3+json'

@@ -24,3 +24,5 @@ gem "wdm", "~> 0.1.1", :platforms => [:mingw, :x64_mingw, :mswin]
 
 # Lock `sass-embedded` gem to `v1.54.x`
 gem "sass-embedded", "~> 1.54"
+
+gem "jekyll-regex-replace", "~> 1.1"

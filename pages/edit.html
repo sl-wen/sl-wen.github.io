@@ -231,6 +231,7 @@
                     showMessage('错误：未指定文章ID', 'error');
                     return;
                 }
+                console.log("加载文章");
                 // 加载文章
                 loadArticle(articleId);
 
@@ -253,6 +254,7 @@
                 async function loadArticle(id) {
                     try {
                         // 等待Firebase操作模块加载完成
+                        console.log("loadArticle");
                         await waitForFirebaseOperations();
 
                         const article = await window.firebaseArticleOperations.getArticle(id);

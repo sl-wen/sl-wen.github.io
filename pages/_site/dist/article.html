@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com https://www.google.com https://firestore.googleapis.com/* https://*.firestore.googleapis.com/* https://firestore.googleapis.com/google.firestore.v1.Firestore/*; frame-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.google.com; img-src 'self' https://*.google.com https://www.gstatic.com https://www.google.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://*.google.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net;">
+    <title>文章详情 - 我的博客</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- 添加代码高亮样式 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .article-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .article-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: normal;
+        }
+        
+        .article-meta {
+            color: #666;
+            font-size: 14px;
+            /* margin-bottom: 20px; */
+        }
+        
+        .article-actions {
+            display: flex;
+            justify-content: flex-start;
+            gap: 10px;
+            margin-left: 30px; 
+        }
+        
+        .edit-button, .delete-button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .edit-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+        
+        .delete-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+        }
+        
+        .edit-button:hover {
+            background-color: #45a049;
+        }
+        
+        .delete-button:hover {
+            background-color: #d32f2f;
+        }
+        
+        .article-content {
+            line-height: 1.8;
+            color: #abb2bf;
+            background-color: #282c34;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        /* Markdown 样式 */
+        .article-content h1,
+        .article-content h2,
+        .article-content h3,
+        .article-content h4,
+        .article-content h5,
+        .article-content h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+            color: #61aeee;
+            border-bottom-color: #3e4451;
+        }
+        
+        .article-content h1 {
+            font-size: 2em;
+            padding-bottom: .3em;
+        }
+        
+        .article-content h2 {
+            font-size: 1.5em;
+            padding-bottom: .3em;
+        }
+        
+        .article-content h3 {
+            font-size: 1.25em;
+        }
+        
+        .article-content p {
+            margin-bottom: 16px;
+        }
+        
+        .article-content ul,
+        .article-content ol {
+            padding-left: 2em;
+            margin-bottom: 16px;
+        }
+        
+        .article-content li {
+            margin: 0.25em 0;
+        }
+        
+        .article-content code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: #282c34;
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            color: #abb2bf;
+        }
+        
+        .article-content pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #282c34;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        
+        .article-content pre code {
+            padding: 0;
+            margin: 0;
+            font-size: 100%;
+            word-break: normal;
+            white-space: pre;
+            background: transparent;
+            border: 0;
+            color: #abb2bf;
+        }
+        
+        .article-content blockquote {
+            padding: 0 1em;
+            color: #5c6370;
+            border-left: 0.25em solid #3e4451;
+            margin: 0 0 16px 0;
+            background-color: #2c313a;
+        }
+        
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 16px 0;
+        }
+        
+        .article-content table {
+            display: block;
+            width: 100%;
+            overflow: auto;
+            margin-bottom: 16px;
+            border-spacing: 0;
+            border-collapse: collapse;
+        }
+        
+        .article-content table th,
+        .article-content table td {
+            padding: 6px 13px;
+            border: 1px solid #3e4451;
+        }
+        
+        .article-content table tr {
+            background-color: #282c34;
+            border-top: 1px solid #3e4451;
+        }
+        
+        .article-content table tr:nth-child(2n) {
+            background-color: #2c313a;
+        }
+        
+        .loading, .error {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .error {
+            color: #dc3545;
+        }
+        
+        /* One Dark 主题的语法高亮颜色 */
+        .hljs {
+            color: #abb2bf;
+            background: #282c34;
+        }
+
+        .hljs-comment,
+        .hljs-quote {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .hljs-doctag,
+        .hljs-keyword,
+        .hljs-formula {
+            color: #c678dd;
+        }
+
+        .hljs-section,
+        .hljs-name,
+        .hljs-selector-tag,
+        .hljs-deletion,
+        .hljs-subst {
+            color: #e06c75;
+        }
+
+        .hljs-literal {
+            color: #56b6c2;
+        }
+
+        .hljs-string,
+        .hljs-regexp,
+        .hljs-addition,
+        .hljs-attribute,
+        .hljs-meta .hljs-string {
+            color: #98c379;
+        }
+
+        .hljs-attr,
+        .hljs-variable,
+        .hljs-template-variable,
+        .hljs-type,
+        .hljs-selector-class,
+        .hljs-selector-attr,
+        .hljs-selector-pseudo,
+        .hljs-number {
+            color: #d19a66;
+        }
+
+        .hljs-symbol,
+        .hljs-bullet,
+        .hljs-link,
+        .hljs-meta,
+        .hljs-selector-id,
+        .hljs-title {
+            color: #61aeee;
+        }
+
+        .hljs-built_in,
+        .hljs-title.class_,
+        .hljs-class .hljs-title {
+            color: #e6c07b;
+        }
+
+        .hljs-emphasis {
+            font-style: italic;
+        }
+
+        .hljs-strong {
+            font-weight: bold;
+        }
+
+        .hljs-link {
+            text-decoration: underline;
+        }
+        
+        .article-content a {
+            color: #56b6c2;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <a href="/" class="logo">
+                <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
+            </a>
+            <div class="nav">
+                <a href="/">首页</a>
+                <a href="/pages/categories.html">归类</a>
+                <a href="/pages/search.html">搜索</a>
+                <!-- <a href="/pages/links.html">友链</a> -->
+                <a href="/pages/about.html">关于</a>
+                <a href="/pages/post.html">发布</a>
+            </div>
+        </div>
+        <div class="container">
+            <div class="article-actions"></div>
+            <div id="article-container" class="article-container">
+                <div class="loading">加载中...</div>
+            </div>
+            <div id="status-messages" style="display: none;"></div>
+        </div>
+        <div class="footer">
+            <span class="copyright">&copy; 2025 我的博客. All rights reserved.</span>
+        </div>
+    </div>
+
+    <!-- 代码高亮 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- 使用webpack打包后的文件 -->
+    <script src="/static/js/dist/firebase.bundle.js"></script>
+    <script src="/static/js/dist/articleService.bundle.js"></script>
+    <script src="/static/js/dist/article.bundle.js"></script>
+    <script src="/static/js/dist/test-firebase.bundle.js"></script>
+    
+    <!-- 添加点击特效 -->
+    <script src="/static/js/click-effect.js"></script>
+    
+    <!-- 删除文章功能 -->
+    <script>
+        // 删除文章
+        async function deleteArticle(articleId) {
+            if (!confirm('确定要删除这篇文章吗？此操作不可恢复！')) {
+                return;
+            }
+            
+            try {
+                // 等待Firebase操作模块加载完成
+                await waitForFirebaseOperations();
+                
+                // 删除文章
+                await window.firebaseArticleOperations.deleteArticle(articleId);
+                
+                alert('文章删除成功！');
+                
+                // 跳转到首页
+                window.location.href = '/';
+                
+            } catch (error) {
+                console.error('删除文章失败:', error);
+                alert(`删除文章失败: ${error.message}`);
+            }
+        }
+        
+        // 等待Firebase操作模块加载完成
+        function waitForFirebaseOperations() {
+            return new Promise((resolve) => {
+                if (window.firebaseArticleOperations) {
+                    resolve();
+                    return;
+                }
+                
+                // 加载Firebase操作脚本
+                const script = document.createElement('script');
+                script.type = 'module';
+                script.src = '/static/js/firebase-article-operations.js';
+                document.body.appendChild(script);
+                
+                const checkInterval = setInterval(() => {
+                    if (window.firebaseArticleOperations) {
+                        clearInterval(checkInterval);
+                        resolve();
+                    }
+                }, 100);
+            });
+        }
+    </script>
+</body>
+</html> 

@@ -16,4 +16,4 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // 导出函数
-window.addTestPost = addTestPost; 
+// window.addTestPost = addTestPost; 

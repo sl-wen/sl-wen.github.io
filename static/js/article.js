@@ -1,7 +1,6 @@
 import { getArticle } from './articleService.js';
 import { marked } from 'marked';
-import { deleteDoc, doc } from 'firebase/firestore';
-import { db } from './firebase.js';
+import { deleteArticle } from './firebase-article-operations.js';
 
 // 配置 marked 选项
 marked.setOptions({
@@ -15,23 +14,6 @@ marked.setOptions({
 // 从 URL 获取文章 ID
 const urlParams = new URLSearchParams(window.location.search);
 const articleId = urlParams.get('id');
-
-// 删除文章
-async function deleteArticle(id) {
-  if (!confirm('确定要删除这篇文章吗？此操作不可恢复！')) {
-    return;
-  }
-  
-  try {
-    const docRef = doc(db, 'posts', id);
-    await deleteDoc(docRef);
-    alert('文章删除成功！');
-    window.location.href = '/';
-  } catch (error) {
-    console.error('删除文章失败:', error);
-    alert(`删除文章失败: ${error.message}`);
-  }
-}
 
 // 等待 DOM 加载完成
 document.addEventListener('DOMContentLoaded', () => {
@@ -100,47 +82,32 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="article-content">${renderedContent}</div>
     `;
 
-    // 处理代码块
-    const codeBlocks = articleContainer.querySelectorAll('pre code');
-    if (window.hljs) {
-      codeBlocks.forEach(block => {
-        window.hljs.highlightElement(block);
-      });
+    // 更新文章操作按钮
+    updateArticleActions(article.id);
+
+    // 应用代码高亮
+    document.querySelectorAll('pre code').forEach((block) => {
+      hljs.highlightBlock(block);
+    });
+  }
+
+  // 加载并显示文章
+  async function loadArticle() {
+    if (!articleId) {
+      showError('未找到文章 ID');
+      return;
+    }
+
+    try {
+      showLoading();
+      const article = await getArticle(articleId);
+      showArticle(article);
+    } catch (error) {
+      console.error('加载文章失败:', error);
+      showError('加载文章失败', error.message);
     }
   }
 
-  if (!articleContainer) {
-    console.error('找不到文章容器元素');
-    return;
-  }
-
-  if (articleId) {
-    console.log('正在加载文章:', articleId);
-    showLoading();
-    updateArticleActions(articleId);
-    
-    // 将删除函数添加到全局作用域
-    window.deleteArticle = deleteArticle;
-    
-    // 获取文章内容
-    getArticle(articleId)
-      .then(article => {
-        console.log('文章加载成功:', article);
-        showArticle(article);
-      })
-      .catch(error => {
-        console.error('加载文章失败:', error);
-        let errorMessage = '加载文章失败，请稍后重试。';
-        
-        if (error.code === 'unavailable') {
-          errorMessage = '无法连接到 Firestore 服务，请检查网络连接或稍后重试。';
-        } else if (error.message === '文章不存在') {
-          errorMessage = '未找到该文章。';
-        }
-        
-        showError(errorMessage, error.message);
-      });
-  } else {
-    showError('未找到文章 ID。');
-  }
+  // 加载文章
+  loadArticle();
 }); 

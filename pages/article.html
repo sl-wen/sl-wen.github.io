@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com https://www.google.com https://firestore.googleapis.com/* https://*.firestore.googleapis.com/* https://firestore.googleapis.com/google.firestore.v1.Firestore/*; frame-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.google.com; img-src 'self' https://*.google.com https://www.gstatic.com https://www.google.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://*.google.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com https://www.google.com https://firestore.googleapis.com/* https://*.firestore.googleapis.com/* https://firestore.googleapis.com/google.firestore.v1.Firestore/*; frame-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.google.com; img-src 'self' https://*.google.com https://www.gstatic.com https://www.google.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://*.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;">
     <title>文章详情 - 我的博客</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <!-- 添加代码高亮样式 -->
@@ -315,25 +315,23 @@
     <script src="/static/js/dist/firebase.bundle.js"></script>
     <script src="/static/js/dist/articleService.bundle.js"></script>
     <script src="/static/js/dist/article.bundle.js"></script>
-    <!-- <script src="/static/js/dist/test-firebase.bundle.js"></script> -->
     
     <!-- 添加点击特效 -->
     <script src="/static/js/click-effect.js"></script>
     
     <!-- 删除文章功能 -->
-    <script>
-        // 删除文章
-        async function deleteArticle(articleId) {
+    <script type="module">
+        import { deleteArticle as firebaseDeleteArticle } from '/static/js/firebase-article-operations.js';
+        
+        // 将删除函数暴露给全局作用域
+        window.deleteArticle = async function(articleId) {
             if (!confirm('确定要删除这篇文章吗？此操作不可恢复！')) {
                 return;
             }
             
             try {
-                // 等待Firebase操作模块加载完成
-                await waitForFirebaseOperations();
-                
                 // 删除文章
-                await window.firebaseArticleOperations.deleteArticle(articleId);
+                await firebaseDeleteArticle(articleId);
                 
                 alert('文章删除成功！');
                 
@@ -344,29 +342,6 @@
                 console.error('删除文章失败:', error);
                 alert(`删除文章失败: ${error.message}`);
             }
-        }
-        
-        // 等待Firebase操作模块加载完成
-        function waitForFirebaseOperations() {
-            return new Promise((resolve) => {
-                if (window.firebaseArticleOperations) {
-                    resolve();
-                    return;
-                }
-                
-                // 加载Firebase操作脚本
-                const script = document.createElement('script');
-                script.type = 'module';
-                script.src = '/static/js/firebase-article-operations.js';
-                document.body.appendChild(script);
-                
-                const checkInterval = setInterval(() => {
-                    if (window.firebaseArticleOperations) {
-                        clearInterval(checkInterval);
-                        resolve();
-                    }
-                }, 100);
-            });
         }
     </script>
 </body>

@@ -31,8 +31,7 @@ async function initFirebase() {
 // 获取文章详情
 async function getArticle(articleId) {
     try {
-        const { db } = await initFirebase();
-        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js');
+        const { doc, getDoc } = await import('firebase/firestore');
         
         const docRef = doc(db, "posts", articleId);
         const docSnap = await getDoc(docRef);
@@ -54,8 +53,7 @@ async function getArticle(articleId) {
 // 更新文章
 async function updateArticle(articleId, articleData) {
     try {
-        const { db } = await initFirebase();
-        const { doc, updateDoc, Timestamp } = await import('https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js');
+        const { doc, updateDoc, Timestamp } = await import('firebase/firestore');
         
         const docRef = doc(db, "posts", articleId);
         await updateDoc(docRef, {
@@ -72,8 +70,7 @@ async function updateArticle(articleId, articleData) {
 // 删除文章
 async function deleteArticle(articleId) {
     try {
-        const { db } = await initFirebase();
-        const { doc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js');
+        const { doc, deleteDoc } = await import('firebase/firestore');
         
         const docRef = doc(db, "posts", articleId);
         await deleteDoc(docRef);

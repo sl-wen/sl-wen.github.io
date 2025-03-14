@@ -144,63 +144,6 @@
             <span class="copyright">&copy; 2025 我的博客. All rights reserved.</span>
         </div>
     </div>
-    <!-- 使用内联脚本代替外部脚本 -->
-    <script>
-        // 简单的Markdown转HTML函数
-        function marked(markdown) {
-            if (!markdown) return '';
-
-            // 处理标题
-            let html = markdown
-                .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
-                .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
-                .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
-                .replace(/^#### (.*?)$/gm, '<h4>$1</h4>');
-
-            // 处理段落
-            html = html.replace(/^([^<\n].*?)$/gm, '<p>$1</p>');
-
-            // 处理加粗
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-            // 处理斜体
-            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-            // 处理列表
-            html = html.replace(/^- (.*?)$/gm, '<li>$1</li>');
-            html = html.replace(/(<li>.*?<\/li>\n?)+/g, '<ul>$&</ul>');
-
-            // 处理代码
-            html = html.replace(/`(.*?)`/g, '<code>$1</code>');
-
-            // 处理链接
-            html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
-
-            return html;
-        }
-        // 页面加载完成后执行
-        window.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const statusDiv = document.getElementById('status-messages');
-                statusDiv.innerHTML += '<p>页面初始化...</p>';
-
-                const editor = document.getElementById('editor');
-                const preview = document.getElementById('preview');
-                const form = document.getElementById('post-form');
-                const tagsInput = document.getElementById('tags');
-
-                // 实时预览
-                editor.addEventListener('input', () => {
-                    preview.innerHTML = marked(editor.value);
-                });
-            } catch (error) {
-                console.error('初始化失败:', error);
-                document.getElementById('status-messages').innerHTML += `
-                <p style="color: red;">初始化失败: ${error.message}</p>
-            `;
-            }
-        });
-    </script>
     <!-- 使用webpack打包后的文件 -->
     <script src="/static/js/dist/firebase.bundle.js"></script>
     <script src="/static/js/dist/post.bundle.js"></script>

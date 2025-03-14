@@ -1,27 +1,13 @@
 // 发布页面的打包入口文件
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { marked } from 'marked';
-
-// Firebase 配置
-const firebaseConfig = {
-    apiKey: "AIzaSyCuXDfNvLwiISoMwzcUIwUbaPTl69uRnao",
-    authDomain: "slwen-45838.firebaseapp.com",
-    projectId: "slwen-45838",
-    storageBucket: "slwen-45838.appspot.com",
-    messagingSenderId: "734137620659",
-    appId: "1:734137620659:web:81ce8b971dce766d67b8c6",
-    measurementId: "G-WEBZLW3S59"
-};
-
-// 初始化 Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import { db } from '../../static/js/firebase.js';
 
 // 初始化编辑器
 function initEditor() {
     const statusDiv = document.getElementById('status-messages');
     if (statusDiv) {
+        statusDiv.style.display = 'block';
         statusDiv.innerHTML += '<p>初始化编辑器...</p>';
     }
     
@@ -53,23 +39,27 @@ function initEditor() {
         }
 
         try {
-            const tags = tagsInput.value.split(',')
+            const title = document.getElementById('title').value.trim();
+            const content = editor.value.trim();
+            const author = document.getElementById('author').value.trim() || 'Admin';
+            const tags = tagsInput.value
+                .split(',')
                 .map(tag => tag.trim())
                 .filter(tag => tag.length > 0);
-                
-            const title = document.getElementById('title').value;
-            const content = editor.value;
-            const author = document.getElementById('author').value || 'Admin';
+
+            if (!title || !content) {
+                throw new Error('标题和内容不能为空');
+            }
 
             if (statusDiv) {
                 statusDiv.innerHTML += `<p>准备文章数据: 标题=${title}, 作者=${author}, 标签数=${tags.length}</p>`;
             }
 
             const post = {
-                title: title,
-                content: content,
-                author: author,
-                tags: tags,
+                title,
+                content,
+                author,
+                tags,
                 createdAt: Timestamp.fromDate(new Date()),
                 updatedAt: Timestamp.fromDate(new Date())
             };
@@ -94,12 +84,12 @@ function initEditor() {
             form.reset();
             preview.innerHTML = '';
 
-            // 3秒后跳转到首页
+            // 3秒后跳转到文章页面
             if (statusDiv) {
-                statusDiv.innerHTML += '<p>3秒后将跳转到首页</p>';
+                statusDiv.innerHTML += '<p>3秒后将跳转到文章页面</p>';
             }
             setTimeout(() => {
-                window.location.href = '/';
+                window.location.href = `/pages/article.html?id=${docRef.id}`;
             }, 3000);
 
         } catch (error) {
@@ -123,14 +113,10 @@ function initEditor() {
 window.addEventListener('DOMContentLoaded', () => {
     const statusDiv = document.getElementById('status-messages');
     if (statusDiv) {
+        statusDiv.style.display = 'block';
         statusDiv.innerHTML += '<p>页面加载完成，开始初始化...</p>';
     }
     
     // 初始化编辑器
     initEditor();
-});
-
-// 导出函数和变量，使其在全局可用
-window.firebaseApp = app;
-window.firestore = db;
-window.marked = marked; 
+}); 

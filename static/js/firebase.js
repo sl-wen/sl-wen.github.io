@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -16,18 +16,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // 初始化 Firestore，并配置缓存
-const db = getFirestore(app);
-
-// 设置 Firestore 缓存配置
-const settings = {
+const db = initializeFirestore(app, {
   cacheSizeBytes: 40 * 1024 * 1024, // 40MB
   experimentalForceLongPolling: true, // 强制使用长轮询
   ignoreUndefinedProperties: true, // 忽略未定义的属性
   cache: 'persistent' // 启用持久化缓存
-};
-
-// 应用设置
-db.settings(settings);
+});
 
 // 初始化 Auth
 const auth = getAuth(app);

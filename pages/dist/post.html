@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布文章 - 我的博客</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: inherit;
+        }
+
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .preview-container {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        .preview-container h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .success-message {
+            padding: 15px;
+            background-color: #dff0d8;
+            border: 1px solid #d6e9c6;
+            color: #3c763d;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            padding: 15px;
+            background-color: #f2dede;
+            border: 1px solid #ebccd1;
+            color: #a94442;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        #status-messages {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <div class="header">
+            <a href="/" class="logo">
+                <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
+            </a>
+            <div class="nav">
+                <a href="/">首页</a>
+                <a href="/pages/categories.html">归类</a>
+                <a href="/pages/search.html">搜索</a>
+                <!-- <a href="/pages/links.html">友链</a> -->
+                <a href="/pages/about.html">关于</a>
+                <a href="/pages/post.html">发布</a>
+            </div>
+        </div>
+        <div class="container">
+            <h2>发布新文章</h2>
+            <form id="post-form">
+                <div class="form-group">
+                    <label for="title">标题</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="author">作者</label>
+                    <input type="text" id="author" name="author" placeholder="Admin">
+                </div>
+                <div class="form-group">
+                    <label for="tags">标签 (用逗号分隔)</label>
+                    <input type="text" id="tags" name="tags" placeholder="技术, 教程, 其他">
+                </div>
+                <div class="form-group">
+                    <label for="editor">内容 (支持Markdown)</label>
+                    <textarea id="editor" name="content" required></textarea>
+                </div>
+                <button type="submit">发布文章</button>
+            </form>
+
+            <div class="preview-container">
+                <h3>预览</h3>
+                <div id="preview" class="preview-section"></div>
+            </div>
+
+            <div id="status-messages" style="display: none;"></div>
+        </div>
+        <div class="footer">
+            <span class="copyright">&copy; 2025 我的博客. All rights reserved.</span>
+        </div>
+    </div>
+    <!-- 使用内联脚本代替外部脚本 -->
+    <script>
+        // 简单的Markdown转HTML函数
+        function marked(markdown) {
+            if (!markdown) return '';
+
+            // 处理标题
+            let html = markdown
+                .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
+                .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
+                .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+                .replace(/^#### (.*?)$/gm, '<h4>$1</h4>');
+
+            // 处理段落
+            html = html.replace(/^([^<\n].*?)$/gm, '<p>$1</p>');
+
+            // 处理加粗
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // 处理斜体
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+            // 处理列表
+            html = html.replace(/^- (.*?)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*?<\/li>\n?)+/g, '<ul>$&</ul>');
+
+            // 处理代码
+            html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+
+            // 处理链接
+            html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+
+            return html;
+        }
+        // 页面加载完成后执行
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const statusDiv = document.getElementById('status-messages');
+                statusDiv.innerHTML += '<p>页面初始化...</p>';
+
+                const editor = document.getElementById('editor');
+                const preview = document.getElementById('preview');
+                const form = document.getElementById('post-form');
+                const tagsInput = document.getElementById('tags');
+
+                // 实时预览
+                editor.addEventListener('input', () => {
+                    preview.innerHTML = marked(editor.value);
+                });
+            } catch (error) {
+                console.error('初始化失败:', error);
+                document.getElementById('status-messages').innerHTML += `
+                <p style="color: red;">初始化失败: ${error.message}</p>
+            `;
+            }
+        });
+    </script>
+    <!-- 使用webpack打包后的文件 -->
+    <script src="/static/js/dist/firebase.bundle.js"></script>
+    <script src="/static/js/dist/post.bundle.js"></script>
+    
+    <!-- 添加点击特效 -->
+    <script src="/static/js/click-effect.js"></script>
+</body>
+
+</html>

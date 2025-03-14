@@ -2,6 +2,27 @@ import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../static/js/firebase.js';
 import { marked } from 'marked';
 
+// 配置 marked 选项
+marked.setOptions({
+    breaks: true, // 支持 GitHub 风格的换行
+    gfm: true,    // 启用 GitHub 风格的 Markdown
+    headerIds: true, // 为标题添加 id
+    mangle: false, // 不转义标题中的字符
+    sanitize: false, // 允许 HTML 标签
+});
+
+// 创建自定义渲染器
+const renderer = new marked.Renderer();
+renderer.image = function(href, title, text) {
+    // 如果是相对路径，添加基础URL
+    if (href && !href.startsWith('http') && !href.startsWith('data:')) {
+        href = '/static/img/' + href;
+    }
+    return `<img src="${href}" alt="${text}" title="${title || ''}" onerror="this.src='/static/img/default.png'">`;
+};
+
+marked.setOptions({ renderer });
+
 // 显示消息
 function showMessage(message, type = 'info') {
     const container = document.getElementById('message-container');

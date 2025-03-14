@@ -1,5 +1,5 @@
 import { db } from './firebase.js';
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, increment, setDoc } from 'firebase/firestore';
 
 // 获取并更新总访问量
 async function updateTotalViews() {
@@ -9,7 +9,7 @@ async function updateTotalViews() {
         
         if (!statsDoc.exists()) {
             // 如果统计文档不存在，创建它
-            await updateDoc(statsRef, {
+            await setDoc(statsRef, {
                 total: 1
             });
             return 1;

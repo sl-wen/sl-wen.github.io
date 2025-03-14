@@ -11,6 +11,18 @@ marked.setOptions({
   sanitize: false // 允许 HTML 标签
 });
 
+// 创建自定义渲染器
+const renderer = new marked.Renderer();
+renderer.image = function(href, title, text) {
+    // 如果是相对路径，添加基础URL
+    if (href && !href.startsWith('http') && !href.startsWith('data:')) {
+        href = '/static/img/' + href;
+    }
+    return `<img src="${href}" alt="${text}" title="${title || ''}" onerror="this.src='/static/img/default.png'">`;
+};
+
+marked.setOptions({ renderer });
+
 // 从 URL 获取文章 ID
 const urlParams = new URLSearchParams(window.location.search);
 const articleId = urlParams.get('id');

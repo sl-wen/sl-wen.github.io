@@ -1,6 +1,8 @@
 import { getArticle } from './articleService.js';
 import { marked } from 'marked';
 import { deleteArticle } from './firebase-article-operations.js';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from './firebase.js';
 
 // 配置 marked 选项
 marked.setOptions({
@@ -8,7 +10,15 @@ marked.setOptions({
   gfm: true,    // 启用 GitHub 风格的 Markdown
   headerIds: true, // 为标题添加 id
   mangle: false, // 不转义标题中的字符
-  sanitize: false // 允许 HTML 标签
+  sanitize: false, // 允许 HTML 标签
+  highlight: function(code, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(code, { language: lang }).value;
+      } catch (err) {}
+    }
+    return hljs.highlightAuto(code).value;
+  }
 });
 
 // 创建自定义渲染器
@@ -117,17 +127,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // 更新页面内容
     document.title = `${article.title} - 我的博客`;
     
-    // 渲染 Markdown 内容
-    const renderedContent = safeMarked(article.content);
-    
-    articleContainer.innerHTML = `
-      <h1 class="article-title">${article.title}</h1>
+    // 创建文章元信息区域
+    const metaHtml = `
       <div class="article-meta">
-        <span class="date">发布于：${new Date(article.createdAt?.toDate() || new Date()).toLocaleDateString('zh-CN')}</span>
-        ${article.tags ? `<span class="tags">标签：${article.tags.join(', ')}</span>` : ''}
-        <span class="views">阅读量：${article.views || 0}</span>
+        <span>发布于: ${article.createdAt ? article.createdAt.toDate().toLocaleDateString('zh-CN') : '未知日期'}</span>
+        ${article.author ? `<span>作者: ${article.author}</span>` : ''}
+        ${article.tags && article.tags.length > 0 ? `<span>标签: ${article.tags.join(', ')}</span>` : ''}
       </div>
-      <div class="article-content">${renderedContent}</div>
+    `;
+
+    // 渲染文章内容
+    const contentHtml = marked(article.content || '');
+    
+    // 组合完整的文章 HTML
+    articleContainer.innerHTML = `
+      <h1>${article.title || '无标题'}</h1>
+      ${metaHtml}
+      <div class="markdown-body">
+        ${contentHtml}
+      </div>
     `;
 
     // 更新文章操作按钮

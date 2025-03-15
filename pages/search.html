@@ -25,6 +25,47 @@
     .search-content p {
       margin-bottom: 15px;
     }
+
+    .hint {
+      background-color: yellow;
+      padding: 2px;
+    }
+
+    .icon-loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      opacity: 0;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .list-search li {
+      margin-bottom: 20px;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .list-search .title {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .list-search .content {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+    }
   </style>
 </head>
 
@@ -47,35 +88,21 @@
       <input id="search-input" type="text" placeholder="请在这里输入关键词^_^"></input>
       <h1>
         <span>搜索结果</span>
-        <i class="svg-icon icon-loading"></i>
+        <i class="icon-loading"></i>
       </h1>
-      <ul class="list-search">
-        {%- for post in site.posts %}
-        <li hidden>
-          <a href="{{site.baseurl}}{{ post.url }}">
-            <p class="title">{{ post.title }}</p>
-            <p class="content"></p>
-          </a>
-        </li>
-        {%- endfor %}
-      </ul>
+      <ul class="list-search"></ul>
       <div class="footer">
         <span class="copyright">&copy; 2025 我的博客. All rights reserved.</span>
       </div>
     </div>
-    <!-- 代码高亮 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <!-- 使用webpack打包后的文件 -->
     <script src="/static/js/dist/firebase.bundle.js"></script>
-    <script src="/static/js/dist/articleService.bundle.js"></script>
-    <script src="/static/js/dist/article.bundle.js"></script>
-    <script src="/static/js/dist/test-firebase.bundle.js"></script>
+    <script src="/static/js/dist/search.bundle.js"></script>
 
     <!-- 添加点击特效 -->
     <script src="/static/js/click-effect.js"></script>
   </div>
-
 </body>
 
 </html>

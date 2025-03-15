@@ -15,7 +15,11 @@ const firebaseConfig = {
 
 // 初始化 Firebase
 const app = initializeApp(firebaseConfig);
+
+// 初始化 Firestore
 const db = getFirestore(app);
+
+// 初始化 Auth
 const auth = getAuth(app);
 
 // 将 db 和 auth 添加到全局变量

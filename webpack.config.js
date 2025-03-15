@@ -17,6 +17,7 @@ export default {
     edit: './src/js/edit-bundle.js',
     post: './src/js/post-bundle.js',
     categories: './static/js/categories.js',
+    search: './static/js/search-bundle.js',
     
     // 测试工具
     'test-firebase': './static/js/test-firebase.js'
@@ -44,6 +45,10 @@ export default {
     alias: {
       'firebase': path.resolve(__dirname, 'node_modules/firebase'),
       '@firebase': path.resolve(__dirname, 'node_modules/@firebase')
+    },
+    fallback: {
+      "path": false,
+      "fs": false
     }
   }
 }; 

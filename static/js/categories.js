@@ -21,8 +21,22 @@ async function getCategories() {
             statusDiv.innerHTML += '<p>开始从 Firestore 获取文章数据...</p>';
         }
         
+        // 等待 Firebase 初始化完成
+        await new Promise((resolve) => {
+            if (window.db) {
+                resolve();
+            } else {
+                const checkDb = setInterval(() => {
+                    if (window.db) {
+                        clearInterval(checkDb);
+                        resolve();
+                    }
+                }, 100);
+            }
+        });
+
         // 获取所有文章
-        const postsRef = collection(db, "posts");
+        const postsRef = collection(window.db, "posts");
         const q = query(postsRef, orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
         

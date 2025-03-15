@@ -1,0 +1,32 @@
+---
+description: TypeScript coding standards and best practices
+globs: 'src/**/*.ts'；'src/**/*.tsx'；'!src/**/*.test.ts'
+alwaysApply: false
+---
+---
+name: typescript-rules
+description: TypeScript coding standards and best practices
+globs:
+    - 'src/**/*.ts'
+    - 'src/**/*.tsx'
+    - '!src/**/*.test.ts'
+priority: 1
+---
+
+# TypeScript Coding Standards
+
+## 基础规范
+
+-   使用 2 空格缩进
+-   优先使用 const 声明变量
+-   显式声明函数返回类型
+
+## 最佳实践
+
+-   避免 any 类型
+-   合理使用泛型
+-   接口优于类型别名
+
+## 参考文档
+
+Read more from @common-rules.mdc

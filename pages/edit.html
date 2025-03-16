@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>编辑文章 - 我的博客</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/main.css">
     <style>
         .container {
             max-width: 100%;
@@ -169,7 +170,7 @@
 </head>
 
 <body>
-    <div class="page">
+    <div class="page editor-page">
         <div class="header">
             <a href="/" class="logo">
                 <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
@@ -210,12 +211,12 @@
                         </div>
                     </div>
                     <div class="button-group">
-                        <button type="button" id="update-button">更新文章</button>
-                        <button type="button" id="delete-button" class="delete-btn">删除文章</button>
-                        <button type="button" id="cancel-button" class="cancel-btn">取消</button>
+                        <button type="button" id="update-button" class="primary-button">更新文章</button>
+                        <button type="button" id="delete-button" class="danger-button">删除文章</button>
+                        <button type="button" id="cancel-button" class="neutral-button">取消</button>
                     </div>
                 </form>
-                <div id="status-messages" style="display: none;"></div>
+                <div id="status-messages" class="status-messages"></div>
             </div>
         </div>
         <div class="footer">

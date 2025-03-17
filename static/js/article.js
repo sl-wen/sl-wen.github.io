@@ -83,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (articleActions) {
       articleActions.innerHTML = `
         <a href="/pages/edit.html?id=${id}" class="edit-button">编辑</a>
-        <button onclick="deleteArticle('${id}')" class="delete-button">删除</button>
       `;
     }
   }

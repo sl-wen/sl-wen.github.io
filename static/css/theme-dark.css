@@ -224,3 +224,21 @@ html.dark .footer-btn i {
 .dark a:hover {
     color: var(--link-hover-color) !important;
 }
+
+/* 暗色主题表格样式 */
+html.dark table {
+    border-color: #30363d;
+}
+
+html.dark table th,
+html.dark table td {
+    border-color: #30363d;
+}
+
+html.dark table th {
+    background-color: #161b22;
+}
+
+html.dark table tr:nth-child(2n) {
+    background-color: #161b22;
+}

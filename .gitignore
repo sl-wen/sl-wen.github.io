@@ -4,3 +4,6 @@
 /.jekyll-cache
 /.bundle
 node_modules
+pages/_site/
+pages/dist/
+pages/_site/dist/

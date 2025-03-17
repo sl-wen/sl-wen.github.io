@@ -430,4 +430,28 @@ button:hover {
     .nav a {
         margin: 5px;
     }
+}
+
+/* Markdown 表格样式 */
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    margin: 16px 0;
+}
+
+table th,
+table td {
+    padding: 8px;
+    border: 1px solid #d0d7de;
+    text-align: left;
+}
+
+table th {
+    background-color: #f6f8fa;
+    font-weight: 600;
+}
+
+table tr:nth-child(2n) {
+    background-color: #f6f8fa;
 } 

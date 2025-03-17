@@ -154,7 +154,7 @@ textarea {
     display: flex;
     gap: var(--spacing-medium);
     margin-bottom: var(--spacing-medium);
-    min-height: 500px;
+    min-height: 400px;
 }
 
 .editor-section,
@@ -165,15 +165,14 @@ textarea {
 }
 
 .preview-section {
-    border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     background-color: var(--background-light);
-    margin-top: 32px;
+    margin-top: 25.6px;
 }
 
 #preview {
     flex: 1;
-    padding: var(--spacing-medium);
+    padding: var(--spacing-small);
     overflow-y: auto;
     background-color: var(--background-white);
     border: 1px solid var(--border-color);

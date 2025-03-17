@@ -78,16 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const articleContainer = document.getElementById('article-container');
   const articleActions = document.querySelector('.article-actions');
 
-  // 更新文章操作按钮
-  function updateArticleActions(id) {
-    if (articleActions) {
-      articleActions.innerHTML = `
-        <a href="/pages/edit.html?id=${id}" class="edit-button">编辑</a>
-        <button onclick="deleteArticle('${id}')" class="delete-button">删除</button>
-      `;
-    }
-  }
-
   // 显示错误信息
   function showError(message, details = '') {
     if (!articleContainer) {
@@ -147,9 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ${contentHtml}
       </div>
     `;
-
-    // 更新文章操作按钮
-    updateArticleActions(article.id);
 
     // 应用代码高亮
     document.querySelectorAll('pre code').forEach((block) => {

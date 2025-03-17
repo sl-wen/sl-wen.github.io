@@ -224,6 +224,21 @@ textarea {
     transition-duration: .1s;
 }
 
+.edit-button, .delete-button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.edit-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
 #edit-button {
     color: var(--danger-color);
     background-color: var(--button-bg);

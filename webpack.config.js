@@ -17,7 +17,7 @@ export default {
     edit: './src/js/edit-bundle.js',
     post: './src/js/post-bundle.js',
     categories: './static/js/categories.js',
-    search: './static/js/search-bundle.js',
+    search: './static/js/search.js',
     
     // 测试工具
     'test-firebase': './static/js/test-firebase.js'

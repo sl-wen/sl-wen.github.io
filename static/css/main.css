@@ -180,7 +180,7 @@ textarea {
     gap: var(--spacing-medium);
     margin-bottom: var(--spacing-medium);
     flex: 1;
-    min-height: 0; /* 重要：防止flex子元素溢出 */
+    min-height: 600px; /* 设置固定高度 */
 }
 
 .editor-section,
@@ -188,25 +188,26 @@ textarea {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0; /* 重要：防止flex子元素溢出 */
+    min-height: 600px;
 }
 
 .preview-section {
     border-radius: var(--border-radius);
     background-color: var(--background-light);
     margin-top: 25.6px;
+    overflow: hidden; /* 防止子元素溢出 */
 }
 
 textarea {
     font-family: monospace;
     line-height: 1.6;
     resize: none;
-    flex: 1;
+    height: 100%;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: var(--spacing-small);
     font-size: 14px;
-    overflow: hidden;
+    overflow-y: hidden;
 }
 
 #preview {
@@ -215,7 +216,79 @@ textarea {
     background-color: var(--background-white);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    overflow: hidden;
+    overflow-y: auto;
+    color: var(--text-color);
+}
+
+/* Markdown 预览样式 */
+#preview h1,
+#preview h2,
+#preview h3,
+#preview h4,
+#preview h5,
+#preview h6 {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--text-color);
+}
+
+#preview h1 {
+    font-size: 2em;
+    padding-bottom: .3em;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#preview h2 {
+    font-size: 1.5em;
+    padding-bottom: .3em;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#preview h3 {
+    font-size: 1.25em;
+}
+
+#preview p {
+    margin-bottom: 16px;
+}
+
+#preview ul,
+#preview ol {
+    padding-left: 2em;
+    margin-bottom: 16px;
+}
+
+#preview li {
+    margin: 0.25em 0;
+}
+
+#preview blockquote {
+    padding: 0 1em;
+    color: var(--text-light-color);
+    border-left: 0.25em solid var(--border-color);
+    margin: 0 0 16px 0;
+}
+
+#preview pre {
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f6f8fa;
+    border-radius: var(--border-radius);
+    margin-bottom: 16px;
+}
+
+#preview pre code {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    word-break: normal;
+    white-space: pre;
+    background: transparent;
+    border: 0;
 }
 
 /* 文章详情页样式 */
@@ -529,6 +602,12 @@ textarea {
 @media (max-width: 768px) {
     .editor-preview-container {
         flex-direction: column;
+        height: auto;
+    }
+    
+    .editor-section,
+    .preview-section {
+        height: 400px;
     }
     
     .preview-section {

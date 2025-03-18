@@ -1,6 +1,56 @@
 import { db } from './firebase-config.js';
 import { collection, getDocs } from 'firebase/firestore';
 
+// 辅助函数：处理图片 URL
+function processImageUrl(url) {
+  if (!url) return '';
+  try {
+    // 如果是相对路径，添加基础路径
+    if (url.startsWith('/')) {
+      return url;
+    }
+    // 如果是完整的 URL，直接返回
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    // 否则假设是相对于 static 目录的路径
+    return `/static/${url}`;
+  } catch (e) {
+    console.error('处理图片 URL 时出错:', e);
+    return '';
+  }
+}
+
+// 辅助函数：从 Markdown 中提取纯文本
+function extractTextFromMarkdown(markdown) {
+  if (!markdown) return '';
+  return markdown
+    // 移除图片
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    // 移除链接，保留链接文字
+    .replace(/\[([^\]]+)\]\(.*?\)/g, '$1')
+    // 移除标题标记
+    .replace(/#{1,6}\s/g, '')
+    // 移除强调标记
+    .replace(/(\*\*|__)(.*?)\1/g, '$2')
+    // 移除斜体标记
+    .replace(/(\*|_)(.*?)\1/g, '$2')
+    // 移除代码块
+    .replace(/```[\s\S]*?```/g, '')
+    // 移除行内代码
+    .replace(/`([^`]+)`/g, '$1')
+    // 移除引用
+    .replace(/^\s*>\s*/gm, '')
+    // 移除水平线
+    .replace(/^\s*[-*_]{3,}\s*$/gm, '')
+    // 移除列表标记
+    .replace(/^\s*[-*+]\s+/gm, '')
+    .replace(/^\s*\d+\.\s+/gm, '')
+    // 移除多余的空行
+    .replace(/\n\s*\n/g, '\n')
+    .trim();
+}
+
 // 搜索功能
 document.addEventListener('DOMContentLoaded', async function() {
   const searchInput = document.getElementById('search-input');
@@ -33,7 +83,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const results = posts.filter(post => {
       const titleMatch = post.title && post.title.toLowerCase().includes(keyword);
-      const contentMatch = post.content && post.content.toLowerCase().includes(keyword);
+      const contentText = extractTextFromMarkdown(post.content);
+      const contentMatch = contentText && contentText.toLowerCase().includes(keyword);
       const tagsMatch = post.tags && post.tags.some(tag => tag.toLowerCase().includes(keyword));
       return titleMatch || contentMatch || tagsMatch;
     });
@@ -59,7 +110,8 @@ document.addEventListener('DOMContentLoaded', async function() {
       // 创建文章预览
       const preview = document.createElement('p');
       if (post.content) {
-        const previewText = post.content.substring(0, 200) + '...';
+        const plainText = extractTextFromMarkdown(post.content);
+        const previewText = plainText.substring(0, 200) + '...';
         preview.textContent = previewText;
       } else {
         preview.textContent = '暂无内容预览';

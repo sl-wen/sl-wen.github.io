@@ -2,7 +2,7 @@ import { getArticle } from './articleService.js';
 import { marked } from 'marked';
 import { deleteArticle } from './firebase-article-operations.js';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from './firebase.js';
+import { db } from './firebase-config.js';
 
 // 配置 marked 选项
 marked.setOptions({
@@ -21,52 +21,43 @@ marked.setOptions({
   }
 });
 
-// 创建自定义渲染器
-const renderer = new marked.Renderer();
-renderer.image = function(href, title, text) {
-    try {
-        // 如果 href 是对象，尝试获取其 toString 方法的结果
-        if (href && typeof href === 'object') {
-            console.warn('图片链接是对象类型:', href);
-            href = '';
-        }
-        
-        // 确保所有参数都是字符串
-        href = String(href || '').trim();
-        title = String(title || '').trim();
-        text = String(text || '').trim();
-        
-        // 如果没有有效的 href，直接使用默认图片
-        if (!href) {
-            return `<img src="/static/img/logo.png" alt="${text}" title="${title}">`;
-        }
-        
-        // 如果是相对路径，添加基础URL
-        if (!href.startsWith('http') && !href.startsWith('data:')) {
-            href = '/static/img/' + href;
-        }
-        
-        return `<img src="${href}" alt="${text}" title="${title}" onerror="this.src='/static/img/logo.png'">`;
-    } catch (error) {
-        console.error('图片渲染错误:', error);
-        return `<img src="/static/img/logo.png" alt="图片加载失败" title="图片加载失败">`;
+// 处理图片路径
+function processImageUrl(url) {
+  if (!url) return '';
+  try {
+    // 解码 URL，以防它已经被编码
+    let decodedUrl = decodeURIComponent(url);
+    
+    // 如果是相对路径，添加基础路径
+    if (decodedUrl.startsWith('/')) {
+      return decodedUrl;
     }
-};
-
-// 安全的 marked 解析函数
-function safeMarked(content) {
-    if (!content || typeof content !== 'string') {
-        return '';
+    
+    // 如果是完整的 URL，直接返回
+    if (decodedUrl.startsWith('http://') || decodedUrl.startsWith('https://')) {
+      return decodedUrl;
     }
-    try {
-        return marked(content);
-    } catch (error) {
-        console.error('Markdown 解析错误:', error);
-        return '内容解析错误';
-    }
+    
+    // 否则假设是相对于 static/img 目录的路径
+    // 不要对路径进行编码，让浏览器自动处理
+    return `/static/img/${decodedUrl}`;
+  } catch (e) {
+    console.error('处理图片 URL 时出错:', e);
+    return url;
+  }
 }
 
-marked.setOptions({ renderer });
+// 自定义 marked 渲染器
+const renderer = {
+  image(href, title, text) {
+    const processedUrl = processImageUrl(href);
+    // 不要对 src 属性进行编码，让浏览器自动处理
+    return `<img src="${processedUrl}" alt="${text || ''}" title="${title || ''}" class="article-image" onerror="this.onerror=null; this.src='/static/img/default.jpg';">`;
+  }
+};
+
+// 配置 marked
+marked.use({ renderer });
 
 // 从 URL 获取文章 ID
 const urlParams = new URLSearchParams(window.location.search);

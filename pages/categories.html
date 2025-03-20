@@ -6,67 +6,6 @@
     <title>分类 - 我的博客</title>
     <link rel="icon" href="static/img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        .categories-container {
-            padding: 20px 0;
-        }
-        
-        .categories-title {
-            font-size: 24px;
-            margin-bottom: 20px;
-            font-weight: normal;
-            text-align: left;
-        }
-        
-        .category-list {
-            margin-bottom: 30px;
-        }
-        
-        .category-name {
-            font-size: 18px;
-            margin-bottom: 10px;
-            font-weight: normal;
-        }
-        
-        .post-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .post-list li {
-            margin-bottom: 5px;
-            padding-bottom: 5px;
-            display: flex;
-            align-items: baseline;
-        }
-        
-        .post-date {
-            color: #666;
-            font-size: 14px;
-            margin-right: 10px;
-            white-space: nowrap;
-        }
-        
-        .post-list a {
-            color: #333;
-            text-decoration: none;
-            font-size: 16px;
-        }
-        
-        .post-list a:hover {
-            color: #434446;
-        }
-        
-        .loading, .error {
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .error {
-            color: #dc3545;
-        }
-    </style>
 </head>
 <body>
     <div class="page">
@@ -93,7 +32,8 @@
             </div>
         </div>
         <div class="footer">
-            <span class="copyright">&copy; 2025 我的博客. All rights reserved.</span>
+            <span class="footer-stats-copyright">&copy; 2025 我的博客. All rights reserved.</span>
+            <div class="footer-stats">总访问量：加载中...</div>
         </div>
     </div>
 
@@ -101,6 +41,7 @@
     <script src="/static/js/dist/firebase.bundle.js"></script>
     <script src="/static/js/dist/articleService.bundle.js"></script>
     <script src="/static/js/dist/categories.bundle.js"></script>
+    <script src="/static/js/dist/stats.bundle.js"></script>
     
     <!-- 添加点击特效 -->
     <script src="/static/js/click-effect.js"></script>

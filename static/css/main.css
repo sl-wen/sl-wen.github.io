@@ -35,14 +35,6 @@
     width: 100%;
 }
 
-.footer {
-    margin-top: auto;
-    text-align: center;
-    padding: var(--spacing-medium);
-    background-color: var(--background-light);
-    border-top: 1px solid var(--border-color);
-}
-
 /* 首页布局 */
 .home-page .container {
     max-width: 800px;

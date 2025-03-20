@@ -169,7 +169,7 @@ textarea {
 
 .editor-preview-container {
     display: flex;
-    gap: var(--spacing-medium);
+    gap: 22px;
     margin-bottom: var(--spacing-medium);
     flex: 1;
     min-height: 600px; /* 设置固定高度 */
@@ -195,6 +195,7 @@ textarea {
     line-height: 1.6;
     resize: none;
     height: 100%;
+    margin-right: 1px;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: var(--spacing-small);

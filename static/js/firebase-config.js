@@ -18,5 +18,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+// 将 db 和 auth 添加到全局变量
+window.db = db;
+window.auth = auth;
 
 export { db, auth }; 

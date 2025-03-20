@@ -1,25 +1,14 @@
 import { getArticle } from './articleService.js';
-import { marked } from 'marked';
+import { marked } from './marked.esm.js';
 import { deleteArticle } from './firebase-article-operations.js';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase-config.js';
 
-// 配置 marked 选项
-marked.setOptions({
-  breaks: true, // 支持 GitHub 风格的换行
-  gfm: true,    // 启用 GitHub 风格的 Markdown
-  headerIds: true, // 为标题添加 id
-  mangle: false, // 不转义标题中的字符
-  sanitize: false, // 允许 HTML 标签
-  highlight: function(code, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(code, { language: lang }).value;
-      } catch (err) {}
-    }
-    return hljs.highlightAuto(code).value;
-  }
-});
+// 简化Marked初始化
+const markedOptions = {
+  breaks: true,
+  gfm: true 
+};
 
 // 处理图片路径
 function processImageUrl(url) {
@@ -142,9 +131,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updateArticleActions(article.id);
 
     // 应用代码高亮
-    document.querySelectorAll('pre code').forEach((block) => {
-      hljs.highlightBlock(block);
-    });
+    if (window.hljs) {
+      document.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightBlock(block);
+      });
+    }
   }
 
   // 加载并显示文章

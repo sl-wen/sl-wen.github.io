@@ -1,5 +1,4 @@
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { db } from './firebase.js';
 
 // 格式化日期
 function formatDate(timestamp) {
@@ -8,6 +7,20 @@ function formatDate(timestamp) {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit'
+    });
+}
+
+// 等待 Firebase 初始化完成
+async function waitForFirebase() {
+    return new Promise(resolve => {
+      const checkFirebase = () => {
+        if (window.db) {
+          resolve(window.db);
+        } else {
+          setTimeout(checkFirebase, 100);
+        }
+      };
+      checkFirebase();
     });
 }
 
@@ -22,21 +35,16 @@ async function getCategories() {
         }
         
         // 等待 Firebase 初始化完成
-        await new Promise((resolve) => {
-            if (window.db) {
-                resolve();
-            } else {
-                const checkDb = setInterval(() => {
-                    if (window.db) {
-                        clearInterval(checkDb);
-                        resolve();
-                    }
-                }, 100);
-            }
-        });
+        const db = await waitForFirebase();
+        
+        if (!db) {
+          throw new Error('Firebase未初始化');
+        }
+        
+        console.log('Firebase初始化成功，db:', typeof db);
 
         // 获取所有文章
-        const postsRef = collection(window.db, "posts");
+        const postsRef = collection(db, "posts");
         const q = query(postsRef, orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
         

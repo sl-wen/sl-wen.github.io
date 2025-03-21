@@ -281,6 +281,59 @@ button:hover {
 }
 
 
+/* 代码高亮主题 */
+.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 1em;
+    color: #24292f;
+    background: #f6f8fa;
+}
+
+.hljs-comment,
+.hljs-quote {
+    color: #6e7781;
+    font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag {
+    color: #cf222e;
+}
+
+.hljs-string,
+.hljs-doctag {
+    color: #0a3069;
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-selector-id {
+    color: #8250df;
+}
+
+.hljs-type,
+.hljs-class {
+    color: #953800;
+}
+
+.hljs-literal,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-attribute {
+    color: #0550ae;
+}
+
+.hljs-number,
+.hljs-addition {
+    color: #116329;
+}
+
+.hljs-built_in,
+.hljs-builtin-name {
+    color: #8250df;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     .nav {

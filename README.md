@@ -29,7 +29,7 @@
 │   ├── article.html        # 文章详情页
 │   ├── categories.html     # 文章分类页
 │   ├── post.html           # 文章发布页
-     ── about.html          # 关于页面
+│   ├── about.html          # 关于页面
 │   └── search.html         # 搜索页面
 ├── src/                    # 源代码
 │   └── js/                 # JavaScript源文件
@@ -88,14 +88,6 @@
    jekyll serve
    ```
 
-### 迁移现有Markdown文章
-
-如果您有现有的Jekyll Markdown文章，可以使用迁移脚本将它们导入到Firestore：
-
-```
-npm run migrate
-```
-
 ## 使用方法
 
 ### 发布文章
@@ -105,7 +97,7 @@ npm run migrate
 3. 在编辑器中使用Markdown格式编写文章内容
 4. 实时预览区域会显示文章的渲染效果
 5. 点击"发布文章"按钮将文章保存到Firestore数据库
-6. 发布成功后会自动跳转到首页
+6. 发布成功后会自动跳转到文章详细页
 
 ### 浏览文章
 
@@ -119,14 +111,6 @@ npm run migrate
 - **布局**：修改HTML文件自定义页面布局
 - **配置**：修改`_config.yml`调整Jekyll配置
 
-## 部署
-
-1. 构建生产版本
-   ```
-   jekyll build
-   ```
-
-2. 将`_site`目录部署到您的Web服务器或静态网站托管服务（如Netlify、GitHub Pages等）
 
 ## 许可证
 
@@ -146,39 +130,11 @@ npm run migrate
 
 [JetBrains](https://www.jetbrains.com/) 免费提供的开发工具[![JetBrains](./static/img/jetbrains.svg)](https://www.jetbrains.com/?from=slwen-blog)
 
-[夜间模式代码高亮配色](https://github.com/mgyongyosi/OneDarkJekyll)
 
 # 本地运行
 
 一般提交到 github 过个几十秒就可以看到效果，如果你需要对在本地查看效果需要安装 ruby 环境和依赖
 
-windows 下推荐在 wsl 下装 ruby，直接一句`apt install build-essential ruby ruby-dev` 就行了
-
-```bash
-# gem sources --remove https://rubygems.org/
-# gem sources -a https://mirrors.tuna.tsinghua.edu.cn/rubygems/
-# gem sources -l
-# gem sources --clear-all
-# gem sources --update
-gem install bundler
-# bundle config mirror.https://rubygems.org https://mirrors.tuna.tsinghua.edu.cn/rubygems
-# bundle config list
-bundle install
-```
-
-通过下面命令启动/编译项目
-
-```bash
-bundle exec jekyll serve --watch --host=127.0.0.1 --port=8080
-bundle exec jekyll build --destination=dist
-```
-
-如果需要替换代码高亮的样式可以通过下面的命令生成 css
-
-```bash
-rougify help style
-rougify style github > highlighting.css
-```
 
 # 项目配置
 
@@ -186,13 +142,11 @@ rougify style github > highlighting.css
 
 2. 如果使用 GitHub 的的域名，请删除`CNAME`文件，然后把你的项目修改为`用户名.github.io`
 
+3. 修改`_config.yml`文件，具体作用请参考注释
 
-4. 修改`_config.yml`文件，具体作用请参考注释
+4. 网站的 logo 和 favicon 放在了`static/img/`下，替换即可，大小无所谓，图片比例最好是 1:1
 
-
-6. 网站的 logo 和 favicon 放在了`static/img/`下，替换即可，大小无所谓，图片比例最好是 1:1
-
-7. 如果你是把项目 fork 过去的，想要删除我的提交记录可以使用下面的命令
+5. 如果你是把项目 fork 过去的，想要删除我的提交记录可以使用下面的命令
 
    ```
    git checkout --orphan temp
@@ -215,22 +169,11 @@ rougify style github > highlighting.css
 - **自适应设计**：支持在不同设备上自适应显示。
 - **夜间模式**：支持切换夜间模式，提供更好的夜间阅读体验。
 - **全文检索**：支持全文检索功能，方便用户快速查找内容。
-- **访问量统计**：集成不蒜子的访问量统计功能。
-- **友链管理**：支持友情链接的展示和管理。
-- **多语言支持**：支持中文和英文的内容展示。
+- **访问量统计**：集成访问量统计功能。
 - **页面特效**：点击页面文字时会出现特效。
 - **代码高亮**：支持代码高亮显示，适合技术博客。
 - **服务工作者**：使用Service Worker进行缓存管理，提高页面加载速度。
 
-## 本地运行
-
-- 安装Ruby环境和依赖。
-- 使用`bundle exec jekyll serve`命令启动本地服务器。
-
-## 部署
-
-- 使用`bundle exec jekyll build`命令生成静态文件。
-- 将生成的文件上传到服务器或GitHub Pages进行部署。
 
 ## 配置
 

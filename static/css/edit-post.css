@@ -1,0 +1,342 @@
+/* 共通变量 */
+:root {
+    --primary-color: #2da44e;
+    --primary-hover-color: #2c974b;
+    --primary-border-color: rgba(27, 31, 36, 0.15);
+    --danger-color: #cf222e;
+    --danger-hover-color: #a40e26;
+    --danger-border-color: rgba(27, 31, 36, 0.15);
+    --button-bg: #f6f8fa;
+    --button-hover-bg: #f3f4f6;
+    --button-border-color: rgba(27, 31, 36, 0.15);
+    --button-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
+    --neutral-color: #9e9e9e;
+    --text-color: #333;
+    --text-light-color: #666;
+    --border-color: #ddd;
+    --background-light: #ffffff;
+    --background-white: #fff;
+    --code-background: #282c34;
+    --code-text-color: #abb2bf;
+    --border-radius: 6px;
+    --spacing-small: 10px;
+    --spacing-medium: 20px;
+}
+
+/* 编辑器页面布局 */
+.editor-page .container {
+    max-width: 100%;
+    margin: 0;
+    padding: var(--spacing-medium);
+    display: flex;
+    flex-direction: column;
+}
+
+/* 共通表单样式 */
+.form-group {
+    margin-bottom: var(--spacing-medium);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--spacing-small);
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.form-group input[type="text"],
+textarea {
+    width: 100%;
+    padding: var(--spacing-small);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+}
+
+textarea {
+    font-family: monospace;
+    line-height: 1.6;
+    resize: none;
+    min-height: 400px;
+}
+
+/* 编辑器样式 */
+.editor-container {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-preview-container {
+    display: flex;
+    gap: 22px;
+    margin-bottom: var(--spacing-medium);
+    flex: 1;
+    min-height: 600px; /* 设置固定高度 */
+}
+
+.editor-section,
+.preview-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 600px;
+    max-width: calc(50% - var(--spacing-medium)/2); 
+}
+
+.preview-section {
+    border-radius: var(--border-radius);
+    background-color: var(--background-light);
+    margin-top: 25px;
+}
+
+/* 表格样式 */
+.markdown-body table,
+#preview table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    table-layout: auto;
+}
+
+.markdown-body table th,
+.markdown-body table td,
+#preview table th,
+#preview table td {
+    border: 1px solid #d0d7de;
+    padding: 8px;
+    text-align: left;
+}
+
+.markdown-body table th,
+#preview table th {
+    background-color: #f6f8fa;
+    font-weight: bold;
+}
+
+.markdown-body table tr:nth-child(even),
+#preview table tr:nth-child(even) {
+    background-color: #f6f8fa;
+}
+
+.markdown-body table tr:hover,
+#preview table tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* 编辑器样式 */
+textarea {
+    font-family: monospace;
+    line-height: 1.6;
+    resize: none;
+    height: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-small);
+    font-size: 14px;
+    overflow-y: auto;
+}
+
+#preview {
+    flex: 1;
+    padding: var(--spacing-small);
+    background-color: var(--background-white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow-y: auto;
+    color: var(--text-color);
+}
+
+/* Markdown 预览样式 */
+#preview h1,
+#preview h2,
+#preview h3,
+#preview h4,
+#preview h5,
+#preview h6 {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--text-color);
+}
+
+#preview h1 {
+    font-size: 2em;
+    padding-bottom: .3em;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#preview h2 {
+    font-size: 1.5em;
+    padding-bottom: .3em;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#preview h3 {
+    font-size: 1.25em;
+}
+
+#preview p {
+    margin-bottom: 16px;
+}
+
+#preview ul,
+#preview ol {
+    padding-left: 2em;
+    margin-bottom: 16px;
+}
+
+#preview li {
+    margin: 0.25em 0;
+}
+
+#preview blockquote {
+    padding: 0 1em;
+    color: var(--text-light-color);
+    border-left: 0.25em solid var(--border-color);
+    margin: 0 0 16px 0;
+}
+
+#preview pre {
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f6f8fa;
+    border-radius: var(--border-radius);
+    margin-bottom: 16px;
+}
+
+#preview pre code {
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+    word-break: normal;
+    white-space: pre;
+    background: transparent;
+    border: 0;
+}
+
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .editor-preview-container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .editor-section,
+    .preview-section {
+        height: 400px;
+    }
+    
+    .preview-section {
+        margin-top: var(--spacing-medium);
+    }
+    
+    .editor-page .container {
+        padding: var(--spacing-small);
+    }
+} 
+
+/* Markdown 表格样式 */
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    margin: 16px 0;
+}
+
+table th,
+table td {
+    padding: 8px;
+    border: 1px solid #d0d7de;
+    text-align: left;
+}
+
+table th {
+    background-color: #f6f8fa;
+    font-weight: 600;
+}
+
+table tr:nth-child(2n) {
+    background-color: #f6f8fa;
+}
+
+/* 代码块样式 */
+pre {
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+    margin-bottom: 16px;
+}
+
+code {
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+    font-size: 85%;
+    background-color: rgba(175, 184, 193, 0.2);
+    border-radius: 6px;
+    padding: 0.2em 0.4em;
+    margin: 0;
+}
+
+pre code {
+    background-color: transparent;
+    border: 0;
+    display: inline;
+    line-height: inherit;
+    margin: 0;
+    max-width: auto;
+    overflow: visible;
+    padding: 0;
+    word-wrap: normal;
+    font-size: 100%;
+}
+
+/* 表格样式 */
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    margin: 16px 0;
+    display: block;
+    overflow-x: auto;
+}
+
+table th,
+table td {
+    padding: 8px;
+    border: 1px solid #d0d7de;
+    text-align: left;
+}
+
+table th {
+    background-color: #f6f8fa;
+    font-weight: 600;
+}
+
+table tr:nth-child(2n) {
+    background-color: #f6f8fa;
+}
+
+/* 文章图片样式 */
+.article-image {
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.article-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

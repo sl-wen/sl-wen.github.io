@@ -1,0 +1,18 @@
+/* 关于页面样式 */
+.about-container {
+    padding: var(--spacing-medium) 0;
+}
+
+.about-title {
+    font-size: 24px;
+    margin-bottom: var(--spacing-medium);
+    font-weight: normal;
+}
+
+.about-content {
+    line-height: 1.8;
+}
+
+.about-content p {
+    margin-bottom: 15px;
+}

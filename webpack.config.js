@@ -19,8 +19,6 @@ export default {
     categories: './static/js/categories.js',
     search: './static/js/search.js',
     
-    // 测试工具
-    'test-firebase': './static/js/test-firebase.js'
   },
   output: {
     filename: '[name].bundle.js',

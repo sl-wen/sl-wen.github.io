@@ -1,0 +1,20 @@
+.categories-container {
+    padding: 20px 0;
+}
+
+.categories-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: normal;
+    text-align: left;
+}
+
+.category-list {
+    margin-bottom: 30px;
+}
+
+.category-name {
+    font-size: 18px;
+    margin-bottom: 10px;
+    font-weight: normal;
+}

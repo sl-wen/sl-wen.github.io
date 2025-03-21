@@ -1,0 +1,293 @@
+/* 共通变量 */
+:root {
+    --primary-color: #2da44e;
+    --primary-hover-color: #2c974b;
+    --primary-border-color: rgba(27, 31, 36, 0.15);
+    --danger-color: #cf222e;
+    --danger-hover-color: #a40e26;
+    --danger-border-color: rgba(27, 31, 36, 0.15);
+    --button-bg: #f6f8fa;
+    --button-hover-bg: #f3f4f6;
+    --button-border-color: rgba(27, 31, 36, 0.15);
+    --button-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
+    --neutral-color: #9e9e9e;
+    --text-color: #333;
+    --text-light-color: #666;
+    --border-color: #ddd;
+    --background-light: #ffffff;
+    --background-white: #fff;
+    --code-background: #282c34;
+    --code-text-color: #abb2bf;
+    --border-radius: 6px;
+    --spacing-small: 10px;
+    --spacing-medium: 20px;
+}
+
+/* 全局样式 */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    font-size: 16px;
+    line-height: 1.5;
+    color: #24292f;
+    background-color: #ffffff;
+}
+
+
+
+
+/* 头部样式 */
+.header {
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logo {
+    display: block;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 10px;
+}
+
+.logo img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+/* 导航菜单样式 */
+.nav {
+    display: flex;
+    text-align: left; 
+    justify-content: center;
+    margin-top: 10px;
+    gap: 100px;
+}
+
+.nav a {
+    color: #333;
+    font-size: 25px;
+    text-decoration: none;
+    padding: 10px 20px;
+}
+
+.nav a:hover {
+    color: #676d72;
+    text-decoration: underline;
+}
+/* 页面基础布局 */
+.page {
+    min-height: 100vh;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+    width: 100%;
+}
+
+/* 首页布局 */
+.home-page .container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: var(--spacing-medium);
+}
+
+/* 页脚样式 */
+.footer {
+    margin-top: 50px;
+    padding: 20px 0;
+    border-top: 1px solid #eee;
+    color: #666;
+    display: flex;
+    flex-direction:row;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}
+
+.copyright {
+    font-size: 14px;
+    color: #666;
+}
+.footer-stats {
+    font-size: 14px;
+    color: #666;
+}
+
+/* 共通按钮样式 */
+.button-group {
+    margin-top: var(--spacing-medium);
+    display: flex;
+    gap: var(--spacing-small);
+}
+
+.button-group button {
+    padding: var(--spacing-small) var(--spacing-medium);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: opacity 0.3s;
+}
+
+.button-group button:hover {
+    opacity: 0.9;
+}
+
+.primary-button {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.danger-button {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.neutral-button {
+    background-color: var(--neutral-color);
+    color: white;
+}
+
+/* 共通消息样式 */
+.status-messages {
+    display: none;
+}
+
+.message {
+    padding: 15px;
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-medium);
+}
+
+.success-message {
+    composes: message;
+    background-color: #dff0d8;
+    border: 1px solid #d6e9c6;
+    color: #3c763d;
+}
+
+.error-message {
+    composes: message;
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    color: #a94442;
+}
+
+/* 共通加载动画 */
+.loading-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    opacity: 0;
+    vertical-align: middle;
+    margin-left: var(--spacing-small);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+.edit-button, .delete-button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+/* edit-button样式 */
+.edit-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
+#edit-button {
+    color: var(--danger-color);
+    background-color: var(--button-bg);
+    border-color: var(--button-border-color);
+}
+
+#edit-button:hover {
+    color: #ffffff;
+    background-color: var(--danger-color);
+    border-color: var(--danger-border-color);
+}
+
+/* delete-button样式 */
+#delete-button {
+    color: var(--danger-color);
+    background-color: var(--button-bg);
+    border-color: var(--button-border-color);
+}
+
+#delete-button:hover {
+    color: #ffffff;
+    background-color: var(--danger-color);
+    border-color: var(--danger-border-color);
+}
+
+
+/* 链接样式 */
+a {
+    color: #333;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #797d81;
+    text-decoration: underline;
+}
+
+/* 按钮样式 */
+button {
+    padding: 5px 10px;
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover {
+    background-color: #e9ecef;
+}
+
+/* 加载和错误提示 */
+.loading, .error, .no-posts {
+    padding: 20px;
+    text-align: center;
+}
+
+.error {
+    color: #dc3545;
+}
+
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .nav {
+        flex-wrap: wrap;
+    }
+    
+    .nav a {
+        margin: 5px;
+    }
+}

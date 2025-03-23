@@ -11,20 +11,6 @@ function formatDate(timestamp) {
     });
 }
 
-// 等待 Firebase 初始化完成
-async function waitForFirebase() {
-    return new Promise(resolve => {
-      const checkFirebase = () => {
-        if (db) {
-          resolve(db);
-        } else {
-          setTimeout(checkFirebase, 100);
-        }
-      };
-      checkFirebase();
-    });
-}
-
 // 获取文章分类
 async function getCategories() {
     const container = document.getElementById('categories-container');
@@ -34,14 +20,11 @@ async function getCategories() {
         if (statusDiv) {
             statusDiv.innerHTML += '<p>开始从 Firestore 获取文章数据...</p>';
         }
-        
-        // 等待 Firebase 初始化完成
-        const db = await waitForFirebase();
-        
+
         if (!db) {
-          throw new Error('Firebase未初始化');
+            throw new Error('Firebase未初始化');
         }
-        
+
         console.log('Firebase初始化成功，db:', typeof db);
 
         // 获取所有文章

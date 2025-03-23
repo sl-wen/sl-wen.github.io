@@ -1,4 +1,5 @@
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { db } from './firebase-config.js';
 
 // 格式化日期
 function formatDate(timestamp) {
@@ -14,8 +15,8 @@ function formatDate(timestamp) {
 async function waitForFirebase() {
     return new Promise(resolve => {
       const checkFirebase = () => {
-        if (window.db) {
-          resolve(window.db);
+        if (db) {
+          resolve(db);
         } else {
           setTimeout(checkFirebase, 100);
         }

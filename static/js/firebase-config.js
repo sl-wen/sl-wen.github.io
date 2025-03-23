@@ -16,10 +16,11 @@ const firebaseConfig = {
 
 // 初始化 Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-// 将 db 和 auth 添加到全局变量
-window.db = db;
-window.auth = auth;
 
-export { db, auth }; 
+// 初始化服务
+const db = getFirestore();
+const auth = getAuth();
+
+// 导出实例
+export { db, auth, app };
+export default app; 

@@ -21,12 +21,6 @@ async function getCategories() {
             statusDiv.innerHTML += '<p>开始从 Firestore 获取文章数据...</p>';
         }
 
-        if (!db) {
-            throw new Error('Firebase未初始化');
-        }
-
-        console.log('Firebase初始化成功，db:', typeof db);
-
         // 获取所有文章
         const postsRef = collection(db, "posts");
         const q = query(postsRef, orderBy("createdAt", "desc"));

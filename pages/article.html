@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="/static/css/common.css">
     <!-- 添加代码高亮样式 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    
+    <!-- Firebase初始化必须最先加载 -->
+    <script src="/static/js/dist/firebase.bundle.js"></script>
 </head>
 <body>
     <div class="page">
@@ -45,54 +48,10 @@
     <!-- 代码高亮 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     
-    <!-- Firebase初始化必须最先加载 -->
-    <script src="/static/js/dist/firebase.bundle.js"></script>
-    
-    <!-- 等待Firebase初始化完成后再加载其他脚本 -->
-    <script>
-        // 等待Firebase初始化
-        function waitForFirebase() {
-            return new Promise((resolve) => {
-                const check = () => {
-                    if (window.db) {
-                        resolve();
-                    } else {
-                        setTimeout(check, 100);
-                    }
-                };
-                check();
-            });
-        }
-
-        // 加载其他脚本
-        async function loadScripts() {
-            await waitForFirebase();
-            
-            // 按顺序加载其他脚本
-            const scripts = [
-                '/static/js/dist/articleService.bundle.js',
-                '/static/js/dist/article.bundle.js',
-                '/static/js/dist/stats.bundle.js'
-            ];
-            
-            for (const src of scripts) {
-                await new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = src;
-                    script.onload = resolve;
-                    script.onerror = reject;
-                    document.body.appendChild(script);
-                });
-            }
-        }
-
-        // 开始加载脚本
-        loadScripts().catch(error => {
-            console.error('加载脚本失败:', error);
-            document.getElementById('article-container').innerHTML = 
-                '<div class="error">加载页面失败，请刷新重试</div>';
-        });
-    </script>
+    <!-- 其他依赖的脚本 -->
+    <script src="/static/js/dist/articleService.bundle.js"></script>
+    <script src="/static/js/dist/article.bundle.js"></script>
+    <script src="/static/js/dist/stats.bundle.js"></script>
     
     <!-- 添加点击特效 -->
     <script src="/static/js/click-effect.js"></script>

@@ -1,6 +1,6 @@
 // Firebase文章操作函数
-import { doc, getDoc, updateDoc, deleteDoc, Timestamp, increment } from '@firebase/firestore';
-import { db } from './firebase.js';
+import { doc, getDoc, updateDoc, deleteDoc, Timestamp, increment } from 'firebase/firestore';
+import { db } from './firebase-config.js';
 
 // 获取文章详情
 async function getArticle(articleId) {

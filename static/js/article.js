@@ -1,14 +1,24 @@
 import { getArticle } from './articleService.js';
-import { marked } from './marked.esm.js';
+import { marked } from 'marked';
 import { deleteArticle } from './firebase-article-operations.js';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase-config.js';
 
-// 简化Marked初始化
-const markedOptions = {
-  breaks: true,
-  gfm: true 
+// 自定义 marked 渲染器
+const renderer = {
+  image(href, title, text) {
+    const processedUrl = processImageUrl(href);
+    // 不要对 src 属性进行编码，让浏览器自动处理
+    return `<img src="${processedUrl}" alt="${text || ''}" title="${title || ''}" class="article-image" onerror="this.onerror=null; this.src='/static/img/default.jpg';">`;
+  }
 };
+
+// 配置 marked
+marked.use({
+  breaks: true,
+  gfm: true,
+  renderer: renderer
+});
 
 // 处理图片路径
 function processImageUrl(url) {
@@ -35,18 +45,6 @@ function processImageUrl(url) {
     return url;
   }
 }
-
-// 自定义 marked 渲染器
-const renderer = {
-  image(href, title, text) {
-    const processedUrl = processImageUrl(href);
-    // 不要对 src 属性进行编码，让浏览器自动处理
-    return `<img src="${processedUrl}" alt="${text || ''}" title="${title || ''}" class="article-image" onerror="this.onerror=null; this.src='/static/img/default.jpg';">`;
-  }
-};
-
-// 配置 marked
-marked.use({ renderer });
 
 // 从 URL 获取文章 ID
 const urlParams = new URLSearchParams(window.location.search);
@@ -116,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     // 渲染文章内容
-    const contentHtml = marked(article.content || '');
+    const contentHtml = marked.parse(article.content || '');
     
     // 组合完整的文章 HTML
     articleContainer.innerHTML = `

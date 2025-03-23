@@ -1,5 +1,5 @@
 import { collection, doc, getDoc, getDocs, query, where, increment, updateDoc } from 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
+import { db } from './firebase-config.js';
 
 // 重试函数
 async function retry(fn, retries = 3, delay = 1000) {
@@ -13,44 +13,10 @@ async function retry(fn, retries = 3, delay = 1000) {
   }
 }
 
-// 等待 Firebase 初始化完成
-async function waitForFirebase() {
-  return new Promise((resolve, reject) => {
-    let attempts = 0;
-    const maxAttempts = 50; // 5秒超时
-    
-    const checkFirebase = () => {
-      attempts++;
-      
-      // 检查全局Firebase实例
-      if (window.db) {
-        console.log('找到已初始化的Firebase实例');
-        resolve(window.db);
-        return;
-      }
-      
-      // 检查是否已超时
-      if (attempts >= maxAttempts) {
-        reject(new Error('Firebase初始化超时'));
-        return;
-      }
-      
-      // 继续等待
-      setTimeout(checkFirebase, 100);
-    };
-    
-    checkFirebase();
-  });
-}
-
 // 获取单篇文章
 export async function getArticle(id) {
   try {
     console.log('开始获取文章:', id);
-    
-    // 等待 Firebase 初始化
-    const db = await waitForFirebase();
-    console.log('Firebase初始化成功，db类型:', typeof db);
     
     if (!db) {
       throw new Error('Firebase未正确初始化');
@@ -99,8 +65,6 @@ export async function getArticle(id) {
 // 获取所有文章
 export async function getAllArticles() {
   try {
-    const db = await waitForFirebase();
-    
     if (!db) {
       throw new Error('Firebase未初始化');
     }
@@ -126,8 +90,6 @@ export async function getAllArticles() {
 // 按标签获取文章
 export async function getArticlesByTag(tag) {
   try {
-    const db = await waitForFirebase();
-    
     if (!db) {
       throw new Error('Firebase未初始化');
     }

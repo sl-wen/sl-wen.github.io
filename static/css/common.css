@@ -122,10 +122,11 @@ body {
     color: #666;
 }
 
-/* 共通按钮样式 */
+/* foot共通按钮样式 */
 .button-group {
     margin-top: var(--spacing-medium);
     display: flex;
+    justify-content: flex-end;
     gap: var(--spacing-small);
 }
 
@@ -203,32 +204,14 @@ body {
 }
 
 
-.edit-button, .delete-button {
+.delete-button {
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
     text-decoration: none;
     transition: background-color 0.3s;
-}
-/* edit-button样式 */
-.edit-button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-}
-
-#edit-button {
-    color: var(--danger-color);
-    background-color: var(--button-bg);
-    border-color: var(--button-border-color);
-}
-
-#edit-button:hover {
-    color: #ffffff;
-    background-color: var(--danger-color);
-    border-color: var(--danger-border-color);
-}
+} 
 
 /* delete-button样式 */
 #delete-button {

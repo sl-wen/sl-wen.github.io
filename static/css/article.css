@@ -93,8 +93,8 @@ table tr:nth-child(2n) {
 }
 
 /* 代码块样式 */
-pre {
-    background-color: #f6f8fa;
+.markdown-body pre {
+    background-color: #e7eaef;
     border-radius: 6px;
     padding: 16px;
     overflow: auto;
@@ -103,7 +103,7 @@ pre {
     margin-bottom: 16px;
 }
 
-code {
+.markdown-body code {
     font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
     font-size: 85%;
     background-color: rgba(175, 184, 193, 0.2);
@@ -112,7 +112,7 @@ code {
     margin: 0;
 }
 
-pre code {
+.markdown-body pre code {
     background-color: transparent;
     border: 0;
     display: inline;
@@ -125,7 +125,7 @@ pre code {
     font-size: 100%;
 } 
 
-#preview blockquote {
+.markdown-body blockquote {
     padding: 0 1em;
     color: var(--text-light-color);
     border-left: 0.25em solid var(--border-color);

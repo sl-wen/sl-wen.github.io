@@ -94,6 +94,7 @@ table tr:nth-child(2n) {
 
 /* 代码块样式 */
 .markdown-body pre {
+    position: relative;
     background-color: #e7eaef;
     border-radius: 6px;
     padding: 16px;
@@ -101,6 +102,39 @@ table tr:nth-child(2n) {
     font-size: 85%;
     line-height: 1.45;
     margin-bottom: 16px;
+}
+
+/* 代码块复制按钮 */
+.copy-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 20px;
+    color: #24292f;
+    background-color: #f6f8fa;
+    border: 1px solid rgba(27, 31, 36, 0.15);
+    border-radius: 6px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+}
+
+.markdown-body pre:hover .copy-button {
+    opacity: 1;
+}
+
+.copy-button:hover {
+    background-color: #f3f4f6;
+    border-color: rgba(27, 31, 36, 0.15);
+}
+
+.copy-button.copied {
+    color: #1a7f37;
+    border-color: rgba(26, 127, 55, 0.15);
+    background-color: #f6f8fa;
 }
 
 .markdown-body code {

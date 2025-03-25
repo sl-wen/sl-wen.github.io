@@ -94,6 +94,38 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 
+  // 添加代码块复制功能
+  function addCopyButtons() {
+    document.querySelectorAll('pre code').forEach((codeBlock) => {
+      const container = codeBlock.parentNode;
+      const copyButton = document.createElement('button');
+      copyButton.className = 'copy-button';
+      copyButton.textContent = '复制';
+
+      copyButton.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(codeBlock.textContent);
+          copyButton.textContent = '已复制！';
+          copyButton.classList.add('copied');
+          
+          setTimeout(() => {
+            copyButton.textContent = '复制';
+            copyButton.classList.remove('copied');
+          }, 2000);
+        } catch (err) {
+          console.error('复制失败:', err);
+          copyButton.textContent = '复制失败';
+          
+          setTimeout(() => {
+            copyButton.textContent = '复制';
+          }, 2000);
+        }
+      });
+
+      container.appendChild(copyButton);
+    });
+  }
+
   // 显示文章内容
   function showArticle(article) {
     if (!articleContainer) {
@@ -134,6 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
         hljs.highlightBlock(block);
       });
     }
+
+    // 添加代码块复制按钮
+    addCopyButtons();
   }
 
   // 加载并显示文章

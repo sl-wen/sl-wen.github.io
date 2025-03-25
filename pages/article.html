@@ -89,7 +89,7 @@
                 }
 
                 // 限制文章长度，避免请求过大
-                const maxInputLength = 2000;
+                const maxInputLength = 1000;
                 const truncatedContent = articleContent.length > maxInputLength 
                     ? articleContent.substring(0, maxInputLength) + '...'
                     : articleContent;
@@ -104,7 +104,7 @@
                     body: JSON.stringify({
                         text: truncatedContent,
                         model: 'huggingface:chinese-t5',  // 使用多语言mT5模型
-                        maxLength: 150
+                        maxLength: 1000
                     })
                 });
 

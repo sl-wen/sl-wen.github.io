@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com https://www.google.com https://firestore.googleapis.com/* https://*.firestore.googleapis.com/* https://firestore.googleapis.com/google.firestore.v1.Firestore/*; frame-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.google.com; img-src 'self' https://*.google.com https://www.gstatic.com https://www.google.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://*.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com https://www.google.com https://firestore.googleapis.com/* https://*.firestore.googleapis.com/* https://firestore.googleapis.com/google.firestore.v1.Firestore/* https://autoapi-git-main-slwens-projects-5f0fd28f.vercel.app https://autoapi-git-main-slwens-projects-5f0fd28f.vercel.app/api/*; frame-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.google.com; img-src 'self' https://*.google.com https://www.gstatic.com https://www.google.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://*.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;">
     <title>文章详情 - 我的博客</title>
     <link rel="icon" href="static/img/favicon.ico" type="image/x-icon">
     <!-- 代码高亮 -->
@@ -35,6 +35,21 @@
             <div class="article-actions">
                 <button id="edit-button" class="edit-button">编辑</button>
             </div>
+            <!-- AI功能区域 -->
+            <div class="ai-tools">
+                <div class="ai-summary-section">
+                    <div class="summary-header">
+                        <span class="summary-icon">🤖 AI 总结</span>
+                        <button id="generate-summary" class="ai-button">生成摘要</button>
+                    </div>
+                    <div id="summary-container" class="ai-result-container" style="display: none;">
+                        <div id="summary-content"></div>
+                        <div class="ai-actions">
+                            <button class="copy-button" onclick="copySummary()">复制</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div id="article-container" class="article-container">
                 <div class="loading">加载中...</div>
             </div>
@@ -54,6 +69,104 @@
     <!-- 添加点击特效 -->
     <script src="/static/js/click-effect.js"></script>
     
+    <!-- AI功能脚本 -->
+    <script>
+        const API_BASE_URL = 'https://autoapi-git-main-slwens-projects-5f0fd28f.vercel.app';
+        
+        // 生成摘要
+        document.getElementById('generate-summary').addEventListener('click', async function() {
+            const articleContent = document.querySelector('.markdown-body').textContent;
+            const summaryContainer = document.getElementById('summary-container');
+            const summaryContent = document.getElementById('summary-content');
+            
+            try {
+                summaryContent.innerHTML = '<div class="loading">正在生成摘要...</div>';
+                summaryContainer.style.display = 'block';
+
+                // 确保文章内容不为空且长度合适
+                if (!articleContent || articleContent.trim().length < 10) {
+                    throw new Error('文章内容太短，无法生成摘要');
+                }
+
+                // 限制文章长度，避免请求过大
+                const maxInputLength = 2000;
+                const truncatedContent = articleContent.length > maxInputLength 
+                    ? articleContent.substring(0, maxInputLength) + '...'
+                    : articleContent;
+
+                console.log('发送请求到API，文章内容长度:', truncatedContent.length);
+                const response = await fetch(`${API_BASE_URL}/api/summarize`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: truncatedContent,
+                        model: 'huggingface:chinese-t5',  // 使用多语言mT5模型
+                        maxLength: 150
+                    })
+                });
+
+                // 检查响应状态
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API响应错误:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        errorText: errorText
+                    });
+                    throw new Error(`API请求失败 (${response.status})`);
+                }
+
+                // 尝试解析响应
+                let responseText;
+                try {
+                    responseText = await response.text();
+                    console.log('API原始响应:', responseText);
+                    
+                    // 检查响应是否为空
+                    if (!responseText) {
+                        throw new Error('服务器返回空响应');
+                    }
+
+                    const data = JSON.parse(responseText);
+                    
+                    if (data.summary) {
+                        summaryContent.innerHTML = `<p>${data.summary}</p>`;
+                    } else if (data.error) {
+                        throw new Error(data.error);
+                    } else {
+                        throw new Error('返回数据格式不正确');
+                    }
+                } catch (parseError) {
+                    console.error('解析响应失败:', parseError);
+                    console.error('原始响应内容:', responseText);
+                    throw new Error('无法解析服务器响应');
+                }
+            } catch (error) {
+                console.error('摘要生成过程出错:', error);
+                summaryContent.innerHTML = `<p class="error">生成摘要失败: ${error.message}</p>`;
+                
+                // 如果是服务器错误，给出更友好的提示
+                if (error.message.includes('500')) {
+                    summaryContent.innerHTML = `<p class="error">服务器暂时无法处理请求，请稍后重试</p>`;
+                }
+            }
+        });
+
+        // 复制摘要
+        function copySummary() {
+            const summaryText = document.getElementById('summary-content').textContent;
+            navigator.clipboard.writeText(summaryText).then(() => {
+                alert('摘要已复制到剪贴板');
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败');
+            });
+        }
+    </script>
+
     <!-- 删除文章功能 -->
     <script type="module">
         import { deleteArticle as firebaseDeleteArticle } from '/static/js/firebase-article-operations.js';

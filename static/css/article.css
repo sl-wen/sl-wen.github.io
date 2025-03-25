@@ -183,3 +183,114 @@ table tr:nth-child(2n) {
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+/* AI功能区域样式 */
+.ai-tools {
+    margin: 20px 0;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.ai-summary-section {
+    margin-bottom: 15px;
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.summary-icon {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.ai-button {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #e0e0e0;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.ai-button:hover {
+    background-color: #e8e8e8;
+    border-color: #d0d0d0;
+}
+
+.ai-result-container {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.ai-result-container p {
+    margin: 0;
+    line-height: 1.6;
+    color: #333;
+}
+
+.ai-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.copy-button {
+    background-color: transparent;
+    border: 1px solid #e0e0e0;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.copy-button:hover {
+    background-color: #f0f0f0;
+    border-color: #d0d0d0;
+    color: #333;
+}
+
+.loading {
+    color: #666;
+    font-style: italic;
+}
+
+.error {
+    color: #dc3545;
+    padding: 10px;
+    background-color: #fff3f3;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .ai-tools {
+        margin: 15px 0;
+        padding: 10px;
+    }
+
+    .summary-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .ai-button {
+        width: 100%;
+    }
+}

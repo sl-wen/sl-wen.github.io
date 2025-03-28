@@ -1,16 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>分类 - 我的博客</title>
-    <link rel="icon" href="static/img/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/static/css/categories.css">
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/categories.css">
 </head>
 <body>
-    {% include header.html %}
     <div class="page">
+        <div class="header">
+            <a href="/" class="logo">
+                <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
+            </a>
+            <!-- 引入共通header -->
+            <div id="common-header"></div>
+        </div>
         <div class="container">
             <div class="categories-container">
                 <h1 class="categories-title">文章分类</h1>
@@ -23,13 +29,18 @@
         <div class="footer">
             <span class="footer-stats-copyright">&copy; 2025 我的博客. All rights reserved.</span>
             <div class="footer-stats">总访问量：加载中...</div>
-        </div>
+        </div>       
+        <!-- 引入共通footer -->
+        <div id="common-footer"></div>
     </div>
 
-    <!-- 使用webpack打包后的文件 -->
+    <!-- 加载共通组件脚本 -->
+    <script src="/static/js/common-components.js"></script>
+    
+    <!-- Firebase 和分类页面脚本 -->
     <script src="/static/js/dist/firebase.bundle.js"></script>
-    <script src="/static/js/dist/articleService.bundle.js"></script>
     <script src="/static/js/dist/categories.bundle.js"></script>
+    <script src="/static/js/dist/articleService.bundle.js"></script>
     <script src="/static/js/dist/stats.bundle.js"></script>
     
     <!-- 添加点击特效 -->

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>关于 - 我的博客</title>
-    <link rel="icon" href="static/img/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/static/css/about.css">
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/about.css">
 </head>
 <body>
     <div class="page">
@@ -14,15 +14,10 @@
             <a href="/" class="logo">
                 <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
             </a>
-            <div class="nav">
-                <a href="/">首页</a>
-                <a href="/pages/categories.html">分类</a>
-                <a href="/pages/search.html">搜索</a>
-                <!-- <a href="/pages/links.html">友链</a> -->
-                <a href="/pages/about.html">关于</a>
-                <a href="/pages/post.html">发布</a>
-            </div>
+            <!-- 引入共通header -->
+            <div id="common-header"></div>
         </div>
+        
         <div class="container">
             <div class="about-container">
                 <h1 class="about-title">关于我的博客</h1>
@@ -38,13 +33,13 @@
                     <p>如果您有任何问题或建议，请随时联系我。</p>
                 </div>
             </div>
-        </div>
-        <div class="footer">
-            <span class="footer-stats-copyright">&copy; 2025 我的博客. All rights reserved.</span>
-            <div class="footer-stats">总访问量：加载中...</div>
-        </div>
+        </div>       
+        <!-- 引入共通footer -->
+        <div id="common-footer"></div>
     </div>
-    
+
+    <!-- 加载共通组件脚本 -->
+    <script src="/static/js/common-components.js"></script>
     <!-- 添加点击特效 -->
     <script src="/static/js/click-effect.js"></script>
     <script src="/static/js/dist/stats.bundle.js"></script>

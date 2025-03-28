@@ -16,25 +16,18 @@
             <a href="/" class="logo">
                 <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
             </a>
-            <div class="nav">
-                <a href="/">首页</a>
-                <a href="/pages/categories.html">分类</a>
-                <a href="/pages/search.html">搜索</a>
-                <!-- <a href="/pages/links.html">友链</a> -->
-                <a href="/pages/about.html">关于</a>
-                <a href="/pages/post.html">发布</a>
-            </div>
+            <!-- 引入共通header -->
+            <div id="common-header"></div>
         </div>
         <div class="container">
             <div id="status-messages" class="status-messages"></div>
             <div id="posts-container"></div>
         </div>
-        <div class="footer">
-            <span class="copyright">&copy; 2025 我的博客. All rights reserved.</span>
-            <div class="footer-stats">总访问量：加载中...</div>
-        </div>
+        <!-- 引入共通footer -->
+        <div id="common-footer"></div>
     </div>
-
+    <!-- 加载共通组件脚本 -->      
+    <script src="/static/js/common-components.js"></script>
     <!-- 使用webpack打包后的Firebase bundle -->
     <script src="/static/js/bundles/firebase.bundle.js"></script>
     <script src="/static/js/dist/stats.bundle.js"></script>

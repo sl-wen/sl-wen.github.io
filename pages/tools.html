@@ -1,17 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>工具 - My Blog</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/assets/css/main.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工具集 - 我的博客</title>
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/tools.css">
 </head>
 <body>
-    {% include header.html %}
-    <div class="container">
-        <h1>工具</h1>
-        <!-- コンテンツはここに追加 -->
+    <div class="page">
+        <div class="header">
+            <a href="/" class="logo">
+                <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
+            </a>
+            <!-- 引入共通header -->
+            <div id="common-header"></div>
+        </div>
+        
+        <div class="container">
+            <h1>实用工具集</h1>
+            <div class="tools-grid">
+                <!-- 小说下载工具 -->
+                <div class="tool-card">
+                    <div class="tool-icon">📚</div>
+                    <h3>小说下载器</h3>
+                    <p>输入小说网址，自动爬取内容并生成TXT文件</p>
+                    <a href="/pages/novel-crawler.html" class="tool-link">开始使用</a>
+                </div>
+                
+                <!-- 为未来其他工具预留位置 -->
+                <div class="tool-card coming-soon">
+                    <div class="tool-icon">🔧</div>
+                    <h3>更多工具</h3>
+                    <p>敬请期待...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 引入共通footer -->
+        <div id="common-footer"></div>
     </div>
-    {% include footer.html %}
+
+    <!-- 加载共通组件脚本 -->
+    <script src="/static/js/common-components.js"></script>
 </body>
 </html>

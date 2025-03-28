@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.xs5200.net https://autoapi-six.vercel.app https://cors-anywhere.herokuapp.com https://api.allorigins.win; img-src 'self' data:; frame-src 'self'; font-src 'self';">
+    <title>小说下载器 - 我的博客</title>
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/novel-crawler.css">
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <a href="/" class="logo">
+                <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
+            </a>
+            <!-- 引入共通header -->
+            <div id="common-header"></div>
+        </div>
+        
+        <div class="container">
+            <h1>小说下载器</h1>
+            <div class="crawler-box">
+                <div class="input-group">
+                    <label for="novel-url">小说网址：</label>
+                    <input type="text" id="novel-url" placeholder="请输入小说目录页网址，例如: https://www.xs5200.net/44_44108/" value="https://www.xs5200.net/44_44108/">
+                </div>
+
+                <div class="buttons">
+                    <button id="fetch-info-btn" class="primary-btn">获取小说信息</button>
+                    <button id="start-download-btn" class="success-btn" disabled>开始下载</button>
+                </div>
+
+                <div id="novel-info" class="novel-info" style="display: none;">
+                    <h2 id="novel-title">小说标题</h2>
+                    <div class="info-row">
+                        <span class="info-label">作者：</span>
+                        <span id="novel-author">作者名称</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">章节数：</span>
+                        <span id="chapter-count">0章</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">简介：</span>
+                        <p id="novel-intro">小说简介内容...</p>
+                    </div>
+                </div>
+
+                <div id="progress-container" class="progress-container" style="display: none;">
+                    <h3>下载进度</h3>
+                    <div class="progress-bar-container">
+                        <div id="progress-bar" class="progress-bar"></div>
+                        <div id="progress-text" class="progress-text">0%</div>
+                    </div>
+                    <div id="status-message" class="status-message">准备中...</div>
+                </div>
+
+                <div id="download-complete" class="download-complete" style="display: none;">
+                    <h3>下载完成！</h3>
+                    <p>小说文件已生成，请点击下面的按钮下载：</p>
+                    <a id="download-link" class="download-btn" download>下载TXT文件</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 引入共通footer -->
+        <div id="common-footer"></div>
+    </div>
+
+    <!-- 加载共通组件脚本 -->
+    <script src="/static/js/common-components.js"></script>
+    
+    <!-- 加载小说爬虫脚本 -->
+    <script src="/static/js/novel-crawler.js"></script>
+</body>
+</html> 

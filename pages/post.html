@@ -6,24 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>发布 - My Blog</title>
     <link rel="icon" href="static/img/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/assets/css/main.css">
+    <!-- 代码高亮 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="/static/css/edit-post.css">
+    <link rel="stylesheet" href="/static/css/common.css">   
 </head>
-
 <body>
-    {% include header.html %}
+
     <div class="page editor-page">
         <div class="header">
             <a href="/" class="logo">
                 <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
             </a>
-            <div class="nav">
-                <a href="/">首页</a>
-                <a href="/pages/categories.html">分类</a>
-                <a href="/pages/search.html">搜索</a>
-                <!-- <a href="/pages/links.html">友链</a> -->
-                <a href="/pages/about.html">关于</a>
-                <a href="/pages/post.html">发布</a>
-            </div>
+            <div id="common-header"></div>
         </div>
         <div class="container">
             <div class="editor-container">
@@ -57,16 +52,15 @@
             </div>
             <div id="message-container"></div>
         </div>
-        <div class="footer">
-            <span class="footer-stats-copyright">&copy; 2025 我的博客. All rights reserved.</span>
-            <div class="footer-stats">总访问量：加载中...</div>
-        </div>
+        <!-- 引入共通footer -->
+        <div id="common-footer"></div>
     </div>
     <!-- 使用webpack打包后的文件 -->
     <script src="/static/js/dist/firebase.bundle.js"></script>
     <script src="/static/js/dist/post.bundle.js"></script>
     <script src="/static/js/dist/stats.bundle.js"></script>
-    
+     <!-- 加载共通组件脚本 -->
+     <script src="/static/js/common-components.js"></script>   
     <!-- 添加点击特效 -->
     <script src="/static/js/click-effect.js"></script>
 </body>

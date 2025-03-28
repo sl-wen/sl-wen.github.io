@@ -1,16 +1,28 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>育儿 - My Blog</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/assets/css/main.css" />
+    <link rel="stylesheet" href="/static/css/common.css">
 </head>
+
 <body>
-    {% include header.html %}
-    <div class="container">
-        <h1>育儿</h1>
-        <!-- コンテンツはここに追加 -->
+    <div class="page">
+        <div class="header">
+            <a href="/" class="logo">
+                <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
+            </a>
+            <!-- 引入共通header -->
+            <div id="common-header"></div>
+        </div>
+        <!-- 引入共通footer -->
+        <div id="common-footer"></div>
     </div>
 </body>
+    <!-- 加载共通组件脚本 -->
+    <script src="/static/js/common-components.js"></script>
+    <!-- 添加点击特效 -->
+    <script src="/static/js/click-effect.js"></script>
 </html>

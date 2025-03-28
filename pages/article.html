@@ -17,6 +17,7 @@
     <script src="/static/js/dist/firebase.bundle.js"></script>
 </head>
 <body>
+    {% include header.html %}
     <div class="page">
         <div class="header">
             <a href="/" class="logo">
@@ -55,11 +56,8 @@
             </div>
             <div id="status-messages" class="status-messages"></div>
         </div>
-        <div class="footer">
-            <span class="footer-stats-copyright">&copy; 2025 我的博客. All rights reserved.</span>
-            <div class="footer-stats">总访问量：加载中...</div>
-        </div>
     </div>
+    {% include footer.html %}
     
     <!-- 其他依赖的脚本 -->
     <script src="/static/js/dist/articleService.bundle.js"></script>
@@ -202,4 +200,4 @@
         });
     </script>
 </body>
-</html> 
+</html>

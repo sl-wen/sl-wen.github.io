@@ -4,26 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>搜索 - 我的博客</title>
+  <title>搜索 - My Blog</title>
   <link rel="icon" href="static/img/favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" href="/static/css/search.css">
-  <link rel="stylesheet" href="/static/css/common.css">
+  <link rel="stylesheet" href="/assets/css/main.css">
 </head>
 
 <body>
+  {% include header.html %}
   <div class="page">
-    <div class="header">
-      <a href="/" class="logo">
-        <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
-      </a>
-      <div class="nav">
-        <a href="/">首页</a>
-        <a href="/pages/categories.html">分类</a>
-        <a href="/pages/search.html">搜索</a>
-        <a href="/pages/about.html">关于</a>
-        <a href="/pages/post.html">发布</a>
-      </div>
-    </div>
     <div class="container">
       <div class="search-container">
         <input id="search-input" type="text" class="search-input" placeholder="请输入关键词搜索...">

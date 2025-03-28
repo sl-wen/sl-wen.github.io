@@ -4,7 +4,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // 加载header
     if (document.getElementById('common-header')) {
-        fetch('/_includes/header.html')
+        fetch('/components/header.html')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('无法加载header组件');
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 加载footer
     if (document.getElementById('common-footer')) {
-        fetch('/_includes/footer.html')
+        fetch('/components/footer.html')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('无法加载footer组件');

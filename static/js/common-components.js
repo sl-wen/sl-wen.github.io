@@ -2,37 +2,38 @@
  * 加载通用组件
  */
 document.addEventListener('DOMContentLoaded', function() {
+    // Header HTML
+    const headerHtml = `
+        <div class="header">
+        <nav class="nav">
+            <a href="/">首页</a>
+            <a href="/pages/categories.html">分类</a>
+            <a href="/pages/search.html">搜索</a>
+            <a href="/pages/tools.html">工具</a>
+            <a href="/pages/parenting.html">育儿</a>
+            <a href="/pages/about.html">关于</a>
+            <a href="/pages/post.html">发布</a>
+        </nav>
+        </div>
+    `;
+
+    // Footer HTML
+    const footerHtml = `
+        <div class="footer">
+        <div class="copyright">© 2025 我的博客. All rights reserved.</div>
+        <div class="footer-stats">总访问量：<span id="visit-count">加载中...</span></div>
+        </div>
+    `;
+
     // 加载header
-    if (document.getElementById('common-header')) {
-        fetch('/components/header.html')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('无法加载header组件');
-                }
-                return response.text();
-            })
-            .then(data => {
-                document.getElementById('common-header').innerHTML = data;
-            })
-            .catch(error => {
-                console.error('加载header失败:', error);
-            });
+    const headerElement = document.getElementById('common-header');
+    if (headerElement) {
+        headerElement.innerHTML = headerHtml;
     }
     
     // 加载footer
-    if (document.getElementById('common-footer')) {
-        fetch('/components/footer.html')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('无法加载footer组件');
-                }
-                return response.text();
-            })
-            .then(data => {
-                document.getElementById('common-footer').innerHTML = data;
-            })
-            .catch(error => {
-                console.error('加载footer失败:', error);
-            });
+    const footerElement = document.getElementById('common-footer');
+    if (footerElement) {
+        footerElement.innerHTML = footerHtml;
     }
 }); 

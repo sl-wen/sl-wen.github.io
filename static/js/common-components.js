@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Header HTML
     const headerHtml = `
         <div class="header">
+        <a href="/" class="logo">
+        <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">
+        </a>
         <nav class="nav">
             <a href="/">首页</a>
             <a href="/pages/categories.html">分类</a>

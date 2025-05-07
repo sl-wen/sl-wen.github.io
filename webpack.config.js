@@ -21,8 +21,8 @@ export default {
   },
   output: {
     filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'static/js/dist'),
-    publicPath: '/static/js/dist/'
+    path: path.resolve(__dirname, 'dist'),
+    publicPath: 'dist'
   },
   module: {
     rules: [

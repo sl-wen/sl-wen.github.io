@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "migrate": "node static/js/migrate-posts.js",
     "build": "webpack",
     "watch": "webpack --watch"
   },

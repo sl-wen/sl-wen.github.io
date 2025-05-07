@@ -40,7 +40,6 @@
 │   ├── img/                # 图片资源
 │   └── js/                 # JavaScript文件
 │       ├── bundles/        # Webpack打包后的文件
-│       └── migrate-posts.js # 迁移脚本
 ├── index.html              # 主页
 ├── package.json            # npm配置文件
 ├── webpack.config.js       # Webpack配置
@@ -122,7 +121,7 @@
 [![license](https://img.shields.io/github/license/slwen/slwen)](https://github.com/sl-wen/slwen)
 [![GitHub stars](https://img.shields.io/github/stars/slwen/?style=social)](https://github.com/sl-wen/)
 
-一款 jekyll 主题（[GitHub 地址](https://github.com/sl-wen/)），简洁纯净(主题资源请求<20KB)，未引入任何框架，秒开页面，支持自适应，支持全文检索，支持夜间模式
+一款 jekyll 主题（[GitHub 地址](https://github.com/sl-wen/)），简洁纯净(主题资源请求<20KB)，未引入任何框架，秒开页面，支持自适应，支持全文检索
 
 你可以到[slwen Blog](https://sl-wen.github.io/)查看主题效果 ，欢迎添加友链
 
@@ -167,7 +166,6 @@
 该项目是一个基于Jekyll的博客主题，具有以下功能：
 
 - **自适应设计**：支持在不同设备上自适应显示。
-- **夜间模式**：支持切换夜间模式，提供更好的夜间阅读体验。
 - **全文检索**：支持全文检索功能，方便用户快速查找内容。
 - **访问量统计**：集成访问量统计功能。
 - **页面特效**：点击页面文字时会出现特效。

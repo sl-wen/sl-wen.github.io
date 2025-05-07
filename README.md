@@ -22,6 +22,8 @@
 - **依赖管理**：npm
 
 ## 项目结构
+<details>
+  <summary>项目结构展开/项目结构收起</summary>
 
 ```
 ├── _site/                  # Jekyll生成的静态网站文件
@@ -45,6 +47,9 @@
 ├── webpack.config.js       # Webpack配置
 └── _config.yml             # Jekyll配置
 ```
+
+</details>
+
 
 ## 安装与使用
 
@@ -118,8 +123,6 @@
 # 介绍
 
 [![Language](https://img.shields.io/badge/Jekyll-Theme-blue)](https://github.com/sl-wen/slwen)
-[![license](https://img.shields.io/github/license/slwen/slwen)](https://github.com/sl-wen/slwen)
-[![GitHub stars](https://img.shields.io/github/stars/slwen/?style=social)](https://github.com/sl-wen/)
 
 一款 jekyll 主题（[GitHub 地址](https://github.com/sl-wen/)），简洁纯净(主题资源请求<20KB)，未引入任何框架，秒开页面，支持自适应，支持全文检索
 
@@ -180,6 +183,4 @@
 
 ## 其他功能
 
-- 支持MathJax数学公式显示。
-- 支持Google Adsense广告集成。
 - 提供多种页面布局，如首页、文章页、分类页、搜索页等。

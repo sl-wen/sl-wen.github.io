@@ -8,7 +8,7 @@ marked.setOptions({
     gfm: true,    // 启用 GitHub 风格的 Markdown
     headerIds: true, // 为标题添加 id
     mangle: false, // 不转义标题中的字符
-    sanitize: false, // 允许 HTML 标签
+    sanitize: true, // 允许 HTML 标签
 });
 
 // 创建自定义渲染器

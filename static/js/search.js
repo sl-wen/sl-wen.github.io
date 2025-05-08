@@ -1,54 +1,55 @@
 import { db } from './firebase-config.js';
 import { collection, getDocs } from 'firebase/firestore';
 
-// 辅助函数：处理图片 URL
+// 辅助函数：处理图片 URL，确保图片路径正确
 function processImageUrl(url) {
-  if (!url) return '';
+  if (!url) return '';  // 如果 URL 为空，返回空字符串
   try {
-    // 如果是相对路径，添加基础路径
+    // 如果是以斜杠开头的绝对路径，直接返回
     if (url.startsWith('/')) {
       return url;
     }
-    // 如果是完整的 URL，直接返回
+    // 如果是完整的 HTTP/HTTPS URL，直接返回
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-    // 否则假设是相对于 static 目录的路径
+    // 否则将其视为相对于 static 目录的路径
     return `/static/${url}`;
   } catch (e) {
     console.error('处理图片 URL 时出错:', e);
-    return '';
+    return '';  // 发生错误时返回空字符串
   }
 }
 
-// 辅助函数：从 Markdown 中提取纯文本
+// 辅助函数：从 Markdown 文本中提取纯文本内容
 function extractTextFromMarkdown(markdown) {
-  if (!markdown) return '';
+  if (!markdown) return '';  // 如果输入为空，返回空字符串
   return markdown
-    // 移除图片
+    // 移除图片标记 ![alt](url)
     .replace(/!\[.*?\]\(.*?\)/g, '')
-    // 移除链接，保留链接文字
+    // 移除链接标记 [text](url)，但保留链接文字
     .replace(/\[([^\]]+)\]\(.*?\)/g, '$1')
-    // 移除标题标记
+    // 移除标题标记 (#, ##, etc.)
     .replace(/#{1,6}\s/g, '')
-    // 移除强调标记
+    // 移除加粗标记 (**text** 或 __text__)
     .replace(/(\*\*|__)(.*?)\1/g, '$2')
-    // 移除斜体标记
+    // 移除斜体标记 (*text* 或 _text_)
     .replace(/(\*|_)(.*?)\1/g, '$2')
-    // 移除代码块
+    // 移除代码块 (```code```)
     .replace(/```[\s\S]*?```/g, '')
-    // 移除行内代码
+    // 移除行内代码 (`code`)
     .replace(/`([^`]+)`/g, '$1')
-    // 移除引用
+    // 移除引用标记 (> text)
     .replace(/^\s*>\s*/gm, '')
-    // 移除水平线
+    // 移除水平分隔线
     .replace(/^\s*[-*_]{3,}\s*$/gm, '')
-    // 移除列表标记
+    // 移除无序列表标记
     .replace(/^\s*[-*+]\s+/gm, '')
+    // 移除有序列表标记
     .replace(/^\s*\d+\.\s+/gm, '')
     // 移除多余的空行
     .replace(/\n\s*\n/g, '\n')
-    .trim();
+    .trim();  // 移除首尾空白
 }
 
 // 搜索功能

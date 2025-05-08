@@ -1,62 +1,67 @@
 /**
  * 小说爬虫功能实现
+ * 支持从特定网站爬取小说内容并下载为 TXT 文件
  */
 
-// API基础URL
+// 定义 API 服务器的基础 URL
 const API_BASE_URL = 'https://autoapi-six.vercel.app';
 
-// DOM元素
-const urlInput = document.getElementById('novel-url');
-const fetchInfoBtn = document.getElementById('fetch-info-btn');
-const startDownloadBtn = document.getElementById('start-download-btn');
-const novelInfoDiv = document.getElementById('novel-info');
-const novelTitle = document.getElementById('novel-title');
-const novelAuthor = document.getElementById('novel-author');
-const chapterCount = document.getElementById('chapter-count');
-const novelIntro = document.getElementById('novel-intro');
-const progressContainer = document.getElementById('progress-container');
-const progressBar = document.getElementById('progress-bar');
-const progressText = document.getElementById('progress-text');
-const statusMessage = document.getElementById('status-message');
-const downloadCompleteDiv = document.getElementById('download-complete');
-const downloadLink = document.getElementById('download-link');
+// 获取页面上的所有相关 DOM 元素
+const urlInput = document.getElementById('novel-url');                 // 小说网址输入框
+const fetchInfoBtn = document.getElementById('fetch-info-btn');       // 获取信息按钮
+const startDownloadBtn = document.getElementById('start-download-btn'); // 开始下载按钮
+const novelInfoDiv = document.getElementById('novel-info');           // 小说信息容器
+const novelTitle = document.getElementById('novel-title');            // 小说标题显示
+const novelAuthor = document.getElementById('novel-author');          // 作者显示
+const chapterCount = document.getElementById('chapter-count');        // 章节数显示
+const novelIntro = document.getElementById('novel-intro');            // 简介显示
+const progressContainer = document.getElementById('progress-container'); // 进度条容器
+const progressBar = document.getElementById('progress-bar');          // 进度条
+const progressText = document.getElementById('progress-text');        // 进度文本
+const statusMessage = document.getElementById('status-message');      // 状态信息
+const downloadCompleteDiv = document.getElementById('download-complete'); // 下载完成提示
+const downloadLink = document.getElementById('download-link');        // 下载链接
 
-// 小说数据存储
+// 小说数据对象，用于存储爬取的信息
 let novelData = {
-    title: '',
-    author: '',
-    intro: '',
-    chapters: [],
-    chapterContents: []
+    title: '',      // 小说标题
+    author: '',     // 作者
+    intro: '',      // 简介
+    chapters: [],   // 章节列表
+    chapterContents: []  // 章节内容
 };
 
-// 事件监听
+// 当页面加载完成时，添加事件监听器
 document.addEventListener('DOMContentLoaded', function() {
-    fetchInfoBtn.addEventListener('click', fetchNovelInfo);
-    startDownloadBtn.addEventListener('click', startDownload);
+    fetchInfoBtn.addEventListener('click', fetchNovelInfo);        // 获取小说信息按钮点击事件
+    startDownloadBtn.addEventListener('click', startDownload);     // 开始下载按钮点击事件
 });
 
 /**
- * 获取小说信息
+ * 获取小说基本信息的函数
+ * 包括标题、作者、简介和章节列表
  */
 async function fetchNovelInfo() {
-    const url = urlInput.value.trim();
+    const url = urlInput.value.trim();  // 获取并清理输入的 URL
     
+    // 输入验证
     if (!url) {
         alert('请输入小说网址');
         return;
     }
     
+    // 检查网站是否支持
     if (!url.includes('xs5200.net')) {
         alert('目前仅支持xs5200.net网站的小说');
         return;
     }
     
     try {
+        // 禁用按钮并显示加载状态
         fetchInfoBtn.disabled = true;
         fetchInfoBtn.textContent = '获取中...';
         
-        // 调用API获取小说信息
+        // 调用 API 获取小说信息
         const response = await fetch(`${API_BASE_URL}/api/novel/info`, {
             method: 'POST',
             headers: {
@@ -65,21 +70,22 @@ async function fetchNovelInfo() {
             body: JSON.stringify({ url })
         });
         
+        // 检查响应状态
         if (!response.ok) {
             throw new Error(`获取小说信息失败 (${response.status})`);
         }
         
         const data = await response.json();
         
-        // 如果没有找到小说信息
+        // 验证返回的数据
         if (!data.title || !data.chapters || data.chapters.length === 0) {
             throw new Error('未找到小说信息，请检查URL是否正确');
         }
         
-        // 存储小说信息
+        // 保存小说信息
         novelData = data;
         
-        // 显示小说信息
+        // 更新页面显示
         novelTitle.textContent = data.title;
         novelAuthor.textContent = data.author || '未知';
         chapterCount.textContent = `${data.chapters.length}章`;
@@ -91,32 +97,34 @@ async function fetchNovelInfo() {
         
     } catch (error) {
         console.error('获取小说信息失败:', error);
-        // 如果API不可用，使用前端爬虫方式
+        // API 不可用时，切换到前端爬虫方式
         alert(`API服务请求失败: ${error.message}\n将尝试使用前端爬虫方式获取信息`);
         fetchNovelInfoFallback(url);
     } finally {
+        // 恢复按钮状态
         fetchInfoBtn.disabled = false;
         fetchInfoBtn.textContent = '获取小说信息';
     }
 }
 
 /**
- * 前端爬虫获取小说信息（备用方案）
+ * 前端爬虫获取小说信息的备用方案
+ * 当 API 不可用时使用此方法直接从网页爬取
  */
 async function fetchNovelInfoFallback(url) {
     try {
-        // 使用跨域代理
+        // 使用 CORS 代理服务解决跨域问题
         const proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
         
-        // 获取小说目录页
+        // 获取小说目录页面内容
         const response = await fetch(proxyUrl);
         const html = await response.text();
         
-        // 创建一个DOM解析器
+        // 解析 HTML
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         
-        // 提取小说信息
+        // 提取小说基本信息
         const title = doc.querySelector('h1').textContent.trim();
         const authorElement = doc.querySelector('div.info-row:contains("作者")');
         const author = authorElement ? authorElement.querySelector('span').textContent.trim() : '未知';
@@ -131,11 +139,12 @@ async function fetchNovelInfoFallback(url) {
             url: new URL(link.href, url).href
         }));
         
+        // 验证章节列表
         if (chapters.length === 0) {
             throw new Error('未找到章节列表');
         }
         
-        // 存储小说信息
+        // 保存小说信息
         novelData = {
             title,
             author,
@@ -144,13 +153,13 @@ async function fetchNovelInfoFallback(url) {
             chapterContents: []
         };
         
-        // 显示小说信息
+        // 更新页面显示
         novelTitle.textContent = title;
         novelAuthor.textContent = author;
         chapterCount.textContent = `${chapters.length}章`;
         novelIntro.textContent = intro;
         
-        // 显示小说信息区域并启用下载按钮
+        // 显示小说信息并启用下载
         novelInfoDiv.style.display = 'block';
         startDownloadBtn.disabled = false;
         
@@ -161,45 +170,49 @@ async function fetchNovelInfoFallback(url) {
 }
 
 /**
- * 开始下载小说
+ * 开始下载小说内容
+ * 分批下载所有章节并生成 TXT 文件
  */
 async function startDownload() {
+    // 验证章节信息
     if (!novelData.chapters || novelData.chapters.length === 0) {
         alert('没有找到章节信息，无法下载');
         return;
     }
     
     try {
+        // 禁用按钮
         startDownloadBtn.disabled = true;
         fetchInfoBtn.disabled = true;
         
-        // 显示进度条
+        // 显示和初始化进度条
         progressContainer.style.display = 'block';
         progressBar.style.width = '0%';
         progressText.textContent = '0%';
         statusMessage.textContent = '正在准备下载...';
         
-        // 如果之前已经下载过，清空章节内容
+        // 清空之前的下载内容
         novelData.chapterContents = [];
         
-        // 计算并更新进度
+        // 设置下载参数
         const totalChapters = novelData.chapters.length;
         let completedChapters = 0;
         
-        // 尝试使用API下载所有章节
-        const batchSize = 5; // 每批下载的章节数
+        // 分批下载章节
+        const batchSize = 5;  // 每批下载 5 个章节
         const batches = Math.ceil(totalChapters / batchSize);
         
+        // 逐批下载
         for (let i = 0; i < batches; i++) {
             const start = i * batchSize;
             const end = Math.min(start + batchSize, totalChapters);
             const batchChapters = novelData.chapters.slice(start, end);
             
-            // 并行下载这一批的章节
+            // 并行下载当前批次的章节
             const promises = batchChapters.map(chapter => fetchChapterContent(chapter.url));
             const contents = await Promise.all(promises);
             
-            // 将下载的内容添加到小说数据中
+            // 保存下载的内容
             contents.forEach((content, index) => {
                 const chapterIndex = start + index;
                 novelData.chapterContents[chapterIndex] = {
@@ -208,7 +221,7 @@ async function startDownload() {
                 };
             });
             
-            // 更新进度
+            // 更新下载进度
             completedChapters += batchChapters.length;
             const progress = Math.floor((completedChapters / totalChapters) * 100);
             progressBar.style.width = `${progress}%`;
@@ -216,7 +229,7 @@ async function startDownload() {
             statusMessage.textContent = `已下载 ${completedChapters}/${totalChapters} 章`;
         }
         
-        // 生成TXT文件
+        // 生成并提供下载
         generateTxtFile();
         
     } catch (error) {
@@ -224,17 +237,19 @@ async function startDownload() {
         alert(`下载小说失败: ${error.message}`);
         progressContainer.style.display = 'none';
     } finally {
+        // 恢复按钮状态
         startDownloadBtn.disabled = false;
         fetchInfoBtn.disabled = false;
     }
 }
 
 /**
- * 获取章节内容
+ * 获取单个章节的内容
+ * 首先尝试使用 API，如果失败则使用前端爬虫方式
  */
 async function fetchChapterContent(chapterUrl) {
     try {
-        // 首先尝试使用API获取章节内容
+        // 尝试使用 API 获取章节内容
         const response = await fetch(`${API_BASE_URL}/api/novel/chapter`, {
             method: 'POST',
             headers: {
@@ -251,59 +266,24 @@ async function fetchChapterContent(chapterUrl) {
         return data.content || '';
         
     } catch (error) {
-        console.error(`使用API获取章节 ${chapterUrl} 内容失败:`, error);
-        
-        // 备用方案：使用前端爬虫获取章节内容
-        try {
-            const proxyUrl = `https://cors-anywhere.herokuapp.com/${chapterUrl}`;
-            const response = await fetch(proxyUrl);
-            const html = await response.text();
-            
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            
-            // 尝试几种常见的内容选择器
-            const contentSelectors = [
-                'div.content', 'div#content', 'div.chapter-content', 
-                'div.article-content', 'div.read-content'
-            ];
-            
-            for (const selector of contentSelectors) {
-                const contentElement = doc.querySelector(selector);
-                if (contentElement) {
-                    return contentElement.textContent.trim()
-                        .replace(/\s+/g, '\n\n') // 规范化空白字符
-                        .replace(/([。！？；：'"】）」』}])\s*\n\s*/g, '$1\n') // 修复断行
-                        .replace(/\n{3,}/g, '\n\n'); // 移除多余空行
-                }
-            }
-            
-            throw new Error('无法找到章节内容');
-        } catch (fallbackError) {
-            console.error(`前端爬虫获取章节 ${chapterUrl} 内容失败:`, fallbackError);
-            return `[无法获取章节内容: ${fallbackError.message}]`;
-        }
+        console.error('获取章节内容失败:', error);
+        // API 失败时尝试使用前端爬虫方式
+        return fetchChapterContentFallback(chapterUrl);
     }
 }
 
 /**
- * 生成TXT文件并提供下载
+ * 生成 TXT 文件并提供下载
  */
 function generateTxtFile() {
-    // 准备TXT文件内容
-    let content = `${novelData.title}\n`;
-    content += `作者：${novelData.author || '未知'}\n\n`;
-    content += `${novelData.intro || ''}\n\n`;
-    content += '='.repeat(50) + '\n\n';
+    // 组合所有章节内容
+    let content = `${novelData.title}\n作者：${novelData.author}\n\n${novelData.intro}\n\n`;
     
-    // 添加所有章节
-    novelData.chapterContents.forEach((chapter, index) => {
-        content += `第${index + 1}章 ${chapter.title}\n\n`;
-        content += `${chapter.content}\n\n`;
-        content += '='.repeat(30) + '\n\n';
+    novelData.chapterContents.forEach(chapter => {
+        content += `\n\n${chapter.title}\n\n${formatChapterContent(chapter.content)}`;
     });
     
-    // 创建Blob对象
+    // 创建 Blob 对象
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     
     // 创建下载链接
@@ -311,37 +291,20 @@ function generateTxtFile() {
     downloadLink.href = url;
     downloadLink.download = `${novelData.title}.txt`;
     
-    // 显示下载区域
+    // 显示下载完成信息
     downloadCompleteDiv.style.display = 'block';
-    progressContainer.style.display = 'none';
-    
-    // 自动触发下载（可选）
-    // downloadLink.click();
+    statusMessage.textContent = '下载已完成！';
 }
 
 /**
- * 辅助函数：确保内容均有适当的格式
+ * 格式化章节内容
+ * 清理内容中的广告和多余的空白
  */
 function formatChapterContent(content) {
-    if (!content) return '';
-    
-    // 清理内容中的广告和多余标记
     return content
-        .replace(/<br\s*\/?>/gi, '\n') // 将HTML换行标签转换为文本换行
-        .replace(/<\/?[^>]+(>|$)/g, '') // 移除其他HTML标签
-        .replace(/(&nbsp;|&amp;|&lt;|&gt;|&quot;|&#39;)/g, match => {
-            // 替换HTML实体
-            const entities = {
-                '&nbsp;': ' ',
-                '&amp;': '&',
-                '&lt;': '<',
-                '&gt;': '>',
-                '&quot;': '"',
-                '&#39;': "'"
-            };
-            return entities[match] || match;
-        })
-        .replace(/\s{2,}/g, '\n\n') // 规范化空白
-        .replace(/^(.*)(百度搜索|本章结束|广告位|小说网|章节错误|加入书签).*/gm, '$1') // 移除常见广告文本行
-        .trim();
-} 
+        .replace(/\s+/g, '\n')  // 统一换行符
+        .replace(/[【\[].+?[】\]]/g, '')  // 移除广告标记
+        .replace(/(https?:\/\/[^\s]+)/g, '')  // 移除链接
+        .replace(/\n\s*\n/g, '\n\n')  // 规范化空行
+        .trim();  // 移除首尾空白
+}

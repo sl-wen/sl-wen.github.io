@@ -1,17 +1,22 @@
 <!DOCTYPE html> <!-- HTML5文档类型声明 -->
-<html> <!-- HTML根元素 -->
+<html lang="zh-CN"> <!-- HTML根元素，设置语言为中文 -->
 <head> <!-- 文档头部，包含元数据 -->
-    <title>{页面标题} - My Blog</title> <!-- 页面标题 -->
+    <title>{页面标题} - 我的博客</title> <!-- 页面标题 -->
     <meta charset="utf-8" /> <!-- 设置文档字符编码为UTF-8 -->
     <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- 设置移动设备的视口属性 -->
-    <link rel="stylesheet" href="/assets/css/main.css" /> <!-- 引入主要CSS样式 -->
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon"> <!-- 设置网站图标 -->
+    <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS -->
 </head>
 <body> <!-- 文档主体 -->
-    <iframe src="/common/header.html" frameborder="0" scrolling="no" width="100%" height="50px"></iframe> <!-- 引入页头框架 -->
-    <div class="container"> <!-- 主要内容容器 -->
-        <h1>{页面标题}</h1> <!-- 页面主标题 -->
-        <!-- 在此处添加页面内容 -->
+    <div class="page"> <!-- 页面主容器 -->
+        <div id="common-header"></div> <!-- 公共页头容器 -->
+
+        <div class="container"> <!-- 主要内容容器 -->
+            <h1>{页面标题}</h1> <!-- 页面主标题 -->
+            <!-- 在此处添加页面内容 -->
+        </div>
+
+        <div id="common-footer"></div> <!-- 公共页脚容器 -->
     </div>
-    <iframe src="/common/footer.html" frameborder="0" scrolling="no" width="100%" height="80px"></iframe> <!-- 引入页脚框架 -->
 </body>
 </html>

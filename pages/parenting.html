@@ -1,24 +1,21 @@
 <!DOCTYPE html> <!-- HTML5文档类型声明 -->
-<html> <!-- HTML根元素 -->
+<html lang="zh-CN"> <!-- HTML根元素，设置语言为中文 -->
 
 <head> <!-- 文档头部，包含元数据 -->
-    <title>育儿 - My Blog</title> <!-- 页面标题 -->
+    <title>育儿 - 我的博客</title> <!-- 页面标题 -->
     <meta charset="utf-8" /> <!-- 设置文档字符编码为UTF-8 -->
     <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- 设置移动设备的视口属性 -->
     <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS -->
+
+    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
+    <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
 </head>
 
 <body> <!-- 文档主体 -->
     <div class="page"> <!-- 页面主容器 -->
-        <!-- 引入共通header -->
         <div id="common-header"></div> <!-- 公共页头容器 -->
 
-        <!-- 引入共通footer -->
         <div id="common-footer"></div> <!-- 公共页脚容器 -->
     </div>
 </body>
-    <!-- 加载共通组件脚本 -->
-    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
-    <!-- 添加点击特效 -->
-    <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
 </html>

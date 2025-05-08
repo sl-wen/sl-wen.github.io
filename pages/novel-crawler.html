@@ -8,10 +8,12 @@
     <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon"> <!-- 设置网站图标 -->
     <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS -->
     <link rel="stylesheet" href="/static/css/novel-crawler.css"> <!-- 引入小说下载器特定的CSS -->
+
+    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
+    <script src="/static/js/novel-crawler.js"></script> <!-- 加载小说下载器功能脚本 -->
 </head>
 <body> <!-- 文档主体 -->
     <div class="page"> <!-- 页面主容器 -->
-        <!-- 引入共通header -->
         <div id="common-header"></div> <!-- 公共页头容器 -->
         
         <div class="container"> <!-- 主要内容容器 -->
@@ -60,14 +62,7 @@
             </div>
         </div>
         
-        <!-- 引入共通footer -->
         <div id="common-footer"></div> <!-- 公共页脚容器 -->
     </div>
-
-    <!-- 加载共通组件脚本 -->
-    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
-    
-    <!-- 加载小说爬虫脚本 -->
-    <script src="/static/js/novel-crawler.js"></script> <!-- 加载小说下载器功能脚本 -->
 </body>
 </html>

@@ -1,9 +1,36 @@
+# Jekyll 相关
 /_site
 /dist
 /dist.tar.gz
 /.jekyll-cache
 /.bundle
-node_modules
 pages/_site/
 pages/dist/
 pages/_site/dist/
+
+# 依赖目录
+node_modules/
+
+# 开发时的临时文件
+*.tmp
+*.temp
+*.log
+*.cache
+
+# IDE 和编辑器文件
+.idea/
+.vscode/
+*.sublime-*
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 源码映射文件
+*.map
+
+# 仅在开发环境使用的文件
+*.dev.js
+*.dev.css

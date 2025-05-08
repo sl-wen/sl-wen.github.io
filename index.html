@@ -1,34 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html> <!-- HTML5文档类型声明 -->
+<html lang="en"> <!-- HTML根元素，设置语言为英文 -->
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的博客</title>
-    <link rel="icon" href="static/img/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/static/css/index.css">
-    <link rel="stylesheet" href="/static/css/common.css">
+<head> <!-- 文档头部，包含元数据 -->
+    <meta charset="UTF-8"> <!-- 设置文档字符编码为UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 设置移动设备的视口属性 -->
+    <title>我的博客</title> <!-- 网页标题 -->
+    <link rel="icon" href="static/img/favicon.ico" type="image/x-icon"> <!-- 设置网站图标 -->
+    <link rel="stylesheet" href="/static/css/index.css"> <!-- 引入首页特定的CSS样式 -->
+    <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS样式 -->
 </head>
 
-<body>
-    <div class="page home-page">
+<body> <!-- 文档主体 -->
+    <div class="page home-page"> <!-- 页面主容器，使用home-page类标识首页 -->
         <!-- 引入共通header -->
-        <div id="common-header"></div>
-        <div class="container">
-            <div id="status-messages" class="status-messages"></div>
-            <div id="posts-container"></div>
+        <div id="common-header"></div> <!-- 公共页头容器 -->
+        <div class="container"> <!-- 主要内容容器 -->
+            <div id="status-messages" class="status-messages"></div> <!-- 状态消息显示区域 -->
+            <div id="posts-container"></div> <!-- 博客文章列表容器 -->
         </div>
         <!-- 引入共通footer -->
-        <div id="common-footer"></div>
+        <div id="common-footer"></div> <!-- 公共页脚容器 -->
     </div>
     <!-- 加载共通组件脚本 -->      
-    <script src="/static/js/common-components.js"></script>
+    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
     <!-- 使用webpack打包后的Firebase bundle -->
-    <script src="/static/js/bundles/firebase.bundle.js"></script>
-    <script src="/static/js/dist/stats.bundle.js"></script>
+    <script src="/static/js/bundles/firebase.bundle.js"></script> <!-- 加载Firebase相关功能 -->
+    <script src="/static/js/dist/stats.bundle.js"></script> <!-- 加载统计相关功能 -->
 
     <!-- 添加点击特效 -->
-    <script src="/static/js/click-effect.js"></script>
+    <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
 </body>
 
 </html>

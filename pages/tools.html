@@ -1,45 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工具集 - 我的博客</title>
-    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/static/css/common.css">
-    <link rel="stylesheet" href="/static/css/tools.css">
+<!DOCTYPE html> <!-- HTML5文档类型声明 -->
+<html lang="en"> <!-- HTML根元素，设置语言为英文 -->
+<head> <!-- 文档头部，包含元数据 -->
+    <meta charset="UTF-8"> <!-- 设置文档字符编码为UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 设置移动设备的视口属性 -->
+    <title>工具集 - 我的博客</title> <!-- 页面标题 -->
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon"> <!-- 设置网站图标 -->
+    <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS -->
+    <link rel="stylesheet" href="/static/css/tools.css"> <!-- 引入工具页面特定的CSS -->
 </head>
-<body>
-    <div class="page">
+<body> <!-- 文档主体 -->
+    <div class="page"> <!-- 页面主容器 -->
         <!-- 引入共通header -->
-        <div id="common-header"></div>
+        <div id="common-header"></div> <!-- 公共页头容器 -->
         
-        <div class="container">
-            <h1>实用工具集</h1>
-            <div class="tools-grid">
+        <div class="container"> <!-- 主要内容容器 -->
+            <h1>实用工具集</h1> <!-- 工具页面标题 -->
+            <div class="tools-grid"> <!-- 工具卡片网格容器 -->
                 <!-- 小说下载工具 -->
-                <div class="tool-card">
-                    <div class="tool-icon">📚</div>
-                    <h3>小说下载器</h3>
-                    <p>输入小说网址，自动爬取内容并生成TXT文件</p>
-                    <a href="/pages/novel-crawler.html" class="tool-link">开始使用</a>
+                <div class="tool-card"> <!-- 小说下载工具卡片 -->
+                    <div class="tool-icon">📚</div> <!-- 工具图标 -->
+                    <h3>小说下载器</h3> <!-- 工具名称 -->
+                    <p>输入小说网址，自动爬取内容并生成TXT文件</p> <!-- 工具描述 -->
+                    <a href="/pages/novel-crawler.html" class="tool-link">开始使用</a> <!-- 工具链接 -->
                 </div>
                 
                 <!-- 为未来其他工具预留位置 -->
-                <div class="tool-card coming-soon">
-                    <div class="tool-icon">🔧</div>
-                    <h3>更多工具</h3>
-                    <p>敬请期待...</p>
+                <div class="tool-card coming-soon"> <!-- 待开发工具占位卡片 -->
+                    <div class="tool-icon">🔧</div> <!-- 占位图标 -->
+                    <h3>更多工具</h3> <!-- 占位标题 -->
+                    <p>敬请期待...</p> <!-- 占位描述 -->
                 </div>
             </div>
         </div>
         
         <!-- 引入共通footer -->
-        <div id="common-footer"></div>
+        <div id="common-footer"></div> <!-- 公共页脚容器 -->
     </div>
 
     <!-- 加载共通组件脚本 -->
-    <script src="/static/js/common-components.js"></script>
+    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
     <!-- 添加点击特效 -->
-    <script src="/static/js/click-effect.js"></script>
+    <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
 </body>
 </html>

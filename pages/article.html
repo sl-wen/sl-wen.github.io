@@ -1,77 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com https://www.google.com https://firestore.googleapis.com/* https://*.firestore.googleapis.com/* https://firestore.googleapis.com/google.firestore.v1.Firestore/* https://autoapi-git-main-slwens-projects-5f0fd28f.vercel.app https://autoapi-git-main-slwens-projects-5f0fd28f.vercel.app/api/* https://autoapi-six.vercel.app https://autoapi-six.vercel.app/api/* https://autoapi-six.vercel.app/api/summarize; frame-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.google.com; img-src 'self' https://*.google.com https://www.gstatic.com https://www.google.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://*.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;">
-    <title>文章详情 - 我的博客</title>
-    <link rel="icon" href="static/img/favicon.ico" type="image/x-icon">
+<!DOCTYPE html> <!-- HTML5文档类型声明 -->
+<html lang="en"> <!-- HTML根元素，设置语言为英文 -->
+<head> <!-- 文档头部，包含元数据 -->
+    <meta charset="UTF-8"> <!-- 设置文档字符编码为UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 设置移动设备的视口属性 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://firebase.googleapis.com https://firestore.googleapis.com https://*.google.com https://www.google.com https://firestore.googleapis.com/* https://*.firestore.googleapis.com/* https://firestore.googleapis.com/google.firestore.v1.Firestore/* https://autoapi-git-main-slwens-projects-5f0fd28f.vercel.app https://autoapi-git-main-slwens-projects-5f0fd28f.vercel.app/api/* https://autoapi-six.vercel.app https://autoapi-six.vercel.app/api/* https://autoapi-six.vercel.app/api/summarize; frame-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.google.com; img-src 'self' https://*.google.com https://www.gstatic.com https://www.google.com data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.googleapis.com https://firebase.googleapis.com https://*.google.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;"> <!-- 内容安全策略设置，定义允许加载的资源来源 -->
+    <title>文章详情 - 我的博客</title> <!-- 页面标题 -->
+    <link rel="icon" href="static/img/favicon.ico" type="image/x-icon"> <!-- 设置网站图标 -->
     <!-- 代码高亮 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="/static/css/article.css">
-    <link rel="stylesheet" href="/static/css/common.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script> <!-- 引入代码高亮库 -->
+    <link rel="stylesheet" href="/static/css/article.css"> <!-- 引入文章页面特定的CSS -->
+    <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS -->
     
     <!-- Firebase初始化必须最先加载 -->
-    <script src="/static/js/dist/firebase.bundle.js"></script>
+    <script src="/static/js/dist/firebase.bundle.js"></script> <!-- 加载Firebase相关功能 -->
 </head>
-<body>
-    <div class="page">
+<body> <!-- 文档主体 -->
+    <div class="page"> <!-- 页面主容器 -->
         <!-- 引入共通header -->
-        <div id="common-header"></div>
-        <div class="container">
-            <div class="article-actions">
-                <button id="edit-button" class="edit-button">编辑</button>
+        <div id="common-header"></div> <!-- 公共页头容器 -->
+        <div class="container"> <!-- 主要内容容器 -->
+            <div class="article-actions"> <!-- 文章操作按钮区域 -->
+                <button id="edit-button" class="edit-button">编辑</button> <!-- 编辑按钮 -->
             </div>
             <!-- AI功能区域 -->
-            <div class="ai-tools">
-                <div class="ai-summary-section">
-                    <div class="summary-header">
-                        <span class="summary-icon">🤖 AI 总结</span>
-                        <button id="generate-summary" class="ai-button">生成摘要</button>
+            <div class="ai-tools"> <!-- AI工具容器 -->
+                <div class="ai-summary-section"> <!-- AI摘要部分 -->
+                    <div class="summary-header"> <!-- 摘要标题区域 -->
+                        <span class="summary-icon">🤖 AI 总结</span> <!-- AI图标和标题 -->
+                        <button id="generate-summary" class="ai-button">生成摘要</button> <!-- 生成摘要按钮 -->
                     </div>
-                    <div id="summary-container" class="ai-result-container" style="display: none;">
-                        <div id="summary-content"></div>
-                        <div class="ai-actions">
-                            <button class="copy-button" onclick="copySummary()">复制</button>
+                    <div id="summary-container" class="ai-result-container" style="display: none;"> <!-- 摘要结果容器 -->
+                        <div id="summary-content"></div> <!-- 摘要内容显示区域 -->
+                        <div class="ai-actions"> <!-- AI功能按钮区域 -->
+                            <button class="copy-button" onclick="copySummary()">复制</button> <!-- 复制摘要按钮 -->
                         </div>
                     </div>
                 </div>
             </div>
-            <div id="article-container" class="article-container">
-                <div class="loading">加载中...</div>
+            <div id="article-container" class="article-container"> <!-- 文章内容容器 -->
+                <div class="loading">加载中...</div> <!-- 加载提示 -->
             </div>
-            <div id="status-messages" class="status-messages"></div>
+            <div id="status-messages" class="status-messages"></div> <!-- 状态消息显示区域 -->
         </div>
         <!-- 引入共通footer -->
-        <div id="common-footer"></div>
+        <div id="common-footer"></div> <!-- 公共页脚容器 -->
     </div>
     
     <!-- 加载共通组件脚本 -->
-    <script src="/static/js/common-components.js"></script>
+    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
     
     <!-- 其他依赖的脚本 -->
-    <script src="/static/js/dist/articleService.bundle.js"></script>
-    <script src="/static/js/dist/article.bundle.js"></script>
-    <script src="/static/js/dist/stats.bundle.js"></script>
+    <script src="/static/js/dist/articleService.bundle.js"></script> <!-- 文章服务相关功能 -->
+    <script src="/static/js/dist/article.bundle.js"></script> <!-- 文章页面主要功能 -->
+    <script src="/static/js/dist/stats.bundle.js"></script> <!-- 统计相关功能 -->
     
     <!-- 添加点击特效 -->
-    <script src="/static/js/click-effect.js"></script>
+    <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
     
     <!-- AI功能脚本 -->
     <script>
-        const API_BASE_URL = 'https://autoapi-six.vercel.app';
+        const API_BASE_URL = 'https://autoapi-six.vercel.app'; // AI API的基础URL
         
-        // 生成摘要
+        // 生成摘要的事件处理函数
         document.getElementById('generate-summary').addEventListener('click', async function() {
-            const articleContent = document.querySelector('.markdown-body').textContent;
+            const articleContent = document.querySelector('.markdown-body').textContent; // 获取文章内容
             const summaryContainer = document.getElementById('summary-container');
             const summaryContent = document.getElementById('summary-content');
             
             try {
-                summaryContent.innerHTML = '<div class="loading">正在生成摘要...</div>';
+                summaryContent.innerHTML = '<div class="loading">正在生成摘要...</div>'; // 显示加载提示
                 summaryContainer.style.display = 'block';
 
-                // 确保文章内容不为空且长度合适
+                // 验证文章内容
                 if (!articleContent || articleContent.trim().length < 10) {
                     throw new Error('文章内容太短，无法生成摘要');
                 }
@@ -82,7 +82,7 @@
                     ? articleContent.substring(0, maxInputLength) + '...'
                     : articleContent;
 
-                console.log('发送请求到API，文章内容长度:', truncatedContent.length);
+                // 发送API请求生成摘要
                 const response = await fetch(`${API_BASE_URL}/api/summarize`, {
                     method: 'POST',
                     headers: {
@@ -96,60 +96,44 @@
                     })
                 });
 
-                // 检查响应状态
+                // 处理API响应
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('API响应错误:', {
-                        status: response.status,
-                        statusText: response.statusText,
-                        errorText: errorText
-                    });
                     throw new Error(`API请求失败 (${response.status})`);
                 }
 
-                // 尝试解析响应
+                // 解析API响应
                 let responseText;
                 try {
                     responseText = await response.text();
-                    console.log('API原始响应:', responseText);
-                    
-                    // 检查响应是否为空
-                    if (!responseText) {
-                        throw new Error('服务器返回空响应');
-                    }
-
                     const data = JSON.parse(responseText);
                     
                     if (data.summary) {
-                        summaryContent.innerHTML = `<p>${data.summary}</p>`;
+                        summaryContent.innerHTML = `<p>${data.summary}</p>`; // 显示生成的摘要
                     } else if (data.error) {
                         throw new Error(data.error);
                     } else {
                         throw new Error('返回数据格式不正确');
                     }
                 } catch (parseError) {
-                    console.error('解析响应失败:', parseError);
-                    console.error('原始响应内容:', responseText);
                     throw new Error('无法解析服务器响应');
                 }
             } catch (error) {
-                console.error('摘要生成过程出错:', error);
+                // 错误处理
                 summaryContent.innerHTML = `<p class="error">生成摘要失败: ${error.message}</p>`;
                 
-                // 如果是服务器错误，给出更友好的提示
                 if (error.message.includes('500')) {
                     summaryContent.innerHTML = `<p class="error">服务器暂时无法处理请求，请稍后重试</p>`;
                 }
             }
         });
 
-        // 复制摘要
+        // 复制摘要功能
         function copySummary() {
             const summaryText = document.getElementById('summary-content').textContent;
             navigator.clipboard.writeText(summaryText).then(() => {
                 alert('摘要已复制到剪贴板');
             }).catch(err => {
-                console.error('复制失败:', err);
                 alert('复制失败');
             });
         }
@@ -157,7 +141,7 @@
 
     <!-- 删除文章功能 -->
     <script type="module">
-        import { deleteArticle as firebaseDeleteArticle } from '/static/js/firebase-article-operations.js';
+        import { deleteArticle as firebaseDeleteArticle } from '/static/js/firebase-article-operations.js'; // 导入文章删除功能
         
         // 将删除函数暴露给全局作用域
         window.deleteArticle = async function(articleId) {
@@ -166,26 +150,20 @@
             }
             
             try {
-                // 删除文章
-                await firebaseDeleteArticle(articleId);
-                
+                await firebaseDeleteArticle(articleId); // 调用Firebase删除文章
                 alert('文章删除成功！');
-                
-                // 跳转到首页
-                window.location.href = '/';
-                
+                window.location.href = '/'; // 删除成功后跳转到首页
             } catch (error) {
-                console.error('删除文章失败:', error);
                 alert(`删除文章失败: ${error.message}`);
             }
         }
 
-        // 添加编辑按钮点击事件
+        // 添加编辑按钮点击事件处理
         document.getElementById('edit-button').addEventListener('click', function() {
             const urlParams = new URLSearchParams(window.location.search);
             const articleId = urlParams.get('id');
             if (articleId) {
-                window.location.href = `/pages/edit.html?id=${articleId}`;
+                window.location.href = `/pages/edit.html?id=${articleId}`; // 跳转到编辑页面
             }
         });
     </script>

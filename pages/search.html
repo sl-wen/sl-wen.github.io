@@ -1,26 +1,26 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!DOCTYPE html> <!-- HTML5文档类型声明 -->
+<html lang="zh-CN"> <!-- HTML根元素，设置语言为中文 -->
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>搜索 - 我的博客</title>
-  <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" href="/static/css/common.css">
-  <link rel="stylesheet" href="/static/css/search.css">
+<head> <!-- 文档头部，包含元数据 -->
+  <meta charset="UTF-8"> <!-- 设置文档字符编码为UTF-8 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 设置移动设备的视口属性 -->
+  <title>搜索 - 我的博客</title> <!-- 页面标题 -->
+  <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon"> <!-- 设置网站图标 -->
+  <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS -->
+  <link rel="stylesheet" href="/static/css/search.css"> <!-- 引入搜索页面特定的CSS -->
 </head>
 
-<body>
-  <div class="page">
+<body> <!-- 文档主体 -->
+  <div class="page"> <!-- 页面主容器 -->
     <!-- 引入共通header -->
-    <div id="common-header"></div>
+    <div id="common-header"></div> <!-- 公共页头容器 -->
 
-    <div class="container">
-      <div class="search-container">
-        <input id="search-input" type="text" class="search-input" placeholder="请输入关键词搜索...">
-        <div id="search-results">
-          <h2>搜索结果</h2>
-          <ul class="search-list">
+    <div class="container"> <!-- 主要内容容器 -->
+      <div class="search-container"> <!-- 搜索功能容器 -->
+        <input id="search-input" type="text" class="search-input" placeholder="请输入关键词搜索..."> <!-- 搜索输入框 -->
+        <div id="search-results"> <!-- 搜索结果容器 -->
+          <h2>搜索结果</h2> <!-- 搜索结果标题 -->
+          <ul class="search-list"> <!-- 搜索结果列表 -->
             <!-- 搜索结果将在这里动态显示 -->
           </ul>
         </div>
@@ -28,19 +28,19 @@
     </div>
 
     <!-- 引入共通footer -->
-    <div id="common-footer"></div>
+    <div id="common-footer"></div> <!-- 公共页脚容器 -->
   </div>
 
   <!-- 加载共通组件脚本 -->
-  <script src="/static/js/common-components.js"></script>
+  <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
 
   <!-- Firebase 和搜索页面脚本 -->
-  <script src="/static/js/dist/firebase.bundle.js"></script>
-  <script src="/static/js/dist/search.bundle.js"></script>
-  <script src="/static/js/dist/stats.bundle.js"></script>
+  <script src="/static/js/dist/firebase.bundle.js"></script> <!-- 加载Firebase相关功能 -->
+  <script src="/static/js/dist/search.bundle.js"></script> <!-- 加载搜索功能脚本 -->
+  <script src="/static/js/dist/stats.bundle.js"></script> <!-- 加载统计相关功能 -->
 
   <!-- 添加点击特效 -->
-  <script src="/static/js/click-effect.js"></script>
+  <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
 </body>
 
 </html>

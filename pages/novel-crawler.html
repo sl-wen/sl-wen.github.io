@@ -1,73 +1,73 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.xs5200.net https://autoapi-six.vercel.app https://cors-anywhere.herokuapp.com https://api.allorigins.win; img-src 'self' data:; frame-src 'self'; font-src 'self';">
-    <title>小说下载器 - 我的博客</title>
-    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/static/css/common.css">
-    <link rel="stylesheet" href="/static/css/novel-crawler.css">
+<!DOCTYPE html> <!-- HTML5文档类型声明 -->
+<html lang="zh-CN"> <!-- HTML根元素，设置语言为中文 -->
+<head> <!-- 文档头部，包含元数据 -->
+    <meta charset="UTF-8"> <!-- 设置文档字符编码为UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 设置移动设备的视口属性 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.xs5200.net https://autoapi-six.vercel.app https://cors-anywhere.herokuapp.com https://api.allorigins.win; img-src 'self' data:; frame-src 'self'; font-src 'self';"> <!-- 内容安全策略设置，允许特定域名的API请求 -->
+    <title>小说下载器 - 我的博客</title> <!-- 页面标题 -->
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon"> <!-- 设置网站图标 -->
+    <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS -->
+    <link rel="stylesheet" href="/static/css/novel-crawler.css"> <!-- 引入小说下载器特定的CSS -->
 </head>
-<body>
-    <div class="page">
+<body> <!-- 文档主体 -->
+    <div class="page"> <!-- 页面主容器 -->
         <!-- 引入共通header -->
-        <div id="common-header"></div>
+        <div id="common-header"></div> <!-- 公共页头容器 -->
         
-        <div class="container">
-            <h1>小说下载器</h1>
-            <div class="crawler-box">
-                <div class="input-group">
-                    <label for="novel-url">小说网址：</label>
-                    <input type="text" id="novel-url" placeholder="请输入小说目录页网址，例如: https://www.xs5200.net/44_44108/" value="https://www.xs5200.net/44_44108/">
+        <div class="container"> <!-- 主要内容容器 -->
+            <h1>小说下载器</h1> <!-- 页面标题 -->
+            <div class="crawler-box"> <!-- 下载器功能区容器 -->
+                <div class="input-group"> <!-- URL输入区域 -->
+                    <label for="novel-url">小说网址：</label> <!-- URL输入标签 -->
+                    <input type="text" id="novel-url" placeholder="请输入小说目录页网址，例如: https://www.xs5200.net/44_44108/" value="https://www.xs5200.net/44_44108/"> <!-- URL输入框 -->
                 </div>
 
-                <div class="buttons">
-                    <button id="fetch-info-btn" class="primary-btn">获取小说信息</button>
-                    <button id="start-download-btn" class="success-btn" disabled>开始下载</button>
+                <div class="buttons"> <!-- 操作按钮区域 -->
+                    <button id="fetch-info-btn" class="primary-btn">获取小说信息</button> <!-- 获取信息按钮 -->
+                    <button id="start-download-btn" class="success-btn" disabled>开始下载</button> <!-- 开始下载按钮（初始禁用） -->
                 </div>
 
-                <div id="novel-info" class="novel-info" style="display: none;">
-                    <h2 id="novel-title">小说标题</h2>
-                    <div class="info-row">
+                <div id="novel-info" class="novel-info" style="display: none;"> <!-- 小说信息显示区域（初始隐藏） -->
+                    <h2 id="novel-title">小说标题</h2> <!-- 小说标题显示 -->
+                    <div class="info-row"> <!-- 作者信息行 -->
                         <span class="info-label">作者：</span>
                         <span id="novel-author">作者名称</span>
                     </div>
-                    <div class="info-row">
+                    <div class="info-row"> <!-- 章节信息行 -->
                         <span class="info-label">章节数：</span>
                         <span id="chapter-count">0章</span>
                     </div>
-                    <div class="info-row">
+                    <div class="info-row"> <!-- 简介信息行 -->
                         <span class="info-label">简介：</span>
                         <p id="novel-intro">小说简介内容...</p>
                     </div>
                 </div>
 
-                <div id="progress-container" class="progress-container" style="display: none;">
-                    <h3>下载进度</h3>
-                    <div class="progress-bar-container">
-                        <div id="progress-bar" class="progress-bar"></div>
-                        <div id="progress-text" class="progress-text">0%</div>
+                <div id="progress-container" class="progress-container" style="display: none;"> <!-- 下载进度显示区域（初始隐藏） -->
+                    <h3>下载进度</h3> <!-- 进度区域标题 -->
+                    <div class="progress-bar-container"> <!-- 进度条容器 -->
+                        <div id="progress-bar" class="progress-bar"></div> <!-- 进度条 -->
+                        <div id="progress-text" class="progress-text">0%</div> <!-- 进度百分比 -->
                     </div>
-                    <div id="status-message" class="status-message">准备中...</div>
+                    <div id="status-message" class="status-message">准备中...</div> <!-- 状态消息显示 -->
                 </div>
 
-                <div id="download-complete" class="download-complete" style="display: none;">
-                    <h3>下载完成！</h3>
-                    <p>小说文件已生成，请点击下面的按钮下载：</p>
-                    <a id="download-link" class="download-btn" download>下载TXT文件</a>
+                <div id="download-complete" class="download-complete" style="display: none;"> <!-- 下载完成区域（初始隐藏） -->
+                    <h3>下载完成！</h3> <!-- 完成提示 -->
+                    <p>小说文件已生成，请点击下面的按钮下载：</p> <!-- 下载说明 -->
+                    <a id="download-link" class="download-btn" download>下载TXT文件</a> <!-- 下载按钮 -->
                 </div>
             </div>
         </div>
         
         <!-- 引入共通footer -->
-        <div id="common-footer"></div>
+        <div id="common-footer"></div> <!-- 公共页脚容器 -->
     </div>
 
     <!-- 加载共通组件脚本 -->
-    <script src="/static/js/common-components.js"></script>
+    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
     
     <!-- 加载小说爬虫脚本 -->
-    <script src="/static/js/novel-crawler.js"></script>
+    <script src="/static/js/novel-crawler.js"></script> <!-- 加载小说下载器功能脚本 -->
 </body>
-</html> 
+</html>

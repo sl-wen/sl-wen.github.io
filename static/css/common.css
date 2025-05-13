@@ -319,6 +319,11 @@ button:hover {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+    .logo {
+        width: 20px;
+        height: 20px;
+    }
+
     .nav {
         flex-wrap: wrap;
         gap: 10px;
@@ -331,17 +336,17 @@ button:hover {
     }
 
     .footer {
-        margin-top: 5px;
-        padding: 5px 0;
-        gap: 10px;
+        margin-top: 0px;
+        padding: 0px 0;
+        gap: 0px;
     }
     
     .copyright {
-        font-size: 10px;
+        font-size: 6px;
     }
 
     .footer-stats {
-        font-size: 10px;
+        font-size: 6px;
     }
 }
 

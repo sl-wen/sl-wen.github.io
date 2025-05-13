@@ -81,11 +81,11 @@ h1 {
     
     .tools-grid {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 10px;
         padding: 10px;
     }
     
     .tool-card {
-        padding: 20px;
+        padding: 10px;
     }
 } 

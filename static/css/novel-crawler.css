@@ -136,4 +136,13 @@ caption {
         width: 100%;
     }
     
+    table {
+        margin-bottom: 0px;
+    }
+
+    th, td {
+        padding: 1px 1px;
+        min-width: 10px;
+    }
+
 } 

@@ -81,3 +81,10 @@
     color: var(--text-light-color);
     font-size: 16px;
 }
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    #search-results h2 {
+        font-size: 15px;
+    }
+}

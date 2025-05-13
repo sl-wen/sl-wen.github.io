@@ -2,6 +2,7 @@ encoding: utf-8
 
 plugins:
   - jekyll-regex-replace
+  - jekyll-feed
 
 # SEO相关信息
 title: slwen Blog

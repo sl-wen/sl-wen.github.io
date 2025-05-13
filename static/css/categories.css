@@ -18,3 +18,11 @@
     margin-bottom: 10px;
     font-weight: normal;
 }
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .categories-title {
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+}

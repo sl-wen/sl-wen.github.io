@@ -207,27 +207,6 @@ textarea {
 }
 
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .editor-preview-container {
-        flex-direction: column;
-        height: auto;
-    }
-    
-    .editor-section,
-    .preview-section {
-        height: 400px;
-    }
-    
-    .preview-section {
-        margin-top: var(--spacing-medium);
-    }
-    
-    .editor-page .container {
-        padding: var(--spacing-small);
-    }
-} 
-
 /* Markdown 表格样式 */
 /* 表格样式 */
 table {
@@ -273,3 +252,24 @@ table tr:nth-child(2n) {
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .editor-preview-container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .editor-section,
+    .preview-section {
+        height: 200px;
+    }
+    
+    .preview-section {
+        margin-top: var(--spacing-medium/2);
+    }
+    
+    .editor-page .container {
+        padding: var(--spacing-small/2);
+    }
+} 

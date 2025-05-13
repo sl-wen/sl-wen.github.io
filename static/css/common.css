@@ -117,12 +117,12 @@ body {
     font-size: 14px;
     color: #666;
 }
+
 .footer-stats {
     font-size: 14px;
     color: #666;
 }
 
-/* foot共通按钮样式 */
 .button-group {
     margin-top: var(--spacing-medium);
     display: flex;
@@ -329,4 +329,19 @@ button:hover {
         font-size: 10px;
         padding: 5px 5px;
     }
+
+    .footer {
+        margin-top: 5px;
+        padding: 5px 0;
+        gap: 10px;
+    }
+    
+    .copyright {
+        font-size: 10px;
+    }
+
+    .footer-stats {
+        font-size: 10px;
+    }
 }
+

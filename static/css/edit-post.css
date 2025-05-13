@@ -255,6 +255,9 @@ table tr:nth-child(2n) {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+    .post-form {
+        width: 100%;
+    }
     .editor-container h2 {
         font-size: 15px;
     }
@@ -263,17 +266,27 @@ table tr:nth-child(2n) {
         flex-direction: column;
         gap: 1px;
         margin-bottom: var(--spacing-medium/2);
-        min-height: auto;
+        min-height: 300px;
     }
     
-    .editor-section,
-    .preview-section {
-        height: 50%;
-        max-width: 45%;
+    .editor-section {
+        min-height: 300px;
+        height: 70%;
+        width: 90%;
+    }
+
+    .form-group input[type="text"] {
+        width: 90%;
+    }
+
+    textarea {
+        min-width: 320px;
+        min-height: 260px;
     }
     
     .preview-section {
         margin-top: var(--spacing-medium/2);
+        display: none; /* 默认隐藏 */
     }
     
     .editor-page .container {

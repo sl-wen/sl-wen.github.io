@@ -331,14 +331,14 @@ button:hover {
 
     .nav {
         flex-wrap: wrap;
-        gap: 5px;
+        gap: 10px;
     }
     
     .nav a {
         margin: 1px;
-        font-size: 15px;
+        font-size: 18px;
         padding: 1px 1px;
-    }
+    }  
 
     .footer {
         margin-top: 0px;

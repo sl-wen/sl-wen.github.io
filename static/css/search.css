@@ -21,9 +21,8 @@
 }
 
 #search-results h2 {
-    margin-bottom: var(--spacing-medium);
-    color: var(--text-color);
-    font-size: 20px;
+    /* margin-bottom: var(--spacing-medium); */
+    font-size: 18px;
 }
 
 .search-list {
@@ -91,4 +90,9 @@
     .search-item h3 a {
         font-size: 12px;
     }
+
+    .search-input {
+        width: 90%;
+    }
+    
 }

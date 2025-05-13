@@ -20,6 +20,10 @@
 /* 响应式设计 */
 @media (max-width: 768px) {
     .about-title {
+        font-size: 18px;
+    }
+    .about-container {
         font-size: 15px;
+        margin-left: 10px;
     }
 }

@@ -5,19 +5,18 @@
 .categories-title {
     font-size: 24px;
     margin-bottom: 20px;
+    margin-left: 10px;
     font-weight: normal;
     text-align: left;
 }
 
-.category-list {
-    margin-bottom: 30px;
-}
-
 .category-name {
-    font-size: 18px;
-    margin-bottom: 10px;
+    font-size: 15px;
+    margin-left: 10px;
+    margin-bottom: 5px;
     font-weight: normal;
 }
+
 
 /* 响应式设计 */
 @media (max-width: 768px) {
@@ -26,6 +25,10 @@
         margin-bottom: 0px;
     }
     .category-name {
-        font-size: 12px;
+        font-size: 15px;
+    }
+    .post-list {
+        margin-bottom: 0px;
+        margin-top: 0px;
     }
 }

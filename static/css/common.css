@@ -326,13 +326,13 @@ button:hover {
 
     .nav {
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 5px;
     }
     
     .nav a {
-        margin: 5px;
+        margin: 1px;
         font-size: 15px;
-        padding: 5px 5px;
+        padding: 1px 1px;
     }
 
     .footer {
@@ -342,11 +342,11 @@ button:hover {
     }
     
     .copyright {
-        font-size: 6px;
+        font-size: 8px;
     }
 
     .footer-stats {
-        font-size: 6px;
+        font-size: 8px;
     }
 }
 

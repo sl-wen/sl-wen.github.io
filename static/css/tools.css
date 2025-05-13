@@ -11,10 +11,10 @@ h1 {
 }
 
 .tools-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    padding: 20px;
+    display: grid; /* 启用 CSS 网格布局 */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 自动列数，每列至少300px，最多1fr（等分） */
+    gap: 30px; /* 每个格子之间30px间隙 */
+    padding: 20px; /* 容器内边距20px */
 }
 
 .tool-card {
@@ -80,9 +80,10 @@ h1 {
     }
     
     .tools-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-        padding: 10px;
+        display: grid; /* 启用 CSS 网格布局 */
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* 自动列数，每列至少100px，最多1fr（等分） */
+        gap: 10px; /* 每个格子之间10px间隙 */
+        padding: 10px; /* 容器内边距10px */
     }
     
     .tool-card {
@@ -90,4 +91,12 @@ h1 {
         font-size: 10px;
     }
 
+    .tool-icon {
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+    
+    .tool-card h3 {
+        font-size: 15px;
+    }
 } 

@@ -290,6 +290,10 @@ table tr:nth-child(2n) {
         gap: 10px;
     }
 
+    .article-title {
+        font-size: 15px;
+    }
+    
     .ai-button {
         width: 100%;
     }

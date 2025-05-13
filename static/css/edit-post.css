@@ -263,12 +263,12 @@ table tr:nth-child(2n) {
         flex-direction: column;
         gap: 1px;
         margin-bottom: var(--spacing-medium/2);
-        min-height: 200px; /* 设置固定高度 */
+        min-height: auto;
     }
     
     .editor-section,
     .preview-section {
-        height: 200px;
+        height: auto;
     }
     
     .preview-section {

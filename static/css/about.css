@@ -16,3 +16,10 @@
 .about-content p {
     margin-bottom: 15px;
 }
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .about-title {
+        font-size: 15px;
+    }
+}

@@ -127,6 +127,11 @@ caption {
     .crawler-container {
         padding: 10px;
     }
+
+    .crawler-title {
+        margin-bottom: 10px;
+        font-size: 15px;
+    }
     
     .buttons {
         flex-direction: column;

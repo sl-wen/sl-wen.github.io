@@ -27,14 +27,11 @@
                 </div>
 
                 <div class="buttons"> <!-- 操作按钮区域 -->
-                    <button id="fetch-info-btn" class="primary-btn">聚合搜索</button> <!-- 聚合搜索按钮 -->
-                    <button id="Source-list-btn" class="primary-btn">书源一览</button> <!-- 书源一览按钮 -->
-                    <!-- <button id="start-download-btn" class="success-btn" disabled>开始下载</button> 开始下载按钮 -->
+                    <button id="search-btn active" class="primary-btn" onclick="showTable('search', this)">聚合搜索</button> <!-- 聚合搜索按钮 -->
+                    <button id="Source-list-btn" class="primary-btn" onclick="showTable('Sourcelist', this)">书源一览</button> <!-- 书源一览按钮 -->
                 </div>
-
-                <div id="novel-info" class="novel-info" style="display: block;"> <!-- 小说搜索结果区域 -->
+                <table id="search">
                     <caption>搜索结果</caption>
-                    <table>
                         <tr>
                             <th>序号</th>
                             <th>书名</th>
@@ -46,11 +43,41 @@
                             <th>下载</th>
                         </tr>
                         <!-- 小说搜索结果 -->
-                    </table>
-                </div>
+                </table>
+
+                <table id="Sourcelist">
+                    <caption>书源一览</caption>
+                        <tr>
+                            <th>ID</th>
+                            <th>书源</th>
+                            <th>延迟</th>
+                            <th>状态码</th>
+                            <th>URL</th>
+                        </tr>
+                        <!-- 书源一览结果 -->
+                </table>
             </div>
         </div>
         
+        <script>
+            function showTable(tableId, btn) {
+              // 隐藏全部表格
+              var tables = document.querySelectorAll('table');
+              tables.forEach(function(tbl) {
+                tbl.classList.remove('active');
+              });
+            
+              // 移除全部按钮的active
+              var btns = document.querySelectorAll('.tab-btn');
+              btns.forEach(function(b) {
+                b.classList.remove('active');
+              });
+            
+              // 显示当前表格&按钮高亮
+              document.getElementById(tableId).classList.add('active');
+              btn.classList.add('active');
+            }
+        </script>
         <div id="common-footer"></div> <!-- 公共页脚容器 -->
     </div>
 </body>

@@ -78,7 +78,13 @@
 
 table {
     border-collapse: collapse;
-    width: 100%;
+    width: 95%;
+    margin-bottom: 20px;
+    display: none; /* 默认隐藏 */
+}
+
+.active {
+    display: table; /* 显示当前table */
 }
 
 th, td {
@@ -98,18 +104,13 @@ caption {
     padding:5px 0;
 }
 
-.novel-info {
+.search {
     margin-top: 30px;
     padding: 20px;
     border-radius: 4px;
     border: 1px solid #ddd;
 }
 
-
-.info-item {
-    margin-bottom: 10px;
-    color: #666;
-}
 
 .error-message {
     margin-top: 20px;

@@ -27,10 +27,10 @@
                 </div>
 
                 <div class="buttons"> <!-- 操作按钮区域 -->
-                    <button id="search-btn active" class="primary-btn" onclick="showTable('search', this)">聚合搜索</button> <!-- 聚合搜索按钮 -->
+                    <button id="search-btn" class="primary-btn active" onclick="showTable('search', this)">聚合搜索</button> <!-- 聚合搜索按钮 -->
                     <button id="Source-list-btn" class="primary-btn" onclick="showTable('Sourcelist', this)">书源一览</button> <!-- 书源一览按钮 -->
                 </div>
-                <table id="search">
+                <table id="search"  class="active">
                     <caption>搜索结果</caption>
                         <tr>
                             <th>序号</th>
@@ -68,7 +68,7 @@
               });
             
               // 移除全部按钮的active
-              var btns = document.querySelectorAll('.tab-btn');
+              var btns = document.querySelectorAll('.primary-btn');
               btns.forEach(function(b) {
                 b.classList.remove('active');
               });

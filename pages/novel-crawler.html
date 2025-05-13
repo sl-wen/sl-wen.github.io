@@ -29,7 +29,8 @@
                 <div class="buttons"> <!-- 操作按钮区域 -->
                     <button id="search-btn" class="primary-btn active" onclick="showTable('search', this)">聚合搜索</button> <!-- 聚合搜索按钮 -->
                     <button id="Source-list-btn" class="primary-btn" onclick="showTable('Sourcelist', this)">书源一览</button> <!-- 书源一览按钮 -->
-                    <button id="Invit-btn" class="primary-btn" onclick="showTable('Invit', this)">邀请码生成(admin)</button> <!-- 邀请码生成按钮 -->
+                    <button id="Invit-btn" class="primary-btn" onclick="showTable('Invit', this)">邀请码一览(admin)</button> <!-- 邀请码一览按钮 -->
+                    <button id="Invitcreat-btn" class="primary-btn" onclick="showTable('Invitcreat', this)">邀请码做成(admin)</button> <!-- 邀请码做成按钮 -->
                 </div>
                 <table id="search"  class="active">
                     <caption>搜索结果</caption>
@@ -60,7 +61,6 @@
 
                 <table id="Invit">
                     <caption>邀请码一览</caption>
-                        <button id="Invitcreat-btn">邀请码做成</button> <!-- 邀请码做成按钮 -->
                         <tr>
                             <th>序号</th>
                             <th>邀请码</th>
@@ -70,6 +70,19 @@
                             <th>邀请码复制按钮</th>
                         </tr>
                         <!-- 邀请码一览结果 -->
+                </table>
+
+                <table id="Invitcreat">
+                    <caption>邀请码做成</caption>
+                        <tr>
+                            <th>序号</th>
+                            <th>邀请码</th>
+                            <th>状态</th>
+                            <th>有效期</th>
+                            <th>session</th>
+                            <th>邀请码复制按钮</th>
+                        </tr>
+                        <!-- 邀请码做成结果 -->
                 </table>
             </div>
         </div>

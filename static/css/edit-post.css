@@ -268,7 +268,8 @@ table tr:nth-child(2n) {
     
     .editor-section,
     .preview-section {
-        height: auto;
+        height: 50%;
+        max-width: 45%;
     }
     
     .preview-section {

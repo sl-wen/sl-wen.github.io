@@ -78,7 +78,10 @@ h1 {
     .container {
         padding: 10px;
     }
-    
+    h1 {
+        margin-bottom: 5px;
+        font-size: 15px;
+    }
     .tools-grid {
         display: grid; /* 启用 CSS 网格布局 */
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* 自动列数，每列至少100px，最多1fr（等分） */

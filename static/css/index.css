@@ -37,5 +37,9 @@ h1 {
     text-decoration: underline;
 }
 
-
-
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .h1 {
+        font-size: 15px;
+    }
+}

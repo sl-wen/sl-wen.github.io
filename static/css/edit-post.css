@@ -255,9 +255,15 @@ table tr:nth-child(2n) {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+    .editor-container h2 {
+        font-size: 15px;
+    }
+
     .editor-preview-container {
         flex-direction: column;
-        height: auto;
+        gap: 1px;
+        margin-bottom: var(--spacing-medium/2);
+        min-height: 200px; /* 设置固定高度 */
     }
     
     .editor-section,

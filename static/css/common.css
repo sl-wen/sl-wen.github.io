@@ -321,9 +321,12 @@ button:hover {
 @media (max-width: 768px) {
     .nav {
         flex-wrap: wrap;
+        gap: 10px;
     }
     
     .nav a {
         margin: 5px;
+        font-size: 10px;
+        padding: 5px 5px;
     }
 }

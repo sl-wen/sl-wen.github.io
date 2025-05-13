@@ -78,7 +78,7 @@ h1 {
     .container {
         padding: 10px;
     }
-    h1 {
+    .container h1 {
         margin-bottom: 5px;
         font-size: 15px;
     }

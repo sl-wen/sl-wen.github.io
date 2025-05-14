@@ -85,7 +85,8 @@ async function getPosts() {
                 title: data.title || '无标题',
                 author: data.author || '未知',
                 createdAt: data.createdAt,
-                content: data.content
+                content: data.content,
+                views: data.views || 0
             });
         });
         

@@ -50,7 +50,8 @@ async function getCategories() {
                 categorizedPosts[tag].push({
                     id: doc.id,
                     title: data.title || '无标题',
-                    createdAt: data.createdAt
+                    createdAt: data.createdAt,
+                    views: data.views || 0
                 });
             });
         });

@@ -99,7 +99,7 @@ caption {
     }
     
     .buttons {
-        flex-direction: row;
+        flex-direction: column;
     }
     
     .btn {

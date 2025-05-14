@@ -7,7 +7,6 @@ import { db } from './firebase-config.js';
 function initEditor() {
     const statusDiv = document.getElementById('status-messages');
     if (statusDiv) {
-        statusDiv.style.display = 'block';
         statusDiv.innerHTML += '<p>初始化编辑器...</p>';
     }
     
@@ -78,7 +77,7 @@ function initEditor() {
             const message = document.createElement('div');
             message.className = 'success-message';
             message.textContent = '文章发布成功！';
-            form.insertBefore(message, form.firstChild);
+            form.insertBefore(message, form.lastChild);
 
             // 重置表单
             form.reset();
@@ -113,7 +112,7 @@ function initEditor() {
 window.addEventListener('DOMContentLoaded', () => {
     const statusDiv = document.getElementById('status-messages');
     if (statusDiv) {
-        statusDiv.style.display = 'block';
+        statusDiv.style.display = 'none';
         statusDiv.innerHTML += '<p>页面加载完成，开始初始化...</p>';
     }
     

@@ -1,6 +1,5 @@
 # Jekyll 相关
 /_site
-/dist
 /dist.tar.gz
 /.jekyll-cache
 /.bundle

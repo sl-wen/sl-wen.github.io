@@ -1,5 +1,5 @@
 import { doc, getDoc, updateDoc, deleteDoc } from '@firebase/firestore';
-import { db } from './firebase.js';
+import { db } from './firebase-config.js';
 import { marked } from 'marked';
 
 // 配置 marked 选项

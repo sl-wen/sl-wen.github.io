@@ -13,6 +13,7 @@ export default {
     stats: './static/js/stats.js',
     
     // 文章相关页面
+    firebaseindex: './static/js/firebaseindex.js',
     article: './static/js/article.js',
     edit: './static/js/edit.js',
     post: './static/js/post.js',

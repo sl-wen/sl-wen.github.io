@@ -133,24 +133,8 @@
         }
     </script>
 
-    <!-- 删除文章功能 -->
+    <!-- 编辑文章功能 -->
     <script type="module">
-        import { deleteArticle as firebaseDeleteArticle } from '/static/js/firebase-article-operations.js'; // 导入文章删除功能
-        
-        // 将删除函数暴露给全局作用域
-        window.deleteArticle = async function(articleId) {
-            if (!confirm('确定要删除这篇文章吗？此操作不可恢复！')) {
-                return;
-            }
-            
-            try {
-                await firebaseDeleteArticle(articleId); // 调用Firebase删除文章
-                alert('文章删除成功！');
-                window.location.href = '/'; // 删除成功后跳转到首页
-            } catch (error) {
-                alert(`删除文章失败: ${error.message}`);
-            }
-        }
 
         // 添加编辑按钮点击事件处理
         document.getElementById('edit-button').addEventListener('click', function() {

@@ -17,7 +17,7 @@
 - **前端**：HTML, CSS, JavaScript
 - **数据库**：Firebase Firestore
 - **静态生成**：Jekyll
-- **构建工具**：Webpack, Babel
+- **构建工具**：Webpack
 - **Markdown解析**：Marked.js
 - **依赖管理**：npm
 
@@ -26,26 +26,25 @@
   <summary>项目结构展开/项目结构收起</summary>
 
 ```
-├── _site/                  # Jekyll生成的静态网站文件
 ├── pages/                  # 网站页面
 │   ├── article.html        # 文章详情页
 │   ├── categories.html     # 文章分类页
 │   ├── post.html           # 文章发布页
+│   ├── edit.html           # 文章编辑页
+│   ├── novel-crawler.html  # 小说下载页面
+│   ├── parenting.html      # 育儿页面
+│   ├── tools.html          # 工具页面
 │   ├── about.html          # 关于页面
 │   └── search.html         # 搜索页面
-├── src/                    # 源代码
-│   └── js/                 # JavaScript源文件
-│       ├── firebase-bundle.js  # 主页Firebase功能
-│       └── post-bundle.js      # 发布页Firebase功能
 ├── static/                 # 静态资源
 │   ├── css/                # 样式表
 │   ├── img/                # 图片资源
+│   ├── fontfont/           # 字体资源
 │   └── js/                 # JavaScript文件
-│       ├── bundles/        # Webpack打包后的文件
+│       ├── dist/           # Webpack打包后的文件
 ├── index.html              # 主页
 ├── package.json            # npm配置文件
-├── webpack.config.js       # Webpack配置
-└── _config.yml             # Jekyll配置
+└── webpack.config.js       # Webpack配置
 ```
 
 </details>
@@ -56,7 +55,7 @@
 ### 前提条件
 
 - Node.js 和 npm
-- Ruby 和 Jekyll
+- Jekyll
 - Firebase 账号和项目
 
 ### 安装步骤
@@ -75,7 +74,7 @@
 3. 配置Firebase
    - 在Firebase控制台创建一个新项目
    - 获取Firebase配置信息
-   - 更新`src/js/firebase-bundle.js`和`src/js/post-bundle.js`中的Firebase配置
+   - 更新`firebase-config.js`中的Firebase配置
 
 4. 构建JavaScript包
    ```
@@ -111,9 +110,8 @@
 
 ## 自定义
 
-- **样式**：修改`static/css/style.css`自定义网站外观
+- **样式**：修改`static/css/*.css`自定义网站外观
 - **布局**：修改HTML文件自定义页面布局
-- **配置**：修改`_config.yml`调整Jekyll配置
 
 
 ## 许可证
@@ -133,9 +131,9 @@
 [JetBrains](https://www.jetbrains.com/) 免费提供的开发工具[![JetBrains](./static/img/jetbrains.svg)](https://www.jetbrains.com/?from=slwen-blog)
 
 
-# 本地运行
+# 运行
 
-一般提交到 github 过个几十秒就可以看到效果，如果你需要对在本地查看效果需要安装 ruby 环境和依赖
+一般提交到 github 过个几十秒就可以看到效果
 
 
 # 项目配置
@@ -144,11 +142,9 @@
 
 2. 如果使用 GitHub 的的域名，请删除`CNAME`文件，然后把你的项目修改为`用户名.github.io`
 
-3. 修改`_config.yml`文件，具体作用请参考注释
+3. 网站的 logo 和 favicon 放在了`static/img/`下，替换即可，大小无所谓，图片比例最好是 1:1
 
-4. 网站的 logo 和 favicon 放在了`static/img/`下，替换即可，大小无所谓，图片比例最好是 1:1
-
-5. 如果你是把项目 fork 过去的，想要删除我的提交记录可以使用下面的命令
+4. 如果你是把项目 fork 过去的，想要删除我的提交记录可以使用下面的命令
 
    ```
    git checkout --orphan temp
@@ -158,12 +154,6 @@
    git push --force
    ```
 
-
-```md
-![这是图片](xxx.png)
-
-[xxx.zip 下载](xxx.zip)
-```
 # 项目功能
 
 该项目是一个基于Jekyll的博客主题，具有以下功能：
@@ -178,7 +168,6 @@
 
 ## 配置
 
-- 修改`_config.yml`文件进行项目配置。
 - 支持自定义域名和GitHub Pages域名。
 
 ## 其他功能

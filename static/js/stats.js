@@ -1,5 +1,5 @@
 // 导入 Firebase 相关模块
-import { db } from './firebase.js';  // 导入数据库实例
+import { db } from './firebase-config.js';  // 导入数据库实例
 import { doc, getDoc, updateDoc, increment, setDoc } from '@firebase/firestore';  // 导入 Firestore 操作函数
 
 // 获取并更新网站总访问量的函数

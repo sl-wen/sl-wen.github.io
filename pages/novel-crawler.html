@@ -23,7 +23,7 @@
             <div class="crawler-box"> <!-- 下载器功能区容器 -->
                 <div class="input-group"> <!-- 输入区域 -->
                     <label for="novel-url">聚合搜索：</label> <!-- 输入标签 -->
-                    <input type="text" id="novel-url" placeholder="请输入书名或作者" value="仙逆"> <!-- URL输入框 -->
+                    <input type="text" id="novel-name" placeholder="请输入书名或作者" value="仙逆"> <!-- 书名输入框 -->
                 </div>
 
                 <div class="buttons"> <!-- 操作按钮区域 -->
@@ -123,23 +123,38 @@
             }
         </script>
         <script>
-            fetch('https://api.example.com/users')
-              .then(res => res.json())
-              .then(data => {
-                const tbody = document.querySelector('#search tbody');
-                data.forEach(novel => {
-                  const tr = document.createElement('tr');
-                  tr.innerHTML = `<td>${novel.no}</td><td>${novel.title}</td>
-                  <td>${novel.author}</td><td>${novel.nums}</td>td>${novel.nums}</td>
-                  <td>${novel.lastarticletitle}</td><td>${novel.lastupdatedate}</td>
-                  <td>${novel.source}</td><td>${novel.download}</td>`;
-                  tbody.appendChild(tr);
+            document.getElementById('search-btn').onclick = function() {
+            const kw = document.getElementById('novel-name').value.trim();
+            if (!kw) return alert('请输入书名或作者');
+              fetch(`https://api.example.com/search?keyword=${encodeURIComponent(kw)}`)
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.querySelector('#search tbody');
+                    tbody.innerHTML = '';
+                    if (!data.length) {
+                        tbody.innerHTML = `<tr><td colspan="8">没有找到相关小说</td></tr>`;
+                        return;
+                    }
+                    data.forEach(novel => {
+                      const tr = document.createElement('tr');
+                      tr.innerHTML = `
+                      <td>${novel.no || ''}</td>
+                      <td>${novel.title || ''}</td>
+                      <td>${novel.author || ''}</td>
+                      <td>${novel.nums || ''}</td>
+                      <td>${novel.lastarticletitle || ''}</td>
+                      <td>${novel.lastupdatedate || ''}</td>
+                      <td>${novel.source || ''}</td>
+                      <td>${novel.download ? `<a href="${novel.download}">下载</a>` : ''}</td>
+                      `;
+                      tbody.appendChild(tr);
+                    });
+                })
+                .catch(err => {
+                    const tbody = document.querySelector('#search tbody');
+                    tbody.innerHTML = `<tr><td colspan="8" style="color:red;">加载失败: ${err}</td></tr>`;
                 });
-              })
-              .catch(err => {
-                const tbody = document.querySelector('#search tbody');
-                tbody.innerHTML = `<tr><td colspan="3" style="color:red;">加载失败: ${err}</td></tr>`;
-              });
+            }
         </script>
 
         <div id="common-footer"></div> <!-- 公共页脚容器 -->

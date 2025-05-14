@@ -4,7 +4,7 @@
     <meta charset="UTF-8"> <!-- 设置文档字符编码为UTF-8 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 设置移动设备的视口属性 -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.xs5200.net https://autoapi-six.vercel.app https://cors-anywhere.herokuapp.com https://api.allorigins.win; img-src 'self' data:; frame-src 'self'; font-src 'self';"> <!-- 内容安全策略设置，允许特定域名的API请求 -->
-    <title>小说下载器 - 我的博客</title> <!-- 页面标题 -->
+    <title>小说下载 - 我的博客</title> <!-- 页面标题 -->
     <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon"> <!-- 设置网站图标 -->
     <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS -->
     <link rel="stylesheet" href="/static/css/novel-crawler.css"> <!-- 引入小说下载器特定的CSS -->
@@ -19,7 +19,7 @@
         <div id="common-header"></div> <!-- 公共页头容器 -->
         
         <div class="container"> <!-- 主要内容容器 -->
-            <h1>小说下载器</h1> <!-- 页面标题 -->
+            <h1>小说下载</h1> <!-- 页面标题 -->
             <div class="crawler-box"> <!-- 下载器功能区容器 -->
                 <div class="input-group"> <!-- 输入区域 -->
                     <label for="novel-url">聚合搜索：</label> <!-- 输入标签 -->
@@ -34,6 +34,7 @@
                 </div>
                 <table id="search"  class="active">
                     <caption>搜索结果</caption>
+                    <thead>
                         <tr>
                             <th>序号</th>
                             <th>书名</th>
@@ -44,11 +45,15 @@
                             <th>书源ID+书源</th>
                             <th>下载</th>
                         </tr>
+                    </thead>
+                    <tbody>
                         <!-- 小说搜索结果 -->
+                    </tbody>
                 </table>
 
                 <table id="Sourcelist">
                     <caption>书源一览</caption>
+                    <thead>
                         <tr>
                             <th>ID</th>
                             <th>书源</th>
@@ -56,11 +61,15 @@
                             <th>状态码</th>
                             <th>URL</th>
                         </tr>
+                    </thead>
+                    <tbody>
                         <!-- 书源一览结果 -->
+                    </tbody>
                 </table>
 
                 <table id="Invit">
                     <caption>邀请码一览</caption>
+                    <thead>
                         <tr>
                             <th>序号</th>
                             <th>邀请码</th>
@@ -69,11 +78,15 @@
                             <th>session</th>
                             <th>邀请码复制按钮</th>
                         </tr>
+                    </thead>
+                    <tbody>
                         <!-- 邀请码一览结果 -->
+                    </tbody>
                 </table>
 
                 <table id="Invitcreat">
                     <caption>邀请码做成</caption>
+                    <thead>
                         <tr>
                             <th>序号</th>
                             <th>邀请码</th>
@@ -82,7 +95,10 @@
                             <th>session</th>
                             <th>邀请码复制按钮</th>
                         </tr>
+                    </thead>
+                    <tbody>
                         <!-- 邀请码做成结果 -->
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -106,6 +122,26 @@
               btn.classList.add('active');
             }
         </script>
+        <script>
+            fetch('https://api.example.com/users')
+              .then(res => res.json())
+              .then(data => {
+                const tbody = document.querySelector('#search tbody');
+                data.forEach(novel => {
+                  const tr = document.createElement('tr');
+                  tr.innerHTML = `<td>${novel.no}</td><td>${novel.title}</td>
+                  <td>${novel.author}</td><td>${novel.nums}</td>td>${novel.nums}</td>
+                  <td>${novel.lastarticletitle}</td><td>${novel.lastupdatedate}</td>
+                  <td>${novel.source}</td><td>${novel.download}</td>`;
+                  tbody.appendChild(tr);
+                });
+              })
+              .catch(err => {
+                const tbody = document.querySelector('#search tbody');
+                tbody.innerHTML = `<tr><td colspan="3" style="color:red;">加载失败: ${err}</td></tr>`;
+              });
+        </script>
+
         <div id="common-footer"></div> <!-- 公共页脚容器 -->
     </div>
 </body>

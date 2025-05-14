@@ -22,7 +22,7 @@ export default {
   },
   output: {
     filename: '[name].bundle.js',
-    path: path.resolve(__dirname, '/static/js/dist/'),
+    path: path.resolve(__dirname, 'static/js/dist'),
     publicPath: '/static/js/dist/'
   },
   module: {
@@ -62,4 +62,4 @@ export default {
     moduleIds: 'deterministic',
     chunkIds: 'deterministic'
   }
-}; 
+};

@@ -16,7 +16,38 @@
     margin-bottom: 5px;
     font-weight: normal;
 }
+/* 文章列表样式 */
+.post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
 
+.post-list li {
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    display: flex;
+    align-items: baseline;
+}
+
+.post-date {
+    color: #666;
+    font-size: 14px;
+    margin-right: 10px;
+    white-space: nowrap;
+}
+
+.post-list {
+    margin-bottom: 0px;
+    margin-top: 0px;
+}
+.post-views {
+    color: #666;
+    font-size: 14px;
+    margin-left: auto;
+    text-align: right;
+    white-space: nowrap;
+}
 
 /* 响应式设计 */
 @media (max-width: 768px) {
@@ -26,9 +57,5 @@
     }
     .category-name {
         font-size: 15px;
-    }
-    .post-list {
-        margin-bottom: 0px;
-        margin-top: 0px;
     }
 }

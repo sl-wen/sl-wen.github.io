@@ -26,6 +26,14 @@ h1 {
     white-space: nowrap;
 }
 
+.post-views {
+    color: #666;
+    font-size: 14px;
+    margin-left: auto;
+    text-align: right;
+    white-space: nowrap;
+}
+
 .post-list a {
     color: #333;
     text-decoration: none;

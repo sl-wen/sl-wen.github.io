@@ -321,7 +321,7 @@ button:hover {
 @media (max-width: 768px) {
     /* 页面基础布局 */
     .page {
-        min-height: 100%;
+        min-height: 90%;
     }
     
     .logo {

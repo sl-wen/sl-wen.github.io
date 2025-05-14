@@ -57,7 +57,11 @@ th, td {
     border: 1px solid #ccc;
     padding: 8px 10px;
     text-align: left;
-    min-width: 60px;
+    min-width: 20px;
+    white-space: nowrap;        /* 不换行 */
+    overflow: hidden;           /* 超出部分隐藏 */
+    text-overflow: ellipsis;    /* 超长部分显示... */
+    max-width: 50px;           /* 推荐指定最大宽度，根据实际情况设置 */
 }
 
 th {
@@ -112,7 +116,6 @@ caption {
 
     th, td {
         padding: 1px 1px;
-        min-width: 10px;
     }
 
 } 

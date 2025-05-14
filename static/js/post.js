@@ -1,7 +1,7 @@
 // 发布页面的打包入口文件
 import { collection, addDoc, Timestamp } from '@firebase/firestore';
 import { marked } from 'marked';
-import { db } from '../../static/js/firebase.js';
+import { db } from './firebase.js';
 
 // 初始化编辑器
 function initEditor() {

@@ -14,15 +14,15 @@ export default {
     
     // 文章相关页面
     article: './static/js/article.js',
-    edit: './src/js/edit-bundle.js',
-    post: './src/js/post-bundle.js',
+    edit: './static/js/edit.js',
+    post: './static/js/post.js',
     categories: './static/js/categories.js',
     search: './static/js/search.js'
   },
   output: {
     filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist'),
-    publicPath: 'dist'
+    path: path.resolve(__dirname, '/static/js/dist/'),
+    publicPath: '/static/js/dist/'
   },
   module: {
     rules: [

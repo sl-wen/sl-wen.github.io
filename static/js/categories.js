@@ -78,7 +78,7 @@ async function getCategories() {
                     <li>
                         <span class="post-date">${date}</span>
                         <a href="/pages/article.html?id=${post.id}">${post.title}</a>
-                        <span class="post-views">${post.views}</span>
+                        <span class="post-views">👁️‍🗨️ ${post.views}</span>
                     </li>
                 `;
             });

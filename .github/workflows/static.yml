@@ -1,22 +1,43 @@
-# Simple workflow for deploying static content to GitHub Pages
+# 用于部署静态内容到阿里云服务器的工作流
 name: Deploy to ALI
 
 on:
-  # Runs on pushes targeting the default branch
+  # 在master分支有推送时触发
   push:
     branches: ["master"]
-
-  # Allows you to run this workflow manually from the Actions tab
+  # 允许手动触发部署
   workflow_dispatch:
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      # 检出代码
+      - name: Checkout Repository
         uses: actions/checkout@v4
-      - name: Deploy via SCP
+
+      # 设置Node.js环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # 安装依赖
+      - name: Install Dependencies
+        run: |
+          if [ -f "package.json" ]; then
+            npm install
+          fi
+
+      # 构建项目（如果需要）
+      - name: Build Project
+        run: |
+          if [ -f "package.json" ]; then
+            npm run build
+          fi
+
+      # 部署到阿里云
+      - name: Deploy to Aliyun
         uses: appleboy/scp-action@v0.1.4
         with:
           host: '121.40.215.235'
@@ -25,3 +46,15 @@ jobs:
           port: 22
           source: "."
           target: "/usr/share/nginx/html/"
+          strip_components: 0
+          rm: true
+
+      # 部署后通知
+      - name: Deployment Status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ 部署成功！网站已更新。"
+          else
+            echo "❌ 部署失败，请检查日志获取详细信息。"
+          fi

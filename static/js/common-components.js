@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </a>
         <nav class="nav">
             <a href="/">首页3</a>                          <!-- 网站首页链接 -->
-            <a href="/pages/categories.html">分类</a>      <!-- 文章分类页面链接 -->
+            <a href="/pages/categories.html">分类22</a>      <!-- 文章分类页面链接 -->
             <a href="/pages/search.html">搜索</a>         <!-- 搜索页面链接 -->
             <a href="/pages/tools.html">工具</a>          <!-- 工具页面链接 -->
             <a href="/pages/parenting.html">育儿</a>      <!-- 育儿专栏链接 -->

@@ -1,5 +1,5 @@
 # Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Deploy to ALI
 
 on:
   # Runs on pushes targeting the default branch
@@ -9,7 +9,6 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-
 jobs:
   # Single deploy job since we're just deploying
   deploy:
@@ -17,8 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Secure Deploy
-        uses: appleboy/ssh-action@master
+      - name: Deploy via SCP
+        uses: appleboy/scp-action@v0.1.4
         with:
           host: '121.40.215.235'
           username: 'root'

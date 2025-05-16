@@ -72,11 +72,16 @@ body {
     font-size: 25px;
     text-decoration: none;
     padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .nav a:hover {
     color: #676d72;
     text-decoration: underline;
+    transform: translateY(-5px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 /* 页面基础布局 */
 .page {

@@ -64,7 +64,6 @@ body {
     text-align: left; 
     justify-content: center;
     margin-top: 10px;
-    gap: 100px;
 }
 
 .nav a {
@@ -73,6 +72,7 @@ body {
     text-decoration: none;
     padding: 10px 20px;
     border-radius: 5px;
+    width: auto;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }

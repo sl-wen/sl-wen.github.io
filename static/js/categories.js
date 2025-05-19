@@ -1,9 +1,8 @@
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { db } from './firebase-config.js';
+import { supabase } from './supabase-config.js';
 
 // 格式化日期
 function formatDate(timestamp) {
-    const date = timestamp.toDate();
+    const date = new Date(timestamp);
     return date.toLocaleDateString('zh-CN', {
         year: 'numeric',
         month: '2-digit',
@@ -18,19 +17,22 @@ async function getCategories() {
     
     try {
         if (statusDiv) {
-            statusDiv.innerHTML += '<p>开始从 Firestore 获取文章数据...</p>';
+            statusDiv.innerHTML += '<p>开始从 Supabase 获取文章数据...</p>';
         }
 
         // 获取所有文章
-        const postsRef = collection(db, "posts");
-        const q = query(postsRef, orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
+        const { data: posts, error } = await supabase
+            .from('posts')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
         
         if (statusDiv) {
-            statusDiv.innerHTML += `<p>查询完成，找到 ${querySnapshot.size} 篇文章</p>`;
+            statusDiv.innerHTML += `<p>查询完成，找到 ${posts.length} 篇文章</p>`;
         }
         
-        if (querySnapshot.empty) {
+        if (!posts || posts.length === 0) {
             container.innerHTML = '<div class="no-posts">暂无文章，请先<a href="/pages/post.html">发布一篇文章</a></div>';
             return;
         }
@@ -38,9 +40,8 @@ async function getCategories() {
         // 按标签分组文章
         const categorizedPosts = {};
         
-        querySnapshot.forEach(doc => {
-            const data = doc.data();
-            const tags = data.tags || ['未分类'];
+        posts.forEach(post => {
+            const tags = post.tags || ['未分类'];
             
             tags.forEach(tag => {
                 if (!categorizedPosts[tag]) {
@@ -48,10 +49,10 @@ async function getCategories() {
                 }
                 
                 categorizedPosts[tag].push({
-                    id: doc.id,
-                    title: data.title || '无标题',
-                    createdAt: data.createdAt,
-                    views: data.views || 0
+                    id: post.id,
+                    title: post.title || '无标题',
+                    createdAt: post.created_at,
+                    views: post.views || 0
                 });
             });
         });
@@ -109,4 +110,4 @@ async function getCategories() {
 }
 
 // 页面加载完成后执行
-document.addEventListener('DOMContentLoaded', getCategories); 
+document.addEventListener('DOMContentLoaded', getCategories);

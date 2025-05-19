@@ -1,12 +1,12 @@
-# Firebase Jekyll 博客系统 
+# Supabase Jekyll 博客系统 
 https://sl-wen.github.io
 http://121.40.215.235
 
-这是一个基于Firebase和Jekyll的博客系统，将静态网站生成与动态内容管理相结合。本系统使用Firebase Firestore作为数据库存储文章内容，同时保留了Jekyll的静态网站生成能力，实现了一个简洁、高效的博客平台。
+这是一个基于Supabase和Jekyll的博客系统，将静态网站生成与动态内容管理相结合。本系统使用Supabase数据库存储文章内容，同时保留了Jekyll的静态网站生成能力，实现了一个简洁、高效的博客平台。
 
 ## 功能特点
 
-- **Firebase集成**：使用Firestore数据库存储和管理博客文章
+- **Supabase集成**：使用Supabase数据库存储和管理博客文章
 - **Markdown支持**：使用Marked.js解析Markdown格式的文章内容
 - **实时预览**：在发布页面支持Markdown实时预览
 - **文章分类**：支持按标签对文章进行分类
@@ -17,7 +17,7 @@ http://121.40.215.235
 ## 技术栈
 
 - **前端**：HTML, CSS, JavaScript
-- **数据库**：Firebase Firestore
+- **数据库**：Supabase
 - **静态生成**：Jekyll
 - **构建工具**：Webpack
 - **Markdown解析**：Marked.js

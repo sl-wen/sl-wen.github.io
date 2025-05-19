@@ -1,26 +1,10 @@
-// Firebase主页面的打包入口文件
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+// Supabase主页面的入口文件
 import { marked } from 'marked';
-
-// Firebase 配置
-const firebaseConfig = {
-    apiKey: "AIzaSyCuXDfNvLwiISoMwzcUIwUbaPTl69uRnao",
-    authDomain: "slwen-45838.firebaseapp.com",
-    projectId: "slwen-45838",
-    storageBucket: "slwen-45838.appspot.com",
-    messagingSenderId: "734137620659",
-    appId: "1:734137620659:web:81ce8b971dce766d67b8c6",
-    measurementId: "G-WEBZLW3S59"
-};
-
-// 初始化 Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import { supabase } from './supabase-config.js';
 
 // 格式化日期
 function formatDate(timestamp) {
-    const date = timestamp.toDate();
+    const date = new Date(timestamp);
     return date.toLocaleDateString('zh-CN', {
         year: 'numeric',
         month: '2-digit',
@@ -33,7 +17,7 @@ function groupPostsByYear(posts) {
     const groupedPosts = {};
     
     posts.forEach(post => {
-        const date = post.createdAt.toDate();
+        const date = new Date(post.createdAt);  // 修正字段名
         const year = date.getFullYear();
         
         if (!groupedPosts[year]) {
@@ -43,6 +27,7 @@ function groupPostsByYear(posts) {
         groupedPosts[year].push(post);
     });
     
+    console.log('分组结果:', groupedPosts);  // 添加调试日志
     return groupedPosts;
 }
 
@@ -51,7 +36,7 @@ async function getPosts() {
     try {
         const statusDiv = document.getElementById('status-messages');
         if (statusDiv) {
-            statusDiv.innerHTML += '<p>开始从 Firestore 获取文章数据...</p>';
+            statusDiv.innerHTML += '<p>开始从 Supabase 获取文章数据...</p>';
         }
         
         // 获取文章列表容器
@@ -60,38 +45,35 @@ async function getPosts() {
         
         container.innerHTML = '<div class="loading">加载中...</div>';
         
-        // 尝试获取文章
-        const postsRef = collection(db, "posts");
-        
-        // 创建查询，按创建时间降序排列
-        const q = query(postsRef, orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
+        // 获取所有文章
+        const { data: posts, error } = await supabase
+            .from('posts')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
         
         if (statusDiv) {
-            statusDiv.innerHTML += `<p>查询完成，找到 ${querySnapshot.size} 篇文章</p>`;
+            statusDiv.innerHTML += `<p>查询完成，找到 ${posts.length} 篇文章</p>`;
         }
         
-        if (querySnapshot.empty) {
+        if (!posts || posts.length === 0) {
             container.innerHTML = '<div class="no-posts">暂无文章，请先<a href="/pages/post.html">发布一篇文章</a></div>';
             return;
         }
         
-        // 收集所有文章
-        const posts = [];
-        querySnapshot.forEach(doc => {
-            const data = doc.data();
-            posts.push({
-                id: doc.id,
-                title: data.title || '无标题',
-                author: data.author || '未知',
-                createdAt: data.createdAt,
-                content: data.content,
-                views: data.views || 0
-            });
-        });
+        // 处理文章数据
+        const processedPosts = posts.map(post => ({
+            id: post.id,
+            title: post.title || '无标题',
+            author: post.author || '未知',
+            createdAt: post.created_at,
+            content: post.content,
+            views: post.views || 0
+        }));
         
         // 按年份分组
-        const groupedPosts = groupPostsByYear(posts);
+        const groupedPosts = groupPostsByYear(processedPosts);
         
         // 显示文章
         let postsHtml = '';
@@ -153,7 +135,5 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // 导出函数和变量，使其在全局可用
-window.firebaseApp = app;
-window.firestore = db;
 window.getPosts = getPosts;
-window.marked = marked; 
+window.marked = marked;

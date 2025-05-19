@@ -1,7 +1,6 @@
 // 发布页面的打包入口文件
-import { collection, addDoc, Timestamp } from '@firebase/firestore';
 import { marked } from 'marked';
-import { db } from './firebase-config.js';
+import { supabase } from './supabase-config.js';
 
 // 初始化编辑器
 function initEditor() {
@@ -59,18 +58,25 @@ function initEditor() {
                 content,
                 author,
                 tags,
-                createdAt: Timestamp.fromDate(new Date()),
-                updatedAt: Timestamp.fromDate(new Date())
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                views: 0
             };
 
             if (statusDiv) {
-                statusDiv.innerHTML += '<p>正在添加文章到 Firestore...</p>';
+                statusDiv.innerHTML += '<p>正在添加文章到 Supabase...</p>';
             }
             
-            const docRef = await addDoc(collection(db, "posts"), post);
+            const { data: newPost, error } = await supabase
+                .from('posts')
+                .insert([post])
+                .select()
+                .single();
+
+            if (error) throw error;
             
             if (statusDiv) {
-                statusDiv.innerHTML += `<p>文章添加成功，ID: ${docRef.id}</p>`;
+                statusDiv.innerHTML += `<p>文章添加成功，ID: ${newPost.id}</p>`;
             }
             
             // 显示成功消息
@@ -88,7 +94,7 @@ function initEditor() {
                 statusDiv.innerHTML += '<p>3秒后将跳转到文章页面</p>';
             }
             setTimeout(() => {
-                window.location.href = `/pages/article.html?id=${docRef.id}`;
+                window.location.href = `/pages/article.html?id=${newPost.id}`;
             }, 3000);
 
         } catch (error) {
@@ -118,4 +124,4 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // 初始化编辑器
     initEditor();
-}); 
+});

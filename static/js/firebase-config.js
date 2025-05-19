@@ -24,9 +24,9 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // 将数据库和身份验证实例添加到全局对象中，方便其他模块使用
-window.db = db;
-window.auth = auth;
+global.db = db;
+global.auth = auth;
 
 // 导出数据库和身份验证实例，供其他模块导入使用
 export { db, auth, app };
-export default app; 
+export default app;

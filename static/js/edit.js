@@ -1,5 +1,4 @@
-import { doc, getDoc, updateDoc, deleteDoc } from '@firebase/firestore';
-import { db } from './firebase-config.js';
+import { supabase } from './supabase-config.js';
 import { marked } from 'marked';
 
 // 配置 marked 选项
@@ -74,15 +73,16 @@ function showMessage(message, type = 'info') {
 async function loadArticle(articleId) {
     try {
         console.log('正在加载文章:', articleId);
-        const docRef = doc(db, 'posts', articleId);
-        const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists()) {
+        const { data: article, error } = await supabase
+            .from('posts')
+            .select('*')
+            .eq('id', articleId)
+            .single();
+
+        if (error || !article) {
             showMessage('文章不存在', 'error');
             return;
         }
-        
-        const article = docSnap.data();
         console.log('获取到文章数据:', article);
         
         // 填充表单
@@ -116,14 +116,16 @@ async function updateArticle(articleId) {
             return;
         }
         
-        const docRef = doc(db, 'posts', articleId);
-        await updateDoc(docRef, {
-            title,
-            author: author || 'Admin',
-            tags,
-            content,
-            updatedAt: new Date()
-        });
+        const { error } = await supabase
+            .from('posts')
+            .update({
+                title,
+                author: author || 'Admin',
+                tags,
+                content,
+                updatedAt: new Date()
+            })
+            .eq('id', articleId);
         
         showMessage('文章更新成功！', 'success');
         setTimeout(() => {
@@ -143,8 +145,10 @@ async function handleDeleteArticle(articleId) {
     }
     
     try {
-        const docRef = doc(db, 'posts', articleId);
-        await deleteDoc(docRef);
+        const { error } = await supabase
+            .from('posts')
+            .delete()
+            .eq('id', articleId);
         showMessage('文章删除成功！', 'success');
         setTimeout(() => {
             window.location.href = '/';
@@ -204,4 +208,4 @@ window.addEventListener('DOMContentLoaded', () => {
         console.error('初始化失败:', error);
         showMessage(`初始化失败: ${error.message}`, 'error');
     }
-}); 
+});

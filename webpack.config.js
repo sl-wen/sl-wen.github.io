@@ -1,5 +1,6 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+import webpack from 'webpack';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -8,12 +9,12 @@ export default {
   mode: 'production',
   entry: {
     // 基础服务
-    firebase: './static/js/firebase-config.js',
+    supabase: './static/js/supabase-config.js',
     articleService: './static/js/articleService.js',
     stats: './static/js/stats.js',
     
     // 文章相关页面
-    firebaseindex: './static/js/firebaseindex.js',
+    index: './static/js/index.js',
     article: './static/js/article.js',
     edit: './static/js/edit.js',
     post: './static/js/post.js',
@@ -47,19 +48,27 @@ export default {
     ],
     alias: {
       'marked': path.resolve(__dirname, 'node_modules/marked/lib/marked.esm.js'),
-      'firebase': path.resolve(__dirname, 'node_modules/firebase'),
+      '@supabase/supabase-js': path.resolve(__dirname, 'node_modules/@supabase/supabase-js'),
       'firebase/app': path.resolve(__dirname, 'node_modules/firebase/app'),
       'firebase/firestore': path.resolve(__dirname, 'node_modules/firebase/firestore'),
       'firebase/auth': path.resolve(__dirname, 'node_modules/firebase/auth')
     },
     fallback: {
       "path": false,
-      "fs": false
+      "fs": false,
+      "process": false
     }
   },
   optimization: {
     minimize: true,
     moduleIds: 'deterministic',
     chunkIds: 'deterministic'
-  }
+  },
+  plugins: [
+    new webpack.ProvidePlugin({
+      global: 'global',
+      process: 'process/browser',
+      Buffer: ['buffer', 'Buffer']
+    })
+  ]
 };

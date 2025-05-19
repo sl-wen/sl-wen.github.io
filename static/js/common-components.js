@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 包含版权信息和访问统计
     const footerHtml = `
         <div class="footer">
-        <div class="copyright">© 2025 我的博客. All rights reserved.</div>  <!-- 版权信息 -->
+        <div class="copyright">© ${new Date().getFullYear()} 我的博客. All rights reserved.</div>  <!-- 版权信息 -->
         <div class="footer-stats">总访问量：<span id="visit-count">加载中...</span></div>  <!-- 访问量统计 -->
         </div>
     `;
@@ -42,4 +42,4 @@ document.addEventListener('DOMContentLoaded', function() {
     if (footerElement) {
         footerElement.innerHTML = footerHtml;  // 插入页脚 HTML
     }
-}); 
+});

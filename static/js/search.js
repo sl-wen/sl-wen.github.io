@@ -1,5 +1,4 @@
-import { db } from './firebase-config.js';
-import { collection, getDocs } from 'firebase/firestore';
+import { supabase } from './supabase-config.js';
 
 // 辅助函数：处理图片 URL，确保图片路径正确
 function processImageUrl(url) {
@@ -32,9 +31,9 @@ function extractTextFromMarkdown(markdown) {
     // 移除标题标记 (#, ##, etc.)
     .replace(/#{1,6}\s/g, '')
     // 移除加粗标记 (**text** 或 __text__)
-    .replace(/(\*\*|__)(.*?)\1/g, '$2')
+    .replace(/(\*\*|__)(.+?)\1/g, '$2')
     // 移除斜体标记 (*text* 或 _text_)
-    .replace(/(\*|_)(.*?)\1/g, '$2')
+    .replace(/(\*|_)(.+?)\1/g, '$2')
     // 移除代码块 (```code```)
     .replace(/```[\s\S]*?```/g, '')
     // 移除行内代码 (`code`)
@@ -58,13 +57,15 @@ document.addEventListener('DOMContentLoaded', async function() {
   const searchList = document.querySelector('.search-list');
   let posts = [];
 
-  // 从 Firestore 获取所有文章
+  // 从 Supabase 获取所有文章
   try {
-    const querySnapshot = await getDocs(collection(db, "posts"));
-    posts = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    posts = data;
     console.log('获取到文章:', posts.length, '篇');
   } catch (error) {
     console.error("获取文章失败:", error);
@@ -149,4 +150,4 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   // 初始显示提示
   searchList.innerHTML = '<li class="no-results">请输入搜索关键词</li>';
-}); 
+});

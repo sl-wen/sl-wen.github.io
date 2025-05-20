@@ -1,8 +1,5 @@
----
-layout: null
----
-let version = "{{site.time | date: "%Y%m%d%H%M%S"}}"
-let baseUrl = '{{site.baseurl}}'
+let version = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0,14); // "20240614153042"
+let baseUrl = self.registration.scope.replace(self.location.origin, '').replace(/\/$/, '');
 
 // let version = '001'
 // let baseUrl = ''

@@ -1,8 +1,8 @@
-# Supabase Jekyll 博客系统 
+# Supabase博客系统 
 GitHub：   https://sl-wen.github.io  
 个人服务器：http://121.40.215.235
 
-这是一个基于Supabase和Jekyll的博客系统，将静态网站生成与动态内容管理相结合。本系统使用Supabase数据库存储文章内容，同时保留了Jekyll的静态网站生成能力，实现了一个简洁、高效的博客平台。
+这是一个基于Supabase的博客系统，将静态网站生成与动态内容管理相结合。本系统使用Supabase数据库存储文章内容，实现了一个简洁、高效的博客平台。
 
 ## 功能特点
 
@@ -18,7 +18,6 @@ GitHub：   https://sl-wen.github.io
 
 - **前端**：HTML, CSS, JavaScript
 - **数据库**：Supabase
-- **静态生成**：Jekyll
 - **构建工具**：Webpack
 - **Markdown解析**：Marked.js
 - **依赖管理**：npm
@@ -57,8 +56,7 @@ GitHub：   https://sl-wen.github.io
 ### 前提条件
 
 - Node.js 和 npm
-- Jekyll
-- Firebase 账号和项目
+- Supabase 账号和项目
 
 ### 安装步骤
 
@@ -73,24 +71,19 @@ GitHub：   https://sl-wen.github.io
    npm install
    ```
 
-3. 配置Firebase
-   - 在Firebase控制台创建一个新项目
-   - 获取Firebase配置信息
-   - 更新`firebase-config.js`中的Firebase配置
+3. 配置Supabase
+   - 在Supabase控制台创建一个新项目
+   - 获取Supabase配置信息
+   - 更新`supabase-config.js`中的Firebase配置
 
 4. 构建JavaScript包
    ```
    npx webpack
    ```
 
-5. 构建Jekyll网站
+5. 本地运行
    ```
-   jekyll build
-   ```
-
-6. 本地运行
-   ```
-   jekyll serve
+   http-server
    ```
 
 ## 使用方法
@@ -101,7 +94,7 @@ GitHub：   https://sl-wen.github.io
 2. 填写文章标题、作者和标签（用逗号分隔）
 3. 在编辑器中使用Markdown格式编写文章内容
 4. 实时预览区域会显示文章的渲染效果
-5. 点击"发布文章"按钮将文章保存到Firestore数据库
+5. 点击"发布文章"按钮将文章保存到Supabase数据库
 6. 发布成功后会自动跳转到文章详细页
 
 ### 浏览文章
@@ -158,7 +151,7 @@ GitHub：   https://sl-wen.github.io
 
 # 项目功能
 
-该项目是一个基于Jekyll的博客主题，具有以下功能：
+该项目具有以下功能：
 
 - **自适应设计**：支持在不同设备上自适应显示。
 - **全文检索**：支持全文检索功能，方便用户快速查找内容。

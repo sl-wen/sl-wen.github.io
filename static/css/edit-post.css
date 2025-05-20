@@ -263,6 +263,9 @@ table tr:nth-child(2n) {
     .post-form {
         width: 100%;
     }
+    .edit-form {
+        width: 100%;
+    }
     .editor-container h2 {
         font-size: 15px;
     }

@@ -134,6 +134,7 @@ body {
 .button-group {
     margin-top: var(--spacing-medium);
     display: flex;
+    min-width: 0;
     justify-content: flex-end;
     gap: var(--spacing-small);
 }

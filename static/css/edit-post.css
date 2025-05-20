@@ -26,6 +26,7 @@ textarea {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     font-size: 14px;
+    min-width: 0;
 }
 
 .form-group input[type="text"]:focus,
@@ -276,7 +277,7 @@ table tr:nth-child(2n) {
     }
 
     .form-group input[type="text"] {
-        width: 90%;
+        min-width: 0;
     }
 
     textarea {

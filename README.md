@@ -1,6 +1,6 @@
 # Supabase Jekyll 博客系统 
-https://sl-wen.github.io
-http://121.40.215.235
+GitHub：   https://sl-wen.github.io  
+个人服务器：http://121.40.215.235
 
 这是一个基于Supabase和Jekyll的博客系统，将静态网站生成与动态内容管理相结合。本系统使用Supabase数据库存储文章内容，同时保留了Jekyll的静态网站生成能力，实现了一个简洁、高效的博客平台。
 

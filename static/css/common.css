@@ -39,7 +39,7 @@ body {
 
 /* 头部样式 */
 .header {
-    padding: 20px 0;
+    padding: 20px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -133,6 +133,7 @@ body {
 
 .button-group {
     margin-top: var(--spacing-medium);
+    margin-bottom: var(--spacing-medium);
     display: flex;
     min-width: 0;
     justify-content: flex-end;

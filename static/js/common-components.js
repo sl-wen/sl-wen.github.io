@@ -43,3 +43,15 @@ document.addEventListener('DOMContentLoaded', function() {
         footerElement.innerHTML = footerHtml;  // 插入页脚 HTML
     }
 });
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(function(registration) {
+          console.log('SW registered! scope:', registration.scope);
+        })
+        .catch(function(error) {
+          console.log('SW registration failed:', error);
+        });
+    });
+  }

@@ -6,7 +6,7 @@
 .about-title {
     font-size: 24px;
     margin-bottom: var(--spacing-medium);
-    font-weight: normal;
+    font-weight: 500;
 }
 
 .about-content {

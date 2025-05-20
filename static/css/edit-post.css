@@ -15,7 +15,7 @@
 .form-group label {
     display: block;
     margin-bottom: var(--spacing-small);
-    font-weight: bold;
+    font-weight: 500;
     color: var(--text-color);
 }
 
@@ -58,7 +58,6 @@ textarea {
 
 .editor-preview-container {
     display: flex;
-    gap: 22px;
     margin-bottom: var(--spacing-medium);
     flex: 1;
     min-height: 600px; /* 设置固定高度 */
@@ -70,7 +69,11 @@ textarea {
     display: flex;
     flex-direction: column;
     min-height: 600px;
-    max-width: calc(50% - var(--spacing-medium)/2); 
+    max-width: 50%; 
+}
+
+.editor-section label {
+    font-weight: 500;
 }
 
 .preview-section {
@@ -100,7 +103,7 @@ textarea {
 .markdown-body table th,
 #preview table th {
     background-color: #f6f8fa;
-    font-weight: bold;
+    font-weight: 500;
 }
 
 .markdown-body table tr:nth-child(even),
@@ -134,7 +137,7 @@ textarea {
 #preview h6 {
     margin-top: 24px;
     margin-bottom: 16px;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.25;
     color: var(--text-color);
 }
@@ -229,7 +232,7 @@ table td {
 
 table th {
     background-color: #f6f8fa;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 table tr:nth-child(2n) {

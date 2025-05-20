@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="footer">
         <div class="copyright">© ${new Date().getFullYear()} 我的博客. All rights reserved.</div>  <!-- 版权信息 -->
         <div class="footer-stats">总访问量：<span id="visit-count">加载中...</span></div>  <!-- 访问量统计 -->
+        <a href="/static/xml/rss.xml">RSS</a>
         </div>
     `;
 

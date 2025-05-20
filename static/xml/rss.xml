@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>我的博客</title>
+    <link>https://example.com/</link>
+    <description>一个简洁的博客</description>
+    <language>zh-cn</language>
+    <lastBuildDate>Wed, 12 Jun 2024 16:49:00 +0800</lastBuildDate>
+    <item>
+      <title>Hello世界</title>
+      <link>https://example.com/posts/hello.html</link>
+      <description><![CDATA[
+        <p>这里是正文或摘要，可以含图片和HTML。</p>
+      ]]></description>
+      <pubDate>Wed, 12 Jun 2024 16:45:00 +0800</pubDate>
+      <guid>https://example.com/posts/hello.html</guid>
+    </item>
+  </channel>
+</rss>

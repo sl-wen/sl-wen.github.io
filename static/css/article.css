@@ -149,10 +149,9 @@ table tr:nth-child(2n) {
 .markdown-body pre code {
     background-color: transparent;
     border: 0;
-    display: inline;
     line-height: inherit;
     margin: 0;
-    max-width: auto;
+    max-width: 100%;
     overflow: visible;
     padding: 0;
     word-wrap: normal;
@@ -296,5 +295,23 @@ table tr:nth-child(2n) {
     
     .ai-button {
         width: 100%;
+    }
+
+    .markdown-body code,
+    .markdown-body pre code{
+        overflow-x: auto;
+        background: #f6f8fa;
+        border-radius: 6px;
+        padding: 1em;
+        /* 移动端横向滚动手势友好 */
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+    }
+    
+    .markdown-body code,
+    .markdown-body pre code {
+        white-space: pre;       /* 保持代码格式和缩进，但允许外层滚动 */
+        word-break: normal;
+        overflow-wrap: normal;
     }
 }

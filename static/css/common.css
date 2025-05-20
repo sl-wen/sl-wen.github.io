@@ -327,7 +327,11 @@ button:hover {
 @media (max-width: 768px) {
     /* 页面基础布局 */
     .page {
-        min-height: 90%;
+        width: 100%;
+        min-height: 90vh;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;  /* 彻底禁止横向滚动条 */
     }
     
     .logo {

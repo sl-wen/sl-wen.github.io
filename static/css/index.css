@@ -58,4 +58,17 @@ h1 {
         font-size: 18px;
         margin: 5px 0 5px 0;
     }
+    .post-list, .post-list li {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+    .post-list li {
+        padding-left: 5px;
+        padding-right: 5px;
+        word-break: break-all;
+        min-width: 0;
+        flex-wrap: wrap;
+    }
 }

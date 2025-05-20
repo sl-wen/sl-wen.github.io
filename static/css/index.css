@@ -39,12 +39,22 @@ h1 {
     margin-left: auto;
     text-align: right;
     white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
 }
 
 .post-list a {
     color: #333;
     text-decoration: none;
     font-size: 16px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;                  /* Flex布局下防止被挤时溢出 */
+    max-width: 100%;               /* 防止超宽 */
 }
 
 .post-list a:hover {

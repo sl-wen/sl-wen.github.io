@@ -102,6 +102,8 @@ body {
 /* 首页布局 */
 .home-page .container {
     max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
     margin: 0 auto;
     padding: var(--spacing-medium);
 }

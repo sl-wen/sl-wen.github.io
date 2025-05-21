@@ -115,127 +115,169 @@ script.onload = function() {
     }
   });
 
-    // 修改显示时间（默认是5秒）
+    // 使用MutationObserver监听DOM变化，确保在Live2D元素加载后绑定事件
+    const observer = new MutationObserver((mutations, obs) => {
+      const live2dContainer = document.getElementById('live2d-widget');
+      if (live2dContainer) {
+        console.log('Live2D container found, setting up interactions');
+        setupLive2DInteractions(live2dContainer);
+        obs.disconnect(); // 找到元素后停止观察
+      }
+    });
+  
+    // 开始观察document.body的子元素变化
+    observer.observe(document.body, { childList: true, subtree: true });
+  
+    // 同时设置一个超时保障，以防MutationObserver失效
     setTimeout(() => {
-      if (window.Live2DCubismCore) {
-        window.Live2DCubismCore.dialogDuration = 5000; // 设置为5秒
+      const live2dContainer = document.getElementById('live2d-widget');
+      if (live2dContainer) {
+        setupLive2DInteractions(live2dContainer);
       }
     }, 5000);
-
-   // 延迟一点时间，等widget渲染完
-   setTimeout(() => {
-    // 获取Live2D容器
-    var container = document.getElementById('live2d-widget');
-    if (!container) return;
+  }
+ // 设置Live2D交互功能
+function setupLive2DInteractions(container) {
+  // 确保容器可定位
+  container.style.position = 'fixed';
+  container.style.zIndex = '999';
+  
+  // 创建消息框
+  let messageBox = document.createElement('div');
+  messageBox.id = 'live2d-custom-message';
+  messageBox.style.cssText = `
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    padding: 8px 15px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    font-size: 14px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    max-width: 200px;
+    z-index: 1000;
+  `;
+  container.appendChild(messageBox);
+  
+  // 问候语列表
+  const greetings = [
+    '你好呀！欢迎来到我的网站~',
+    '今天天气真不错！',
+    '摸摸我干嘛(*/ω＼*)',
+    '别戳我啦，好痒！',
+    '你想知道什么呢？',
+    '我是可爱的Live2D助手~',
+    '有什么可以帮到你吗？',
+    '今天也要元气满满哦！',
+    '摸头杀！啊啊啊~',
+    '主人，你又来啦~'
+  ];
+  
+  // 显示消息函数
+  function showMessage(text, duration = 3000) {
+    console.log('Showing message:', text);
+    messageBox.textContent = text;
+    messageBox.style.opacity = '1';
     
-    // 确保容器可定位
-    container.style.position = 'fixed';
+    clearTimeout(messageBox.hideTimeout);
+    messageBox.hideTimeout = setTimeout(() => {
+      messageBox.style.opacity = '0';
+    }, duration);
+  }
+  
+  // 获取随机问候语
+  function getRandomGreeting() {
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  }
+  
+  // 触摸变量
+  let isTouching = false;
+  let startX = 0;
+  let startY = 0;
+  let startRight = 0;
+  let startBottom = 0;
+  let hasMoved = false;
+  
+  // 触摸开始
+  container.addEventListener('touchstart', function(e) {
+    console.log('Touch start detected');
+    isTouching = true;
+    hasMoved = false;
     
-    // 创建一个用于显示消息的元素（如果dialog功能不够用）
-    var messageBox = document.createElement('div');
-    messageBox.id = 'live2d-message';
-    messageBox.style.cssText = `
-      position: absolute;
-      top: -60px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 12px;
-      box-shadow: 0 3px 15px 2px rgba(0, 0, 0, 0.2);
-      font-size: 14px;
-      text-align: center;
-      color: #333;
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
-      z-index: 100;
-      width: max-content;
-      max-width: 200px;
-    `;
-    container.appendChild(messageBox);
+    const touch = e.touches[0];
+    startX = touch.clientX;
+    startY = touch.clientY;
     
-    // 定义问候语数组
-    const greetings = [
-      '你好呀！欢迎来到我的网站~',
-      '今天天气真不错！',
-      '摸摸我干嘛(*/ω＼*)',
-      '别戳我啦，好痒！',
-      '你想知道什么呢？',
-      '我是可爱的Live2D助手~',
-      '有什么可以帮到你吗？',
-      '今天也要元气满满哦！',
-      '摸头杀！啊啊啊~',
-      '主人，你又来啦~'
-    ];
+    const styles = getComputedStyle(container);
+    startRight = parseInt(styles.right, 10) || 0;
+    startBottom = parseInt(styles.bottom, 10) || 0;
     
-    // 显示消息的函数
-    function showMessage(text, duration = 3000) {
-      if (!messageBox) return;
+    // 不要阻止默认行为，以免影响点击
+  }, { passive: false });
+  
+  // 触摸移动
+  container.addEventListener('touchmove', function(e) {
+    if (!isTouching) return;
+    
+    const touch = e.touches[0];
+    const dx = touch.clientX - startX;
+    const dy = touch.clientY - startY;
+    
+    // 如果移动超过5px，认为是拖拽而非点击
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      hasMoved = true;
       
-      messageBox.textContent = text;
-      messageBox.style.opacity = '1';
+      // 计算新位置
+      const newRight = Math.max(0, startRight - dx);
+      const newBottom = Math.max(0, startBottom - dy);
       
-      // 设置定时器，自动隐藏消息
-      setTimeout(() => {
-        messageBox.style.opacity = '0';
-      }, duration);
+      container.style.right = newRight + 'px';
+      container.style.bottom = newBottom + 'px';
+      
+      e.preventDefault(); // 阻止滚动
+    }
+  }, { passive: false });
+  
+  // 触摸结束
+  container.addEventListener('touchend', function(e) {
+    console.log('Touch end detected, hasMoved:', hasMoved);
+    
+    if (isTouching && !hasMoved) {
+      // 如果没有移动，则视为点击，显示问候语
+      showMessage(getRandomGreeting());
     }
     
-    // 触摸开始时显示问候语
-    container.addEventListener('touchstart', function(e) {
-      // 随机选择一条问候语
-      const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
-      showMessage(randomGreeting);
-      
-      // 拖拽相关代码
-      let isTouching = true;
-      var touch = e.touches[0];
-      let startX = touch.clientX;
-      let startY = touch.clientY;
-      
-      let styles = getComputedStyle(container);
-      let startRight = parseInt(styles.right, 10) || 0;
-      let startBottom = parseInt(styles.bottom, 10) || 0;
-      
-      // 触摸移动事件
-      function onTouchMove(e) {
-        if (!isTouching) return;
-        var touch = e.touches[0];
-        var dx = touch.clientX - startX;
-        var dy = touch.clientY - startY;
-        
-        // 确保不会拖出屏幕
-        let newRight = Math.max(0, startRight - dx);
-        let newBottom = Math.max(0, startBottom - dy);
-        
-        container.style.right = newRight + 'px';
-        container.style.bottom = newBottom + 'px';
-        e.preventDefault();
-      }
-      
-      // 触摸结束事件
-      function onTouchEnd(e) {
-        isTouching = false;
-        document.removeEventListener('touchmove', onTouchMove);
-        document.removeEventListener('touchend', onTouchEnd);
-        e.preventDefault();
-      }
-      
-      document.addEventListener('touchmove', onTouchMove);
-      document.addEventListener('touchend', onTouchEnd);
-      e.preventDefault();
-    });
-    
-    // 也可以添加定期显示问候语的功能
-    setInterval(() => {
-      // 随机决定是否显示（20%概率）
-      if (Math.random() < 0.2) {
-        const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
-        showMessage(randomGreeting);
-      }
-    }, 30000); // 每30秒检查一次
-    
-    console.log('Touch events and messages enabled for Live2D widget');
-  }, 6000); // 增加等待时间确保加载完成
+    isTouching = false;
+  }, { passive: false });
+  
+  // 触摸取消
+  container.addEventListener('touchcancel', function() {
+    isTouching = false;
+  }, { passive: false });
+  
+  // 添加点击事件（用于PC端）
+  container.addEventListener('click', function() {
+    console.log('Click detected');
+    showMessage(getRandomGreeting());
+  });
+  
+  // 初始显示一条问候语
+  setTimeout(() => {
+    showMessage('你好！我是Live2D助手~');
+  }, 1000);
+  
+  // 定期随机显示问候语
+  setInterval(() => {
+    if (Math.random() < 0.3) { // 30%概率显示
+      showMessage(getRandomGreeting());
+    }
+  }, 30000);
+  
+  console.log('Live2D interactions setup complete');
 }

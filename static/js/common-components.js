@@ -56,3 +56,32 @@ if ('serviceWorker' in navigator) {
         });
     });
   }
+
+// 在js代码里动态创建<script>标签并插入到页面
+var script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js';
+document.head.appendChild(script);
+script.onload = function() {
+  // 确保L2Dwidget加载完成后再用
+  L2Dwidget.init({
+    model: {
+      // 可选：以下URL可手动换不同人物模型
+      jsonPath: 'https://unpkg.com/live2d-widget-model-hijiki/assets/hijiki.model.json',
+    },
+    display: {
+      position: 'right', // 显示在右下角
+      width: 180,
+      height: 280,
+      hOffset: 0,
+      vOffset: -20
+    },
+    mobile: {
+      show: true,
+      scale: 0.5
+    },
+    react: {
+      opacityDefault: 0.8,
+      opacityOnHover: 1
+    }
+  });
+}

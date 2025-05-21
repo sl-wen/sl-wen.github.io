@@ -57,13 +57,25 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// 在js代码里动态创建<script>标签并插入到页面
-var script = document.createElement('script');
-script.src = 'https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js';
-document.head.appendChild(script);
-script.onload = function() {
-  // 确保L2Dwidget加载完成后再用
-  L2Dwidget.init({
+// 在DOMContentLoaded事件中初始化Live2D
+document.addEventListener('DOMContentLoaded', function() {
+  // 确保head元素存在
+  if (!document.head) {
+    console.error('Document head not found!');
+    return;
+  }
+
+  // 动态创建script标签
+  var script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js';
+  document.head.appendChild(script);
+  script.onload = function() {
+    // 确保L2Dwidget加载完成后再用
+    if (typeof L2Dwidget === 'undefined') {
+      console.error('L2Dwidget failed to load!');
+      return;
+    }
+    L2Dwidget.init({
     model: {
     // 可选：以下URL可手动换不同人物模型
     // 黑猫
@@ -97,27 +109,36 @@ function waitForLive2D() {
 
   // 检查元素是否已存在
   let checkInterval = setInterval(function() {
-    const live2dContainer = document.getElementById('live2d-widget');
-    const canvas = document.querySelector('#live2d-widget canvas');
-  
-    if (live2dContainer && canvas) {
-      console.log("Live2D elements found!");
+    try {
+      const live2dContainer = document.getElementById('live2d-widget');
+      const canvas = document.querySelector('#live2d-widget canvas');
+    
+      if (live2dContainer && canvas) {
+        console.log("Live2D elements found!");
+        clearInterval(checkInterval);
+        setupLive2DInteractions(live2dContainer, canvas);
+      }
+    } catch (error) {
+      console.error('Error checking Live2D elements:', error);
       clearInterval(checkInterval);
-      setupLive2DInteractions(live2dContainer, canvas);
     }
   }, 500);
 
   // 设置超时，防止无限等待
   setTimeout(function() {
-    clearInterval(checkInterval);
-    const live2dContainer = document.getElementById('live2d-widget');
-    const canvas = document.querySelector('#live2d-widget canvas');
-  
-    if (live2dContainer && canvas) {
-      console.log("Live2D elements found after timeout!");
-      setupLive2DInteractions(live2dContainer, canvas);
-    } else {
-      console.error("Live2D elements not found after timeout!");
+    try {
+      clearInterval(checkInterval);
+      const live2dContainer = document.getElementById('live2d-widget');
+      const canvas = document.querySelector('#live2d-widget canvas');
+    
+      if (live2dContainer && canvas) {
+        console.log("Live2D elements found after timeout!");
+        setupLive2DInteractions(live2dContainer, canvas);
+      } else {
+        console.error("Live2D elements not found after timeout!");
+      }
+    } catch (error) {
+      console.error('Error in Live2D timeout handler:', error);
     }
   }, 5000);
 }
@@ -136,7 +157,7 @@ function setupLive2DInteractions(container, canvas) {
   messageBox.id = 'live2d-custom-message';
   messageBox.style.cssText = `
   position: absolute;
-  top: -50px;
+  top: -5px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(255, 255, 255, 0.9);
@@ -170,14 +191,26 @@ function setupLive2DInteractions(container, canvas) {
  ];
 
   // 显示消息函数
+  let isShowingMessage = false;
+  let messageTimeout = null;
+  let hideTimeout = null;
+  let isDragging = false;
+  
   function showMessage(text, duration = 2000) {
+    if (isShowingMessage || isDragging) {
+      return; // 如果正在显示消息或正在拖拽，则不显示新消息
+    }
+    
     console.log('Showing message:', text);
+    isShowingMessage = true;
     messageBox.textContent = text;
     messageBox.style.opacity = '1';
   
-    clearTimeout(messageBox.hideTimeout);
-    messageBox.hideTimeout = setTimeout(() => {
+    messageTimeout = setTimeout(() => {
       messageBox.style.opacity = '0';
+      hideTimeout = setTimeout(() => {
+        isShowingMessage = false;
+      }, 300); // 等待过渡动画完成
     }, duration);
   }
 
@@ -195,22 +228,22 @@ function setupLive2DInteractions(container, canvas) {
   let hasMoved = false;
   let touchStartTime = 0;
 
-  // iOS特别优化：直接在document上监听触摸事件
+  // 处理鼠标和触摸事件的开始
   function handleTouchStart(e) {
     // 检查触摸是否在Live2D区域内
-    const touch = e.touches[0];
+    const point = e.touches ? e.touches[0] : e;
     const rect = container.getBoundingClientRect();
   
-    if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
-        touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+    if (point.clientX >= rect.left && point.clientX <= rect.right &&
+        point.clientY >= rect.top && point.clientY <= rect.bottom) {
     
-      console.log('Touch start in Live2D area');
+      console.log('Interaction start in Live2D area');
       isTouching = true;
       hasMoved = false;
       touchStartTime = Date.now();
     
-      startX = touch.clientX;
-      startY = touch.clientY;
+      startX = point.clientX;
+      startY = point.clientY;
     
       const styles = getComputedStyle(container);
       startRight = parseInt(styles.right, 10) || 0;
@@ -223,17 +256,27 @@ function setupLive2DInteractions(container, canvas) {
   function handleTouchMove(e) {
     if (!isTouching) return;
   
-    const touch = e.touches[0];
-    const dx = touch.clientX - startX;
-    const dy = touch.clientY - startY;
+    const point = e.touches ? e.touches[0] : e;
+    const dx = point.clientX - startX;
+    const dy = point.clientY - startY;
   
     // 如果移动超过5px，认为是拖拽而非点击
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
       hasMoved = true;
+      isDragging = true;
     
-      // 计算新位置
-      const newRight = Math.max(0, startRight - dx);
-      const newBottom = Math.max(0, startBottom - dy);
+      // 获取浏览器窗口尺寸和容器尺寸
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const containerRect = container.getBoundingClientRect();
+      
+      // 计算新位置，确保不超出浏览器边界
+      const maxRight = windowWidth - containerRect.width;
+      const maxBottom = windowHeight - containerRect.height;
+      
+      // 限制在可视区域内
+      const newRight = Math.min(maxRight, Math.max(0, startRight - dx));
+      const newBottom = Math.min(maxBottom, Math.max(0, startBottom - dy));
     
       console.log(`Moving to: right=${newRight}px, bottom=${newBottom}px`);
       container.style.right = newRight + 'px';
@@ -247,33 +290,36 @@ function setupLive2DInteractions(container, canvas) {
     if (!isTouching) return;
   
     const touchDuration = Date.now() - touchStartTime;
-    console.log(`Touch end: moved=${hasMoved}, duration=${touchDuration}ms`);
+    console.log(`Interaction end: moved=${hasMoved}, duration=${touchDuration}ms`);
   
-    if (!hasMoved && touchDuration < 300) {
-      // 如果没有移动且触摸时间短，则视为点击，显示问候语
-      showMessage(getRandomGreeting());
-      e.preventDefault();
+    // 只处理触摸事件或鼠标事件中的一种，避免重复触发
+    if (!hasMoved && touchDuration < 300 && !isShowingMessage) {
+      // 对于触摸事件，只处理touchend
+      // 对于鼠标事件，只处理mouseup且确保没有touches属性
+      if ((e.type === 'touchend' && !e._handled) || 
+          (e.type === 'mouseup' && !e.touches && !e._handled)) {
+        e._handled = true; // 标记事件已处理
+        showMessage(getRandomGreeting());
+        e.preventDefault();
+      }
     }
   
     isTouching = false;
+    isDragging = false;
   }
 
-  // 为iOS设备添加事件监听
+  // 添加触摸和鼠标事件监听
   document.addEventListener('touchstart', handleTouchStart, { passive: false });
   document.addEventListener('touchmove', handleTouchMove, { passive: false });
   document.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-  // 添加点击事件（用于PC端）
-  container.addEventListener('click', function(e) {
-    console.log('Click detected');
-    showMessage(getRandomGreeting());
-    e.preventDefault();
-  });
+  
+  // 添加PC端鼠标事件监听
+  container.addEventListener('mousedown', handleTouchStart);
+  document.addEventListener('mousemove', handleTouchMove);
+  document.addEventListener('mouseup', handleTouchEnd);
 
   // 初始显示一条问候语
-  setTimeout(() => {
-    showMessage('你好！我是你的小助手~');
-  }, 1000);
+  showMessage('你好！我是你的小助手~');
 
   // 定期随机显示问候语
   setInterval(() => {
@@ -299,3 +345,4 @@ function setupLive2DInteractions(container, canvas) {
 
   console.log('Live2D interactions setup complete');
 }
+});

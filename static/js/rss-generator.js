@@ -13,7 +13,7 @@ const SITE_TITLE = 'slwen blog';
 const SITE_LINK = 'http://121.40.215.235';
 const SITE_DESCRIPTION = '鱼鱼的博客';
 const SITE_GENERATOR = 'Node+Supabase RSS自生成';
-const RSS_PATH = './static/xml/rss.xml';
+const RSS_PATH = '/usr/share/nginx/html/static/xml/rss.xml';
 
 // === 工具：XML 转义（防止乱码、XSS等）===
 function escapeXml(unsafe) {

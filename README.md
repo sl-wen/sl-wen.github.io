@@ -40,7 +40,7 @@ GitHub：   https://sl-wen.github.io
 ├── static/                 # 静态资源
 │   ├── css/                # 样式表
 │   ├── img/                # 图片资源
-│   ├── fontfont/           # 字体资源
+│   ├── font/               # 字体资源
 │   └── js/                 # JavaScript文件
 │       ├── dist/           # Webpack打包后的文件
 ├── index.html              # 主页
@@ -74,7 +74,7 @@ GitHub：   https://sl-wen.github.io
 3. 配置Supabase
    - 在Supabase控制台创建一个新项目
    - 获取Supabase配置信息
-   - 更新`supabase-config.js`中的Firebase配置
+   - 更新`supabase-config.js`中的supabase配置
 
 4. 构建JavaScript包
    ```

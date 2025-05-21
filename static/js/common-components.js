@@ -134,5 +134,5 @@ script.onload = function() {
       });
       
       console.log('Touch drag enabled for Live2D widget');
-    }, 2000); // 增加等待时间
+    }, 3000); // 增加等待时间
 }

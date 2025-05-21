@@ -114,33 +114,49 @@ script.onload = function() {
       }
     }
   });
+  // 等待Live2D加载完成
+  waitForLive2D();
+}
+  
+// 等待Live2D元素加载
+function waitForLive2D() {
+  console.log("Waiting for Live2D element...");
+  
+  // 检查元素是否已存在
+  let checkInterval = setInterval(function() {
+    const live2dContainer = document.getElementById('live2d-widget');
+    const canvas = document.querySelector('#live2d-widget canvas');
+    
+    if (live2dContainer && canvas) {
+      console.log("Live2D elements found!");
+      clearInterval(checkInterval);
+      setupLive2DInteractions(live2dContainer, canvas);
+    }
+  }, 500);
+  
+  // 设置超时，防止无限等待
+  setTimeout(function() {
+    clearInterval(checkInterval);
+    const live2dContainer = document.getElementById('live2d-widget');
+    const canvas = document.querySelector('#live2d-widget canvas');
+    
+    if (live2dContainer && canvas) {
+      console.log("Live2D elements found after timeout!");
+      setupLive2DInteractions(live2dContainer, canvas);
+    } else {
+      console.error("Live2D elements not found after timeout!");
+    }
+  }, 5000);
+}
 
-    // 使用MutationObserver监听DOM变化，确保在Live2D元素加载后绑定事件
-    const observer = new MutationObserver((mutations, obs) => {
-      const live2dContainer = document.getElementById('live2d-widget');
-      if (live2dContainer) {
-        console.log('Live2D container found, setting up interactions');
-        setupLive2DInteractions(live2dContainer);
-        obs.disconnect(); // 找到元素后停止观察
-      }
-    });
-  
-    // 开始观察document.body的子元素变化
-    observer.observe(document.body, { childList: true, subtree: true });
-  
-    // 同时设置一个超时保障，以防MutationObserver失效
-    setTimeout(() => {
-      const live2dContainer = document.getElementById('live2d-widget');
-      if (live2dContainer) {
-        setupLive2DInteractions(live2dContainer);
-      }
-    }, 5000);
-  }
- // 设置Live2D交互功能
-function setupLive2DInteractions(container) {
+// 设置Live2D交互功能
+function setupLive2DInteractions(container, canvas) {
   // 确保容器可定位
   container.style.position = 'fixed';
   container.style.zIndex = '999';
+  
+  // iOS特别处理：确保触摸事件可以正常工作
+  canvas.style.pointerEvents = 'auto';
   
   // 创建消息框
   let messageBox = document.createElement('div');
@@ -162,6 +178,7 @@ function setupLive2DInteractions(container) {
     pointer-events: none;
     max-width: 200px;
     z-index: 1000;
+    white-space: nowrap;
   `;
   container.appendChild(messageBox);
   
@@ -203,26 +220,34 @@ function setupLive2DInteractions(container) {
   let startRight = 0;
   let startBottom = 0;
   let hasMoved = false;
+  let touchStartTime = 0;
   
-  // 触摸开始
-  container.addEventListener('touchstart', function(e) {
-    console.log('Touch start detected');
-    isTouching = true;
-    hasMoved = false;
-    
+  // iOS特别优化：直接在document上监听触摸事件
+  function handleTouchStart(e) {
+    // 检查触摸是否在Live2D区域内
     const touch = e.touches[0];
-    startX = touch.clientX;
-    startY = touch.clientY;
+    const rect = container.getBoundingClientRect();
     
-    const styles = getComputedStyle(container);
-    startRight = parseInt(styles.right, 10) || 0;
-    startBottom = parseInt(styles.bottom, 10) || 0;
-    
-    // 不要阻止默认行为，以免影响点击
-  }, { passive: false });
+    if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+        touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+      
+      console.log('Touch start in Live2D area');
+      isTouching = true;
+      hasMoved = false;
+      touchStartTime = Date.now();
+      
+      startX = touch.clientX;
+      startY = touch.clientY;
+      
+      const styles = getComputedStyle(container);
+      startRight = parseInt(styles.right, 10) || 0;
+      startBottom = parseInt(styles.bottom, 10) || 0;
+      
+      e.preventDefault(); // 阻止默认行为
+    }
+  }
   
-  // 触摸移动
-  container.addEventListener('touchmove', function(e) {
+  function handleTouchMove(e) {
     if (!isTouching) return;
     
     const touch = e.touches[0];
@@ -237,39 +262,44 @@ function setupLive2DInteractions(container) {
       const newRight = Math.max(0, startRight - dx);
       const newBottom = Math.max(0, startBottom - dy);
       
+      console.log(`Moving to: right=${newRight}px, bottom=${newBottom}px`);
       container.style.right = newRight + 'px';
       container.style.bottom = newBottom + 'px';
       
       e.preventDefault(); // 阻止滚动
     }
-  }, { passive: false });
+  }
   
-  // 触摸结束
-  container.addEventListener('touchend', function(e) {
-    console.log('Touch end detected, hasMoved:', hasMoved);
+  function handleTouchEnd(e) {
+    if (!isTouching) return;
     
-    if (isTouching && !hasMoved) {
-      // 如果没有移动，则视为点击，显示问候语
+    const touchDuration = Date.now() - touchStartTime;
+    console.log(`Touch end: moved=${hasMoved}, duration=${touchDuration}ms`);
+    
+    if (!hasMoved && touchDuration < 300) {
+      // 如果没有移动且触摸时间短，则视为点击，显示问候语
       showMessage(getRandomGreeting());
+      e.preventDefault();
     }
     
     isTouching = false;
-  }, { passive: false });
+  }
   
-  // 触摸取消
-  container.addEventListener('touchcancel', function() {
-    isTouching = false;
-  }, { passive: false });
+  // 为iOS设备添加事件监听
+  document.addEventListener('touchstart', handleTouchStart, { passive: false });
+  document.addEventListener('touchmove', handleTouchMove, { passive: false });
+  document.addEventListener('touchend', handleTouchEnd, { passive: false });
   
   // 添加点击事件（用于PC端）
-  container.addEventListener('click', function() {
+  container.addEventListener('click', function(e) {
     console.log('Click detected');
     showMessage(getRandomGreeting());
+    e.preventDefault();
   });
   
   // 初始显示一条问候语
   setTimeout(() => {
-    showMessage('你好！我是Live2D助手~');
+    showMessage('你好！我是你的小助手~');
   }, 1000);
   
   // 定期随机显示问候语
@@ -278,6 +308,21 @@ function setupLive2DInteractions(container) {
       showMessage(getRandomGreeting());
     }
   }, 30000);
+  
+  // 添加调试按钮（仅用于测试）
+  const debugButton = document.createElement('button');
+  debugButton.textContent = '测试消息';
+  debugButton.style.cssText = `
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    z-index: 1001;
+    padding: 5px 10px;
+  `;
+  debugButton.addEventListener('click', function() {
+    showMessage(getRandomGreeting());
+  });
+  document.body.appendChild(debugButton);
   
   console.log('Live2D interactions setup complete');
 }

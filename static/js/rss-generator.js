@@ -79,7 +79,8 @@ async function generateRSS() {
 
     // 4. 写入本地文件
     fs.writeFileSync(RSS_PATH, rssFeed, 'utf8');
-    console.log(`\n✅ RSS文件已生成：${RSS_PATH}`);
+    const runtime = new Date().toISOString();
+    console.log(`\n ${runtime} RSS文件已生成：${RSS_PATH}`);
 }
 
 // === 执行 ===

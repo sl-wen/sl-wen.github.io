@@ -196,16 +196,49 @@ function setupLive2DInteractions(container, canvas) {
     '主人，你又来啦~'
   ];
   
+  // 消息队列和状态
+  let messageQueue = [];
+  let isShowingMessage = false;
+  let lastTouchTime = 0;
+  const touchCooldown = 1000; // 触摸冷却时间（毫秒）
+  
   // 显示消息函数
-  function showMessage(text, duration = 3000) {
-    console.log('Showing message:', text);
-    messageBox.textContent = text;
+  function showMessage(text, duration = 1300) {
+    // 将消息添加到队列
+    messageQueue.push({
+      text: text,
+      duration: duration
+    });
+    
+    // 如果当前没有显示消息，则开始显示
+    if (!isShowingMessage) {
+      processMessageQueue();
+    }
+  }
+  
+  // 处理消息队列
+  function processMessageQueue() {
+    if (messageQueue.length === 0) {
+      isShowingMessage = false;
+      return;
+    }
+    
+    isShowingMessage = true;
+    const message = messageQueue.shift();
+    
+    console.log('Showing message:', message.text);
+    messageBox.textContent = message.text;
     messageBox.style.opacity = '1';
     
-    clearTimeout(messageBox.hideTimeout);
-    messageBox.hideTimeout = setTimeout(() => {
+    // 设置定时器，在消息显示时间结束后处理下一条消息
+    setTimeout(() => {
       messageBox.style.opacity = '0';
-    }, duration);
+      
+      // 等待淡出动画完成后处理下一条消息
+      setTimeout(() => {
+        processMessageQueue();
+      }, 300); // 300ms是淡出动画的时间
+    }, message.duration);
   }
   
   // 获取随机问候语
@@ -274,11 +307,18 @@ function setupLive2DInteractions(container, canvas) {
     if (!isTouching) return;
     
     const touchDuration = Date.now() - touchStartTime;
+    const currentTime = Date.now();
     console.log(`Touch end: moved=${hasMoved}, duration=${touchDuration}ms`);
     
     if (!hasMoved && touchDuration < 300) {
-      // 如果没有移动且触摸时间短，则视为点击，显示问候语
-      showMessage(getRandomGreeting());
+      // 检查是否在冷却时间内
+      if (currentTime - lastTouchTime > touchCooldown) {
+        // 如果没有移动且触摸时间短，则视为点击，显示问候语
+        showMessage(getRandomGreeting());
+        lastTouchTime = currentTime;
+      } else {
+        console.log('Touch ignored due to cooldown');
+      }
       e.preventDefault();
     }
     
@@ -292,8 +332,17 @@ function setupLive2DInteractions(container, canvas) {
   
   // 添加点击事件（用于PC端）
   container.addEventListener('click', function(e) {
+    const currentTime = Date.now();
     console.log('Click detected');
-    showMessage(getRandomGreeting());
+    
+    // 检查是否在冷却时间内
+    if (currentTime - lastTouchTime > touchCooldown) {
+      showMessage(getRandomGreeting());
+      lastTouchTime = currentTime;
+    } else {
+      console.log('Click ignored due to cooldown');
+    }
+    
     e.preventDefault();
   });
   
@@ -309,20 +358,20 @@ function setupLive2DInteractions(container, canvas) {
     }
   }, 30000);
   
-  // 添加调试按钮（仅用于测试）
-  const debugButton = document.createElement('button');
-  debugButton.textContent = '测试消息';
-  debugButton.style.cssText = `
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    z-index: 1001;
-    padding: 5px 10px;
-  `;
-  debugButton.addEventListener('click', function() {
-    showMessage(getRandomGreeting());
-  });
-  document.body.appendChild(debugButton);
+  // // 添加调试按钮（仅用于测试）
+  // const debugButton = document.createElement('button');
+  // debugButton.textContent = '测试消息';
+  // debugButton.style.cssText = `
+  //   position: fixed;
+  //   bottom: 10px;
+  //   left: 10px;
+  //   z-index: 1001;
+  //   padding: 5px 10px;
+  // `;
+  // debugButton.addEventListener('click', function() {
+  //   showMessage(getRandomGreeting());
+  // });
+  // document.body.appendChild(debugButton);
   
   console.log('Live2D interactions setup complete');
 }

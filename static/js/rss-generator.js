@@ -2,6 +2,7 @@
 
 import fs from 'fs';
 import { createClient } from '@supabase/supabase-js';
+import { marked } from 'marked';  // 导入 Markdown 解析器
 
 // === Supabase 配置信息 ===
 const supabaseUrl = 'https://pcwbtcsigmjnrigkfixm.supabase.co';
@@ -49,7 +50,8 @@ async function generateRSS() {
         const postUrl = SITE_LINK.replace(/\/$/, '') + `/pages/article.html?id=${post.id}`; // 你也可以用post.id
         const pubDate = new Date(post.created_at).toUTCString();
         const updateDate = new Date(post.updated_at).toUTCString();
-        const summary = post.content;
+        // 将 Markdown 内容转换为 HTML
+        const summary = marked.parse(post.content || '');
 
         return `
         <item>

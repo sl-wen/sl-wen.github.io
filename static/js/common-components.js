@@ -84,4 +84,46 @@ script.onload = function() {
       opacityOnHover: 1
     }
   });
+
+    // 延迟一点时间，等widget渲染完
+    setTimeout(() => {
+      // live2d-widget包裹层通常有个 id="live2d-widget"
+      // canvas本身是 live2d-widget 的第一个子节点
+      var canvas = document.querySelector('#live2d-widget canvas');
+      var container = document.getElementById('live2d-widget');
+      if (!container) return;
+  
+      let isTouching = false, startX = 0, startY = 0, startRight = 0, startBottom = 0;
+  
+      container.addEventListener('touchstart', function(e) {
+        isTouching = true;
+        // 记录起始点和当前right/bottom
+        var touch = e.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+  
+        let styles = getComputedStyle(container);
+        startRight = parseInt(styles.right, 10) || 0;
+        startBottom = parseInt(styles.bottom, 10) || 0;
+  
+        e.preventDefault();
+      });
+  
+      container.addEventListener('touchmove', function(e) {
+        if (!isTouching) return;
+        var touch = e.touches[0];
+        // delta移动
+        var dx = touch.clientX - startX;
+        var dy = touch.clientY - startY;
+        container.style.right = (startRight - dx) + 'px';
+        container.style.bottom = (startBottom - dy) + 'px';
+        e.preventDefault();
+      });
+  
+      container.addEventListener('touchend', function(e) {
+        isTouching = false;
+        e.preventDefault();
+      });
+  
+    }, 1000); // 推荐实际用 MutationObserver 观察元素加载，但简单起见用 setTimeout。
 }

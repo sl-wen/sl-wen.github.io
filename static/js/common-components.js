@@ -122,32 +122,84 @@ script.onload = function() {
       }
     }, 5000);
 
-    // 延迟一点时间，等widget渲染完
-    setTimeout(() => {
-      var container = document.getElementById('live2d-widget');
-      if (!container) return;
+   // 延迟一点时间，等widget渲染完
+   setTimeout(() => {
+    // 获取Live2D容器
+    var container = document.getElementById('live2d-widget');
+    if (!container) return;
+    
+    // 确保容器可定位
+    container.style.position = 'fixed';
+    
+    // 创建一个用于显示消息的元素（如果dialog功能不够用）
+    var messageBox = document.createElement('div');
+    messageBox.id = 'live2d-message';
+    messageBox.style.cssText = `
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      box-shadow: 0 3px 15px 2px rgba(0, 0, 0, 0.2);
+      font-size: 14px;
+      text-align: center;
+      color: #333;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 100;
+      width: max-content;
+      max-width: 200px;
+    `;
+    container.appendChild(messageBox);
+    
+    // 定义问候语数组
+    const greetings = [
+      '你好呀！欢迎来到我的网站~',
+      '今天天气真不错！',
+      '摸摸我干嘛(*/ω＼*)',
+      '别戳我啦，好痒！',
+      '你想知道什么呢？',
+      '我是可爱的Live2D助手~',
+      '有什么可以帮到你吗？',
+      '今天也要元气满满哦！',
+      '摸头杀！啊啊啊~',
+      '主人，你又来啦~'
+    ];
+    
+    // 显示消息的函数
+    function showMessage(text, duration = 3000) {
+      if (!messageBox) return;
       
-      // 确保容器可定位
-      container.style.position = 'fixed';
-      // 添加一些视觉提示，表明可拖动
-      container.style.cursor = 'move';
+      messageBox.textContent = text;
+      messageBox.style.opacity = '1';
       
-      let isTouching = false, startX = 0, startY = 0, startRight = 0, startBottom = 0;
+      // 设置定时器，自动隐藏消息
+      setTimeout(() => {
+        messageBox.style.opacity = '0';
+      }, duration);
+    }
+    
+    // 触摸开始时显示问候语
+    container.addEventListener('touchstart', function(e) {
+      // 随机选择一条问候语
+      const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+      showMessage(randomGreeting);
       
-      container.addEventListener('touchstart', function(e) {
-        isTouching = true;
-        var touch = e.touches[0];
-        startX = touch.clientX;
-        startY = touch.clientY;
-        
-        let styles = getComputedStyle(container);
-        startRight = parseInt(styles.right, 10) || 0;
-        startBottom = parseInt(styles.bottom, 10) || 0;
-        
-        e.preventDefault();
-      });
+      // 拖拽相关代码
+      let isTouching = true;
+      var touch = e.touches[0];
+      let startX = touch.clientX;
+      let startY = touch.clientY;
       
-      container.addEventListener('touchmove', function(e) {
+      let styles = getComputedStyle(container);
+      let startRight = parseInt(styles.right, 10) || 0;
+      let startBottom = parseInt(styles.bottom, 10) || 0;
+      
+      // 触摸移动事件
+      function onTouchMove(e) {
         if (!isTouching) return;
         var touch = e.touches[0];
         var dx = touch.clientX - startX;
@@ -160,16 +212,30 @@ script.onload = function() {
         container.style.right = newRight + 'px';
         container.style.bottom = newBottom + 'px';
         e.preventDefault();
-      });
+      }
       
-      // 添加触摸结束和取消事件
-      ['touchend', 'touchcancel'].forEach(event => {
-        container.addEventListener(event, function(e) {
-          isTouching = false;
-          e.preventDefault();
-        });
-      });
+      // 触摸结束事件
+      function onTouchEnd(e) {
+        isTouching = false;
+        document.removeEventListener('touchmove', onTouchMove);
+        document.removeEventListener('touchend', onTouchEnd);
+        e.preventDefault();
+      }
       
-      console.log('Touch drag enabled for Live2D widget');
-    }, 5000); // 增加等待时间
+      document.addEventListener('touchmove', onTouchMove);
+      document.addEventListener('touchend', onTouchEnd);
+      e.preventDefault();
+    });
+    
+    // 也可以添加定期显示问候语的功能
+    setInterval(() => {
+      // 随机决定是否显示（20%概率）
+      if (Math.random() < 0.2) {
+        const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+        showMessage(randomGreeting);
+      }
+    }, 30000); // 每30秒检查一次
+    
+    console.log('Touch events and messages enabled for Live2D widget');
+  }, 6000); // 增加等待时间确保加载完成
 }

@@ -328,6 +328,21 @@ button:hover {
     color: #8250df;
 }
 
+#live2d-widget-dialog {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 3px 15px 2px rgba(0, 0, 0, 0.2);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    position: absolute;
+    animation-delay: 5s;
+    animation-duration: 50s;
+    animation-iteration-count: infinite;
+    animation-name: live2d-widget-dialog-tingle;
+    /* 可以根据需要调整其他样式 */
+  }
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     /* 页面基础布局 */

@@ -85,8 +85,42 @@ script.onload = function() {
     react: {
       opacityDefault: 0.8,
       opacityOnHover: 1
+    },
+    // 添加对话框配置
+    dialog: {
+      enable: true,
+      script: {
+      // 'tap body': 当点击身体时显示的文字
+      'tap body': [
+        '哎呀！别碰我！', 
+        '你干嘛呢？', 
+        '喂，不要动手动脚的！',
+        '再摸我就报警了！',
+        '我要生气了哦~'
+      ],
+      // 'tap face': 当点击脸部时显示的文字
+      'tap face': [
+        '开心~',
+        '别戳我的脸啦！',
+        '我的脸不是按钮！',
+        '再摸我就不理你了！'
+      ],
+      'tap foot': [
+        '别戳我的脚啦！',
+        '我的脚不能踩！'
+      ],
+      // 可以添加更多的交互点和对应的文字
+      // 'tap special': ['特殊区域的文字']
+      }
     }
   });
+
+    // 修改显示时间（默认是5秒）
+    setTimeout(() => {
+      if (window.Live2DCubismCore) {
+        window.Live2DCubismCore.dialogDuration = 5000; // 设置为5秒
+      }
+    }, 5000);
 
     // 延迟一点时间，等widget渲染完
     setTimeout(() => {
@@ -137,5 +171,5 @@ script.onload = function() {
       });
       
       console.log('Touch drag enabled for Live2D widget');
-    }, 3000); // 增加等待时间
+    }, 5000); // 增加等待时间
 }

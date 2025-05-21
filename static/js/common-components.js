@@ -66,7 +66,10 @@ script.onload = function() {
   L2Dwidget.init({
     model: {
       // 可选：以下URL可手动换不同人物模型
-      jsonPath: 'https://unpkg.com/live2d-widget-model-hijiki/assets/hijiki.model.json',
+      // 黑猫
+      // jsonPath: 'https://unpkg.com/live2d-widget-model-hijiki/assets/hijiki.model.json',
+      // 白猫
+      jsonPath: 'https://unpkg.com/live2d-widget-model-tororo/assets/tororo.model.json',
     },
     display: {
       position: 'right', // 显示在右下角

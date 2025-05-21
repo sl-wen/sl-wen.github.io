@@ -85,14 +85,14 @@ document.addEventListener('DOMContentLoaded', function() {
     },
     display: {
       position: 'right', // 显示在右下角
-      width: 180,
-      height: 280,
+      width: 200,
+      height: 320,
       hOffset: 0,
       vOffset: -20
     },
     mobile: {
       show: true,
-      scale: 0.5
+      scale: 0.8
     },
     react: {
       opacityDefault: 0.8,
@@ -122,7 +122,7 @@ function waitForLive2D() {
       console.error('Error checking Live2D elements:', error);
       clearInterval(checkInterval);
     }
-  }, 500);
+  }, 1000);
 
   // 设置超时，防止无限等待
   setTimeout(function() {
@@ -157,7 +157,7 @@ function setupLive2DInteractions(container, canvas) {
   messageBox.id = 'live2d-custom-message';
   messageBox.style.cssText = `
   position: absolute;
-  top: -5px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(255, 255, 255, 0.9);
@@ -168,7 +168,7 @@ function setupLive2DInteractions(container, canvas) {
   font-size: 14px;
   text-align: center;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.5s;
   pointer-events: none;
   max-width: 200px;
   z-index: 1000;
@@ -192,8 +192,6 @@ function setupLive2DInteractions(container, canvas) {
 
   // 显示消息函数
   let isShowingMessage = false;
-  let messageTimeout = null;
-  let hideTimeout = null;
   let isDragging = false;
   
   function showMessage(text, duration = 2000) {
@@ -210,7 +208,7 @@ function setupLive2DInteractions(container, canvas) {
       messageBox.style.opacity = '0';
       hideTimeout = setTimeout(() => {
         isShowingMessage = false;
-      }, 300); // 等待过渡动画完成
+      }, 1000); // 等待过渡动画完成
     }, duration);
   }
 

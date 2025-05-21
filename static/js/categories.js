@@ -51,7 +51,7 @@ async function getCategories() {
                 categorizedPosts[tag].push({
                     id: post.id,
                     title: post.title || '无标题',
-                    createdAt: post.created_at,
+                    created_at: post.created_at,
                     views: post.views || 0
                 });
             });
@@ -73,7 +73,7 @@ async function getCategories() {
             `;
             
             posts.forEach(post => {
-                const date = post.createdAt ? formatDate(post.createdAt) : '未知日期';
+                const date = post.created_at ? formatDate(post.created_at) : '未知日期';
                 
                 categoriesHtml += `
                     <li>

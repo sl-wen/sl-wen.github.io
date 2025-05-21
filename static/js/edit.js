@@ -123,7 +123,7 @@ async function updateArticle(articleId) {
                 author: author || 'Admin',
                 tags,
                 content,
-                updatedAt: new Date()
+                updated_at: new Date()
             })
             .eq('id', articleId);
         

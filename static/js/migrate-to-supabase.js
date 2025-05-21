@@ -29,7 +29,7 @@ async function migratePosts() {
                 if (!data.content) {
                     throw new Error('内容不能为空');
                 }
-                if (!data.createdAt || !data.updatedAt) {
+                if (!data.created_at || !data.updated_at) {
                     throw new Error('创建时间和更新时间不能为空');
                 }
 
@@ -40,8 +40,8 @@ async function migratePosts() {
                     author: data.author || 'anonymous',
                     tags: Array.isArray(data.tags) ? data.tags : (data.tags ? [data.tags] : []),
                     views: data.views || 0,
-                    created_at: new Date(data.createdAt.toDate()).toISOString(),
-                    updated_at: new Date(data.updatedAt.toDate()).toISOString()
+                    created_at: new Date(data.created_at.toDate()).toISOString(),
+                    updated_at: new Date(data.created_at.toDate()).toISOString()
                 };
 
                 // 记录字段截断警告

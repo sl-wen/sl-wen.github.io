@@ -17,7 +17,7 @@ function groupPostsByYear(posts) {
     const groupedPosts = {};
     
     posts.forEach(post => {
-        const date = new Date(post.createdAt);  // 修正字段名
+        const date = new Date(post.created_at);  // 修正字段名
         const year = date.getFullYear();
         
         if (!groupedPosts[year]) {
@@ -67,7 +67,7 @@ async function getPosts() {
             id: post.id,
             title: post.title || '无标题',
             author: post.author || '未知',
-            createdAt: post.created_at,
+            created_at: post.created_at,
             content: post.content,
             views: post.views || 0
         }));
@@ -85,7 +85,7 @@ async function getPosts() {
             postsHtml += `<h1>${year}</h1><ul class="post-list">`;
             
             groupedPosts[year].forEach(post => {
-                const date = formatDate(post.createdAt);
+                const date = formatDate(post.created_at);
                 
                 postsHtml += `
                     <li>

@@ -73,6 +73,7 @@ async function generateRSS() {
                      <title>${escapeXml(SITE_TITLE)}</title>
                      <link>${SITE_LINK}</link>
                      <description>${escapeXml(SITE_DESCRIPTION)}</description>
+                     <language>zh-cn</language>
                      <generator>${escapeXml(SITE_GENERATOR)}</generator>
                      <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
                      ${items}

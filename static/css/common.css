@@ -358,7 +358,7 @@ button:hover {
     .footer {
         margin-top: 0px;
         padding: 0px 0;
-        gap: 1px;
+        gap: 10px;
     }
     
     .copyright {

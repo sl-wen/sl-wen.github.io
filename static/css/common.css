@@ -326,6 +326,11 @@ button:hover {
     color: #8250df;
 }
 
+/* 针对Live2D的canvas元素 */
+#live2d-widget canvas {
+    cursor: pointer !important;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     /* 页面基础布局 */

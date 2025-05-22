@@ -127,7 +127,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 width: 200,
                 height: 320,
                 hOffset: 0,
-                vOffset: -20
+                vOffset: -20,
+                draggable: true
             },
             mobile: {
                 show: true,

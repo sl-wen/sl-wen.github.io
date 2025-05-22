@@ -80,13 +80,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 // 可选：以下URL可手动换不同人物模型
                 // Shizuku模型
                 //jsonPath: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-shizuku@1.0.5/assets/shizuku.model.json',
+                jsonPath: 'https://app.unpkg.com/live2d-widget-model-shizuku@1.0.5/files/assets/shizuku.model.json',
                 // 可选模型路径（取消对应注释即可切换）:
                 // Unity-Chan模型（支持20+种基础动作）
                 //jsonPath: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-unitychan@1.0.5/assets/unitychan.model.json',
                 // 碧蓝航线-光辉模型（支持特殊场景交互）
                 //jsonPath: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-azurlane-yamashiro@1.0.5/assets/yamashiro.model.json',
                 // 黑猫模型
-                jsonPath: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-hijiki@1.0.5/assets/hijiki.model.json',
+                //jsonPath: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-hijiki@1.0.5/assets/hijiki.model.json',
                 // 白猫模型
                 // jsonPath: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-tororo@1.0.5/assets/tororo.model.json',
                 // 布偶猫模型 (新增)

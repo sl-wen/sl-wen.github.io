@@ -55,11 +55,13 @@ async function generateRSS() {
 
         return `
         <item>
-            <title>${escapeXml(post.title)}</title>
+            <title><![CDATA[${post.title}]]></title>
             <link>${postUrl}</link>
             <description><![CDATA[${summary}]]></description>
-            <author>${escapeXml(post.author)}</author>
-            <category>${Array.isArray(post.tags) ? post.tags.join(',') : post.tags || ''}</category>
+            <content:encoded><![CDATA[${summary}]]></content:encoded>
+            <author>${escapeXml(post.author) || ''}</author>
+            ${post.tags && Array.isArray(post.tags) && post.tags.length > 0 ? 
+              post.tags.map(tag => `<category>${escapeXml(tag)}</category>`).join('\n') : ''}
             <pubDate>${pubDate}</pubDate>
             <guid isPermaLink="false">${postUrl}</guid>
             <lastBuildDate>${updateDate}</lastBuildDate>
@@ -68,16 +70,16 @@ async function generateRSS() {
 
     // 3. 拼接RSS文件头
     const rssFeed = `<?xml version="1.0" encoding="UTF-8"?>
-                     <rss version="2.0">
-                     <channel>
-                     <title>${escapeXml(SITE_TITLE)}</title>
-                     <link>${SITE_LINK}</link>
-                     <description>${escapeXml(SITE_DESCRIPTION)}</description>
-                     <language>zh-cn</language>
-                     <generator>${escapeXml(SITE_GENERATOR)}</generator>
-                     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-                     ${items}
-                     </channel>
+                     <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+                        <channel>
+                            <title>${escapeXml(SITE_TITLE)}</title>
+                            <link>${SITE_LINK}</link>
+                            <description>${escapeXml(SITE_DESCRIPTION)}</description>
+                            <language>zh-cn</language>
+                            <generator>${escapeXml(SITE_GENERATOR)}</generator>
+                            <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+                                ${items}
+                        </channel>
                      </rss>`;
 
     // 4. 写入本地文件

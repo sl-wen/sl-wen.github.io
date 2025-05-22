@@ -58,7 +58,6 @@ async function generateRSS() {
             <title><![CDATA[${post.title}]]></title>
             <link>${postUrl}</link>
             <description><![CDATA[${summary}]]></description>
-            <content:encoded><![CDATA[${summary}]]></content:encoded>
             <author>${escapeXml(post.author) || ''}</author>
             ${post.tags && Array.isArray(post.tags) && post.tags.length > 0 ? 
               post.tags.map(tag => `<category>${escapeXml(tag)}</category>`).join('\n') : ''}

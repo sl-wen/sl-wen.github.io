@@ -9,10 +9,10 @@
     width: 100%;
     padding: 12px;
     font-size: 16px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--primary-border-color);
     border-radius: var(--border-radius);
     margin-bottom: var(--spacing-medium);
-    transition: border-color 0.3s;
+    transition: primary-border-color 0.3s;
 }
 
 .search-input:focus {
@@ -32,7 +32,7 @@
 
 .search-item {
     padding: var(--spacing-medium);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--primary-border-color);
     border-radius: var(--border-radius);
     margin-bottom: var(--spacing-small);
     background-color: var(--background-white);

@@ -1,10 +1,4 @@
 /* 搜索页面样式 */
-.search-container {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: var(--spacing-medium);
-}
-
 .search-input {
     width: 100%;
     padding: 12px;

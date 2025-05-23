@@ -82,17 +82,17 @@ body {
     width: 100%;
     max-width: 1000px;
     margin: 0 auto;
-    padding: var(--spacing-small);
+    padding: var(--spacing-medium);
     background-color: var(--background-white);
+    box-sizing: border-box; /* 确保padding不会增加元素总宽度 */
 }
 
 /* 头部样式 - 现代化设计 */
 .header {
-    padding: var(--spacing-large) 0;
+    padding: var(--spacing-medium) 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: var(--spacing-xs);
 }
 
 
@@ -177,7 +177,7 @@ body {
 
 /* 页脚样式 - 更精致的页脚 */
 .footer {
-    margin-top: var(--spacing-xs);
+    margin: (var(--spacing-small)) 0;
     padding: var(--spacing-xs) 0;
     color: var(--text-light-color);
     display: flex;
@@ -514,6 +514,10 @@ button:active {
         /* 彻底禁止横向滚动条 */
     }
 
+    .container {
+        padding: var(--spacing-large);
+    }
+
     .logo {
         width: 20px;
         height: 20px;
@@ -531,7 +535,7 @@ button:active {
     }
 
     .footer {
-        margin-top: 0px;
+        margin: var(--spacing-small);
         padding: 0px 0;
         gap: 10px;
     }

@@ -1,7 +1,4 @@
 /* 关于页面样式 */
-.about-container {
-    padding: var(--spacing-medium) 0;
-}
 
 .about-title {
     font-size: 24px;

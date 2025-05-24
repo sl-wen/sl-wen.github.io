@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 创建文章元信息 HTML（发布日期、作者、标签等）
     const metaHtml = `
       <div class="article-meta">
-        <span>发布于: ${article.created_at ? new Date(article.created_at).toLocaleDateString('zh-CN') : '未知日期'}</span>
+        <span>发布于: ${article.created_at ? new Date(article.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }) : '未知日期'}</span>
         ${article.author ? `<span>作者: ${article.author}</span>` : ''}
         ${article.tags && article.tags.length > 0 ? `<span>标签: ${article.tags.join(', ')}</span>` : ''}
       </div>
@@ -195,4 +195,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 开始加载文章
   loadArticle();
-}); 
+});

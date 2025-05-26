@@ -89,10 +89,12 @@ body {
 
 /* 头部样式 - 现代化设计 */
 .header {
-    padding: var(--spacing-medium) 0;
+    padding: var(--spacing-medium) 80px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+    box-sizing: border-box; /* 确保padding不会增加元素总宽度 */
 }
 
 
@@ -121,8 +123,7 @@ body {
 /* 导航菜单样式 - 更现代的导航 */
 .nav {
     display: flex;
-    justify-content: center;
-    gap: var(--spacing-xxxl);
+    justify-content: space-between; /* 改为 space-between 使链接分散对齐 */
     width: 100%;
     padding: var(--spacing-medium) 0;
     position: relative;
@@ -144,6 +145,7 @@ body {
     font-size: 1.2rem;
     font-weight: 600;
     text-decoration: none;
+    white-space: nowrap; /* 防止文本换行 */
     padding: var(--spacing-small) var(--spacing-medium);
     border-radius: var(--border-radius);
     transition: all var(--transition-normal);

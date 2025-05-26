@@ -1,4 +1,4 @@
-h1 {
+h2 {
     text-align: center;
     margin-bottom: 40px;
     color: #333;
@@ -6,7 +6,7 @@ h1 {
 
 .tools-grid {
     display: grid; /* 启用 CSS 网格布局 */
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 自动列数，每列至少300px，最多1fr（等分） */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 自动列数，每列至少200px，最多1fr（等分） */
     gap: 30px; /* 每个格子之间30px间隙 */
     padding: 20px; /* 容器内边距20px */
 }
@@ -72,7 +72,7 @@ h1 {
     .container {
         padding: 10px;
     }
-    .container h1 {
+    .container h2 {
         margin-bottom: 5px;
         font-size: 15px;
     }

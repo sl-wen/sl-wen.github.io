@@ -47,6 +47,11 @@ textarea {
     flex-direction: column;
 }
 
+.editor-container h2 {
+    font-size: 24px;
+    font-weight: 500;
+}
+
 .editor-preview-container {
     display: flex;
     margin-bottom: var(--spacing-medium);

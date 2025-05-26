@@ -12,6 +12,7 @@ export default {
     supabase: './static/js/supabase-config.js',
     articleService: './static/js/articleService.js',
     stats: './static/js/stats.js',
+    auth: './static/js/auth.js',
     
     // 文章相关页面
     index: './static/js/index.js',

@@ -80,7 +80,7 @@ body {
 .container {
     flex: 1;
     width: 100%;
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: var(--spacing-medium);
     background-color: var(--background-white);
@@ -100,8 +100,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     margin-bottom: var(--spacing-medium);
     transition: transform var(--transition-normal);
 }
@@ -122,7 +122,6 @@ body {
 .nav {
     display: flex;
     justify-content: center;
-    margin-top: var(--spacing-medium);
     gap: var(--spacing-xxxl);
     width: 100%;
     padding: var(--spacing-medium) 0;
@@ -427,7 +426,6 @@ button:active {
 }
 
 .loading {
-    background-color: var(--background-gray);
     color: var(--text-light-color);
 }
 
@@ -519,13 +517,13 @@ button:active {
     }
 
     .logo {
-        width: 20px;
-        height: 20px;
+        width: 40px;
+        height: 40px;
     }
 
     .nav {
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 12px;
     }
 
     .nav a {

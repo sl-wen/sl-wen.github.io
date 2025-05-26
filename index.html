@@ -13,11 +13,14 @@
     <script src="/static/js/dist/index.bundle.js"></script> <!-- 加载Supabase客户端 -->
     <script src="/static/js/dist/stats.bundle.js"></script> <!-- 加载统计相关功能 -->
     <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
+    <script src="/static/js/dist/auth.bundle.js"></script>
 </head>
 
 <body> <!-- 文档主体 -->
     <div class="page home-page"> <!-- 页面主容器，使用home-page类标识首页 -->
-        <div id="common-header"></div> <!-- 公共页头容器 -->
+        <div id="common-header">
+            <div id="auth-section"></div> <!-- Add auth section to header -->
+        </div> <!-- 公共页头容器 -->
 
         <div class="container"> <!-- 主要内容容器 -->
             <div id="status-messages" class="status-messages"></div> <!-- 状态消息显示区域 -->

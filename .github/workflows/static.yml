@@ -24,17 +24,11 @@ jobs:
 
       # 安装依赖
       - name: Install Dependencies
-        run: |
-          if [ -f "package.json" ]; then
-            npm install
-          fi
+        run: npm install
 
-      # 构建项目（如果需要）
+      # 构建项目
       - name: Build Project
-        run: |
-          if [ -f "package.json" ]; then
-            npm run build
-          fi
+        run: npm run build
 
       # 部署到阿里云
       - name: Deploy to Aliyun

@@ -1,5 +1,5 @@
 // 导入 Supabase 客户端
-import { supabase } from './supabase-config.js';
+const { supabase } = require('./supabase-config.js');
 
 // 实现重试机制的通用函数
 async function retry(fn, retries = 3, delay = 1000) {
@@ -14,7 +14,7 @@ async function retry(fn, retries = 3, delay = 1000) {
 }
 
 // 获取单篇文章的函数
-export async function getArticle(id) {
+async function getArticle(id) {
     try {
         console.log('开始获取文章:', id);
         
@@ -53,7 +53,7 @@ export async function getArticle(id) {
 }
 
 // 获取所有文章的函数
-export async function getAllArticles() {
+async function getAllArticles() {
     try {
         const { data, error } = await supabase
             .from('posts')
@@ -69,7 +69,7 @@ export async function getAllArticles() {
 }
 
 // 按标签获取文章的函数
-export async function getArticlesByTag(tag) {
+async function getArticlesByTag(tag) {
     try {
         const { data, error } = await supabase
             .from('posts')
@@ -86,7 +86,7 @@ export async function getArticlesByTag(tag) {
 }
 
 // 创建新文章的函数
-export async function createArticle(article) {
+async function createArticle(article) {
     try {
         const { data, error } = await supabase
             .from('posts')
@@ -113,7 +113,7 @@ export async function createArticle(article) {
 }
 
 // 更新文章的函数
-export async function updateArticle(id, updates) {
+async function updateArticle(id, updates) {
     try {
         const { data, error } = await supabase
             .from('posts')
@@ -134,7 +134,7 @@ export async function updateArticle(id, updates) {
 }
 
 // 删除文章的函数
-export async function deleteArticle(id) {
+async function deleteArticle(id) {
     try {
         const { error } = await supabase
             .from('posts')
@@ -148,3 +148,13 @@ export async function deleteArticle(id) {
         throw error;
     }
 }
+
+// 导出所有函数
+module.exports = {
+    getArticle,
+    getAllArticles,
+    getArticlesByTag,
+    createArticle,
+    updateArticle,
+    deleteArticle
+};

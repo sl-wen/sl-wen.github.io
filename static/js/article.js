@@ -1,6 +1,6 @@
 // 导入必要的模块和函数
-import { getArticle } from './articleService.js';  // 导入获取文章的服务函数
-import { marked } from 'marked';  // 导入 Markdown 解析器
+const { getArticle } = require('./articleService.js');  // 导入获取文章的服务函数
+const { marked } = require('marked');  // 导入 Markdown 解析器
 
 // 自定义 marked 渲染器配置
 const renderer = {

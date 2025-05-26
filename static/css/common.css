@@ -552,3 +552,21 @@ button:active {
         font-size: 12px;
     }
 }
+@media (max-width: 480px) {
+  .auth-form {
+    padding: 1rem;
+    margin: 1rem;
+  }
+}
+.auth-form {
+  max-width: 400px;
+  margin: 2rem auto;
+}
+.form-header h3 {
+  color: var(--text-title);
+  margin-bottom: 1.5rem;
+}
+.btn-primary:hover {
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}

@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default {
-  mode: 'production',
+  mode: 'development',
   entry: {
     // 基础服务
     supabase: './static/js/supabase-config.js',
@@ -25,7 +25,13 @@ export default {
   output: {
     filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'static/js/dist'),
-    publicPath: '/static/js/dist/'
+    publicPath: '/static/js/dist/',
+    library: {
+      type: 'umd' // 修改为UMD格式
+    }
+  },
+  experiments: {
+    outputModule: false // 关闭ES模块输出
   },
   module: {
     rules: [
@@ -35,7 +41,10 @@ export default {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env']
+            presets: ['@babel/preset-env'],
+            plugins: [
+              '@babel/plugin-transform-runtime'
+            ]
           }
         }
       }
@@ -48,31 +57,25 @@ export default {
       path.resolve(__dirname, 'node_modules')
     ],
     alias: {
-      'marked': path.resolve(__dirname, 'node_modules/marked/lib/marked.esm.js'),
-      '@supabase/supabase-js': path.resolve(__dirname, 'node_modules/@supabase/supabase-js'),
-      'firebase/app': path.resolve(__dirname, 'node_modules/firebase/app'),
-      'firebase/firestore': path.resolve(__dirname, 'node_modules/firebase/firestore'),
-      'firebase/auth': path.resolve(__dirname, 'node_modules/firebase/auth')
-    },
-    fallback: {
-      "path": false,
-      "fs": false,
-      "process": false
+      '@': path.resolve(__dirname, 'static/js/'),
     }
-  },
-  optimization: {
-    minimize: true,
-    moduleIds: 'deterministic',
-    chunkIds: 'deterministic'
   },
   plugins: [
     new webpack.ProvidePlugin({
-      global: 'global',
       process: 'process/browser',
-      Buffer: ['buffer', 'Buffer']
     }),
     new webpack.IgnorePlugin({
       resourceRegExp: /^ws$/
     })
-  ]
+  ],
+  devServer: {
+    static: {
+      directory: __dirname,
+      serveIndex: true,
+    },
+    compress: true,
+    port: 8080,
+    open: false,
+    hot: true,
+  },
 };

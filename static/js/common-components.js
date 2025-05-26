@@ -35,7 +35,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // 在页面中插入页头
     const headerElement = document.getElementById('common-header');  // 获取页头容器元素
     if (headerElement) {
+        // 保留auth-section的内容
+        const authSection = headerElement.querySelector('#auth-section');
         headerElement.innerHTML = headerHtml;  // 插入页头 HTML
+        // 如果存在auth-section，将其重新插入到header中
+        if (authSection) {
+            headerElement.appendChild(authSection);
+        }
     }
 
     // 在页面中插入页脚

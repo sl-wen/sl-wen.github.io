@@ -1,5 +1,5 @@
 // 导入 Supabase 客户端
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
 // Supabase 项目配置信息
 const supabaseUrl = 'https://pcwbtcsigmjnrigkfixm.supabase.co';
@@ -9,5 +9,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // 导出 Supabase 客户端实例，供其他模块使用
+module.exports = supabase;
+module.exports.supabase = supabase;
 export { supabase };
 export default supabase;

@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>我的博客</title>
-    <link>https://example.com/</link>
-    <description>一个简洁的博客</description>
+   <title>鱼鱼的博客</title>
+    <link>http://121.40.215.235</link>
+    <description>feedid:147823966754130944+userId:76466871819188224</description>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 12 Jun 2024 16:49:00 +0800</lastBuildDate>
-    <item>
-      <title>Hello世界</title>
-      <link>https://example.com/posts/hello.html</link>
-      <description><![CDATA[
-        <p>这里是正文或摘要，可以含图片和HTML。</p>
-      ]]></description>
-      <pubDate>Wed, 12 Jun 2024 16:45:00 +0800</pubDate>
-      <guid>https://example.com/posts/hello.html</guid>
-    </item>
+    <generator>Node+Supabase RSS自生成</generator>
+    <lastBuildDate>Mon, 26 May 2025 06:40:04 GMT</lastBuildDate>
+      <item>
+            <title>feed</title>
+            <link>http://121.40.215.235/pages/article.html?id=81e8730c-6150-46a0-8c34-62b635823fde</link>
+            <description>feedid:147823966754130944+userId:76466871819188224</description>
+            <author>Admin</author>
+            <pubDate>Wed, 21 May 2025 15:59:37 GMT</pubDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=d7062406-00fb-4be4-9c95-cc8c4b01228e</guid>
+            <lastBuildDate>Sun, 25 May 2025 15:38:44 GMT</lastBuildDate>
+      </item>
   </channel>
 </rss>

@@ -70,6 +70,9 @@ export default {
       global: 'global',
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer']
+    }),
+    new webpack.IgnorePlugin({
+      resourceRegExp: /^ws$/
     })
   ]
 };

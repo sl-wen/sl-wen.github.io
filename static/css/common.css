@@ -308,7 +308,7 @@ body {
 
 /* 共通消息样式 */
 .status-messages {
-    display: none;
+    /* display: none; */ /* Removed to allow JS to control visibility */
     margin: var(--spacing-medium) 0;
 }
 

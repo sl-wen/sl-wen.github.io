@@ -12,17 +12,26 @@ const showStatusMessage = (message, type) => {
   
   // 清除旧消息
   statusContainer.innerHTML = '';
+  statusContainer.style.display = 'none'; // Hide if previously shown and now cleared
   
   const messageElement = document.createElement('div');
-  messageElement.className = `status-message ${type}`;
+  // Correct class name assignment to match CSS
+  messageElement.className = `message ${type}-message`; 
   messageElement.textContent = message;
   
   statusContainer.appendChild(messageElement);
+  statusContainer.style.display = 'block'; // Make sure container is visible
   
   // 5秒后自动移除消息
   setTimeout(() => {
     messageElement.classList.add('fade-out');
-    setTimeout(() => messageElement.remove(), 500);
+    setTimeout(() => {
+      messageElement.remove();
+      // If no other messages, hide the container
+      if (statusContainer.children.length === 0) {
+        statusContainer.style.display = 'none';
+      }
+    }, 500);
   }, 5000);
 };
 
@@ -57,7 +66,13 @@ const login = async (email, password) => {
     return data.user;
   } catch (error) {
     console.error('登录失败:', error);
-    showStatusMessage(error.message.includes('Invalid') ? '邮箱或密码错误' : error.message, 'error');
+    let message = error.message;
+    if (error.message.includes('Invalid login credentials')) { // Supabase specific message for invalid credentials
+      message = '邮箱或密码错误';
+    } else if (error.message.includes('Email not confirmed')) {
+      message = '请先验证您的邮箱地址。';
+    }
+    showStatusMessage(message, 'error');
   }
 };
 
@@ -81,7 +96,13 @@ const signup = async (email, password) => {
     return data.user;
   } catch (error) {
     console.error('注册失败:', error);
-    showStatusMessage(error.message.includes('already') ? '该邮箱已注册' : error.message, 'error');
+    let message = error.message;
+    if (error.message.includes('User already registered')) { // Supabase specific message
+      message = '该邮箱已注册';
+    } else if (error.message.includes('Password should be at least 6 characters')) {
+      message = '密码至少需要6位字符。';
+    }
+    showStatusMessage(message, 'error');
   }
 };
 
@@ -90,130 +111,103 @@ const initAuth = async () => {
   console.log('开始初始化认证UI');
   const authContainer = document.createElement('div');
   authContainer.id = 'auth-container';
-  
+
+  // 统一的登录/注册表单 HTML
+  const createAuthFormHtml = () => `
+    <div class="auth-form">
+      <div class="form-header">
+        <h3>用户登录/注册</h3>
+      </div>
+      <div class="form-group">
+        <label for="auth-email">邮箱</label>
+        <input type="email" class="form-control" id="auth-email" placeholder="请输入邮箱">
+      </div>
+      <div class="form-group">
+        <label for="auth-password">密码</label>
+        <input type="password" class="form-control" id="auth-password" placeholder="请输入密码 (至少6位)">
+      </div>
+      <div class="form-actions">
+        <button id="login-btn" class="btn-primary">登录</button>
+        <button id="signup-btn" class="btn-secondary">注册</button>
+      </div>
+    </div>
+  `;
+
+  // 用户信息展示 HTML
+  const createUserInfoHtml = (user) => `
+    <div class="user-info">
+      <span>欢迎，${user.email || '用户'}</span>
+      <button id="logout-btn" class="btn-secondary">登出</button>
+    </div>
+  `;
+
   try {
-    // 首先检查是否有session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
-    if (sessionError) {
-      console.error('获取session时出错:', sessionError);
-      throw sessionError;
+    // Simplified user check: directly attempt to get the user
+    const { data: { user: currentUser }, error: userFetchError } = await supabase.auth.getUser();
+
+    if (userFetchError) {
+      // Log the error but proceed to show login form as currentUser will be null
+      console.error('Error fetching user for initAuth:', userFetchError.message);
     }
     
-    // 如果有session再获取用户信息
-    if (session) {
-      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+    console.log('当前用户状态:', currentUser);
+
+    if (currentUser) {
+      // 用户已登录，显示用户信息和登出按钮
+      authContainer.innerHTML = createUserInfoHtml(currentUser);
       
-      if (userError) {
-        console.error('获取用户信息时出错:', userError);
-        throw userError;
-      }
-      
-      console.log('当前用户状态:', currentUser);
-      
-      if (currentUser) {
-        // 用户已登录，显示用户信息和登出按钮
-        const userInfo = document.createElement('div');
-        userInfo.className = 'user-info';
-        userInfo.innerHTML = `
-          <span>欢迎，${currentUser.email || '用户'}</span>
-          <button id="logout-btn">登出</button>
-        `;
-        authContainer.appendChild(userInfo);
-        
-        // 添加登出事件监听
-        setTimeout(() => {
-          const logoutBtn = document.getElementById('logout-btn');
-          if (logoutBtn) {
-            logoutBtn.addEventListener('click', logout);
-          } else {
-            console.warn('未找到登出按钮');
-          }
-        }, 0);
+      // 添加登出事件监听 (直接附加)
+      const logoutBtn = authContainer.querySelector('#logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
       } else {
-        // 用户未登录，显示登录表单
-        const authForm = document.createElement('div');
-        authForm.className = 'auth-form';
-        authForm.innerHTML = `
-          <div class="form-group">
-            <input type="email" id="auth-email" placeholder="邮箱" />
-          </div>
-          <div class="form-group">
-            <input type="password" id="auth-password" placeholder="密码" />
-          </div>
-          <div class="form-actions">
-            <button id="login-btn">登录</button>
-            <button id="signup-btn">注册</button>
-          </div>
-        `;
-        authContainer.appendChild(authForm);
-        
-        // 添加登录和注册事件监听
-        setTimeout(() => {
-          const loginBtn = document.getElementById('login-btn');
-          const signupBtn = document.getElementById('signup-btn');
-          const emailInput = document.getElementById('auth-email');
-          const passwordInput = document.getElementById('auth-password');
-          
-          if (loginBtn && signupBtn && emailInput && passwordInput) {
-            loginBtn.addEventListener('click', () => {
-              login(emailInput.value, passwordInput.value);
-            });
-            
-            signupBtn.addEventListener('click', () => {
-              signup(emailInput.value, passwordInput.value);
-            });
-          } else {
-            console.warn('未找到登录/注册表单元素');
-          }
-        }, 0);
+        console.warn('未找到登出按钮');
       }
     } else {
-      // 没有session，显示登录表单
-      const authForm = document.createElement('div');
-      authForm.className = 'auth-form';
-      authForm.innerHTML = `
-        <div class="form-header">
-          <h3>用户登录</h3>
-        </div>
-        <div class="form-group">
-          <label>邮箱</label>
-          <input type="email" class="form-control" id="auth-email">
-        </div>
-        <div class="form-group">
-          <label>密码</label>
-          <input type="password" class="form-control" id="auth-password">
-        </div>
-        <div class="form-footer">
-          <button class="btn-primary" id="login-btn">立即登录</button>
-          <button class="btn-secondary" id="signup-btn">注册账号</button>
-        </div>
-      `;
-      authContainer.appendChild(authForm);
+      // 用户未登录或获取失败，显示统一的登录/注册表单
+      authContainer.innerHTML = createAuthFormHtml();
       
-      // 添加登录和注册事件监听
-      setTimeout(() => {
-        const loginBtn = document.getElementById('login-btn');
-        const signupBtn = document.getElementById('signup-btn');
-        const emailInput = document.getElementById('auth-email');
-        const passwordInput = document.getElementById('auth-password');
+      // 添加登录和注册事件监听 (直接附加)
+      const loginBtn = authContainer.querySelector('#login-btn');
+      const signupBtn = authContainer.querySelector('#signup-btn');
+      const emailInput = authContainer.querySelector('#auth-email');
+      const passwordInput = authContainer.querySelector('#auth-password');
+      
+      if (loginBtn && signupBtn && emailInput && passwordInput) {
+        loginBtn.addEventListener('click', () => {
+          login(emailInput.value, passwordInput.value);
+        });
         
-        if (loginBtn && signupBtn && emailInput && passwordInput) {
-          loginBtn.addEventListener('click', () => {
-            login(emailInput.value, passwordInput.value);
-          });
-          
-          signupBtn.addEventListener('click', () => {
-            signup(emailInput.value, passwordInput.value);
-          });
-        } else {
-          console.warn('未找到登录/注册表单元素');
-        }
-      }, 0);
+        signupBtn.addEventListener('click', () => {
+          signup(emailInput.value, passwordInput.value);
+        });
+      } else {
+        console.warn('未找到登录/注册表单元素');
+      }
     }
   } catch (error) {
     console.error('初始化认证UI时出错:', error);
     showStatusMessage(error.message, 'error');
+    // 即使出错，也尝试显示登录表单，避免空白页面
+    authContainer.innerHTML = createAuthFormHtml();
+    
+    // 添加登录和注册事件监听 (直接附加 - 错误处理分支)
+    const loginBtn = authContainer.querySelector('#login-btn');
+    const signupBtn = authContainer.querySelector('#signup-btn');
+    const emailInput = authContainer.querySelector('#auth-email');
+    const passwordInput = authContainer.querySelector('#auth-password');
+    
+    if (loginBtn && signupBtn && emailInput && passwordInput) {
+      loginBtn.addEventListener('click', () => {
+        login(emailInput.value, passwordInput.value);
+      });
+      
+      signupBtn.addEventListener('click', () => {
+        signup(emailInput.value, passwordInput.value);
+      });
+    } else {
+      console.warn('未找到登录/注册表单元素（错误处理分支）');
+    }
   }
   
   return authContainer;

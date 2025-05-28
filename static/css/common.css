@@ -521,11 +521,11 @@ button:active {
     }
 
     .container {
-        padding: var(--spacing-large);
+        padding: var(--spacing-medium) 10px;
     }
 
     .header {
-        padding: var(--spacing-medium) 20px;
+        padding: var(--spacing-medium) 10px;
     }
 
     .logo {

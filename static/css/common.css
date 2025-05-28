@@ -518,6 +518,10 @@ button:active {
         padding: var(--spacing-large);
     }
 
+    .header {
+        padding: var(--spacing-medium) 20px;
+    }
+
     .logo {
         width: 40px;
         height: 40px;
@@ -530,7 +534,7 @@ button:active {
 
     .nav a {
         margin: 1px;
-        font-size: 18px;
+        font-size: 15px;
         padding: 1px 1px;
     }
 

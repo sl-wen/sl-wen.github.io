@@ -69,3 +69,12 @@
     outline: none;
     border-color: var(--primary-color);
 }
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+
+.loign-container {
+    width: 100%;
+}
+    
+}

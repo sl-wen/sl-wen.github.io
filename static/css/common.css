@@ -561,4 +561,8 @@ button:active {
     .footer a {
         font-size: 12px;
     }
+    .auth #auth-btn {
+        padding: var(--spacing-small) var(--spacing-small);
+        font-size: 0.7rem;
+    }
 }

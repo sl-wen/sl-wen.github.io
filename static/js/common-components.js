@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // 定义页头 HTML 模板
     // 包含网站 logo 和导航菜单
     const headerHtml = `
-      <div class="auth"> <!-- 操作按钮区域 -->
-      <button id="auth-btn" class="primary-btn active">注册/登录</button> <!-- login按钮 -->
+      <div class="auth" id="auth"> <!-- 操作按钮区域 -->
+      <button id="auth-btn" class="primary-btn active">登录</button> <!-- login按钮 -->
       </div>
       <div class="header">
       <a href="/" class="logo">

@@ -96,7 +96,7 @@ const login = async (username, password) => {
           }
         });
         // 刷新认证UI
-        refreshAuthUI();
+        //refreshAuthUI();
         return data.Userinfo;
       } catch (error) {
         showStatusMessage(error.message, 'error');
@@ -164,7 +164,7 @@ const logout = async () => {
 
 // 刷新认证UI
 const refreshAuthUI = () => {
-  const authSection = document.getElementById('auth-section');
+  const authSection = document.getElementById('auth');
   if (!authSection) return;
   
   // 清空当前内容
@@ -190,9 +190,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const username = document.getElementById('username').value || '';
   const password = document.getElementById('password').value || '';
   const passwordagain = document.getElementById('passwordagain').value;
-  // document.getElementById('login-btn').addEventListener('click',login(username, password));
-  // document.getElementById('signup-btn').addEventListener('click',signup(username, password,passwordagain));
-  // document.getElementById('forget-btn').addEventListener('click',to_forget(username));
+  document.getElementById('login-btn').addEventListener('click',login(username, password));
+  document.getElementById('signup-btn').addEventListener('click',signup(username, password,passwordagain));
+  //document.getElementById('forget-btn').addEventListener('click',to_forget(username));
   const tagButtons = document.querySelectorAll('.tag-btn');
   const displaySections = document.querySelectorAll('.displaydiv');
   

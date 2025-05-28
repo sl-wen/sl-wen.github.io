@@ -79,7 +79,7 @@ const initAuth = () => {
 const login = async (username, password) => {
   try {
         // 获取登录信息
-        const { data : Userinfo, error } = await supabase
+        const { data : Userinfo, error: checkError } = await supabase
             .from('Userinfo')
             .select('*')
             .eq('username', username)
@@ -119,7 +119,7 @@ const signup = async (username, password,passwordagain) => {
       updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase
+    const { data, error: checkError } = await supabase
         .from('Userinfo')
         .select('*')
         .eq('username', username)
@@ -127,16 +127,16 @@ const signup = async (username, password,passwordagain) => {
 
     if (data) throw new Error('用户已存在');
   
-    const { data: newUserinfo, error } = await supabase
+    const { data: newUserinfo, error: inserterror } = await supabase
       .from('Userinfo')
       .insert([Userinfo])
       .select()
       .single();
 
-    if (error) throw error;
+    if (inserterror) throw inserterror;
     
     showStatusMessage('注册成功！', 'success');
-    return data.newUserinfo;
+    return newUserinfo;
   } catch (error) {
     showStatusMessage(error.message, 'error');
   }

@@ -78,23 +78,20 @@ const initAuth = () => {
 // 登录函数 (使用 Supabase)
 const login = async (username, password) => {
   try {
-        // 使用重试逻辑获取登录信息
-        const Userinfo = await retry(async () => {
-          const { data, error } = await supabase
-              .from('Userinfo')
-              .select('*')
-              .eq('username', username)
-              .single();
+        // 获取登录信息
+        const { data : Userinfo, error } = await supabase
+            .from('Userinfo')
+            .select('*')
+            .eq('username', username)
+            .single();
               
-          if (error) throw error;
-          if (!data) throw new Error('用户不存在');
+        if (!data) throw new Error('用户不存在');
 
-          if(Userinfo.password === password){
-            showStatusMessage('登录成功！', 'success');
-          }else{
-            throw new Error('密码不正确');
-          }
-        });
+        if(Userinfo.password === password){
+          showStatusMessage('登录成功！', 'success');
+        }else{
+          throw new Error('密码不正确');
+        }
         // 刷新认证UI
         //refreshAuthUI();
         return data.Userinfo;
@@ -122,16 +119,13 @@ const signup = async (username, password,passwordagain) => {
       updated_at: new Date().toISOString(),
     };
 
-    const checkUserinfo = await retry(async () => {
-      const { data, error } = await supabase
-          .from('Userinfo')
-          .select('*')
-          .eq('username', username)
-          .single();
-          
-      if (error) throw error;
-      if (data) throw new Error('用户已存在');
-    });
+    const { data, error } = await supabase
+        .from('Userinfo')
+        .select('*')
+        .eq('username', username)
+        .single();
+
+    if (data) throw new Error('用户已存在');
   
     const { data: newUserinfo, error } = await supabase
       .from('Userinfo')

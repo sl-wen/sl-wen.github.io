@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // 定义页头 HTML 模板
     // 包含网站 logo 和导航菜单
     const headerHtml = `
+      <div class="auth"> <!-- 操作按钮区域 -->
+      <button id="auth-btn" class="primary-btn active">注册/登录</button> <!-- login按钮 -->
+      </div>
       <div class="header">
       <a href="/" class="logo">
       <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">  <!-- Logo 图片，加载失败时使用备用图片 -->
@@ -31,7 +34,11 @@ document.addEventListener('DOMContentLoaded', function () {
       <a href="/static/xml/rss.xml">RSS</a>
       </div>
   `;
-
+    // 在页面中插入页头
+    const authElement = document.getElementById('auth-section');  // 获取登陆容器元素
+    if (authElement) {
+        authElement.innerHTML = authHtml;  // 插入登陆 HTML
+    }
     // 在页面中插入页头
     const headerElement = document.getElementById('common-header');  // 获取页头容器元素
     if (headerElement) {
@@ -49,7 +56,7 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
         navigator.serviceWorker.register('/service-worker.js')
             .then(function (registration) {
-                console.log('SW registered! scope:', registration.scope);
+                //console.log('SW registered! scope:', registration.scope);
             })
             .catch(function (error) {
                 console.log('SW registration failed:', error);
@@ -145,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 等待Live2D元素加载
     function waitForLive2D() {
-        console.log("Waiting for Live2D element...");
+        //console.log("Waiting for Live2D element...");
 
         // 检查元素是否已存在
         let checkInterval = setInterval(function () {
@@ -154,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const canvas = document.querySelector('#live2d-widget canvas');
 
                 if (live2dContainer && canvas) {
-                    console.log("Live2D elements found!");
+                    //console.log("Live2D elements found!");
                     clearInterval(checkInterval);
                     setupLive2DInteractions(live2dContainer, canvas);
                 }
@@ -220,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const greetings = [
             '你好呀！欢迎来到我的网站~',
             '今天天气真不错！',
-            '摸摸我干嘛(*/ω＼*)',
+            '摸我干嘛(*/ω＼*)',
             '别戳我啦，好痒！',
             '你想知道什么呢？',
             '我是可爱的你的助手~',
@@ -275,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (point.clientX >= rect.left && point.clientX <= rect.right &&
                 point.clientY >= rect.top && point.clientY <= rect.bottom) {
 
-                console.log('Interaction start in Live2D area');
+                //console.log('Interaction start in Live2D area');
                 isTouching = true;
                 hasMoved = false;
                 touchStartTime = Date.now();
@@ -316,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const newRight = Math.min(maxRight, Math.max(0, startRight - dx));
                 const newBottom = Math.min(maxBottom, Math.max(0, startBottom - dy));
 
-                console.log(`Moving to: right=${newRight}px, bottom=${newBottom}px`);
+                //console.log(`Moving to: right=${newRight}px, bottom=${newBottom}px`);
                 container.style.right = newRight + 'px';
                 container.style.bottom = newBottom + 'px';
 
@@ -328,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!isTouching) return;
 
             const touchDuration = Date.now() - touchStartTime;
-            console.log(`Interaction end: moved=${hasMoved}, duration=${touchDuration}ms`);
+            //console.log(`Interaction end: moved=${hasMoved}, duration=${touchDuration}ms`);
 
             // 只处理触摸事件或鼠标事件中的一种，避免重复触发
             if (!hasMoved && touchDuration < 300 && !isShowingMessage) {

@@ -11,59 +11,17 @@
     <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
     <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
     <script src="/static/js/dist/stats.bundle.js"></script> <!-- 加载统计相关功能 -->
+    <script src="/static/js/dist/auth.bundle.js"></script>
 </head>
 <body> <!-- 文档主体 -->
     <div class="page"> <!-- 页面主容器 -->
         <div id="common-header"></div> <!-- 公共页头容器 -->
         
         <div class="container"> <!-- 主要内容容器 -->
-  <!-- <input type="tel" id="phone" placeholder="+8613812345678"><br>
-  <div id="recaptcha-container"></div>
-  <button id="sendCodeBtn">获取验证码</button>
-  <br>
-  <input type="text" id="code" placeholder="输入验证码">
-  <button id="verifyCodeBtn">验证登录</button>
-  <script>
-    // 用你的自己的 Firebase config 替换
-    const firebaseConfig = {
-      apiKey: "YourApiKey",
-      authDomain: "yourapp.firebaseapp.com",
-      projectId: "yourapp",
-    };
-    firebase.initializeApp(firebaseConfig);
-
-    // 获取验证码
-    document.getElementById('sendCodeBtn').onclick = function() {
-      // 1. 自动渲染不可见 reCAPTCHA（防止滥用）
-      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-        size: 'invisible'
-      });
-      const phoneNumber = document.getElementById('phone').value;
-      firebase.auth().signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
-        .then((confirmationResult) => {
-          window.confirmationResult = confirmationResult; // 保存 confirmationResult 以便后面用
-          alert('验证码已发送！');
-        }).catch((error) => {
-          alert(error.message);
-        });
-    };
-
-    // 验证登录
-    document.getElementById('verifyCodeBtn').onclick = function() {
-      const code = document.getElementById('code').value;
-      window.confirmationResult.confirm(code)
-        .then((result) => {
-          // 登录成功
-          alert('登录成功！Uid:' + result.user.uid);
-        }).catch((error) => {
-          alert('验证码错误或已过期！');
-        });
-    };
-  </script> -->
             <div class="about-container"> <!-- 关于页面内容容器 -->
                 <h1 class="about-title">关于我的博客</h1> <!-- 关于页面标题 -->
                 <div class="about-content"> <!-- 关于页面主要内容 -->
-                    <p>欢迎来到我的博客！这是一个基于Supabase和Jekyll构建的个人博客系统。</p> <!-- 欢迎语和系统介绍 -->
+                    <p>欢迎来到我的博客！这是一个基于Supabase构建的个人博客系统。</p> <!-- 欢迎语和系统介绍 -->
                     <p>本博客使用了以下技术：</p> <!-- 技术栈说明 -->
                     <ul> <!-- 技术列表 -->
                         <li>Supabase - 用于存储文章数据</li> <!-- 数据存储技术 -->

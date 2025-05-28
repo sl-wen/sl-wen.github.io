@@ -87,6 +87,7 @@ body {
     box-sizing: border-box; /* 确保padding不会增加元素总宽度 */
 }
 
+
 /* 头部样式 - 现代化设计 */
 .header {
     padding: var(--spacing-medium) 80px;
@@ -97,6 +98,11 @@ body {
     box-sizing: border-box; /* 确保padding不会增加元素总宽度 */
 }
 
+.auth {
+    margin-left: auto;
+    margin-right: 0;
+    float: right;
+}
 
 .logo {
     display: flex;

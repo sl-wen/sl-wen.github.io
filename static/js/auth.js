@@ -1,6 +1,4 @@
-// 导入 Supabase 客户端
 import { supabase } from './supabase-config.js';
-
 // 显示状态消息的函数
 const showStatusMessage = (message, type) => {
   const statusContainer = document.getElementById('status-messages');
@@ -77,37 +75,74 @@ const initAuth = () => {
   return authContainer;
 };
 
-// 登录函数 (使用新版 Supabase API)
-const login = async (email, password) => {
+// 登录函数 (使用 Supabase)
+const login = async (username, password) => {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-    
-    if (error) throw error;
-    
-    showStatusMessage('登录成功！', 'success');
-    // 刷新认证UI
-    refreshAuthUI();
-    return data.user;
-  } catch (error) {
-    showStatusMessage(error.message, 'error');
-  }
+        // 使用重试逻辑获取登录信息
+        const Userinfo = await retry(async () => {
+          const { data, error } = await supabase
+              .from('Userinfo')
+              .select('*')
+              .eq('username', username)
+              .single();
+              
+          if (error) throw error;
+          if (!data) throw new Error('用户不存在');
+
+          if(Userinfo.password === password){
+            showStatusMessage('登录成功！', 'success');
+          }else{
+            throw new Error('密码不正确');
+          }
+        });
+        // 刷新认证UI
+        refreshAuthUI();
+        return data.Userinfo;
+      } catch (error) {
+        showStatusMessage(error.message, 'error');
+      }
 };
 
 // 注册函数
-const signup = async (email, password) => {
+const signup = async (username, password,passwordagain) => {
   try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password
+    if (!username || !password || !passwordagain) {
+      throw new Error('内容不能为空');
+    }
+    if (password != passwordagain) {
+      throw new Error('2次密码不一致');
+    }    
+    const Userinfo = {
+      username,
+      password,
+      level: 0,
+      amount: 0,
+      adress: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const checkUserinfo = await retry(async () => {
+      const { data, error } = await supabase
+          .from('Userinfo')
+          .select('*')
+          .eq('username', username)
+          .single();
+          
+      if (error) throw error;
+      if (data) throw new Error('用户已存在');
     });
-    
+  
+    const { data: newUserinfo, error } = await supabase
+      .from('Userinfo')
+      .insert([Userinfo])
+      .select()
+      .single();
+
     if (error) throw error;
     
-    showStatusMessage('注册成功！请检查您的邮箱。', 'success');
-    return data.user;
+    showStatusMessage('注册成功！', 'success');
+    return data.newUserinfo;
   } catch (error) {
     showStatusMessage(error.message, 'error');
   }
@@ -138,21 +173,49 @@ const refreshAuthUI = () => {
   authSection.appendChild(initAuth());
 };
 
-// 监听认证状态变化
-supabase.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN') {
-    showStatusMessage('已登录', 'success');
-    refreshAuthUI();
-  } else if (event === 'SIGNED_OUT') {
-    showStatusMessage('已登出', 'info');
-    refreshAuthUI();
-  }
-});
+// // 监听认证状态变化
+// supabase.auth.onAuthStateChange((event, session) => {
+//   if (event === 'SIGNED_IN') {
+//     showStatusMessage('已登录', 'success');
+//     refreshAuthUI();
+//   } else if (event === 'SIGNED_OUT') {
+//     showStatusMessage('已登出', 'info');
+//     refreshAuthUI();
+//   }
+// });
 
 // 初始化认证UI
 document.addEventListener('DOMContentLoaded', () => {
-  const authSection = document.getElementById('auth-section');
-  if (authSection) {
-    authSection.appendChild(initAuth());
-  }
+  document.getElementById('auth-btn').addEventListener('click',to_login);
+  const username = document.getElementById('username').value || '';
+  const password = document.getElementById('password').value || '';
+  const passwordagain = document.getElementById('passwordagain').value;
+  // document.getElementById('login-btn').addEventListener('click',login(username, password));
+  // document.getElementById('signup-btn').addEventListener('click',signup(username, password,passwordagain));
+  // document.getElementById('forget-btn').addEventListener('click',to_forget(username));
+  const tagButtons = document.querySelectorAll('.tag-btn');
+  const displaySections = document.querySelectorAll('.displaydiv');
+  
+  // 为每个标签按钮添加点击事件
+  tagButtons.forEach(button => {
+      button.addEventListener('click', function() {
+          const tag = this.getAttribute('data-tag');
+          
+          // 移除所有按钮的活动状态
+          tagButtons.forEach(btn => btn.classList.remove('active'));
+          
+          // 为当前点击的按钮添加活动状态
+          this.classList.add('active');
+          
+          // 隐藏所有内容
+          displaySections.forEach(section => section.classList.remove('active'));
+          
+          // 显示对应标签的内容
+          document.getElementById(`${tag}-form`).classList.add('active');
+      });
+  });
 });
+
+function to_login() {
+  window.location.href = `/pages/login.html`;
+}

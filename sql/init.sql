@@ -11,11 +11,11 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 -- 创建用户表
 CREATE TABLE IF NOT EXISTS Userinfo (
-    username TEXT NOT NULL,
+    username TEXT PRIMARY KEY NOT NULL,
     password TEXT,
     level INTEGER DEFAULT 0,
     amount INTEGER DEFAULT 0,
-    adress TEXT,
+    adress TEXT DEFAULT ‘’,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

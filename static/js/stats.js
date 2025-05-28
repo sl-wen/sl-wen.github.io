@@ -9,27 +9,28 @@ async function updateTotalViews() {
             .from('stats')
             .select('total_views')
             .eq('id', 'views')
-
-            .single();
+            .maybeSingle();
         
-        if (getError && getError.code === 'PGRST116') {
+        if (!statsData) {
             // 如果统计记录不存在，创建新记录
             const { data: newStats, error: insertError } = await supabase
                 .from('stats')
-                .insert([{ id: 'views', total_views: 1 }])
+                .insert([{ id: 'views', total_views: 1 }], {
+                    returning: 'representation'
+                })
                 .select()
                 .single();
                 
             if (insertError) throw insertError;
             return newStats.total_views;
-        } else if (getError) {
-            throw getError;
         }
         
         // 更新访问量
         const { data: updatedStats, error: updateError } = await supabase
             .from('stats')
-            .update({ total_views: (statsData.total_views || 0) + 1 })
+            .update({ total_views: (statsData.total_views || 0) + 1 }, {
+                returning: 'representation'
+            })
             .eq('id', 'views')
             .select()
             .single();

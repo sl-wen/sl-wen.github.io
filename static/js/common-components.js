@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 包含网站 logo 和导航菜单
     const headerHtml = `
       <div class="auth" id="auth"> <!-- 操作按钮区域 -->
-      <button id="auth-btn" class="primary-btn active">登录</button> <!-- login按钮 -->
+      <button id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</button> <!-- login按钮 -->
       </div>
       <div class="header">
       <a href="/" class="logo">

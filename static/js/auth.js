@@ -25,10 +25,10 @@ const initAuth = () => {
     // 用户已登录，显示用户信息和登出按钮
     const authdiv = document.getElementById('auth');
     authdiv.innerHTML = `
-      <span>欢迎，${userStr.user || '用户'}</span>
+      <span>欢迎，${userStr.username || '用户'}</span>
       <button id="logout-btn">登出</button>
     `;
-        
+
     // 添加登出事件监听
     setTimeout(() => {
       document.getElementById('logout-btn').addEventListener('click', logout);
@@ -141,8 +141,6 @@ const signup = async (username, password) => {
     if (existingUser) {
       throw new Error('用户名已存在');
     }
-    console.log("注册");
-    showStatusMessage('注册成功！请登录', 'success');
 
     const newuserinfo = {
       username,
@@ -271,11 +269,10 @@ function getSessionToken() {
 
 // 登出
 function logout() {
-  localStorage.removeItem('userSession');
+  localStorage.removeItem('user');
   
-  // 触发登出事件
-  const logoutEvent = new CustomEvent('userLogout');
-  document.dispatchEvent(logoutEvent);
+  // 触发刷新
+  initAuth;
 }
 
 // 刷新会话（延长过期时间）

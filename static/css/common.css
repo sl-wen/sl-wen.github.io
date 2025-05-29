@@ -100,10 +100,13 @@ body {
 
 .header-auth{
     width: 100%;
+    height: auto;
     display: flex;
     position: relative;
     flex-direction: row;
     flex-wrap: wrap;
+    min-width: 0;                  /* Flex布局下防止被挤时溢出 */
+    max-width: 100%;               /* 防止超宽 */
 }
 
 .auth {
@@ -113,6 +116,7 @@ body {
     display: flex;
     min-width: 0;                  /* Flex布局下防止被挤时溢出 */
     max-width: 100%;               /* 防止超宽 */
+    gap: var(--spacing-small);
 }
 
 .logo {
@@ -175,7 +179,7 @@ body {
     overflow: hidden;
 }
 
-#auth-btn {
+#auth-btn,#logout-btn,#welcome {
     margin-left: auto;
     margin-right: 0;
     float: right;
@@ -193,31 +197,12 @@ body {
     cursor: pointer;
 }
 
-#auth-btn:hover {
+#auth-btn:hover,#logout-btn:hover {
     color: #434446;
     text-decoration: underline;
     border-radius: var(--border-radius);
     transition: all var(--transition-normal);
     box-shadow: var(--shadow-md);
-}
-
-#logout-btn {
-    color: rgb(19, 19, 17);
-    text-decoration: none;
-    font-size: 16px;
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;                  /* Flex布局下防止被挤时溢出 */
-    max-width: 100%;               /* 防止超宽 */
-}
-
-#logout-btn:hover {
-    color: #434446;
-    text-decoration: underline;
-    border-radius: var(--border-radius);
-    transition: all var(--transition-normal);
 }
 
 .nav a::after {

@@ -4,13 +4,13 @@ import { supabase } from './supabase-config.js';
 const showStatusMessage = (message, type) => {
   const statusContainer = document.getElementById('status-messages');
   if (!statusContainer) return;
-  
+
   const messageElement = document.createElement('div');
   messageElement.className = `status-message ${type}`;
   messageElement.textContent = message;
-  
+
   statusContainer.appendChild(messageElement);
-  
+
   // 3秒后自动移除消息
   setTimeout(() => {
     messageElement.remove();
@@ -25,9 +25,16 @@ const initAuth = () => {
     // 用户已登录，显示用户信息和登出按钮
     const authdiv = document.getElementById('auth');
     authdiv.innerHTML = `
-      <span>欢迎，${JSON.parse(userStr).username || '用户'}</span>
+      <span id="welcome">欢迎，${JSON.parse(userStr).username || '用户'}</span>
       <span id="logout-btn">登出</span>
     `;
+    // 检查用户登录状态并显示发布链接
+    setTimeout(() => {
+      const postLink = document.getElementById('postLink');
+      if (postLink) {
+        postLink.style.display = '';
+      }
+    }, 0);
 
     // 添加登出事件监听
     setTimeout(() => {
@@ -41,13 +48,13 @@ const initAuth = () => {
       e.preventDefault(); // 阻止表单默认提交行为
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-      
+
       // 验证输入不为空
       if (!username || !password) {
         showStatusMessage('用户名和密码不能为空', 'error');
         return;
       }
-      
+
       await login(username, password);
     });
   }
@@ -60,19 +67,19 @@ const initAuth = () => {
       const username = document.getElementById('signup-username').value;
       const password = document.getElementById('signup-password').value;
       const passwordAgain = document.getElementById('passwordagain').value;
-      
+
       // 验证输入不为空
       if (!username || !password || !passwordAgain) {
         showStatusMessage('所有字段都必须填写', 'error');
         return;
       }
-      
+
       // 验证两次密码输入是否一致
       if (password !== passwordAgain) {
         showStatusMessage('两次输入的密码不一致', 'error');
         return;
       }
-      
+
       await signup(username, password);
     });
   }
@@ -83,12 +90,12 @@ const initAuth = () => {
     forgetForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('forget-username').value;
-      
+
       if (!username) {
         showStatusMessage('请输入用户名', 'error');
         return;
       }
-      
+
       await resetPassword(username);
     });
   }
@@ -107,7 +114,7 @@ const login = async (username, password) => {
       .select('username, password')
       .eq('username', username)
       .single();
-    
+
     if (checkError) throw checkError;
     if (!userinfo) throw new Error('用户不存在');
 
@@ -150,7 +157,7 @@ const signup = async (username, password) => {
       adress: '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-  };
+    };
 
     // 创建新用户
     const { data, error } = await supabase
@@ -202,10 +209,10 @@ function saveUserSession(userinfo) {
     token: generateSessionToken(), // 可以是随机生成的令牌或从服务器获取的令牌
     expiry: new Date().getTime() + (24 * 60 * 60 * 1000) // 24小时后过期
   };
-  
+
   // 保存到 localStorage
   localStorage.setItem('userSession', JSON.stringify(sessionData));
-  
+
   // 触发登录事件
   const loginEvent = new CustomEvent('userLogin', { detail: userinfo });
   document.dispatchEvent(loginEvent);
@@ -214,8 +221,8 @@ function saveUserSession(userinfo) {
 // 生成会话令牌
 function generateSessionToken() {
   // 简单示例 - 实际应用中应使用更安全的方法
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15);
+  return Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15);
 }
 
 // 检查用户是否已登录
@@ -224,22 +231,22 @@ function isLoggedIn() {
   if (!sessionStr) {
     return false;
   }
-  
+
   try {
     const session = JSON.parse(sessionStr);
-    
+
     // 检查会话是否过期
     if (new Date().getTime() > session.expiry) {
       logout(); // 会话已过期，执行登出
       return false;
     }
-    
+
     // 检查用户数据完整性
     if (!session.user || !session.user.username) {
       logout();
       return false;
     }
-    
+
     return true;
   } catch (e) {
     logout();
@@ -252,7 +259,7 @@ function getCurrentUser() {
   if (!isLoggedIn()) {
     return null;
   }
-  
+
   const session = JSON.parse(localStorage.getItem('userSession'));
   return session.user;
 }
@@ -262,7 +269,7 @@ function getSessionToken() {
   if (!isLoggedIn()) {
     return null;
   }
-  
+
   const session = JSON.parse(localStorage.getItem('userSession'));
   return session.token;
 }
@@ -275,6 +282,7 @@ function logout() {
   authdiv.innerHTML = `
   <span id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</span> <!-- login按钮 -->
   `;
+  window.location.href = '/';
 }
 
 // 刷新会话（延长过期时间）
@@ -282,7 +290,7 @@ function refreshSession() {
   if (!isLoggedIn()) {
     return false;
   }
-  
+
   const session = JSON.parse(localStorage.getItem('userSession'));
   session.expiry = new Date().getTime() + (24 * 60 * 60 * 1000);
   localStorage.setItem('userSession', JSON.stringify(session));

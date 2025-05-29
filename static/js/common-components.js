@@ -26,10 +26,6 @@ document.addEventListener('DOMContentLoaded', function () {
       </nav>
       </div>
   `;
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-        document.getElementById('postLink').style.display = '';
-    }
 
     // 定义页脚 HTML 模板
     // 包含版权信息和访问统计

@@ -19,6 +19,21 @@ const showStatusMessage = (message, type) => {
 
 // 初始化认证UI
 const initAuth = () => {
+  // 登录监听
+  const userStr = localStorage.getItem('user');
+  if (userStr) {
+    // 用户已登录，显示用户信息和登出按钮
+    const authdiv = document.getElementById('auth');
+    authdiv.innerHTML = `
+      <span>欢迎，${userStr.user || '用户'}</span>
+      <button id="logout-btn">登出</button>
+    `;
+        
+    // 添加登出事件监听
+    setTimeout(() => {
+      document.getElementById('logout-btn').addEventListener('click', logout);
+    }, 0);
+  }
   // 为登录表单添加提交事件监听
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
@@ -180,6 +195,100 @@ const resetPassword = async (username) => {
     showStatusMessage(error.message, 'error');
   }
 };
+
+// 保存用户会话
+function saveUserSession(userinfo) {
+  // 创建会话对象
+  const sessionData = {
+    user: userinfo,
+    token: generateSessionToken(), // 可以是随机生成的令牌或从服务器获取的令牌
+    expiry: new Date().getTime() + (24 * 60 * 60 * 1000) // 24小时后过期
+  };
+  
+  // 保存到 localStorage
+  localStorage.setItem('userSession', JSON.stringify(sessionData));
+  
+  // 触发登录事件
+  const loginEvent = new CustomEvent('userLogin', { detail: userinfo });
+  document.dispatchEvent(loginEvent);
+}
+
+// 生成会话令牌
+function generateSessionToken() {
+  // 简单示例 - 实际应用中应使用更安全的方法
+  return Math.random().toString(36).substring(2, 15) + 
+         Math.random().toString(36).substring(2, 15);
+}
+
+// 检查用户是否已登录
+function isLoggedIn() {
+  const sessionStr = localStorage.getItem('userSession');
+  if (!sessionStr) {
+    return false;
+  }
+  
+  try {
+    const session = JSON.parse(sessionStr);
+    
+    // 检查会话是否过期
+    if (new Date().getTime() > session.expiry) {
+      logout(); // 会话已过期，执行登出
+      return false;
+    }
+    
+    // 检查用户数据完整性
+    if (!session.user || !session.user.username) {
+      logout();
+      return false;
+    }
+    
+    return true;
+  } catch (e) {
+    logout();
+    return false;
+  }
+}
+
+// 获取当前用户信息
+function getCurrentUser() {
+  if (!isLoggedIn()) {
+    return null;
+  }
+  
+  const session = JSON.parse(localStorage.getItem('userSession'));
+  return session.user;
+}
+
+// 获取会话令牌（用于API请求）
+function getSessionToken() {
+  if (!isLoggedIn()) {
+    return null;
+  }
+  
+  const session = JSON.parse(localStorage.getItem('userSession'));
+  return session.token;
+}
+
+// 登出
+function logout() {
+  localStorage.removeItem('userSession');
+  
+  // 触发登出事件
+  const logoutEvent = new CustomEvent('userLogout');
+  document.dispatchEvent(logoutEvent);
+}
+
+// 刷新会话（延长过期时间）
+function refreshSession() {
+  if (!isLoggedIn()) {
+    return false;
+  }
+  
+  const session = JSON.parse(localStorage.getItem('userSession'));
+  session.expiry = new Date().getTime() + (24 * 60 * 60 * 1000);
+  localStorage.setItem('userSession', JSON.stringify(session));
+  return true;
+}
 
 // 在页面加载完成后初始化认证
 document.addEventListener('DOMContentLoaded', initAuth);

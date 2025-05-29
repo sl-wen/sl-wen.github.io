@@ -25,7 +25,7 @@ const initAuth = () => {
     // 用户已登录，显示用户信息和登出按钮
     const authdiv = document.getElementById('auth');
     authdiv.innerHTML = `
-      <span>欢迎，${userStr.username || '用户'}</span>
+      <span>欢迎，${JSON.parse(userStr).username || '用户'}</span>
       <button id="logout-btn">登出</button>
     `;
 

@@ -34,11 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
       <a href="/static/xml/rss.xml">RSS</a>
       </div>
   `;
-    // 在页面中插入页头
-    const authElement = document.getElementById('auth-section');  // 获取登陆容器元素
-    if (authElement) {
-        authElement.innerHTML = authHtml;  // 插入登陆 HTML
-    }
+  
     // 在页面中插入页头
     const headerElement = document.getElementById('common-header');  // 获取页头容器元素
     if (headerElement) {

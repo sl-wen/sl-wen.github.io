@@ -98,6 +98,14 @@ body {
     box-sizing: border-box; /* 确保padding不会增加元素总宽度 */
 }
 
+.header-auth{
+    width: 100%;
+    display: flex;
+    position: relative;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
 .auth {
     margin-left: auto;
     margin-right: 0;
@@ -110,6 +118,11 @@ body {
     justify-content: center;
     width: 60px;
     height: 60px;
+    margin-left: auto;
+    margin-right: auto;  /* 自动水平居中 */
+    position: absolute;
+    left: 50%;
+    /* transform: translateX(-50%); */
     margin-bottom: var(--spacing-medium);
     transition: transform var(--transition-normal);
 }
@@ -157,6 +170,51 @@ body {
     transition: all var(--transition-normal);
     position: relative;
     overflow: hidden;
+}
+
+#auth-btn {
+    margin-left: auto;
+    margin-right: 0;
+    float: right;
+    color: rgb(19, 19, 17);
+    text-decoration: none;
+    font-size: 16px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;                  /* Flex布局下防止被挤时溢出 */
+    max-width: 100%;               /* 防止超宽 */
+    padding: var(--spacing-small) var(--spacing-large);
+    border: none;
+    cursor: pointer;
+}
+
+#auth-btn:hover {
+    color: #434446;
+    text-decoration: underline;
+    border-radius: var(--border-radius);
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-md);
+}
+
+#logout-btn {
+    color: rgb(19, 19, 17);
+    text-decoration: none;
+    font-size: 16px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;                  /* Flex布局下防止被挤时溢出 */
+    max-width: 100%;               /* 防止超宽 */
+}
+
+#logout-btn:hover {
+    color: #434446;
+    text-decoration: underline;
+    border-radius: var(--border-radius);
+    transition: all var(--transition-normal);
 }
 
 .nav a::after {

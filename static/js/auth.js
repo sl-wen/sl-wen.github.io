@@ -26,7 +26,7 @@ const initAuth = () => {
     const authdiv = document.getElementById('auth');
     authdiv.innerHTML = `
       <span>欢迎，${JSON.parse(userStr).username || '用户'}</span>
-      <button id="logout-btn">登出</button>
+      <span id="logout-btn">登出</span>
     `;
 
     // 添加登出事件监听

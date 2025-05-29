@@ -6,13 +6,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // 定义页头 HTML 模板
     // 包含网站 logo 和导航菜单
     const headerHtml = `
-      <div class="auth" id="auth"> <!-- 操作按钮区域 -->
-      <button id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</button> <!-- login按钮 -->
-      </div>
       <div class="header">
+      <div class="header-auth">
       <a href="/" class="logo">
       <img src="/static/img/logo.jpg" alt="Logo" onerror="this.src='/static/img/logo.png'">  <!-- Logo 图片，加载失败时使用备用图片 -->
       </a>
+      <div class="auth" id="auth"> <!-- 操作按钮区域 -->
+      <span id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</span> <!-- login按钮 -->
+      </div>
+      </div>
       <nav class="nav">
           <a href="/">首页</a>                          <!-- 网站首页链接 -->
           <a href="/pages/categories.html">分类</a>      <!-- 文章分类页面链接 -->
@@ -34,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
       <a href="/static/xml/rss.xml">RSS</a>
       </div>
   `;
-  
+
     // 在页面中插入页头
     const headerElement = document.getElementById('common-header');  // 获取页头容器元素
     if (headerElement) {

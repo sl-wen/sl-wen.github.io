@@ -17,15 +17,19 @@ document.addEventListener('DOMContentLoaded', function () {
       </div>
       <nav class="nav">
           <a href="/">首页</a>                          <!-- 网站首页链接 -->
-          <a href="/pages/categories.html">分类</a>      <!-- 文章分类页面链接 -->
+          <a href="/pages/categories.html">分类</a>     <!-- 文章分类页面链接 -->
           <a href="/pages/search.html">搜索</a>         <!-- 搜索页面链接 -->
           <a href="/pages/tools.html">工具</a>          <!-- 工具页面链接 -->
           <a href="/pages/parenting.html">育儿</a>      <!-- 育儿专栏链接 -->
           <a href="/pages/about.html">关于</a>          <!-- 关于页面链接 -->
-          <a href="/pages/post.html">发布</a>           <!-- 文章发布页面链接 -->
+          <a href="/pages/post.html" id="postLink" style="display: none;">发布</a>           <!-- 文章发布页面链接 -->
       </nav>
       </div>
   `;
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+        document.getElementById('postLink').style.display = '';
+    }
 
     // 定义页脚 HTML 模板
     // 包含版权信息和访问统计

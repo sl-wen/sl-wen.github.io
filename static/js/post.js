@@ -19,10 +19,11 @@ function initEditor() {
         return;
     }
 
-    // 实时预览
-    editor.addEventListener('input', () => {
-        preview.innerHTML = marked.parse(editor.value);
-    });
+    const authordiv = document.getElementById('author');
+    const userStr = localStorage.getItem('user');
+    if (authordiv) {
+        authordiv.value = userStr ? (JSON.parse(userStr).username || 'Admin') : 'Admin';
+    }
 
     // 表单提交
     form.addEventListener('submit', async (e) => {

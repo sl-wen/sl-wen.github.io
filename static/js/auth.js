@@ -270,9 +270,11 @@ function getSessionToken() {
 // 登出
 function logout() {
   localStorage.removeItem('user');
-  
-  // 触发刷新
-  initAuth;
+
+  const authdiv = document.getElementById('auth');
+  authdiv.innerHTML = `
+  <span id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</span> <!-- login按钮 -->
+  `;
 }
 
 // 刷新会话（延长过期时间）

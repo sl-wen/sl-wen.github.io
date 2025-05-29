@@ -110,6 +110,9 @@ body {
     margin-left: auto;
     margin-right: 0;
     float: right;
+    display: flex;
+    min-width: 0;                  /* Flex布局下防止被挤时溢出 */
+    max-width: 100%;               /* 防止超宽 */
 }
 
 .logo {

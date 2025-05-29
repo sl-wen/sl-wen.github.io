@@ -87,26 +87,26 @@ const login = async (username, password) => {
     }
 
     // 获取登录信息
-    const { data: userInfo, error: checkError } = await supabase
-      .from('Userinfo')
+    const { data: userinfo, error: checkError } = await supabase
+      .from('userinfo')
       .select('username, password')
       .eq('username', username)
       .single();
     
     if (checkError) throw checkError;
-    if (!userInfo) throw new Error('用户不存在');
+    if (!userinfo) throw new Error('用户不存在');
 
-    if (userInfo.password === password) {
+    if (userinfo.password === password) {
       showStatusMessage('登录成功！', 'success');
       // 保存登录状态
-      localStorage.setItem('user', JSON.stringify(userInfo));
+      localStorage.setItem('user', JSON.stringify(userinfo));
       // 跳转到首页
       window.location.href = '/';
     } else {
       throw new Error('密码不正确');
     }
 
-    return userInfo;
+    return userinfo;
   } catch (error) {
     showStatusMessage(error.message, 'error');
     return null;
@@ -118,21 +118,33 @@ const signup = async (username, password) => {
   try {
     // 检查用户名是否已存在
     const { data: existingUser, error: checkError } = await supabase
-      .from('Userinfo')
+      .from('userinfo')
       .select('username')
       .eq('username', username)
-      .maybeSingle();
+      .single();
 
     if (existingUser) {
       throw new Error('用户名已存在');
     }
     console.log("注册");
+    showStatusMessage('注册成功！请登录', 'success');
+
+    const newuserinfo = {
+      username,
+      password,
+      views: 0,
+      amount: 0,
+      adress: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+  };
 
     // 创建新用户
     const { data, error } = await supabase
-      .from('Userinfo')
-      .insert([{ username, password }])
-      .select();
+      .from('userinfo')
+      .insert([newuserinfo])
+      .select()
+      .single();
 
     if (error) throw error;
 
@@ -152,7 +164,7 @@ const resetPassword = async (username) => {
   try {
     // 检查用户是否存在
     const { data: user, error: checkError } = await supabase
-      .from('Userinfo')
+      .from('userinfo')
       .select('*')
       .eq('username', username)
       .single();

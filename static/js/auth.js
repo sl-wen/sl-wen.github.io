@@ -132,7 +132,7 @@ const signup = async (username, password) => {
     const newuserinfo = {
       username,
       password,
-      views: 0,
+      level: 0,
       amount: 0,
       adress: '',
       created_at: new Date().toISOString(),

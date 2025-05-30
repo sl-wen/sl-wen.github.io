@@ -371,21 +371,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }, 30000);
 
-        // // 添加调试按钮（仅用于测试）
-        // const debugButton = document.createElement('button');
-        // debugButton.textContent = '测试消息';
-        // debugButton.style.cssText = `
-        //   position: fixed;
-        //   bottom: 10px;
-        //   left: 10px;
-        //   z-index: 1001;
-        //   padding: 5px 10px;
-        // `;
-        // debugButton.addEventListener('click', function() {
-        //   showMessage(getRandomGreeting());
-        // });
-        // document.body.appendChild(debugButton);
-
         console.log('Live2D interactions setup complete');
     }
 });

@@ -245,19 +245,6 @@ table tr:nth-child(2n) {
     color: #333;
 }
 
-.loading {
-    color: #666;
-    font-style: italic;
-}
-
-.error {
-    color: #dc3545;
-    padding: 10px;
-    background-color: #fff3f3;
-    border-radius: 4px;
-    margin-top: 10px;
-}
-
 /* 响应式设计 */
 @media (max-width: 768px) {
     .ai-tools {

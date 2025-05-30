@@ -27,12 +27,12 @@
                 </div>
                 <form id="login-form" class="displaydiv active"> <!-- login表单 -->
                     <div class="login-group"> <!-- 用户名输入组 -->
-                        <label for="username">用户名</label>
-                        <input type="text" id="username" name="username" placeholder="请输入用户名/邮箱/手机号">
+                        <label for="login-username">用户名</label>
+                        <input type="text" id="login-username" name="username" placeholder="请输入用户名/邮箱/手机号">
                     </div>
                     <div class="login-group"> <!-- password输入组 -->
-                        <label for="password">密码</label>
-                        <input type="password" id="password" name="password">
+                        <label for="login-password">密码</label>
+                        <input type="password" id="login-password" name="password">
                     </div>
                     <div class="buttons"> <!-- 操作按钮区域 -->
                         <button type="submit" id="login-btn" class="primary-btn">登录</button> <!-- login按钮 -->
@@ -42,7 +42,7 @@
                 <form id="signup-form" class="displaydiv"> <!-- signup -->
                     <div class="login-group"> <!-- 用户名输入组 -->
                         <label for="signup-username">用户名</label>
-                        <input type="text" id="signup-username" name="username" placeholder="请输入用户名/邮箱/手机号">
+                        <input type="text" id="signup-username" name="username"  minlength="3" maxlength="16" pattern="^[a-zA-Z0-9_]+$" placeholder="请输入用户名/邮箱/手机号">
                     </div>
                     <div class="login-group"> <!-- password输入组 -->
                         <label for="signup-password">密码</label>
@@ -60,7 +60,7 @@
                 <form id="forget-form" class="displaydiv"> <!-- forget表单 -->
                     <div class="login-group"> <!-- 用户名输入组 -->
                         <label for="forget-username">用户名</label>
-                        <input type="text" id="forget-username" name="username" placeholder="请输入用户名/邮箱/手机号">
+                        <input type="text" id="forget-username" name="username" placeholder="请输入用户名(邮箱)">
                     </div>
                     <div class="buttons"> <!-- 操作按钮区域 -->
                         <button type="submit" id="forget-btn" class="primary-btn">重置密码</button> <!-- forget按钮--> 

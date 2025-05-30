@@ -8,6 +8,7 @@ const showStatusMessage = (message, type) => {
   const messageElement = document.createElement('div');
   messageElement.className = `status-message ${type}`;
   messageElement.textContent = message;
+  messageElement.style = "margin-left: auto; margin-right: auto; align-items: center;";
 
   statusContainer.appendChild(messageElement);
 
@@ -49,13 +50,14 @@ const initAuth = () => {
       document.getElementById('logout-btn').addEventListener('click', logout);
     }, 0);
   }
+
   // 为登录表单添加提交事件监听
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault(); // 阻止表单默认提交行为
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
 
       // 验证输入不为空
       if (!username || !password) {
@@ -88,6 +90,17 @@ const initAuth = () => {
         return;
       }
 
+      
+      if (username.length < 3 || username.length > 16) {
+        showStatusMessage('用户名需为3~16位，只含字母、数字、下划线', 'error');
+        return;
+      }
+
+      if (!isPasswordComplex(password)) {
+        showStatusMessage('密码需至少8位，且包含大写、小写、数字、特殊字符中的最少两种', 'error');
+        return;
+      }
+
       await signup(username, password);
     });
   }
@@ -100,7 +113,7 @@ const initAuth = () => {
       const username = document.getElementById('forget-username').value;
 
       if (!username) {
-        showStatusMessage('请输入用户名', 'error');
+        showStatusMessage('请输入用户名(邮箱)', 'error');
         return;
       }
 
@@ -202,7 +215,7 @@ const resetPassword = async (username) => {
     }
 
     // TODO: 实现发送重置密码邮件的逻辑
-    showStatusMessage('重置密码链接已发送到您的邮箱', 'success');
+    showStatusMessage('重置密码链接已发送到您的邮箱(todo)', 'success');
 
   } catch (error) {
     showStatusMessage(error.message, 'error');
@@ -303,6 +316,19 @@ function refreshSession() {
   session.expiry = new Date().getTime() + (24 * 60 * 60 * 1000);
   localStorage.setItem('userSession', JSON.stringify(session));
   return true;
+}
+
+function isPasswordComplex(password) {
+  // 至少8位，含大写、小写、数字、特殊字符
+  const lengthOk = password.length >= 8;
+  const lower = /[a-z]/.test(password);
+  const upper = /[A-Z]/.test(password);
+  const number = /[0-9]/.test(password);
+  const special = /[^a-zA-Z0-9]/.test(password);
+
+  // 必须包含上述至少三类
+  const count = [lower, upper, number, special].filter(Boolean).length;
+  return lengthOk && count >= 2;
 }
 
 // 在页面加载完成后初始化认证

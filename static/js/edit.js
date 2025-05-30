@@ -12,29 +12,29 @@ marked.setOptions({
 
 // 创建自定义渲染器
 const renderer = new marked.Renderer();
-renderer.image = function(href, title, text) {
+renderer.image = function (href, title, text) {
     try {
         // 如果 href 是对象，尝试获取其 toString 方法的结果
         if (href && typeof href === 'object') {
             console.warn('图片链接是对象类型:', href);
             href = '';
         }
-        
+
         // 确保所有参数都是字符串
         href = String(href || '').trim();
         title = String(title || '').trim();
         text = String(text || '').trim();
-        
+
         // 如果没有有效的 href，直接使用默认图片
         if (!href) {
             return `<img src="/static/img/logo.png" alt="${text}" title="${title}">`;
         }
-        
+
         // 如果是相对路径，添加基础URL
         if (!href.startsWith('http') && !href.startsWith('data:')) {
             href = '/static/img/' + href;
         }
-        
+
         return `<img src="${href}" alt="${text}" title="${title}" onerror="this.src='/static/img/logo.png'">`;
     } catch (error) {
         console.error('图片渲染错误:', error);
@@ -61,7 +61,7 @@ marked.setOptions({ renderer });
 function showMessage(message, type = 'info') {
     const container = document.getElementById('message-container');
     if (!container) return;
-    
+
     container.innerHTML = `
         <div class="${type}-message">
             ${message}
@@ -84,16 +84,16 @@ async function loadArticle(articleId) {
             return;
         }
         console.log('获取到文章数据:', article);
-        
+
         // 填充表单
         document.getElementById('title').value = article.title || '';
         document.getElementById('author').value = article.author || '';
         document.getElementById('tags').value = article.tags ? article.tags.join(', ') : '';
         document.getElementById('editor').value = article.content || '';
-        
+
         // 更新预览
         document.getElementById('preview').innerHTML = safeMarked(article.content);
-        
+
     } catch (error) {
         console.error('加载文章失败:', error);
         showMessage(`加载文章失败: ${error.message}`, 'error');
@@ -110,12 +110,13 @@ async function updateArticle(articleId) {
             .map(tag => tag.trim())
             .filter(tag => tag.length > 0);
         const content = document.getElementById('editor').value.trim();
-        
+
         if (!title || !content) {
             showMessage('标题和内容不能为空', 'error');
             return;
         }
         
+
         const { error } = await supabase
             .from('posts')
             .update({
@@ -126,12 +127,12 @@ async function updateArticle(articleId) {
                 updated_at: new Date()
             })
             .eq('id', articleId);
-        
+
         showMessage('文章更新成功！', 'success');
         setTimeout(() => {
             window.location.href = `/pages/article.html?id=${articleId}`;
         }, 1500);
-        
+
     } catch (error) {
         console.error('更新文章失败:', error);
         showMessage(`更新文章失败: ${error.message}`, 'error');
@@ -143,7 +144,7 @@ async function handleDeleteArticle(articleId) {
     if (!confirm('确定要删除这篇文章吗？此操作不可恢复！')) {
         return;
     }
-    
+
     try {
         const { error } = await supabase
             .from('posts')
@@ -167,43 +168,44 @@ window.addEventListener('DOMContentLoaded', () => {
     try {
         const urlParams = new URLSearchParams(window.location.search);
         const articleId = urlParams.get('id');
-        
+
         if (!articleId) {
             showMessage('错误：未指定文章ID', 'error');
             return;
         }
-        
+
         // 加载文章
         loadArticle(articleId);
-        
+
         // 绑定按钮事件
         const updateButton = document.getElementById('update-button');
         const deleteButton = document.getElementById('delete-button');
         const cancelButton = document.getElementById('cancel-button');
         const editor = document.getElementById('editor');
         const preview = document.getElementById('preview');
-        
+        const userStr = localStorage.getItem('user');
+
         if (updateButton) {
             updateButton.addEventListener('click', () => updateArticle(articleId));
         }
-        
+
         if (deleteButton) {
             deleteButton.addEventListener('click', () => handleDeleteArticle(articleId));
         }
-        
+
         if (cancelButton) {
             cancelButton.addEventListener('click', () => {
                 window.location.href = `/pages/article.html?id=${articleId}`;
             });
         }
-        
+
         // 实时预览
         if (editor && preview) {
             editor.addEventListener('input', () => {
                 preview.innerHTML = safeMarked(editor.value);
             });
         }
-        
+
     } catch (error) {
         console.error('初始化失败:', error);
         showMessage(`初始化失败: ${error.message}`, 'error');

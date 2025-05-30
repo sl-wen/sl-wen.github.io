@@ -111,25 +111,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // 添加点击事件处理
       copyButton.addEventListener('click', async () => {
-        try {
-          // 复制代码到剪贴板
-          await navigator.clipboard.writeText(codeBlock.textContent);
-          copyButton.textContent = '已复制！';
-          copyButton.classList.add('copied');
-          
-          // 2秒后恢复按钮状态
-          setTimeout(() => {
-            copyButton.textContent = '复制';
-            copyButton.classList.remove('copied');
-          }, 2000);
-        } catch (err) {
-          console.error('复制失败:', err);
+        let copied = false;
+    
+        // try modern clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(codeBlock.textContent);
+            copied = true;
+          } catch (err) {
+            // fall back
+          }
+        }
+    
+        if (!copied) {
+          try {
+            // 创建临时textarea
+            const textarea = document.createElement('textarea');
+            textarea.value = codeBlock.textContent;
+            // 防止页面滚动
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+    
+            document.execCommand('copy');
+            copied = true;
+            document.body.removeChild(textarea);
+          } catch (err) {
+            copied = false;
+          }
+        }
+    
+        // 状态反馈
+        if (copied) {
+          copyButton.textContent = '已复制！'; copyButton.classList.add('copied');
+          setTimeout(() => { copyButton.textContent = '复制'; copyButton.classList.remove('copied');}, 2000);
+        } else {
           copyButton.textContent = '复制失败';
-          
-          // 2秒后恢复按钮状态
-          setTimeout(() => {
-            copyButton.textContent = '复制';
-          }, 2000);
+          setTimeout(() => { copyButton.textContent = '复制'; }, 2000);
         }
       });
 
@@ -172,8 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     // 更新文章操作按钮
-    updateArticleActions(article.id);
-
+    const userStr = localStorage.getItem('user');
+    if (JSON.parse(userStr).username === 'slwen' || JSON.parse(userStr).username === article.author) {
+      updateArticleActions(article.id);
+    }
     // 应用代码高亮（如果 hljs 可用）
     if (window.hljs) {
       document.querySelectorAll('pre code').forEach((block) => {

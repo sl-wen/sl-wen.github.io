@@ -40,7 +40,7 @@ function initEditor() {
         try {
             const title = document.getElementById('title').value.trim();
             const content = editor.value.trim();
-            const author = document.getElementById('author').value.trim() || 'Admin';
+            const author = document.getElementById('author').value.trim() || 'slwen';
             const tags = tagsInput.value
                 .split(',')
                 .map(tag => tag.trim())

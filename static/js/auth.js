@@ -31,8 +31,16 @@ const initAuth = () => {
     // 检查用户登录状态并显示发布链接
     setTimeout(() => {
       const postLink = document.getElementById('postLink');
+      const toolsLink = document.getElementById('toolsLink');
+      const parentingLink = document.getElementById('parentingLink');
       if (postLink) {
         postLink.style.display = '';
+      }
+      if (toolsLink) {
+        toolsLink.style.display = '';
+      }
+      if (parentingLink) {
+        parentingLink.style.display = '';
       }
     }, 0);
 

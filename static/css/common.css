@@ -660,8 +660,14 @@ button:active {
     .footer a {
         font-size: 12px;
     }
-    .auth #auth-btn {
-        padding: var(--spacing-small) var(--spacing-small);
-        font-size: 0.7rem;
+
+    .auth {
+        gap: var(--spacing-xs);
     }
+
+    #auth-btn,#logout-btn,#welcome {
+        font-size: 10px;
+        padding: var(--spacing-xs) var(--spacing-xs);
+    }
+    
 }

@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 更新文章操作按钮
     const userStr = localStorage.getItem('user');
-    if (JSON.parse(userStr).username === 'slwen' || JSON.parse(userStr).username === article.author) {
+    if (userStr && (JSON.parse(userStr).username === 'slwen' || JSON.parse(userStr).username === article.author)) {
       updateArticleActions(article.id);
     }
     // 应用代码高亮（如果 hljs 可用）

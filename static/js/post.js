@@ -25,6 +25,10 @@ function initEditor() {
         authordiv.value = userStr ? (JSON.parse(userStr).username || 'Admin') : 'Admin';
     }
 
+    editor.addEventListener('input', () => {
+        preview.innerHTML = marked.parse(editor.value);
+    });
+
     // 表单提交
     form.addEventListener('submit', async (e) => {
         e.preventDefault();

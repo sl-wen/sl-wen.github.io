@@ -80,17 +80,19 @@ table tr:nth-child(2n) {
     background-color: #e7eaef;
     border-radius: 6px;
     padding: 16px;
-    overflow: auto;
+    overflow: hidden;
     font-size: 85%;
     line-height: 1.45;
     margin-bottom: 16px;
 }
 
 /* 代码块复制按钮 */
-.copy-button {
+.markdown-body pre .copy-button {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    z-index: 1;
     padding: 4px 8px;
     font-size: 12px;
     font-weight: 500;
@@ -101,19 +103,26 @@ table tr:nth-child(2n) {
     border-radius: 6px;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.1s ease-in-out;
+    will-change: opacity;
+    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+        right: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
 }
 
 .markdown-body pre:hover .copy-button {
     opacity: 1;
 }
 
-.copy-button:hover {
+.markdown-body pre .copy-button:hover {
     background-color: #f3f4f6;
     border-color: rgba(27, 31, 36, 0.15);
 }
 
-.copy-button.copied {
+.markdown-body pre .copy-button.copied {
     color: #1a7f37;
     border-color: rgba(26, 127, 55, 0.15);
     background-color: #f6f8fa;
@@ -138,6 +147,7 @@ table tr:nth-child(2n) {
     padding: 0;
     word-wrap: normal;
     font-size: 100%;
+    border-radius: 0;
 } 
 
 .markdown-body blockquote {
@@ -279,8 +289,14 @@ table tr:nth-child(2n) {
     
     .markdown-body code,
     .markdown-body pre code {
-        white-space: pre;       /* 保持代码格式和缩进，但允许外层滚动 */
-        word-break: normal;
-        overflow-wrap: normal;
+        background: rgba(175, 184, 193, 0.2);
+        border-radius: 6px;
+        padding: 0.2em 0.4em;
+    }
+    
+    .markdown-body pre code {
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
     }
 }

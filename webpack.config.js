@@ -8,6 +8,8 @@ const __dirname = path.dirname(__filename);
 export default {
   mode: 'production',
   entry: {
+    // PWA相关
+    'service-worker': './service-worker.js',
     // 基础服务
     supabase: './static/js/supabase-config.js',
     articleService: './static/js/articleService.js',

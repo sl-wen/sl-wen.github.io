@@ -50,16 +50,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// 注册Service Worker
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/service-worker.js')
-            .then(function (registration) {
-                //console.log('SW registered! scope:', registration.scope);
-            })
-            .catch(function (error) {
-                console.log('SW registration failed:', error);
-            });
-    });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('ServiceWorker注册成功:', registration.scope);
+      })
+      .catch(error => {
+        console.log('ServiceWorker注册失败:', error);
+      });
+  });
 }
 
 // 在DOMContentLoaded事件中初始化Live2D

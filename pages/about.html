@@ -1,39 +1,49 @@
-<!DOCTYPE html> <!-- HTML5文档类型声明 -->
-<html lang="zh-CN"> <!-- HTML根元素，设置语言为中文 -->
-<head> <!-- 文档头部，包含元数据 -->
-    <meta charset="UTF-8"> <!-- 设置文档字符编码为UTF-8 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 设置移动设备的视口属性 -->
-    <title>关于 - 我的博客</title> <!-- 页面标题 -->
-    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon"> <!-- 设置网站图标 -->
-    <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS -->
-    <link rel="stylesheet" href="/static/css/about.css"> <!-- 引入关于页面特定的CSS -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于 - 我的博客</title>
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/about.css">
     
-    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
-    <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
-    <script src="/static/js/dist/stats.bundle.js"></script> <!-- 加载统计相关功能 -->
+    <script src="/static/js/common-components.js"></script>
+    <script src="/static/js/click-effect.js"></script>
+    <script src="/static/js/dist/stats.bundle.js"></script>
     <script src="/static/js/dist/auth.bundle.js"></script>
 </head>
-<body> <!-- 文档主体 -->
-    <div class="page"> <!-- 页面主容器 -->
-        <div id="common-header"></div> <!-- 公共页头容器 -->
+<body>
+    <div class="page">
+        <div id="common-header"></div>
         
-        <div class="container"> <!-- 主要内容容器 -->
-            <div class="about-container"> <!-- 关于页面内容容器 -->
-                <h1 class="about-title">关于我的博客</h1> <!-- 关于页面标题 -->
-                <div class="about-content"> <!-- 关于页面主要内容 -->
-                    <p>欢迎来到我的博客！这是一个基于Supabase构建的个人博客系统。</p> <!-- 欢迎语和系统介绍 -->
-                    <p>本博客使用了以下技术：</p> <!-- 技术栈说明 -->
-                    <ul> <!-- 技术列表 -->
-                        <li>Supabase - 用于存储文章数据</li> <!-- 数据存储技术 -->
-                        <li>Webpack - 用于打包JavaScript代码</li> <!-- 打包工具 -->
-                        <li>Marked - 用于Markdown解析</li> <!-- Markdown解析器 -->
+        <div class="container">
+            <div class="about-container">
+                <h1 class="about-title">关于我的博客</h1>
+                <div class="about-content">
+                    <p>欢迎来到我的博客！这是一个基于Supabase构建的个人博客系统。</p>
+                    <p>本博客使用了以下技术：</p>
+                    <ul>
+                        <li>Supabase - 用于存储文章数据</li>
+                        <li>Webpack - 用于打包JavaScript代码</li>
+                        <li>Marked - 用于Markdown解析</li>
                     </ul>
-                    <p>如果您有任何问题或建议，请随时联系我。</p> <!-- 联系信息 -->
+                    <p>如果您有任何问题或建议，请随时联系我。</p>
+                </div>
+                
+                <h2 class="readme-title">项目说明</h2>
+                <div id="readme-content" class="readme-content markdown-body">
+                    <!-- README 内容将通过 JavaScript 动态加载 -->
+                    <div class="loading">加载中...</div>
                 </div>
             </div>
         </div>
 
-        <div id="common-footer"></div> <!-- 公共页脚容器 -->
+        <div id="common-footer"></div>
     </div>
+
+    <!-- 先加载 marked 库，然后加载 about 脚本 -->
+    <script src="/static/js/dist/marked.bundle.js"></script>
+    <script src="/static/js/dist/about.bundle.js"></script>
 </body>
 </html>

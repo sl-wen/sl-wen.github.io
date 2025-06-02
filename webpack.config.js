@@ -15,6 +15,8 @@ export default {
     articleService: './static/js/articleService.js',
     stats: './static/js/stats.js',
     auth: './static/js/auth.js',
+    marked: './node_modules/marked/lib/marked.esm.js',
+    about: './static/js/about.js',
     
     // 文章相关页面
     index: './static/js/index.js',
@@ -27,24 +29,36 @@ export default {
   output: {
     filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'static/js/dist'),
-    publicPath: '/static/js/dist/'
+    publicPath: '/static/js/dist/',
+    library: {
+      type: 'umd',
+      name: '[name]'
+    }
   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      marked: ['marked', 'marked']
+    })
+  ],
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(ts|js)$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env']
+            presets: [
+              '@babel/preset-env',
+              '@babel/preset-typescript'
+            ]
           }
         }
       }
     ]
   },
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.ts', '.js', '.jsx'],
     modules: [
       'node_modules',
       path.resolve(__dirname, 'node_modules')

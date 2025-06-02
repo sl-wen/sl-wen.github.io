@@ -119,17 +119,11 @@ GitHub：   https://sl-wen.github.io
 
 一款 jekyll 主题（[GitHub 地址](https://github.com/sl-wen/)），简洁纯净(主题资源请求<20KB)，未引入任何框架，秒开页面，支持自适应，支持全文检索
 
-你可以到[slwen Blog](https://sl-wen.github.io/)查看主题效果 ，欢迎添加友链
-
-## 感谢
-
-[JetBrains](https://www.jetbrains.com/) 免费提供的开发工具[![JetBrains](./static/img/jetbrains.svg)](https://www.jetbrains.com/?from=slwen-blog)
-
+你可以到[slwen Blog](https://sl-wen.github.io/)查看主题效果
 
 # 运行
 
 一般提交到 github 过个几十秒就可以看到效果
-
 
 # 项目配置
 

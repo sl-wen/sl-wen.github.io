@@ -39,10 +39,6 @@ function sync() {
     scrollPreviewToLine(lineNumber);
 }
   
-editor.addEventListener('input', sync);
-editor.addEventListener('keyup', sync);
-editor.addEventListener('click', sync);
-
 // 初始化编辑器
 function initEditor() {
     const statusDiv = document.getElementById('status-messages');
@@ -62,6 +58,10 @@ function initEditor() {
 
     const authordiv = document.getElementById('author');
     const userStr = localStorage.getItem('user');
+    editor.addEventListener('input', sync);
+    editor.addEventListener('keyup', sync);
+    editor.addEventListener('click', sync);
+
     if (authordiv) {
         authordiv.value = userStr ? (JSON.parse(userStr).username || 'Admin') : 'Admin';
     }

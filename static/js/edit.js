@@ -46,10 +46,7 @@ function sync() {
     const lineNumber = getCursorLine(editor);
     scrollPreviewToLine(lineNumber);
 }
-  
-editor.addEventListener('input', sync);
-editor.addEventListener('keyup', sync);
-editor.addEventListener('click', sync);
+
 
 // 创建自定义渲染器
 const renderer = new marked.Renderer();
@@ -225,7 +222,11 @@ window.addEventListener('DOMContentLoaded', () => {
         const editor = document.getElementById('editor');
         const preview = document.getElementById('preview');
         const userStr = localStorage.getItem('user');
-
+  
+        editor.addEventListener('input', sync);
+        editor.addEventListener('keyup', sync);
+        editor.addEventListener('click', sync);
+        
         if (updateButton) {
             updateButton.addEventListener('click', () => updateArticle(articleId));
         }

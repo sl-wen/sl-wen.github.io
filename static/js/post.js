@@ -5,41 +5,36 @@ import { supabase } from './supabase-config.js';
 function getCursorLine(textarea) {
     const value = textarea.value;
     const selectionStart = textarea.selectionStart;
-  
+
     // 截取到光标，统计有多少个换行符，就是光标所在行号
     return value.substring(0, selectionStart).split('\n').length - 1;
 }
 
 function renderPreviewByLine(text) {
+    // 在每一行前插入锚点span标签
     const lines = text.split('\n');
-    // 假如这里简单处理，换实际渲染可以加更多HTML处理
-    return lines.map(line => 
-      `<div class="preview-line">${escapeHtml(line)}</div>`
-    ).join('');
-}
-  
-// 防止HTML注入
-function escapeHtml(str) {
-    return str.replace(/[<>&"]/g, c=>({
-      "<":"&lt;", ">":"&gt;", "&":"&amp;", '"':'&quot;'
-    }[c]));
+    const textWithAnchors = lines.map((line, i) => `[[LINE_ANCHOR_${i}]]${line}`).join('\n');
+    // 整体用 marked 解析
+    let html = marked.parse(textWithAnchors);
+    // 替换锚点为HTML标签
+    html = html.replace(/$\[LINE_ANCHOR_(\d+)$\]/g, (_, n) => `<span class="md-line-anchor" data-line="${n}"></span>`);
+    return html;
 }
 
 function scrollPreviewToLine(lineNumber) {
-    const preview = document.getElementById('preview');
-    const targetLine = preview.children[lineNumber];
-    if(targetLine){
-      targetLine.scrollIntoView({block:'center', behavior:'smooth'});
+    const anchor = document.querySelector('.md-line-anchor[data-line="' + lineNumber + '"]');
+    if (anchor) {
+      anchor.scrollIntoView({block:'center', behavior:'smooth'});
     }
 }
-  
+
 // 初始化编辑器
 function initEditor() {
     const statusDiv = document.getElementById('status-messages');
     if (statusDiv) {
         statusDiv.innerHTML += '<p>初始化编辑器...</p>';
     }
-    
+
     const editor = document.getElementById('editor');
     const preview = document.getElementById('preview');
     const form = document.getElementById('post-form');
@@ -59,18 +54,14 @@ function initEditor() {
 
     editor.addEventListener('input', () => {
         preview.innerHTML = renderPreviewByLine(editor.value);
-        const lineNumber = getCursorLine(editor);
-        scrollPreviewToLine(lineNumber);
     });
 
     editor.addEventListener('keyup', () => {
-        preview.innerHTML = renderPreviewByLine(editor.value);
         const lineNumber = getCursorLine(editor);
         scrollPreviewToLine(lineNumber);
     });
 
     editor.addEventListener('click', () => {
-        preview.innerHTML = renderPreviewByLine(editor.value);
         const lineNumber = getCursorLine(editor);
         scrollPreviewToLine(lineNumber);
     });
@@ -78,11 +69,11 @@ function initEditor() {
     // 表单提交
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const submitButton = form.querySelector('button[type="submit"]');
         submitButton.disabled = true;
         submitButton.textContent = '发布中...';
-        
+
         if (statusDiv) {
             statusDiv.innerHTML += '<p>开始处理表单提交...</p>';
         }
@@ -117,7 +108,7 @@ function initEditor() {
             if (statusDiv) {
                 statusDiv.innerHTML += '<p>正在添加文章到 Supabase...</p>';
             }
-            
+
             const { data: newPost, error } = await supabase
                 .from('posts')
                 .insert([post])
@@ -125,11 +116,11 @@ function initEditor() {
                 .single();
 
             if (error) throw error;
-            
+
             if (statusDiv) {
                 statusDiv.innerHTML += `<p>文章添加成功，ID: ${newPost.id}</p>`;
             }
-            
+
             // 显示成功消息
             const message = document.createElement('div');
             message.className = 'success-message';
@@ -153,7 +144,7 @@ function initEditor() {
             if (statusDiv) {
                 statusDiv.innerHTML += `<p style="color: red;">发布失败: ${error.message}</p>`;
             }
-            
+
             const message = document.createElement('div');
             message.className = 'error-message';
             message.textContent = `发布失败: ${error.message}`;
@@ -172,7 +163,7 @@ window.addEventListener('DOMContentLoaded', () => {
         statusDiv.style.display = 'none';
         statusDiv.innerHTML += '<p>页面加载完成，开始初始化...</p>';
     }
-    
+
     // 初始化编辑器
     initEditor();
 });

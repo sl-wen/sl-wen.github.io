@@ -1,3 +1,4 @@
+import { marked } from 'marked';
 import { supabase } from './supabase-config.js';
 // 辅助函数：从 Markdown 文本中提取纯文本内容
 function extractTextFromMarkdown(markdown) {
@@ -101,11 +102,9 @@ document.addEventListener('DOMContentLoaded', async function() {
       // 创建文章预览
       const preview = document.createElement('p');
       if (post.content) {
-        const plainText = extractTextFromMarkdown(post.content);
-        const previewText = plainText.substring(0, 200) + '...';
         const previewLink = document.createElement('a');
         previewLink.href = `/pages/article.html?id=${post.id}`;
-        previewLink.innerHTML = highlightKeyword(previewText, keyword);
+        previewLink.innerHTML = highlightKeyword(marked.parse(post.content.substring(0, 200) + '...'), keyword);
         preview.appendChild(previewLink);
       } else {
         preview.textContent = '暂无内容预览';

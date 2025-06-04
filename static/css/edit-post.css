@@ -78,6 +78,13 @@ textarea {
     margin-top: 25px;
 }
 
+.md-line-anchor {
+    display: inline-block;
+    height: 1px; /* 给一个最小高度 */
+    width: 100%;
+    position: relative;
+  }
+
 /* 表格样式 */
 .markdown-body table,
 #preview table {

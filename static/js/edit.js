@@ -25,7 +25,7 @@ function renderPreviewByLine(text) {
     // 整体用 marked 解析
     let html = marked.parse(textWithAnchors);
     // 替换锚点为HTML标签
-    html = html.replace(/$\[LINE_ANCHOR_(\d+)$\]/g, (_, n) => `<span class="md-line-anchor" data-line="${n}"></span>`);
+    html = html.replace(/\$$LINE_ANCHOR_(\d+)\$$/g, (_, n) => `<span class="md-line-anchor" data-line="${n}"></span>`);
     return html;
 }
 

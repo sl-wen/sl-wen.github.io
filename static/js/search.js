@@ -30,6 +30,15 @@ function extractTextFromMarkdown(markdown) {
     .trim();  // 移除首尾空白
 }
 
+// 高亮匹配的内容
+function highlightKeyword(text, keyword) {
+  if (!keyword) return text;
+  // 使用正则忽略大小写，并转义特殊字符
+  const safeKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // 正则转义
+  const regex = new RegExp(safeKeyword, 'gi');
+  return text.replace(regex, (match) => `<span class="highlight">${match}</span>`);
+}
+
 // 搜索功能
 document.addEventListener('DOMContentLoaded', async function() {
   const searchInput = document.getElementById('search-input');
@@ -86,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       const title = document.createElement('h3');
       const titleLink = document.createElement('a');
       titleLink.href = `/pages/article.html?id=${post.id}`;
-      titleLink.textContent = post.title || '无标题';
+      titleLink.innerHTML = highlightKeyword(post.title || '无标题', keyword);
       title.appendChild(titleLink);
 
       // 创建文章预览
@@ -94,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       if (post.content) {
         const plainText = extractTextFromMarkdown(post.content);
         const previewText = plainText.substring(0, 200) + '...';
-        preview.textContent = previewText;
+        preview.textContent = highlightKeyword(previewText, keyword);
       } else {
         preview.textContent = '暂无内容预览';
       }
@@ -102,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       // 创建标签列表
       const author = document.createElement('span');
       author.className = 'author';
-      author.textContent = post.author || '';
+      author.textContent = highlightKeyword(post.author || '', keyword);
 
       // 创建标签列表
       const tags = document.createElement('div');
@@ -111,7 +120,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         post.tags.forEach(tag => {
           const tagSpan = document.createElement('span');
           tagSpan.className = 'tag';
-          tagSpan.textContent = tag;
+          tagSpan.textContent = highlightKeyword(tag, keyword);
           tags.appendChild(tagSpan);
         });
       }

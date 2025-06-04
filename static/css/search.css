@@ -66,6 +66,15 @@
     flex-wrap: wrap;
 }
 
+.search-item .author {
+    padding: 4px 8px;
+    background-color: var(--button-bg);
+    border: 1px solid var(--button-border-color);
+    border-radius: var(--border-radius);
+    font-size: 12px;
+    color: var(--text-light-color);
+}
+
 .search-item .tag {
     padding: 4px 8px;
     background-color: var(--button-bg);
@@ -80,6 +89,13 @@
     padding: var(--spacing-medium);
     color: var(--text-light-color);
     font-size: 16px;
+}
+
+.highlight {
+    background-color: yellow;
+    color: #222;
+    padding: 0 2px;
+    border-radius: 2px;
 }
 
 /* 响应式设计 */

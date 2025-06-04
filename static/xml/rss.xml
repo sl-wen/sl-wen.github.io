@@ -6,7 +6,7 @@
                             <description>鱼鱼的博客</description>
                             <language>zh-cn</language>
                             <generator>Node+Supabase RSS自生成</generator>
-                            <lastBuildDate>Wed, 04 Jun 2025 08:40:03 GMT</lastBuildDate>
+                            <lastBuildDate>Wed, 04 Jun 2025 08:55:03 GMT</lastBuildDate>
                                 
         <item>
             <title><![CDATA[feed]]></title>
@@ -53,7 +53,7 @@
             <category>服务器</category>
             <pubDate>Sun, 18 May 2025 13:11:27 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=2db1fd10-661b-4718-bda1-c293da163f04</guid>
-            <lastBuildDate>Wed, 04 Jun 2025 08:24:04 GMT</lastBuildDate>
+            <lastBuildDate>Wed, 04 Jun 2025 08:40:34 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -646,7 +646,7 @@ E</p>
             <category>bat</category>
             <pubDate>Fri, 28 Mar 2025 05:41:00 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=d5791554-2c7d-460b-bb2d-18c1c8c4482a</guid>
-            <lastBuildDate>Wed, 04 Jun 2025 07:53:12 GMT</lastBuildDate>
+            <lastBuildDate>Wed, 04 Jun 2025 08:48:59 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -718,7 +718,7 @@ echo $3&quot;リリース完了しました(&quot;$2&quot;)&quot;
 <category>release</category>
             <pubDate>Thu, 20 Mar 2025 06:46:29 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=f1726200-b88d-4344-8e29-95da55a3a058</guid>
-            <lastBuildDate>Wed, 04 Jun 2025 08:20:52 GMT</lastBuildDate>
+            <lastBuildDate>Wed, 04 Jun 2025 08:41:38 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -990,7 +990,7 @@ GitHubにSSHキーを設定する</p>
             <category>SSH</category>
             <pubDate>Tue, 18 Mar 2025 08:14:34 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=41559f85-4f2d-4133-9960-410fe42154df</guid>
-            <lastBuildDate>Mon, 02 Jun 2025 01:22:36 GMT</lastBuildDate>
+            <lastBuildDate>Wed, 04 Jun 2025 08:42:42 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -1061,7 +1061,7 @@ GitHubにSSHキーを設定する</p>
 <category>php</category>
             <pubDate>Tue, 18 Mar 2025 08:07:23 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=81132e66-c9a1-4e48-8247-ed8d6ac91169</guid>
-            <lastBuildDate>Wed, 04 Jun 2025 08:21:53 GMT</lastBuildDate>
+            <lastBuildDate>Wed, 04 Jun 2025 08:49:16 GMT</lastBuildDate>
         </item>
 
         <item>

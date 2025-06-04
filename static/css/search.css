@@ -60,6 +60,16 @@
     line-height: 1.6;
 }
 
+.search-item p a {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.search-item p a:hover {
+    color: var(--primary-color);
+}
+
+
 .search-item .tags {
     display: flex;
     gap: 8px;

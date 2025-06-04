@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       if (post.content) {
         const plainText = extractTextFromMarkdown(post.content);
         const previewText = plainText.substring(0, 200) + '...';
-        preview.textContent = highlightKeyword(previewText, keyword);
+        preview.innerHTML = highlightKeyword(previewText, keyword);
       } else {
         preview.textContent = '暂无内容预览';
       }
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       // 创建标签列表
       const author = document.createElement('span');
       author.className = 'author';
-      author.textContent = highlightKeyword(post.author || '', keyword);
+      author.innerHTML = highlightKeyword(post.author || '', keyword);
 
       // 创建标签列表
       const tags = document.createElement('div');
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         post.tags.forEach(tag => {
           const tagSpan = document.createElement('span');
           tagSpan.className = 'tag';
-          tagSpan.textContent = highlightKeyword(tag, keyword);
+          tagSpan.innerHTML = highlightKeyword(tag, keyword);
           tags.appendChild(tagSpan);
         });
       }

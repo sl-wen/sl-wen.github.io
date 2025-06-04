@@ -32,12 +32,6 @@ function scrollPreviewToLine(lineNumber) {
       targetLine.scrollIntoView({block:'center', behavior:'smooth'});
     }
 }
-
-function sync() {
-    preview.innerHTML = renderPreviewByLine(editor.value);
-    const lineNumber = getCursorLine(editor);
-    scrollPreviewToLine(lineNumber);
-}
   
 // 初始化编辑器
 function initEditor() {
@@ -58,16 +52,27 @@ function initEditor() {
 
     const authordiv = document.getElementById('author');
     const userStr = localStorage.getItem('user');
-    editor.addEventListener('input', sync);
-    editor.addEventListener('keyup', sync);
-    editor.addEventListener('click', sync);
 
     if (authordiv) {
         authordiv.value = userStr ? (JSON.parse(userStr).username || 'Admin') : 'Admin';
     }
 
     editor.addEventListener('input', () => {
-        preview.innerHTML = marked.parse(editor.value);
+        preview.innerHTML = renderPreviewByLine(editor.value);
+        const lineNumber = getCursorLine(editor);
+        scrollPreviewToLine(lineNumber);
+    });
+
+    editor.addEventListener('keyup', () => {
+        preview.innerHTML = renderPreviewByLine(editor.value);
+        const lineNumber = getCursorLine(editor);
+        scrollPreviewToLine(lineNumber);
+    });
+
+    editor.addEventListener('click', () => {
+        preview.innerHTML = renderPreviewByLine(editor.value);
+        const lineNumber = getCursorLine(editor);
+        scrollPreviewToLine(lineNumber);
     });
 
     // 表单提交

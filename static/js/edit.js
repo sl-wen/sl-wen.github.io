@@ -41,13 +41,6 @@ function scrollPreviewToLine(lineNumber) {
     }
 }
 
-function sync() {
-    preview.innerHTML = renderPreviewByLine(editor.value);
-    const lineNumber = getCursorLine(editor);
-    scrollPreviewToLine(lineNumber);
-}
-
-
 // 创建自定义渲染器
 const renderer = new marked.Renderer();
 renderer.image = function (href, title, text) {
@@ -221,12 +214,8 @@ window.addEventListener('DOMContentLoaded', () => {
         const cancelButton = document.getElementById('cancel-button');
         const editor = document.getElementById('editor');
         const preview = document.getElementById('preview');
-        const userStr = localStorage.getItem('user');
   
-        editor.addEventListener('input', sync);
-        editor.addEventListener('keyup', sync);
-        editor.addEventListener('click', sync);
-        
+
         if (updateButton) {
             updateButton.addEventListener('click', () => updateArticle(articleId));
         }
@@ -244,7 +233,21 @@ window.addEventListener('DOMContentLoaded', () => {
         // 实时预览
         if (editor && preview) {
             editor.addEventListener('input', () => {
-                preview.innerHTML = safeMarked(editor.value);
+                preview.innerHTML = renderPreviewByLine(editor.value);
+                const lineNumber = getCursorLine(editor);
+                scrollPreviewToLine(lineNumber);
+            });
+                
+            editor.addEventListener('keyup', () => {
+                preview.innerHTML = renderPreviewByLine(editor.value);
+                const lineNumber = getCursorLine(editor);
+                scrollPreviewToLine(lineNumber);
+            });
+    
+            editor.addEventListener('click', () => {
+                preview.innerHTML = renderPreviewByLine(editor.value);
+                const lineNumber = getCursorLine(editor);
+                scrollPreviewToLine(lineNumber);
             });
         }
 

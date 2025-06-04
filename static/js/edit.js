@@ -10,6 +10,47 @@ marked.setOptions({
     sanitize: true, // 允许 HTML 标签
 });
 
+function getCursorLine(textarea) {
+    const value = textarea.value;
+    const selectionStart = textarea.selectionStart;
+  
+    // 截取到光标，统计有多少个换行符，就是光标所在行号
+    return value.substring(0, selectionStart).split('\n').length - 1;
+}
+
+function renderPreviewByLine(text) {
+    const lines = text.split('\n');
+    // 假如这里简单处理，换实际渲染可以加更多HTML处理
+    return lines.map(line => 
+      `<div class="preview-line">${escapeHtml(line)}</div>`
+    ).join('');
+}
+  
+// 防止HTML注入
+function escapeHtml(str) {
+    return str.replace(/[<>&"]/g, c=>({
+      "<":"&lt;", ">":"&gt;", "&":"&amp;", '"':'&quot;'
+    }[c]));
+}
+
+function scrollPreviewToLine(lineNumber) {
+    const preview = document.getElementById('preview');
+    const targetLine = preview.children[lineNumber];
+    if(targetLine){
+      targetLine.scrollIntoView({block:'center', behavior:'smooth'});
+    }
+}
+
+function sync() {
+    preview.innerHTML = renderPreviewByLine(editor.value);
+    const lineNumber = getCursorLine(editor);
+    scrollPreviewToLine(lineNumber);
+}
+  
+editor.addEventListener('input', sync);
+editor.addEventListener('keyup', sync);
+editor.addEventListener('click', sync);
+
 // 创建自定义渲染器
 const renderer = new marked.Renderer();
 renderer.image = function (href, title, text) {

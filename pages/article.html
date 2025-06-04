@@ -39,9 +39,6 @@
                     </div>
                     <div id="summary-container" class="ai-result-container" style="display: none;"> <!-- 摘要结果容器 -->
                         <div id="summary-content"></div> <!-- 摘要内容显示区域 -->
-                        <div class="ai-actions"> <!-- AI功能按钮区域 -->
-                            <button class="copy-button" onclick="copySummary()">复制</button> <!-- 复制摘要按钮 -->
-                        </div>
                     </div>
                 </div>
             </div>
@@ -132,29 +129,7 @@
                 }
             }
         });
-
-        // 复制摘要功能
-        function copySummary() {
-            const summaryText = document.getElementById('summary-content').textContent;
-            navigator.clipboard.writeText(summaryText).then(() => {
-                alert('摘要已复制到剪贴板');
-            }).catch(err => {
-                alert('复制失败');
-            });
-        }
     </script>
 
-    <!-- 编辑文章功能 -->
-    <script type="module">
-
-        // 添加编辑按钮点击事件处理
-        document.getElementById('edit-button').addEventListener('click', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const articleId = urlParams.get('id');
-            if (articleId) {
-                window.location.href = `/pages/edit.html?id=${articleId}`; // 跳转到编辑页面
-            }
-        });
-    </script>
 </body>
 </html>

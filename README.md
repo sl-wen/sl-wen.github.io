@@ -1,4 +1,4 @@
-# Supabase博客系统 
+# 博客系统 
 GitHub：   https://sl-wen.github.io  
 个人服务器：http://121.40.215.235
 
@@ -36,6 +36,7 @@ GitHub：   https://sl-wen.github.io
 │   ├── parenting.html      # 育儿页面
 │   ├── tools.html          # 工具页面
 │   ├── about.html          # 关于页面
+│   ├── login.html          # login页面
 │   └── search.html         # 搜索页面
 ├── static/                 # 静态资源
 │   ├── css/                # 样式表
@@ -117,7 +118,7 @@ GitHub：   https://sl-wen.github.io
 
 [![Language](https://img.shields.io/badge/Jekyll-Theme-blue)](https://github.com/sl-wen/slwen)
 
-一款 jekyll 主题（[GitHub 地址](https://github.com/sl-wen/)），简洁纯净(主题资源请求<20KB)，未引入任何框架，秒开页面，支持自适应，支持全文检索
+一款简洁纯净(主题资源请求<20KB)，未引入任何框架，秒开页面，支持自适应，支持全文检索
 
 你可以到[slwen Blog](https://sl-wen.github.io/)查看主题效果
 

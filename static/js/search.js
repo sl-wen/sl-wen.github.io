@@ -1,25 +1,4 @@
 import { supabase } from './supabase-config.js';
-
-// 辅助函数：处理图片 URL，确保图片路径正确
-function processImageUrl(url) {
-  if (!url) return '';  // 如果 URL 为空，返回空字符串
-  try {
-    // 如果是以斜杠开头的绝对路径，直接返回
-    if (url.startsWith('/')) {
-      return url;
-    }
-    // 如果是完整的 HTTP/HTTPS URL，直接返回
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-    // 否则将其视为相对于 static 目录的路径
-    return `/static/${url}`;
-  } catch (e) {
-    console.error('处理图片 URL 时出错:', e);
-    return '';  // 发生错误时返回空字符串
-  }
-}
-
 // 辅助函数：从 Markdown 文本中提取纯文本内容
 function extractTextFromMarkdown(markdown) {
   if (!markdown) return '';  // 如果输入为空，返回空字符串
@@ -87,8 +66,9 @@ document.addEventListener('DOMContentLoaded', async function() {
       const titleMatch = post.title && post.title.toLowerCase().includes(keyword);
       const contentText = extractTextFromMarkdown(post.content);
       const contentMatch = contentText && contentText.toLowerCase().includes(keyword);
+      const authorMatch = post.author && post.author.toLowerCase().includes(keyword);
       const tagsMatch = post.tags && post.tags.some(tag => tag.toLowerCase().includes(keyword));
-      return titleMatch || contentMatch || tagsMatch;
+      return titleMatch || contentMatch || authorMatch || tagsMatch;
     });
 
     console.log('搜索结果:', results.length, '篇');
@@ -120,6 +100,11 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
 
       // 创建标签列表
+      const author = document.createElement('div');
+      author.className = 'author';
+      author.appendChild(post.author);
+
+      // 创建标签列表
       const tags = document.createElement('div');
       tags.className = 'tags';
       if (post.tags && post.tags.length > 0) {
@@ -134,6 +119,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       // 添加所有元素到列表项
       li.appendChild(title);
       li.appendChild(preview);
+      li.appendChild(author);
       li.appendChild(tags);
       searchList.appendChild(li);
     });

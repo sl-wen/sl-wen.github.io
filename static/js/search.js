@@ -100,9 +100,9 @@ document.addEventListener('DOMContentLoaded', async function() {
       }
 
       // 创建标签列表
-      const author = document.createElement('div');
+      const author = document.createElement('span');
       author.className = 'author';
-      author.appendChild(post.author);
+      author.textContent = post.author || '';
 
       // 创建标签列表
       const tags = document.createElement('div');

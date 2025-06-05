@@ -64,8 +64,8 @@ textarea {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 600px;
     max-width: 50%; 
+    height: 600px; /* 设置固定高度 */
     overflow: auto;
 }
 
@@ -133,6 +133,7 @@ textarea {
     border-radius: var(--border-radius);
     overflow-y: auto;
     color: var(--text-color);
+    height: 500px; /* 设置固定高度 */
     overflow: auto;
     position: relative;
 }

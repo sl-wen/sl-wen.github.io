@@ -19,35 +19,16 @@ function getCursorLine(textarea) {
 }
 
 function renderPreviewByLine(text) {
-    // 1. 先添加不可见的HTML注释作为锚点（不会干扰Markdown解析）
-    const lines = text.split('\n');
-    const textWithAnchors = lines.map((line, i) =>
-        `<!--line-anchor-${i}-->${line}`
+    // 先渲染Markdown
+    const htmlContent = safeMarked(text);
+
+    // 1. 添加不可见的HTML注释作为锚点（不会干扰Markdown解析）
+    const lines = htmlContent.split('\n');
+    const contentWithAnchors = lines.map((line, i) =>
+        `<span class="md-line-anchor" data-line="${i}" id="line-anchor-${i}"></span>${line}`
     ).join('\n');
 
-    // 2. 使用marked解析Markdown
-    let html = marked.parse(textWithAnchors, {
-        breaks: true,
-        gfm: true,
-        headerIds: true,   // 为标题生成ID
-        mangle: false,      // 不转义HTML
-        highlight: function (code, lang) {
-            // 使用highlight.js或Prism.js等库高亮代码
-            if (lang && hljs.getLanguage(lang)) {
-                try {
-                    return hljs.highlight(code, { language: lang }).value;
-                } catch (err) { }
-            }
-            return code;
-        }
-    });
-
-    // 3. 将HTML注释替换为实际的锚点span
-    html = html.replace(/<!--line-anchor-(\d+)-->/g, (_, n) =>
-        `<span class="md-line-anchor" data-line="${n}" id="line-anchor-${n}"></span>`
-    );
-
-    return html;
+    return contentWithAnchors;
 }
 
 function scrollPreviewToLine(lineNumber) {

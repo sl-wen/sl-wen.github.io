@@ -69,6 +69,10 @@ textarea {
     overflow: auto;
 }
 
+.preview-section {
+    height: 600px; /* 设置高度 */
+}
+
 .editor-section label {
     font-weight: 500;
 }

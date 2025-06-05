@@ -29,6 +29,8 @@ function renderPreviewByLine(text) {
     let html = marked.parse(textWithAnchors, {
         breaks: true,
         gfm: true,
+        headerIds: true,   // 为标题生成ID
+        mangle: false,      // 不转义HTML
         highlight: function (code, lang) {
             // 使用highlight.js或Prism.js等库高亮代码
             if (lang && hljs.getLanguage(lang)) {

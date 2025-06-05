@@ -80,12 +80,13 @@ textarea {
 }
 
 .md-line-anchor {
-    display: block;
+    position: absolute;
     height: 0;
+    width: 0;
     margin: 0;
     padding: 0;
-    visibility: visible; /* 确保元素可被定位 */
-    position: relative;
+    visibility: hidden; /* 隐藏锚点，但保持可定位 */
+    pointer-events: none; /* 防止干扰用户交互 */
   }
 
 /* 表格样式 */
@@ -132,6 +133,8 @@ textarea {
     border-radius: var(--border-radius);
     overflow-y: auto;
     color: var(--text-color);
+    overflow: auto;
+    position: relative;
 }
 
 /* Markdown 预览样式 */

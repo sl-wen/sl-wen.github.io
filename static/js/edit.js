@@ -19,13 +19,18 @@ function getCursorLine(textarea) {
 }
 
 function renderPreviewByLine(text) {
-    // 在每一行前插入锚点span标签
+    // 在每一行前插入锚点HTML
     const lines = text.split('\n');
-    const textWithAnchors = lines.map((line, i) => `[[LINE_ANCHOR_${i}]]${line}`).join('\n');
-    // 整体用 marked 解析
-    let html = marked.parse(textWithAnchors);
-    // 替换锚点为HTML标签
-    html = html.replace(/$\[LINE_ANCHOR_(\d+)$\]/g, (_, n) => `<span class="md-line-anchor" data-line="${n}" id="line-anchor-${n}"></span>`);
+    const textWithAnchors = lines.map((line, i) =>
+        `<span class="md-line-anchor" data-line="${i}" id="line-anchor-${i}"></span>${line}`
+    ).join('\n');
+
+    // 整体用 marked 解析，但保留HTML
+    let html = marked.parse(textWithAnchors, {
+        sanitize: false,  // 不清理HTML
+        breaks: true      // 保留换行
+    });
+
     return html;
 }
 

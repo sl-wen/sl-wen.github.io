@@ -11,13 +11,32 @@ function getCursorLine(textarea) {
 }
 
 function renderPreviewByLine(text) {
-    // 在每一行前插入锚点span标签
+    // 1. 先添加不可见的HTML注释作为锚点（不会干扰Markdown解析）
     const lines = text.split('\n');
-    const textWithAnchors = lines.map((line, i) => `[[LINE_ANCHOR_${i}]]${line}`).join('\n');
-    // 整体用 marked 解析
-    let html = marked.parse(textWithAnchors);
-    // 替换锚点为HTML标签
-    html = html.replace(/$\[LINE_ANCHOR_(\d+)$\]/g, (_, n) => `<span class="md-line-anchor" data-line="${n}" id="line-anchor-${n}"></span>`);
+    const textWithAnchors = lines.map((line, i) =>
+        `<!--line-anchor-${i}-->${line}`
+    ).join('\n');
+
+    // 2. 使用marked解析Markdown
+    let html = marked.parse(textWithAnchors, {
+        breaks: true,
+        gfm: true,
+        highlight: function (code, lang) {
+            // 使用highlight.js或Prism.js等库高亮代码
+            if (lang && hljs.getLanguage(lang)) {
+                try {
+                    return hljs.highlight(code, { language: lang }).value;
+                } catch (err) { }
+            }
+            return code;
+        }
+    });
+
+    // 3. 将HTML注释替换为实际的锚点span
+    html = html.replace(/<!--line-anchor-(\d+)-->/g, (_, n) =>
+        `<span class="md-line-anchor" data-line="${n}" id="line-anchor-${n}"></span>`
+    );
+
     return html;
 }
 
@@ -26,6 +45,30 @@ function scrollPreviewToLine(lineNumber) {
     if (anchor) {
         anchor.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
+}
+
+// 添加滚动结束检测
+function onScrollEnd(element, callback) {
+    let timer;
+    element.addEventListener('scroll', function () {
+        // 清除之前的定时器
+        clearTimeout(timer);
+        // 设置新的定时器，滚动停止后执行回调
+        timer = setTimeout(function () {
+            callback();
+        }, 150); // 150ms 无滚动视为滚动结束
+    });
+}
+
+// 计算编辑框中可见的第一行
+function getVisibleFirstLine(textarea) {
+    // 获取文本框的滚动位置
+    const scrollTop = textarea.scrollTop;
+    // 获取行高（近似值，可能需要根据实际字体和样式调整）
+    const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight) || 18;
+    // 估算第一个可见行
+    const firstVisibleLine = Math.floor(scrollTop / lineHeight);
+    return firstVisibleLine;
 }
 
 // 初始化编辑器
@@ -73,6 +116,12 @@ function initEditor() {
     editor.addEventListener('click', () => {
         const lineNumber = getCursorLine(editor);
         scrollPreviewToLine(lineNumber);
+    });
+
+    // 滚动同步
+    onScrollEnd(editor, function () {
+        const firstVisibleLine = getVisibleFirstLine(editor);
+        scrollPreviewToLine(firstVisibleLine);
     });
 
     // 表单提交

@@ -21,30 +21,30 @@ function getCursorLine(textarea) {
 function renderPreviewByLine(text) {
     // 1. 先添加不可见的HTML注释作为锚点（不会干扰Markdown解析）
     const lines = text.split('\n');
-    const textWithAnchors = lines.map((line, i) => 
+    const textWithAnchors = lines.map((line, i) =>
         `<!--line-anchor-${i}-->${line}`
     ).join('\n');
-    
+
     // 2. 使用marked解析Markdown
     let html = marked.parse(textWithAnchors, {
         breaks: true,
         gfm: true,
-        highlight: function(code, lang) {
+        highlight: function (code, lang) {
             // 使用highlight.js或Prism.js等库高亮代码
             if (lang && hljs.getLanguage(lang)) {
                 try {
                     return hljs.highlight(code, { language: lang }).value;
-                } catch (err) {}
+                } catch (err) { }
             }
             return code;
         }
     });
-    
+
     // 3. 将HTML注释替换为实际的锚点span
-    html = html.replace(/<!--line-anchor-(\d+)-->/g, (_, n) => 
+    html = html.replace(/<!--line-anchor-(\d+)-->/g, (_, n) =>
         `<span class="md-line-anchor" data-line="${n}" id="line-anchor-${n}"></span>`
     );
-    
+
     return html;
 }
 
@@ -58,11 +58,11 @@ function scrollPreviewToLine(lineNumber) {
 // 添加滚动结束检测
 function onScrollEnd(element, callback) {
     let timer;
-    element.addEventListener('scroll', function() {
+    element.addEventListener('scroll', function () {
         // 清除之前的定时器
         clearTimeout(timer);
         // 设置新的定时器，滚动停止后执行回调
-        timer = setTimeout(function() {
+        timer = setTimeout(function () {
             callback();
         }, 150); // 150ms 无滚动视为滚动结束
     });
@@ -78,20 +78,6 @@ function getVisibleFirstLine(textarea) {
     const firstVisibleLine = Math.floor(scrollTop / lineHeight);
     return firstVisibleLine;
 }
-
-// 初始化滚动同步
-function initScrollSync() {
-    // 监听编辑框滚动结束
-    onScrollEnd(editor, function() {
-        // 获取编辑框中可见的第一行
-        const firstVisibleLine = getVisibleFirstLine(editor);
-        // 滚动预览框到对应行
-        scrollPreviewToLine(firstVisibleLine);
-    });
-}
-
-// 在初始化代码中调用
-initScrollSync();
 
 // 创建自定义渲染器
 const renderer = new marked.Renderer();
@@ -306,6 +292,13 @@ window.addEventListener('DOMContentLoaded', () => {
                 const lineNumber = getCursorLine(editor);
                 scrollPreviewToLine(lineNumber);
             });
+
+            // 滚动同步
+            onScrollEnd(editor, function () {
+                const firstVisibleLine = getVisibleFirstLine(editor);
+                scrollPreviewToLine(firstVisibleLine);
+            });
+
         }
 
     } catch (error) {

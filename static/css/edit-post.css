@@ -65,7 +65,7 @@ textarea {
     display: flex;
     flex-direction: column;
     max-width: 50%; 
-    height: 600px; /* 设置固定高度 */
+    min-height: 600px; /* 设置高度 */
     overflow: auto;
 }
 
@@ -76,7 +76,7 @@ textarea {
 .preview-section {
     border-radius: var(--border-radius);
     background-color: var(--background-light);
-    margin-top: 25px;
+    padding-top: 25px;
 }
 
 .md-line-anchor {
@@ -88,6 +88,19 @@ textarea {
     visibility: hidden; /* 隐藏锚点，但保持可定位 */
     pointer-events: none; /* 防止干扰用户交互 */
   }
+
+#editor, #preview {
+    flex: 1;
+    padding: var(--spacing-small);
+    background-color: var(--background-white);
+    border: 1px solid var(--primary-border-color);
+    border-radius: var(--border-radius);
+    overflow-y: auto;
+    color: var(--text-color);
+    height: 500px; /* 设置固定高度 */
+    overflow: auto;
+    position: relative;
+}
 
 /* 表格样式 */
 .markdown-body table,
@@ -125,18 +138,6 @@ textarea {
 
 
 
-#preview {
-    flex: 1;
-    padding: var(--spacing-small);
-    background-color: var(--background-white);
-    border: 1px solid var(--primary-border-color);
-    border-radius: var(--border-radius);
-    overflow-y: auto;
-    color: var(--text-color);
-    height: 500px; /* 设置固定高度 */
-    overflow: auto;
-    position: relative;
-}
 
 /* Markdown 预览样式 */
 #preview h1,

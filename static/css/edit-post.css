@@ -66,6 +66,7 @@ textarea {
     flex-direction: column;
     min-height: 600px;
     max-width: 50%; 
+    overflow: auto;
 }
 
 .editor-section label {
@@ -79,9 +80,11 @@ textarea {
 }
 
 .md-line-anchor {
-    display: inline-block;
-    height: 1px; /* 给一个最小高度 */
-    width: 100%;
+    display: block;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    visibility: visible; /* 确保元素可被定位 */
     position: relative;
   }
 

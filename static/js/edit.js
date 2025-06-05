@@ -25,14 +25,14 @@ function renderPreviewByLine(text) {
     // 整体用 marked 解析
     let html = marked.parse(textWithAnchors);
     // 替换锚点为HTML标签
-    html = html.replace(/\$$LINE_ANCHOR_(\d+)\$$/g, (_, n) => `<span class="md-line-anchor" data-line="${n}"></span>`);
+    html = html.replace(/$\[LINE_ANCHOR_(\d+)$\]/g, (_, n) => `<span class="md-line-anchor" data-line="${n}" id="line-anchor-${n}"></span>`);
     return html;
 }
 
 function scrollPreviewToLine(lineNumber) {
-    const anchor = document.querySelector('.md-line-anchor[data-line="' + lineNumber + '"]');
+    const anchor = document.querySelector(`#line-anchor-${lineNumber}`);
     if (anchor) {
-      anchor.scrollIntoView({block:'center', behavior:'smooth'});
+        anchor.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
 }
 
@@ -118,7 +118,7 @@ async function loadArticle(articleId) {
         document.getElementById('editor').value = article.content || '';
 
         // 更新预览
-        document.getElementById('preview').innerHTML = safeMarked(article.content);
+        document.getElementById('preview').innerHTML = renderPreviewByLine(article.content);
 
     } catch (error) {
         console.error('加载文章失败:', error);
@@ -141,7 +141,7 @@ async function updateArticle(articleId) {
             showMessage('标题和内容不能为空', 'error');
             return;
         }
-        
+
 
         const { error } = await supabase
             .from('posts')
@@ -209,7 +209,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const cancelButton = document.getElementById('cancel-button');
         const editor = document.getElementById('editor');
         const preview = document.getElementById('preview');
-  
+
 
         if (updateButton) {
             updateButton.addEventListener('click', () => updateArticle(articleId));
@@ -229,13 +229,22 @@ window.addEventListener('DOMContentLoaded', () => {
         if (editor && preview) {
             editor.addEventListener('input', () => {
                 preview.innerHTML = renderPreviewByLine(editor.value);
+                // 渲染后再滚动
+                setTimeout(() => {
+                    const lineNumber = getCursorLine(editor);
+                    scrollPreviewToLine(lineNumber);
+                }, 10); // 短暂延时确保DOM已更新
             });
-                
+
             editor.addEventListener('keyup', () => {
-                const lineNumber = getCursorLine(editor);
-                scrollPreviewToLine(lineNumber);
+                // 只在导航键按下时滚动
+                const navKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'];
+                if (navKeys.includes(e.key)) {
+                    const lineNumber = getCursorLine(editor);
+                    scrollPreviewToLine(lineNumber);
+                }
             });
-    
+
             editor.addEventListener('click', () => {
                 const lineNumber = getCursorLine(editor);
                 scrollPreviewToLine(lineNumber);

@@ -17,14 +17,14 @@ function renderPreviewByLine(text) {
     // 整体用 marked 解析
     let html = marked.parse(textWithAnchors);
     // 替换锚点为HTML标签
-    html = html.replace(/\$$LINE_ANCHOR_(\d+)\$$/g, (_, n) => `<span class="md-line-anchor" data-line="${n}"></span>`);
+    html = html.replace(/$\[LINE_ANCHOR_(\d+)$\]/g, (_, n) => `<span class="md-line-anchor" data-line="${n}" id="line-anchor-${n}"></span>`);
     return html;
 }
 
 function scrollPreviewToLine(lineNumber) {
-    const anchor = document.querySelector('.md-line-anchor[data-line="' + lineNumber + '"]');
+    const anchor = document.querySelector(`#line-anchor-${lineNumber}`);
     if (anchor) {
-      anchor.scrollIntoView({block:'center', behavior:'smooth'});
+        anchor.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
 }
 
@@ -49,16 +49,25 @@ function initEditor() {
     const userStr = localStorage.getItem('user');
 
     if (authordiv) {
-        authordiv.value = userStr ? (JSON.parse(userStr).username || 'Admin') : 'Admin';
+        authordiv.value = userStr ? (JSON.parse(userStr).username || 'slwen') : 'slwen';
     }
 
     editor.addEventListener('input', () => {
         preview.innerHTML = renderPreviewByLine(editor.value);
+        // 渲染后再滚动
+        setTimeout(() => {
+            const lineNumber = getCursorLine(editor);
+            scrollPreviewToLine(lineNumber);
+        }, 10); // 短暂延时确保DOM已更新
     });
 
     editor.addEventListener('keyup', () => {
-        const lineNumber = getCursorLine(editor);
-        scrollPreviewToLine(lineNumber);
+        // 只在导航键按下时滚动
+        const navKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'];
+        if (navKeys.includes(e.key)) {
+            const lineNumber = getCursorLine(editor);
+            scrollPreviewToLine(lineNumber);
+        }
     });
 
     editor.addEventListener('click', () => {

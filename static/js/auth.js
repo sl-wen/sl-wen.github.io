@@ -56,6 +56,24 @@ const initAuth = () => {
       }
     }, 0);
 
+    const userProfileButton = document.getElementById('userProfileButton');
+    const userDropdownMenu = document.getElementById('userDropdownMenu');
+    
+    // 切换下拉菜单显示/隐藏
+    userProfileButton.addEventListener('click', function(e) {
+      e.stopPropagation();
+      userProfileButton.classList.toggle('active');
+      userDropdownMenu.classList.toggle('active');
+    });
+    
+    // 点击页面其他区域关闭下拉菜单
+    document.addEventListener('click', function(e) {
+      if (!userProfileButton.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+        userProfileButton.classList.remove('active');
+        userDropdownMenu.classList.remove('active');
+      }
+    });
+
     // 添加登出事件监听
     setTimeout(() => {
       document.getElementById('logout-btn').addEventListener('click', logout);

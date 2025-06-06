@@ -775,4 +775,8 @@ button:active {
         padding: var(--spacing-xs) var(--spacing-xs);
     }
     
+    .dropdown-menu {
+        width: 250px;
+        right: -10px;
+    }
 }

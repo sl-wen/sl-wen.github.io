@@ -33,13 +33,22 @@ const initAuth = () => {
         </div>
         <div class="dropdown-menu" id="userDropdownMenu">
           <ul class="dropdown-list">
-            <li><a href="/pages/profile.html"><i class="icon-user"></i> 个人资料</a></li>
-            <li><a href="/pgaes/settings.html"><i class="icon-settings"></i> 设置</a></li>
+            <li><a href="/pages/profile.html"><i class="icon-user"></i> 个人</a></li>
+            <li><a href="/pages/settings.html"><i class="icon-settings"></i> 设置</a></li>
             <li><a href="#" id="logout-btn"><i class="icon-logout"></i> 登出</a></li>
           </ul>
         </div>
       </div>
     `;
+
+    // 用户已登录，显示用户信息
+    const leveldetail = document.getElementById('level-detail');
+    const amountdetail = document.getElementById('amount-detail');
+    const adressdetail = document.getElementById('adress-detail');
+    leveldetail.innerHTML = `<span id="level-detail" >${JSON.parse(userStr).level}</span>`;
+    amountdetail.innerHTML = `<span id="amount-detail" >${JSON.parse(userStr).amount}</span>`;
+    adressdetail.innerHTML = `<span id="adress-detail" >${JSON.parse(userStr).adress}</span>`;
+
     // 检查用户登录状态并显示发布链接
     setTimeout(() => {
       const postLink = document.getElementById('postLink');

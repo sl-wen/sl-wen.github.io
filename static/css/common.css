@@ -179,7 +179,7 @@ body {
     overflow: hidden;
 }
 
-#auth-btn,#logout-btn,#welcome {
+#auth-btn,#welcome {
     margin-left: auto;
     margin-right: 0;
     float: right;
@@ -197,7 +197,7 @@ body {
     cursor: pointer;
 }
 
-#auth-btn:hover,#logout-btn:hover {
+#auth-btn:hover{
     color: #434446;
     text-decoration: underline;
     border-radius: var(--border-radius);
@@ -556,12 +556,12 @@ button:active {
     display: flex;
     align-items: center;
     cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 24px;
+    padding: 5px 5px;
+    border-radius: 8px;
     transition: background-color 0.2s;
 }
   
-  .user-profile:hover {
+.user-profile:hover {
     background-color: #f5f5f5;
   }
   
@@ -574,9 +574,8 @@ button:active {
   /* 下拉菜单样式 */
   .dropdown-menu {
     position: absolute;
-    top: calc(100% + 8px);
     right: 0;
-    width: 280px;
+    width: auto;
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -594,22 +593,18 @@ button:active {
     transform: translateY(0);
   }
   
-  .dropdown-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 12px;
+  .dropdown-menu ul {
+    margin: 0;
   }
   
   .dropdown-list {
-    padding: 8px 0;
+    padding: 0;
   }
   
   .dropdown-list li a {
     display: flex;
     align-items: center;
-    padding: 12px 16px;
+    padding: 8px 8px;
     color: #333;
     transition: background-color 0.2s;
   }
@@ -619,9 +614,8 @@ button:active {
   }
   
   .dropdown-list li a i {
-    margin-right: 12px;
-    font-size: 18px;
-    width: 20px;
+    font-size: 15px;
+    width: auto;
     text-align: center;
     color: #666;
   }
@@ -770,13 +764,16 @@ button:active {
         gap: var(--spacing-xs);
     }
 
-    #auth-btn,#logout-btn,#welcome {
+    #auth-btn,#welcome {
         font-size: 10px;
         padding: var(--spacing-xs) var(--spacing-xs);
     }
-    
-    .dropdown-menu {
-        width: 250px;
-        right: -10px;
+
+    .dropdown-list li a{
+        font-size: 10px;
+    }
+
+    .dropdown-list li a i {
+        font-size: 10px;
     }
 }

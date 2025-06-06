@@ -6,7 +6,7 @@ const showStatusMessage = (message, type) => {
   if (!statusContainer) return;
 
   const messageElement = document.createElement('div');
-  messageElement.className = `status-message ${type}`;
+  messageElement.className = `class="${type}-message"`;
   messageElement.textContent = message;
   messageElement.style = "margin-left: auto; margin-right: auto; align-items: center;";
 
@@ -176,7 +176,7 @@ const login = async (username, password) => {
     // 获取登录信息
     const { data: userinfo, error: checkError } = await supabase
       .from('userinfo')
-      .select('username, password')
+      .select('*')
       .eq('username', username)
       .single();
 

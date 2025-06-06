@@ -29,7 +29,7 @@
     --background-gray: #f6f8fa;
     /* 代码样式 */
     --code-background: #282c34;
-    --code-text-color: #abb2bf;
+    --code-text-color: #e7eaef;
     /* 布局变量 */
     --border-radius: 6px;
     --border-radius-large: 12px;
@@ -533,6 +533,111 @@ button:active {
     50% {
       transform: rotate(15deg);
     }
+}
+
+/* 添加到CSS中 */
+@keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+}
+
+/* 用户菜单样式 */
+.user-menu {
+    position: relative;
+}
+  
+.user-profile {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 24px;
+    transition: background-color 0.2s;
+}
+  
+  .user-profile:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .dropdown-icon {
+    font-size: 10px;
+    color: #666;
+    transition: transform 0.2s;
+  }
+  
+  /* 下拉菜单样式 */
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 280px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s;
+    z-index: 1000;
+    overflow: hidden;
+  }
+  
+  .dropdown-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  
+  .dropdown-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+  }
+  
+  .dropdown-list {
+    padding: 8px 0;
+  }
+  
+  .dropdown-list li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: #333;
+    transition: background-color 0.2s;
+  }
+  
+  .dropdown-list li a:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .dropdown-list li a i {
+    margin-right: 12px;
+    font-size: 18px;
+    width: 20px;
+    text-align: center;
+    color: #666;
+  }
+  
+  /* 当下拉菜单激活时，旋转下拉图标 */
+  .user-profile.active .dropdown-icon {
+    transform: rotate(180deg);
+  }
+  
+/* 图标样式 - 可以替换为你喜欢的图标库 */
+.icon-user:before { content: "👤"; }
+.icon-settings:before { content: "⚙️"; }
+.icon-logout:before { content: "🚪"; }
+
+.dropdown-menu.active {
+    animation: fadeIn 0.3s ease forwards;
 }
 
 .error {

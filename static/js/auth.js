@@ -26,8 +26,19 @@ const initAuth = () => {
     // 用户已登录，显示用户信息和登出按钮
     const authdiv = document.getElementById('auth');
     authdiv.innerHTML = `
-      <span id="welcome">欢迎，${JSON.parse(userStr).username || '用户'}</span>
-      <span id="logout-btn">登出</span>
+      <div class="user-menu">
+        <div class="user-profile" id="userProfileButton">
+          <span id="welcome">欢迎，${JSON.parse(userStr).username || '用户'}</span>
+          <i class="dropdown-icon">▼</i>
+        </div>
+        <div class="dropdown-menu" id="userDropdownMenu">
+          <ul class="dropdown-list">
+            <li><a href="/pages/profile.html"><i class="icon-user"></i> 个人资料</a></li>
+            <li><a href="/pgaes/settings.html"><i class="icon-settings"></i> 设置</a></li>
+            <li><a href="#" id="logout-btn"><i class="icon-logout"></i> 登出</a></li>
+          </ul>
+        </div>
+      </div>
     `;
     // 检查用户登录状态并显示发布链接
     setTimeout(() => {
@@ -90,7 +101,7 @@ const initAuth = () => {
         return;
       }
 
-      
+
       if (username.length < 3 || username.length > 16) {
         showStatusMessage('用户名需为3~16位，只含字母、数字、下划线', 'error');
         return;

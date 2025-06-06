@@ -11,33 +11,52 @@ function getCursorLine(textarea) {
 }
 
 function renderPreviewByLine(text) {
-    // 1. 先添加不可见的HTML注释作为锚点（不会干扰Markdown解析）
-    const lines = text.split('\n');
-    const textWithAnchors = lines.map((line, i) =>
-        `<!--line-anchor-${i}-->${line}`
-    ).join('\n');
-
-    // 2. 使用marked解析Markdown
-    let html = marked.parse(textWithAnchors, {
-        breaks: true,
-        gfm: true,
-        highlight: function (code, lang) {
-            // 使用highlight.js或Prism.js等库高亮代码
-            if (lang && hljs.getLanguage(lang)) {
-                try {
-                    return hljs.highlight(code, { language: lang }).value;
-                } catch (err) { }
-            }
-            return code;
+    // 1. 分割原始Markdown文本为行
+    const markdownLines = text.split('\n');
+    
+    // 2. 标记各种特殊Markdown结构
+    let inCodeBlock = false;
+    let inTable = false;
+    let inHtmlBlock = false;
+    
+    const markedLines = markdownLines.map((line, i) => {
+        // 检测代码块开始和结束
+        if (line.trim().startsWith('```')) {
+            inCodeBlock = !inCodeBlock;
         }
+        
+        // 检测表格行
+        if (line.trim().startsWith('|') && line.includes('|', 1)) {
+            inTable = true;
+        } else if (inTable && line.trim() === '') {
+            inTable = false;
+        }
+        
+        // 检测HTML块
+        if (line.trim().startsWith('<') && !line.trim().startsWith('</') && !line.includes('/>')) {
+            inHtmlBlock = true;
+        } else if (inHtmlBlock && line.includes('</')) {
+            inHtmlBlock = false;
+        }
+        
+        // 只在安全区域添加行锚点标记
+        if (!inCodeBlock && !inTable && !inHtmlBlock) {
+            // 使用一个不太可能在正常文本中出现的标记
+            return `${line}\n<!-- SAFE_LINE_ANCHOR_${i} -->`;
+        }
+        return line;
     });
-
-    // 3. 将HTML注释替换为实际的锚点span
-    html = html.replace(/<!--line-anchor-(\d+)-->/g, (_, n) =>
-        `<span class="md-line-anchor" data-line="${n}" id="line-anchor-${n}"></span>`
+    
+    // 3. 渲染Markdown
+    const htmlContent = safeMarked(markedLines.join('\n'));
+    
+    // 4. 将自定义标记替换为实际的锚点span
+    const contentWithAnchors = htmlContent.replace(
+        /<!-- SAFE_LINE_ANCHOR_(\d+) -->/g, 
+        (match, lineNum) => `<span class="md-line-anchor" data-line="${lineNum}" id="line-anchor-${lineNum}"></span>`
     );
-
-    return html;
+    
+    return contentWithAnchors;
 }
 
 function scrollPreviewToLine(lineNumber) {

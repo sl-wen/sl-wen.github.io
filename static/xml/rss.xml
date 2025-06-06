@@ -6,7 +6,7 @@
                             <description>鱼鱼的博客</description>
                             <language>zh-cn</language>
                             <generator>Node+Supabase RSS自生成</generator>
-                            <lastBuildDate>Thu, 05 Jun 2025 09:35:03 GMT</lastBuildDate>
+                            <lastBuildDate>Fri, 06 Jun 2025 01:45:03 GMT</lastBuildDate>
                                 
         <item>
             <title><![CDATA[阿里云]]></title>
@@ -25,7 +25,7 @@ git push
             <category>ali</category>
             <pubDate>Wed, 04 Jun 2025 09:24:26 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</guid>
-            <lastBuildDate>Thu, 05 Jun 2025 09:03:41 GMT</lastBuildDate>
+            <lastBuildDate>Fri, 06 Jun 2025 01:44:12 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -166,9 +166,10 @@ echo命令的作用列举如下：</p>
 C:&gt;ECHO Y|DEL A :*.*
 </code></pre>
 <h5>（7）建立新文件或增加文件内容</h5>
-<p>格式：ECHO 文件内容&gt;文件名
-ECHO 文件内容&gt;&gt;文件名
-例如：
+<p>格式：ECHO 文件内容&gt;文件名</p>
+<pre><code>ECHO 文件内容&gt;&gt;文件名
+</code></pre>
+<p>例如：
 C:&gt;ECHO @ECHO OFF&gt;AUTOEXEC.BAT建立自动批处理文件
 C:&gt;ECHO C:\CPAV\BOOTSAFE&gt;&gt;AUTOEXEC.BAT向自动批处理文件中追加内容
 C:&gt;TYPE AUTOEXEC.BAT显示该自动批处理文件
@@ -666,7 +667,7 @@ E</p>
             <category>bat</category>
             <pubDate>Fri, 28 Mar 2025 05:41:00 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=d5791554-2c7d-460b-bb2d-18c1c8c4482a</guid>
-            <lastBuildDate>Thu, 05 Jun 2025 09:05:41 GMT</lastBuildDate>
+            <lastBuildDate>Fri, 06 Jun 2025 01:26:31 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -1010,7 +1011,7 @@ GitHubにSSHキーを設定する</p>
             <category>SSH</category>
             <pubDate>Tue, 18 Mar 2025 08:14:34 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=41559f85-4f2d-4133-9960-410fe42154df</guid>
-            <lastBuildDate>Thu, 05 Jun 2025 08:25:17 GMT</lastBuildDate>
+            <lastBuildDate>Fri, 06 Jun 2025 01:38:36 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -1288,7 +1289,7 @@ ___
             <category>markdown</category>
             <pubDate>Fri, 08 Mar 2024 00:00:00 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=027ccc92-34a8-423c-93a9-4ae6dae69a5a</guid>
-            <lastBuildDate>Thu, 05 Jun 2025 09:05:55 GMT</lastBuildDate>
+            <lastBuildDate>Fri, 06 Jun 2025 01:38:42 GMT</lastBuildDate>
         </item>
                         </channel>
                      </rss>

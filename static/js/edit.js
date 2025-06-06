@@ -19,20 +19,48 @@ function getCursorLine(textarea) {
 }
 
 function renderPreviewByLine(text) {
-    // 1. 先将原始Markdown文本按行分割
+    // 1. 分割原始Markdown文本为行
     const markdownLines = text.split('\n');
     
-    // 2. 为每行Markdown添加唯一标识符
-    const markedText = markdownLines.map((line, i) => 
-        `${line}\n<!-- LINEANCHOR:${i} -->`
-    ).join('\n');
+    // 2. 标记各种特殊Markdown结构
+    let inCodeBlock = false;
+    let inTable = false;
+    let inHtmlBlock = false;
     
-    // 3. 使用marked渲染Markdown
-    const htmlContent = safeMarked(markedText);
+    const markedLines = markdownLines.map((line, i) => {
+        // 检测代码块开始和结束
+        if (line.trim().startsWith('```')) {
+            inCodeBlock = !inCodeBlock;
+        }
+        
+        // 检测表格行
+        if (line.trim().startsWith('|') && line.includes('|', 1)) {
+            inTable = true;
+        } else if (inTable && line.trim() === '') {
+            inTable = false;
+        }
+        
+        // 检测HTML块
+        if (line.trim().startsWith('<') && !line.trim().startsWith('</') && !line.includes('/>')) {
+            inHtmlBlock = true;
+        } else if (inHtmlBlock && line.includes('</')) {
+            inHtmlBlock = false;
+        }
+        
+        // 只在安全区域添加行锚点标记
+        if (!inCodeBlock && !inTable && !inHtmlBlock) {
+            // 使用一个不太可能在正常文本中出现的标记
+            return `${line}\n<!-- SAFE_LINE_ANCHOR_${i} -->`;
+        }
+        return line;
+    });
     
-    // 4. 将HTML注释替换为实际的锚点span
+    // 3. 渲染Markdown
+    const htmlContent = safeMarked(markedLines.join('\n'));
+    
+    // 4. 将自定义标记替换为实际的锚点span
     const contentWithAnchors = htmlContent.replace(
-        /<!-- LINEANCHOR:(\d+) -->/g, 
+        /<!-- SAFE_LINE_ANCHOR_(\d+) -->/g, 
         (match, lineNum) => `<span class="md-line-anchor" data-line="${lineNum}" id="line-anchor-${lineNum}"></span>`
     );
     

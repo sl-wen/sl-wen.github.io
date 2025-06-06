@@ -2,6 +2,19 @@
 import { marked } from 'marked';
 import { supabase } from './supabase-config.js';
 
+// 安全的 marked 解析函数
+function safeMarked(content) {
+    if (!content || typeof content !== 'string') {
+        return '';
+    }
+    try {
+        return marked(content);
+    } catch (error) {
+        console.error('Markdown 解析错误:', error);
+        return '内容解析错误';
+    }
+}
+
 function getCursorLine(textarea) {
     const value = textarea.value;
     const selectionStart = textarea.selectionStart;

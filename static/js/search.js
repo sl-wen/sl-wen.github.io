@@ -1,34 +1,18 @@
 import { marked } from 'marked';
 import { supabase } from './supabase-config.js';
+import { JSDOM } from 'jsdom';
 // 辅助函数：从 Markdown 文本中提取纯文本内容
 function extractTextFromMarkdown(markdown) {
-  if (!markdown) return '';  // 如果输入为空，返回空字符串
-  return markdown
-    // 移除图片标记 ![alt](url)
-    .replace(/!\[.*?\]\(.*?\)/g, '')
-    // 移除链接标记 [text](url)，但保留链接文字
-    .replace(/\[([^\]]+)\]\(.*?\)/g, '$1')
-    // 移除标题标记 (#, ##, etc.)
-    .replace(/#{1,6}\s/g, '')
-    // 移除加粗标记 (**text** 或 __text__)
-    .replace(/(\*\*|__)(.+?)\1/g, '$2')
-    // 移除斜体标记 (*text* 或 _text_)
-    .replace(/(\*|_)(.+?)\1/g, '$2')
-    // 移除代码块 (```code```)
-    .replace(/```[\s\S]*?```/g, '')
-    // 移除行内代码 (`code`)
-    .replace(/`([^`]+)`/g, '$1')
-    // 移除引用标记 (> text)
-    .replace(/^\s*>\s*/gm, '')
-    // 移除水平分隔线
-    .replace(/^\s*[-*_]{3,}\s*$/gm, '')
-    // 移除无序列表标记
-    .replace(/^\s*[-*+]\s+/gm, '')
-    // 移除有序列表标记
-    .replace(/^\s*\d+\.\s+/gm, '')
-    // 移除多余的空行
-    .replace(/\n\s*\n/g, '\n')
-    .trim();  // 移除首尾空白
+  if (!markdown) return '';
+  
+  // 将Markdown转换为HTML
+  const html = marked(markdown);
+  
+  // 使用JSDOM解析HTML并提取文本
+  const dom = new JSDOM(html);
+  const text = dom.window.document.body.textContent || '';
+  
+  return text;
 }
 
 // 高亮匹配的内容

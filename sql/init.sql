@@ -11,13 +11,64 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 -- 创建用户表
 CREATE TABLE IF NOT EXISTS Userinfo (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
     username TEXT PRIMARY KEY NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
     password TEXT,
     level INTEGER DEFAULT 0,
     amount INTEGER DEFAULT 0,
     adress TEXT DEFAULT ‘’,
+    last_login TIMESTAMP,
+    experience INT DEFAULT 0,
+    coins INT DEFAULT 0,
+    consecutive_logins INT DEFAULT 0,
+    last_daily_reward TIMESTAMP,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+-- 用户等级表 (user_levels)
+CREATE TABLE user_levels (
+    level INT PRIMARY KEY,
+    level_name VARCHAR(50) NOT NULL,
+    required_exp INT NOT NULL,
+    daily_login_coins INT NOT NULL,
+    daily_login_exp INT NOT NULL,
+    article_coin_multiplier DECIMAL(3,1) NOT NULL,
+    article_exp_multiplier DECIMAL(3,1) NOT NULL,
+    level_up_reward_coins INT NOT NULL
+);
+-- 用户行为记录表 (user_activities)
+CREATE TABLE user_activities (
+    activity_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    activity_type ENUM('login', 'post_article', 'like', 'comment', 'share', 'collect') NOT NULL,
+    target_id INT,  -- 关联的文章ID或评论ID等
+    coins_earned INT NOT NULL DEFAULT 0,
+    exp_earned INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+-- 任务表 (tasks)
+CREATE TABLE tasks (
+    task_id INT PRIMARY KEY AUTO_INCREMENT,
+    task_name VARCHAR(100) NOT NULL,
+    task_description TEXT,
+    task_type ENUM('daily', 'weekly', 'achievement') NOT NULL,
+    coins_reward INT NOT NULL,
+    exp_reward INT NOT NULL,
+    required_actions INT NOT NULL,
+    action_type VARCHAR(50) NOT NULL
+);
+-- 用户任务进度表 (user_tasks)
+CREATE TABLE user_tasks (
+    user_id INT NOT NULL,
+    task_id INT NOT NULL,
+    progress INT DEFAULT 0,
+    completed BOOLEAN DEFAULT FALSE,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, task_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (task_id) REFERENCES tasks(task_id)
 );
 -- 创建统计表
 CREATE TABLE IF NOT EXISTS stats (

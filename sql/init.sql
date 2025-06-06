@@ -11,13 +11,12 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 -- 创建用户表
 CREATE TABLE IF NOT EXISTS Userinfo (
-    user_id INT PRIMARY KEY AUTO_INCREMENT,
     username TEXT PRIMARY KEY NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(100) DEFAULT null,
     password TEXT,
     level INTEGER DEFAULT 0,
     amount INTEGER DEFAULT 0,
-    adress TEXT DEFAULT ‘’,
+    adress TEXT DEFAULT null,
     last_login TIMESTAMP,
     experience INT DEFAULT 0,
     coins INT DEFAULT 0,
@@ -26,6 +25,15 @@ CREATE TABLE IF NOT EXISTS Userinfo (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+-- 创建评论表
+CREATE TABLE IF NOT EXISTS comments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+    author TEXT DEFAULT 'Admin',
+    content TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+)
 -- 用户等级表 (user_levels)
 CREATE TABLE user_levels (
     level INT PRIMARY KEY,
@@ -39,21 +47,20 @@ CREATE TABLE user_levels (
 );
 -- 用户行为记录表 (user_activities)
 CREATE TABLE user_activities (
-    activity_id INT PRIMARY KEY AUTO_INCREMENT,
+    activity_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id INT NOT NULL,
-    activity_type ENUM('login', 'post_article', 'like', 'comment', 'share', 'collect') NOT NULL,
+    activity_type TEXT NOT NULL,
     target_id INT,  -- 关联的文章ID或评论ID等
     coins_earned INT NOT NULL DEFAULT 0,
     exp_earned INT NOT NULL DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- 任务表 (tasks)
 CREATE TABLE tasks (
-    task_id INT PRIMARY KEY AUTO_INCREMENT,
+    task_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     task_name VARCHAR(100) NOT NULL,
     task_description TEXT,
-    task_type ENUM('daily', 'weekly', 'achievement') NOT NULL,
+    task_type TEXT NOT NULL,
     coins_reward INT NOT NULL,
     exp_reward INT NOT NULL,
     required_actions INT NOT NULL,
@@ -66,40 +73,10 @@ CREATE TABLE user_tasks (
     progress INT DEFAULT 0,
     completed BOOLEAN DEFAULT FALSE,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, task_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
-    FOREIGN KEY (task_id) REFERENCES tasks(task_id)
+    PRIMARY KEY (user_id, task_id)
 );
 -- 创建统计表
 CREATE TABLE IF NOT EXISTS stats (
     id TEXT PRIMARY KEY,
     total_views INTEGER DEFAULT 0
 );
-
--- 创建增加访问量的存储过程
-CREATE OR REPLACE FUNCTION increment_views(row_id TEXT)
-RETURNS TABLE (id TEXT, total_views INTEGER)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    RETURN QUERY
-    UPDATE stats
-    SET total_views = total_views + 1
-    WHERE id = row_id
-    RETURNING id, total_views;
-END;
-$$;
-
--- 创建更新文章时间的触发器
-CREATE OR REPLACE FUNCTION update_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER posts_updated_at
-    BEFORE UPDATE ON posts
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at();

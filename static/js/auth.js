@@ -45,9 +45,15 @@ const initAuth = () => {
     const leveldetail = document.getElementById('level-detail');
     const amountdetail = document.getElementById('amount-detail');
     const adressdetail = document.getElementById('adress-detail');
-    leveldetail.innerHTML = `<span id="level-detail" >${JSON.parse(userStr).level}</span>`;
-    amountdetail.innerHTML = `<span id="amount-detail" >${JSON.parse(userStr).amount}</span>`;
-    adressdetail.innerHTML = `<span id="adress-detail" >${JSON.parse(userStr).adress}</span>`;
+    if (leveldetail) {
+      leveldetail.innerHTML = `<span id="level-detail" >${JSON.parse(userStr).level}</span>`;
+    }
+    if (amountdetail) {
+      amountdetail.innerHTML = `<span id="amount-detail" >${JSON.parse(userStr).amount}</span>`;
+    }
+    if (adressdetail) {
+      adressdetail.innerHTML = `<span id="adress-detail" >${JSON.parse(userStr).adress}</span>`;
+    }
 
     // 检查用户登录状态并显示发布链接
     setTimeout(() => {
@@ -67,16 +73,16 @@ const initAuth = () => {
 
     const userProfileButton = document.getElementById('userProfileButton');
     const userDropdownMenu = document.getElementById('userDropdownMenu');
-    
+
     // 切换下拉菜单显示/隐藏
-    userProfileButton.addEventListener('click', function(e) {
+    userProfileButton.addEventListener('click', function (e) {
       e.stopPropagation();
       userProfileButton.classList.toggle('active');
       userDropdownMenu.classList.toggle('active');
     });
-    
+
     // 点击页面其他区域关闭下拉菜单
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
       if (!userProfileButton.contains(e.target) && !userDropdownMenu.contains(e.target)) {
         userProfileButton.classList.remove('active');
         userDropdownMenu.classList.remove('active');

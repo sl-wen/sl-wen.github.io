@@ -12,6 +12,9 @@
     <script src="/static/js/click-effect.js"></script>
     <script src="/static/js/dist/stats.bundle.js"></script>
     <script src="/static/js/dist/auth.bundle.js"></script>
+    <!-- 先加载 marked 库，然后加载 about 脚本 -->
+    <script src="/static/js/dist/marked.bundle.js"></script>
+    <script src="/static/js/dist/about.bundle.js"></script>
 </head>
 <body>
     <div class="page">
@@ -31,7 +34,7 @@
                     <p>如果您有任何问题或建议，请随时联系我。</p>
                 </div>
                 
-                <h2 class="readme-title">项目说明</h2>
+                <h3 class="readme-title">项目说明</h3>
                 <div id="readme-content" class="readme-content markdown-body">
                     <!-- README 内容将通过 JavaScript 动态加载 -->
                     <div class="loading">加载中...</div>
@@ -41,9 +44,5 @@
 
         <div id="common-footer"></div>
     </div>
-
-    <!-- 先加载 marked 库，然后加载 about 脚本 -->
-    <script src="/static/js/dist/marked.bundle.js"></script>
-    <script src="/static/js/dist/about.bundle.js"></script>
 </body>
 </html>

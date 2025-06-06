@@ -1,22 +1,16 @@
 import { supabase } from './supabase-config.js';
 
-// 显示状态消息的函数
-const showStatusMessage = (message, type) => {
-  const statusContainer = document.getElementById('status-messages');
-  if (!statusContainer) return;
+// 显示消息
+function showMessage(message, type = 'info') {
+  const container = document.getElementById('message-container');
+  if (!container) return;
 
-  const messageElement = document.createElement('div');
-  messageElement.className = `class="${type}-message"`;
-  messageElement.textContent = message;
-  messageElement.style = "margin-left: auto; margin-right: auto; align-items: center;";
-
-  statusContainer.appendChild(messageElement);
-
-  // 3秒后自动移除消息
-  setTimeout(() => {
-    messageElement.remove();
-  }, 3000);
-};
+  container.innerHTML = `
+      <div class="${type}-message">
+          ${message}
+      </div>
+  `;
+}
 
 // 初始化认证UI
 const initAuth = () => {
@@ -40,20 +34,6 @@ const initAuth = () => {
         </div>
       </div>
     `;
-
-    // 用户已登录，显示用户信息
-    const leveldetail = document.getElementById('level-detail');
-    const amountdetail = document.getElementById('amount-detail');
-    const adressdetail = document.getElementById('adress-detail');
-    if (leveldetail) {
-      leveldetail.innerHTML = `<span id="level-detail" >${JSON.parse(userStr).level}</span>`;
-    }
-    if (amountdetail) {
-      amountdetail.innerHTML = `<span id="amount-detail" >${JSON.parse(userStr).amount}</span>`;
-    }
-    if (adressdetail) {
-      adressdetail.innerHTML = `<span id="adress-detail" >${JSON.parse(userStr).adress}</span>`;
-    }
 
     // 检查用户登录状态并显示发布链接
     setTimeout(() => {
@@ -93,6 +73,20 @@ const initAuth = () => {
     setTimeout(() => {
       document.getElementById('logout-btn').addEventListener('click', logout);
     }, 0);
+
+    // 用户已登录，显示用户信息
+    const leveldetail = document.getElementById('level-detail');
+    const amountdetail = document.getElementById('amount-detail');
+    const adressdetail = document.getElementById('adress-detail');
+    if (leveldetail) {
+      leveldetail.innerHTML = `<span id="level-detail" >${JSON.parse(userStr).level}</span>`;
+    }
+    if (amountdetail) {
+      amountdetail.innerHTML = `<span id="amount-detail" >${JSON.parse(userStr).amount}</span>`;
+    }
+    if (adressdetail) {
+      adressdetail.innerHTML = `<span id="adress-detail" >${JSON.parse(userStr).adress || '未设置'}</span>`;
+    }
   }
 
   // 为登录表单添加提交事件监听
@@ -105,7 +99,7 @@ const initAuth = () => {
 
       // 验证输入不为空
       if (!username || !password) {
-        showStatusMessage('用户名和密码不能为空', 'error');
+        showMessage('用户名和密码不能为空', 'error');
         return;
       }
 
@@ -124,24 +118,24 @@ const initAuth = () => {
 
       // 验证输入不为空
       if (!username || !password || !passwordAgain) {
-        showStatusMessage('所有字段都必须填写', 'error');
+        showMessage('所有字段都必须填写', 'error');
         return;
       }
 
       // 验证两次密码输入是否一致
       if (password !== passwordAgain) {
-        showStatusMessage('两次输入的密码不一致', 'error');
+        showMessage('两次输入的密码不一致', 'error');
         return;
       }
 
 
-      if (username.length < 3 || username.length > 16) {
-        showStatusMessage('用户名需为3~16位，只含字母、数字、下划线', 'error');
+      if (username.length < 3 || username.length > 20) {
+        showMessage('用户名需为3~20位，只含字母、数字下划线、@ .', 'error');
         return;
       }
 
       if (!isPasswordComplex(password)) {
-        showStatusMessage('密码需至少8位，且包含大写、小写、数字、特殊字符中的最少两种', 'error');
+        showMessage('密码需至少8位，且包含大写、小写、数字、特殊字符中的最少两种', 'error');
         return;
       }
 
@@ -157,7 +151,7 @@ const initAuth = () => {
       const username = document.getElementById('forget-username').value;
 
       if (!username) {
-        showStatusMessage('请输入用户名(邮箱)', 'error');
+        showMessage('请输入用户名(邮箱)', 'error');
         return;
       }
 
@@ -180,11 +174,11 @@ const login = async (username, password) => {
       .eq('username', username)
       .single();
 
-    if (checkError) throw checkError;
+    // if (checkError) throw checkError;
     if (!userinfo) throw new Error('用户不存在');
 
     if (userinfo.password === password) {
-      showStatusMessage('登录成功！', 'success');
+      showMessage('登录成功！', 'success');
       // 保存登录状态
       localStorage.setItem('user', JSON.stringify(userinfo));
       // 跳转到首页
@@ -195,7 +189,7 @@ const login = async (username, password) => {
 
     return userinfo;
   } catch (error) {
-    showStatusMessage(error.message, 'error');
+    showMessage(error.message, 'error');
     return null;
   }
 };
@@ -233,13 +227,13 @@ const signup = async (username, password) => {
 
     if (error) throw error;
 
-    showStatusMessage('注册成功！请登录', 'success');
+    showMessage('注册成功！请登录', 'success');
     // 切换到登录表单
     document.querySelector('[data-tag="login"]').click();
 
     return data;
   } catch (error) {
-    showStatusMessage(error.message, 'error');
+    showMessage(error.message, 'error');
     return null;
   }
 };
@@ -258,86 +252,17 @@ const resetPassword = async (username) => {
       throw new Error('用户不存在');
     }
 
+    if (!user.mail) {
+      throw new Error('用户邮箱不存在');
+    }
+
     // TODO: 实现发送重置密码邮件的逻辑
-    showStatusMessage('重置密码链接已发送到您的邮箱(todo)', 'success');
+    showMessage('重置密码链接已发送到您的邮箱(todo)', 'success');
 
   } catch (error) {
-    showStatusMessage(error.message, 'error');
+    showMessage(error.message, 'error');
   }
 };
-
-// 保存用户会话
-function saveUserSession(userinfo) {
-  // 创建会话对象
-  const sessionData = {
-    user: userinfo,
-    token: generateSessionToken(), // 可以是随机生成的令牌或从服务器获取的令牌
-    expiry: new Date().getTime() + (24 * 60 * 60 * 1000) // 24小时后过期
-  };
-
-  // 保存到 localStorage
-  localStorage.setItem('userSession', JSON.stringify(sessionData));
-
-  // 触发登录事件
-  const loginEvent = new CustomEvent('userLogin', { detail: userinfo });
-  document.dispatchEvent(loginEvent);
-}
-
-// 生成会话令牌
-function generateSessionToken() {
-  // 简单示例 - 实际应用中应使用更安全的方法
-  return Math.random().toString(36).substring(2, 15) +
-    Math.random().toString(36).substring(2, 15);
-}
-
-// 检查用户是否已登录
-function isLoggedIn() {
-  const sessionStr = localStorage.getItem('userSession');
-  if (!sessionStr) {
-    return false;
-  }
-
-  try {
-    const session = JSON.parse(sessionStr);
-
-    // 检查会话是否过期
-    if (new Date().getTime() > session.expiry) {
-      logout(); // 会话已过期，执行登出
-      return false;
-    }
-
-    // 检查用户数据完整性
-    if (!session.user || !session.user.username) {
-      logout();
-      return false;
-    }
-
-    return true;
-  } catch (e) {
-    logout();
-    return false;
-  }
-}
-
-// 获取当前用户信息
-function getCurrentUser() {
-  if (!isLoggedIn()) {
-    return null;
-  }
-
-  const session = JSON.parse(localStorage.getItem('userSession'));
-  return session.user;
-}
-
-// 获取会话令牌（用于API请求）
-function getSessionToken() {
-  if (!isLoggedIn()) {
-    return null;
-  }
-
-  const session = JSON.parse(localStorage.getItem('userSession'));
-  return session.token;
-}
 
 // 登出
 function logout() {
@@ -350,18 +275,6 @@ function logout() {
   window.location.href = '/';
 }
 
-// 刷新会话（延长过期时间）
-function refreshSession() {
-  if (!isLoggedIn()) {
-    return false;
-  }
-
-  const session = JSON.parse(localStorage.getItem('userSession'));
-  session.expiry = new Date().getTime() + (24 * 60 * 60 * 1000);
-  localStorage.setItem('userSession', JSON.stringify(session));
-  return true;
-}
-
 function isPasswordComplex(password) {
   // 至少8位，含大写、小写、数字、特殊字符
   const lengthOk = password.length >= 8;
@@ -370,7 +283,7 @@ function isPasswordComplex(password) {
   const number = /[0-9]/.test(password);
   const special = /[^a-zA-Z0-9]/.test(password);
 
-  // 必须包含上述至少三类
+  // 必须包含上述至少二类
   const count = [lower, upper, number, special].filter(Boolean).length;
   return lengthOk && count >= 2;
 }
@@ -380,7 +293,7 @@ document.addEventListener('DOMContentLoaded', initAuth);
 
 // 导出函数供其他模块使用
 export {
-  showStatusMessage,
+  showMessage,
   login,
   signup,
   resetPassword

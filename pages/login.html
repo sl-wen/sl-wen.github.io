@@ -13,6 +13,7 @@
     <script src="/static/js/dist/stats.bundle.js"></script> <!-- 加载统计相关功能 -->
     <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
     <script src="/static/js/dist/auth.bundle.js"></script>
+    <script src="/static/js/login.js"></script>
 </head>
 <body> <!-- 文档主体 -->
     <div class="page"> <!-- 页面主容器 -->
@@ -42,7 +43,7 @@
                 <form id="signup-form" class="displaydiv"> <!-- signup -->
                     <div class="login-group"> <!-- 用户名输入组 -->
                         <label for="signup-username">用户名</label>
-                        <input type="text" id="signup-username" name="username"  minlength="3" maxlength="16" pattern="^[a-zA-Z0-9_]+$" placeholder="请输入用户名/邮箱/手机号">
+                        <input type="text" id="signup-username" name="username"  minlength="3" maxlength="20" pattern="^[a-zA-Z0-9_\@\.]+$" placeholder="请输入用户名/邮箱/手机号">
                     </div>
                     <div class="login-group"> <!-- password输入组 -->
                         <label for="signup-password">密码</label>
@@ -74,31 +75,5 @@
 
         <div id="common-footer"></div> <!-- 公共页脚容器 -->
     </div>
-
-    <script>
-    // 为标签按钮添加切换功能
-    document.addEventListener('DOMContentLoaded', () => {
-        const tagButtons = document.querySelectorAll('.tag-btn');
-        const displaySections = document.querySelectorAll('.displaydiv');
-        
-        tagButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const tag = this.getAttribute('data-tag');
-                
-                // 移除所有按钮的活动状态
-                tagButtons.forEach(btn => btn.classList.remove('active'));
-                
-                // 为当前点击的按钮添加活动状态
-                this.classList.add('active');
-                
-                // 隐藏所有内容
-                displaySections.forEach(section => section.classList.remove('active'));
-                
-                // 显示对应标签的内容
-                document.getElementById(`${tag}-form`).classList.add('active');
-            });
-        });
-    });
-    </script>
 </body>
 </html>

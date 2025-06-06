@@ -19,57 +19,30 @@ function getCursorLine(textarea) {
 }
 
 function renderPreviewByLine(text) {
-    // 先渲染Markdown
-    const htmlContent = safeMarked(text);
-
-    // 1. 添加不可见的HTML注释作为锚点（不会干扰Markdown解析）
-    const lines = htmlContent.split('\n');
-    const contentWithAnchors = lines.map((line, i) =>
-        `<span class="md-line-anchor" data-line="${i}" id="line-anchor-${i}"></span>${line}`
+    // 1. 先将原始Markdown文本按行分割
+    const markdownLines = text.split('\n');
+    
+    // 2. 为每行Markdown添加唯一标识符
+    const markedText = markdownLines.map((line, i) => 
+        `${line}\n<!-- LINEANCHOR:${i} -->`
     ).join('\n');
-
+    
+    // 3. 使用marked渲染Markdown
+    const htmlContent = safeMarked(markedText);
+    
+    // 4. 将HTML注释替换为实际的锚点span
+    const contentWithAnchors = htmlContent.replace(
+        /<!-- LINEANCHOR:(\d+) -->/g, 
+        (match, lineNum) => `<span class="md-line-anchor" data-line="${lineNum}" id="line-anchor-${lineNum}"></span>`
+    );
+    
     return contentWithAnchors;
 }
 
 function scrollPreviewToLine(lineNumber) {
     const anchor = document.querySelector(`#line-anchor-${lineNumber}`);
-    const preview = document.getElementById('preview');
-    const editor = document.getElementById('editor');
-    // 获取编辑器信息
-    const editorLineHeight = parseInt(window.getComputedStyle(editor).lineHeight) || 18;
-    const editorScrollTop = editor.scrollTop;
-    const editorHeight = editor.clientHeight;
-    const editorScrollHeight = editor.scrollHeight;
-
-    // 计算编辑器的滚动比例
-    const scrollRatio = editorScrollTop / (editorScrollHeight - editorHeight);
-
-    // 计算编辑器中第一行在可见区域的位置偏移比例
-    const lineOffset = (editorScrollTop % editorLineHeight) / editorLineHeight;
-
     if (anchor) {
-        // 获取锚点在预览区域的位置
-        const anchorRect = anchor.getBoundingClientRect();
-        const previewRect = preview.getBoundingClientRect();
-
-        // 计算锚点相对于预览容器顶部的位置
-        const relativeTop = anchorRect.top - previewRect.top;
-
-        // 计算预览区域应该滚动到的位置
-        const targetScrollTop = preview.scrollTop + relativeTop - (lineOffset * editorLineHeight);
-
-        // 平滑滚动到计算出的位置
-        preview.scrollTo({
-            top: targetScrollTop,
-            behavior: 'smooth'
-        });
-    } else {
-        // 如果找不到锚点，使用比例滚动
-        const previewScrollPosition = scrollRatio * (preview.scrollHeight - preview.clientHeight);
-        preview.scrollTo({
-            top: previewScrollPosition,
-            behavior: 'smooth'
-        });
+        anchor.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
 }
 

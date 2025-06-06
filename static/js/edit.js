@@ -83,18 +83,41 @@ function onScrollEnd(element, callback) {
         // 设置新的定时器，滚动停止后执行回调
         timer = setTimeout(function () {
             callback();
-        }, 150); // 150ms 无滚动视为滚动结束
+        }, 300); // 300ms 无滚动视为滚动结束
     });
 }
 
-// 计算编辑框中可见的第一行
+/**
+ * 计算编辑框中可见的第一行行号
+ * @param {HTMLTextAreaElement} textarea - 文本区域元素
+ * @return {number} 可见的第一行行号（从0开始）
+ */
 function getVisibleFirstLine(textarea) {
     // 获取文本框的滚动位置
     const scrollTop = textarea.scrollTop;
-    // 获取行高（近似值，可能需要根据实际字体和样式调整）
-    const lineHeight = parseInt(window.getComputedStyle(textarea).lineHeight) || 18;
-    // 估算第一个可见行
-    const firstVisibleLine = Math.floor(scrollTop / lineHeight);
+    
+    // 获取文本框的样式
+    const style = window.getComputedStyle(textarea);
+    
+    // 获取内边距
+    const paddingTop = parseFloat(style.paddingTop) || 0;
+    
+    // 计算实际滚动位置（考虑内边距）
+    const effectiveScrollTop = Math.max(0, scrollTop - paddingTop);
+    
+    // 获取行高
+    let lineHeight;
+    if (style.lineHeight === 'normal') {
+        // 'normal'通常是字体大小的1.2倍左右
+        const fontSize = parseFloat(style.fontSize) || 16;
+        lineHeight = fontSize * 1.2;
+    } else {
+        lineHeight = parseFloat(style.lineHeight) || 18;
+    }
+    
+    // 估算第一个可见行（从0开始）
+    const firstVisibleLine = Math.floor(effectiveScrollTop / lineHeight);
+    
     return firstVisibleLine;
 }
 

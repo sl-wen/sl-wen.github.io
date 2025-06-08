@@ -7,6 +7,9 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 // 创建 Supabase 客户端实例
 const supabase = createClient(supabaseUrl, supabaseKey, {
+  headers: {
+    apikey: supabaseKey
+  },
   auth: {
     persistSession: true
   },

@@ -1,6 +1,8 @@
 import { marked } from 'marked';
 import { supabase } from './supabase-config.js';
 import { JSDOM } from 'jsdom';
+// 确保导入语句正确
+// 删除原有的 const { JSDOM } = require('jsdom');
 // 辅助函数：从 Markdown 文本中提取纯文本内容
 function extractTextFromMarkdown(markdown) {
   if (!markdown) return '';

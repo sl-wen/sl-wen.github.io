@@ -1,79 +1,79 @@
-<!DOCTYPE html> <!-- HTML5文档类型声明 -->
-<html lang="zh-CN"> <!-- HTML根元素，设置语言为中文 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
 
-<head> <!-- 文档头部，包含元数据 -->
-    <meta charset="UTF-8"> <!-- 设置文档字符编码为UTF-8 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 设置移动设备的视口属性 -->
-    <title>login - 我的博客</title> <!-- 网页标题 -->
-    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon"> <!-- 设置网站图标 -->
-    <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS样式 -->
-    <link rel="stylesheet" href="/static/css/login.css"> <!-- 引入login特定的CSS样式 -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login - 我的博客</title>
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/login.css">
      
-    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
-    <script src="/static/js/dist/stats.bundle.js"></script> <!-- 加载统计相关功能 -->
-    <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
+    <script src="/static/js/common-components.js"></script>
+    <script src="/static/js/dist/stats.bundle.js"></script>
+    <script src="/static/js/click-effect.js"></script>
     <script src="/static/js/dist/auth.bundle.js"></script>
     <script src="/static/js/login.js"></script>
 </head>
-<body> <!-- 文档主体 -->
-    <div class="page"> <!-- 页面主容器 -->
-        <div id="common-header"></div> <!-- 公共页头容器 -->
+<body>
+    <div class="page">
+        <div id="common-header"></div>
 
-        <div class="container"> <!-- 主要内容容器 -->
-            <div class="loign-container"> <!-- login容器 -->
+        <div class="container">
+            <div class="loign-container">
                 <div class="tags">
                     <button class="tag-btn active" data-tag="login">登录画面</button>
                     <button class="tag-btn" data-tag="signup">注册画面</button>
                     <button class="tag-btn" data-tag="forget">忘记密码</button>
                 </div>
-                <form id="login-form" class="displaydiv active"> <!-- login表单 -->
-                    <div class="login-group"> <!-- 用户名输入组 -->
-                        <label for="login-username">用户名</label>
-                        <input type="text" id="login-username" name="username" placeholder="请输入用户名/邮箱/手机号">
+                <form id="login-form" class="displaydiv active">
+                    <div class="login-group">
+                        <label for="login-username">邮箱</label>
+                        <input type="email" id="login-username" name="email" placeholder="请输入邮箱地址">
                     </div>
-                    <div class="login-group"> <!-- password输入组 -->
+                    <div class="login-group">
                         <label for="login-password">密码</label>
                         <input type="password" id="login-password" name="password">
                     </div>
-                    <div class="buttons"> <!-- 操作按钮区域 -->
-                        <button type="submit" id="login-btn" class="primary-btn">登录</button> <!-- login按钮 -->
+                    <div class="buttons">
+                        <button type="submit" id="login-btn" class="primary-btn">登录</button>
                     </div>
                 </form>
 
-                <form id="signup-form" class="displaydiv"> <!-- signup -->
-                    <div class="login-group"> <!-- 用户名输入组 -->
-                        <label for="signup-username">用户名</label>
-                        <input type="text" id="signup-username" name="username"  minlength="3" maxlength="20" pattern="^[a-zA-Z0-9_\@\.]+$" placeholder="请输入用户名/邮箱/手机号">
+                <form id="signup-form" class="displaydiv">
+                    <div class="login-group">
+                        <label for="signup-username">邮箱</label>
+                        <input type="email" id="signup-username" name="email" placeholder="请输入邮箱地址">
                     </div>
-                    <div class="login-group"> <!-- password输入组 -->
+                    <div class="login-group">
                         <label for="signup-password">密码</label>
                         <input type="password" id="signup-password" name="password">
                     </div>
-                    <div class="login-group"> <!-- passwordagain输入组 -->
+                    <div class="login-group">
                         <label for="passwordagain">密码确认</label>
                         <input type="password" id="passwordagain" name="passwordagain">
                     </div>
-                    <div class="buttons"> <!-- 操作按钮区域 -->
-                        <button type="submit" id="signup-btn" class="primary-btn">注册</button> <!-- signup按钮 -->
+                    <div class="buttons">
+                        <button type="submit" id="signup-btn" class="primary-btn">注册</button>
                     </div>
                 </form>
 
-                <form id="forget-form" class="displaydiv"> <!-- forget表单 -->
-                    <div class="login-group"> <!-- 用户名输入组 -->
-                        <label for="forget-username">用户名</label>
-                        <input type="text" id="forget-username" name="username" placeholder="请输入用户名(邮箱)">
+                <form id="forget-form" class="displaydiv">
+                    <div class="login-group">
+                        <label for="forget-username">邮箱</label>
+                        <input type="email" id="forget-username" name="email" placeholder="请输入邮箱地址">
                     </div>
-                    <div class="buttons"> <!-- 操作按钮区域 -->
-                        <button type="submit" id="forget-btn" class="primary-btn">重置密码</button> <!-- forget按钮--> 
+                    <div class="buttons">
+                        <button type="submit" id="forget-btn" class="primary-btn">重置密码</button>
                     </div>
                 </form>
-            </div> <!-- login容器 -->
+            </div>
             <div id="message-container">
                 <div id="status-messages"></div>
-            </div> <!-- 消息提示容器 -->
+            </div>
         </div>
 
-        <div id="common-footer"></div> <!-- 公共页脚容器 -->
+        <div id="common-footer"></div>
     </div>
 </body>
 </html>

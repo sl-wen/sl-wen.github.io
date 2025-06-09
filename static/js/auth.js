@@ -109,7 +109,7 @@ const initAuth = async () => {
       if (usernameForm) {
         usernameForm.addEventListener('submit', async (e) => {
           e.preventDefault(); // 阻止表单默认提交行为
-          const username = document.getElementById('username-detail').value;
+          const newusername = document.getElementById('username-detail').value;
 
           // 验证输入不为空
           if (!username) {
@@ -117,7 +117,7 @@ const initAuth = async () => {
             return;
           }
 
-          await usernamechange(profile, username);
+          await usernamechange(profile, newusername);
         });
       }
 
@@ -285,21 +285,21 @@ const signup = async (email, password) => {
 };
 
 
-// 变更函数
-const usernamechange = async (profile, username) => {
+// 变更用户函数
+const usernamechange = async (profile, newusername) => {
   const profileid = profile.id;
   try {
     showMessage('变更中...', 'info');
 
 
     // 获取用户详细信息
-    const { data: profile, error } = await supabase
+    const { data: newprofile, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', profileid)
+      .eq('username', newusername)
       .single();
 
-    if (profile.username) {
+    if (newprofile.username) {
       showMessage('用户名已存在', 'error');
       return null;
     }
@@ -308,12 +308,12 @@ const usernamechange = async (profile, username) => {
     const { error: usernamechangeError } = await supabase
       .from('profiles')
       .update({
-        username: username,
+        username: newusername,
         updated_at: new Date()
       })
       .eq('id', profileid);
 
-    if (usernamechangeError) console.error('创建用户资料失败:', usernamechangeError);
+    if (usernamechangeError) console.error('变更用户资料失败:', usernamechangeError);
 
     showMessage('变更用户资料成功！', 'success');
     // 跳转到首页

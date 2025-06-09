@@ -14,7 +14,7 @@ function showMessage(message, type = 'info') {
 }
 
 // 初始化认证UI
-const initAuth = () => {
+const initAuth = async () => {
   // 检查用户会话状态
   try {
     const { session, profile, error } = await getUserInfo();  // 获取用户数据

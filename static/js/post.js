@@ -124,7 +124,7 @@ function getVisibleFirstLine(textarea) {
 }
 
 // 初始化编辑器
-function initEditor() {
+async function initEditor() {
     const statusDiv = document.getElementById('status-messages');
     if (statusDiv) {
         statusDiv.innerHTML += '<p>初始化编辑器...</p>';

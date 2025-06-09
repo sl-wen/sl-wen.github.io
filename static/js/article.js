@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 显示文章内容的函数
-  function showArticle(article) {
+  async function showArticle(article) {
     if (!articleContainer) {
       console.error('文章容器元素不存在');
       return;

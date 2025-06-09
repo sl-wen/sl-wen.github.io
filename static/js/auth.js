@@ -299,8 +299,9 @@ const usernamechange = async (profile, username) => {
       .eq('id', profileid)
       .single();
 
-    if (profile) {
+    if (profile.username) {
       showMessage('用户名已存在', 'error');
+      return null;
     }
 
     // 变更用户资料
@@ -318,7 +319,7 @@ const usernamechange = async (profile, username) => {
     // 跳转到首页
     setTimeout(() => {
       window.location.href = `/pages/settings.html`;
-    }, 1000);
+    }, 1500);
   } catch (error) {
     showMessage(error.message || '变更用户资料失败', 'error');
     return null;

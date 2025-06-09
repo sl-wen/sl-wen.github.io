@@ -17,22 +17,25 @@ function showMessage(message, type = 'info') {
 const initAuth = () => {
   // 检查用户会话状态
   const checkUserSession = async () => {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    
+    const { data, error } = await supabase.auth.getSession();
+    console.log('Auth session data:', data);
+    console.log('Auth session error:', error);
+    const session = data?.session;
+
     if (session) {
       // 用户已登录，显示用户信息和登出按钮
       const authdiv = document.getElementById('auth');
       const user = session.user;
-      
+
       // 获取用户详细信息
       const { data: userProfile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
-      
-      const username = userProfile?.username || user.email || '用户';
-      
+
+      const username = userProfile?.username || user?.email || '用户';
+
       authdiv.innerHTML = `
         <div class="user-menu">
           <div class="user-profile" id="userProfileButton">
@@ -85,7 +88,10 @@ const initAuth = () => {
 
       // 添加登出事件监听
       setTimeout(() => {
-        document.getElementById('logout-btn').addEventListener('click', logout);
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', logout);
+        }
       }, 0);
 
       // 用户已登录，显示用户信息
@@ -113,7 +119,7 @@ const initAuth = () => {
       }
     }
   };
-  
+
   // 检查用户会话
   checkUserSession();
 
@@ -122,7 +128,7 @@ const initAuth = () => {
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault(); // 阻止表单默认提交行为
-      const email = document.getElementById('login-username').value;
+      const email = document.getElementById('login-email').value;
       const password = document.getElementById('login-password').value;
 
       // 验证输入不为空
@@ -140,7 +146,7 @@ const initAuth = () => {
   if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('signup-username').value;
+      const email = document.getElementById('signup-email').value;
       const password = document.getElementById('signup-password').value;
       const passwordAgain = document.getElementById('passwordagain').value;
 
@@ -176,7 +182,7 @@ const initAuth = () => {
   if (forgetForm) {
     forgetForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('forget-username').value;
+      const email = document.getElementById('forget-email').value;
 
       if (!email) {
         showMessage('请输入邮箱', 'error');
@@ -203,7 +209,7 @@ function isValidEmail(email) {
 const login = async (email, password) => {
   try {
     showMessage('登录中...', 'info');
-    
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -214,7 +220,7 @@ const login = async (email, password) => {
     showMessage('登录成功！', 'success');
     // 跳转到首页
     window.location.href = '/';
-    
+
     return data;
   } catch (error) {
     showMessage(error.message || '登录失败，请检查邮箱和密码', 'error');
@@ -226,7 +232,7 @@ const login = async (email, password) => {
 const signup = async (email, password) => {
   try {
     showMessage('注册中...', 'info');
-    
+
     // 使用Supabase Auth注册
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -270,7 +276,7 @@ const signup = async (email, password) => {
 const resetPassword = async (email) => {
   try {
     showMessage('处理中...', 'info');
-    
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/pages/reset-password.html`,
     });
@@ -288,7 +294,7 @@ async function logout() {
   try {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    
+
     const authdiv = document.getElementById('auth');
     authdiv.innerHTML = `
     <span id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</span>

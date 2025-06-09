@@ -27,32 +27,32 @@ function getCursorLine(textarea) {
 function renderPreviewByLine(text) {
     // 1. 分割原始Markdown文本为行
     const markdownLines = text.split('\n');
-    
+
     // 2. 标记各种特殊Markdown结构
     let inCodeBlock = false;
     let inTable = false;
     let inHtmlBlock = false;
-    
+
     const markedLines = markdownLines.map((line, i) => {
         // 检测代码块开始和结束
         if (line.trim().startsWith('```')) {
             inCodeBlock = !inCodeBlock;
         }
-        
+
         // 检测表格行
         if (line.trim().startsWith('|') && line.includes('|', 1)) {
             inTable = true;
         } else if (inTable && line.trim() === '') {
             inTable = false;
         }
-        
+
         // 检测HTML块
         if (line.trim().startsWith('<') && !line.trim().startsWith('</') && !line.includes('/>')) {
             inHtmlBlock = true;
         } else if (inHtmlBlock && line.includes('</')) {
             inHtmlBlock = false;
         }
-        
+
         // 只在安全区域添加行锚点标记
         if (!inCodeBlock && !inTable && !inHtmlBlock) {
             // 使用一个不太可能在正常文本中出现的标记
@@ -60,16 +60,16 @@ function renderPreviewByLine(text) {
         }
         return line;
     });
-    
+
     // 3. 渲染Markdown
     const htmlContent = safeMarked(markedLines.join('\n'));
-    
+
     // 4. 将自定义标记替换为实际的锚点span
     const contentWithAnchors = htmlContent.replace(
-        /<!-- SAFE_LINE_ANCHOR_(\d+) -->/g, 
+        /<!-- SAFE_LINE_ANCHOR_(\d+) -->/g,
         (match, lineNum) => `<span class="md-line-anchor" data-line="${lineNum}" id="line-anchor-${lineNum}"></span>`
     );
-    
+
     return contentWithAnchors;
 }
 
@@ -97,16 +97,16 @@ function onScrollEnd(element, callback) {
 function getVisibleFirstLine(textarea) {
     // 获取文本框的滚动位置
     const scrollTop = textarea.scrollTop;
-    
+
     // 获取文本框的样式
     const style = window.getComputedStyle(textarea);
-    
+
     // 获取内边距
     const paddingTop = parseFloat(style.paddingTop) || 0;
-    
+
     // 计算实际滚动位置（考虑内边距）
     const effectiveScrollTop = Math.max(0, scrollTop - paddingTop);
-    
+
     // 获取行高
     let lineHeight;
     if (style.lineHeight === 'normal') {
@@ -116,10 +116,10 @@ function getVisibleFirstLine(textarea) {
     } else {
         lineHeight = parseFloat(style.lineHeight) || 18;
     }
-    
+
     // 估算第一个可见行（从0开始）
     const firstVisibleLine = Math.floor(effectiveScrollTop / lineHeight);
-    
+
     return firstVisibleLine;
 }
 
@@ -141,10 +141,15 @@ function initEditor() {
     }
 
     const authordiv = document.getElementById('author');
-    const { session, profile, error } = await getUserInfo();  // 获取用户数据
-
-    if (authordiv && session) {
-        authordiv.value = profile?.username || session?.user.email;
+    // 更新文章操作按钮
+    try {
+        const { session, profile, error } = await getUserInfo();  // 获取用户数据
+        if (authordiv && session) {
+            authordiv.value = profile?.username || session?.user.email;
+        }
+    } catch (error) {
+        console.error('获取用户数据失败:', error);
+        showError('获取用户数据失败', error.message);  // 显示错误信息
     }
 
     editor.addEventListener('input', () => {

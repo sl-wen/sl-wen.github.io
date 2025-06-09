@@ -16,12 +16,13 @@ function showMessage(message, type = 'info') {
 // 初始化认证UI
 const initAuth = () => {
   // 检查用户会话状态
-  const { session, profile, error } = await getUserInfo();  // 获取用户数据
-  if (session) {
-    // 用户已登录，显示用户信息和登出按钮
-    const authdiv = document.getElementById('auth');
+  try {
+    const { session, profile, error } = await getUserInfo();  // 获取用户数据
+    if (session) {
+      // 用户已登录，显示用户信息和登出按钮
+      const authdiv = document.getElementById('auth');
 
-    authdiv.innerHTML = `
+      authdiv.innerHTML = `
         <div class="user-menu">
           <div class="user-profile" id="userProfileButton">
             <span id="welcome">欢迎，${profile?.username}</span>
@@ -37,73 +38,77 @@ const initAuth = () => {
         </div>
       `;
 
-    // 检查用户登录状态并显示发布链接
-    setTimeout(() => {
-      const postLink = document.getElementById('postLink');
-      const toolsLink = document.getElementById('toolsLink');
-      const parentingLink = document.getElementById('parentingLink');
-      if (postLink) {
-        postLink.style.display = '';
-      }
-      if (toolsLink) {
-        toolsLink.style.display = '';
-      }
-      if (parentingLink) {
-        parentingLink.style.display = '';
-      }
-    }, 0);
+      // 检查用户登录状态并显示发布链接
+      setTimeout(() => {
+        const postLink = document.getElementById('postLink');
+        const toolsLink = document.getElementById('toolsLink');
+        const parentingLink = document.getElementById('parentingLink');
+        if (postLink) {
+          postLink.style.display = '';
+        }
+        if (toolsLink) {
+          toolsLink.style.display = '';
+        }
+        if (parentingLink) {
+          parentingLink.style.display = '';
+        }
+      }, 0);
 
-    const userProfileButton = document.getElementById('userProfileButton');
-    const userDropdownMenu = document.getElementById('userDropdownMenu');
+      const userProfileButton = document.getElementById('userProfileButton');
+      const userDropdownMenu = document.getElementById('userDropdownMenu');
 
-    // 切换下拉菜单显示/隐藏
-    userProfileButton.addEventListener('click', function (e) {
-      e.stopPropagation();
-      userProfileButton.classList.toggle('active');
-      userDropdownMenu.classList.toggle('active');
-    });
+      // 切换下拉菜单显示/隐藏
+      userProfileButton.addEventListener('click', function (e) {
+        e.stopPropagation();
+        userProfileButton.classList.toggle('active');
+        userDropdownMenu.classList.toggle('active');
+      });
 
-    // 点击页面其他区域关闭下拉菜单
-    document.addEventListener('click', function (e) {
-      if (!userProfileButton.contains(e.target) && !userDropdownMenu.contains(e.target)) {
-        userProfileButton.classList.remove('active');
-        userDropdownMenu.classList.remove('active');
-      }
-    });
+      // 点击页面其他区域关闭下拉菜单
+      document.addEventListener('click', function (e) {
+        if (!userProfileButton.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+          userProfileButton.classList.remove('active');
+          userDropdownMenu.classList.remove('active');
+        }
+      });
 
-    // 添加登出事件监听
-    setTimeout(() => {
-      const logoutBtn = document.getElementById('logout-btn');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-      }
-    }, 0);
+      // 添加登出事件监听
+      setTimeout(() => {
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', logout);
+        }
+      }, 0);
 
-    // 用户已登录，显示用户信息
-    if (profile) {
-      const leveldetail = document.getElementById('level-detail');
-      const amountdetail = document.getElementById('amount-detail');
-      const adressdetail = document.getElementById('adress-detail');
-      if (leveldetail) {
-        leveldetail.innerHTML = `<span id="level-detail" >${profile.level || 0}</span>`;
+      // 用户已登录，显示用户信息
+      if (profile) {
+        const leveldetail = document.getElementById('level-detail');
+        const amountdetail = document.getElementById('amount-detail');
+        const adressdetail = document.getElementById('adress-detail');
+        if (leveldetail) {
+          leveldetail.innerHTML = `<span id="level-detail" >${profile.level || 0}</span>`;
+        }
+        if (amountdetail) {
+          amountdetail.innerHTML = `<span id="amount-detail" >${profile.amount || 0}</span>`;
+        }
+        if (adressdetail) {
+          adressdetail.innerHTML = `<span id="adress-detail" >${profile.adress || '未设置'}</span>`;
+        }
       }
-      if (amountdetail) {
-        amountdetail.innerHTML = `<span id="amount-detail" >${profile.amount || 0}</span>`;
-      }
-      if (adressdetail) {
-        adressdetail.innerHTML = `<span id="adress-detail" >${profile.adress || '未设置'}</span>`;
-      }
-    }
-  } else {
-    // 用户未登录，显示登录按钮
-    const authdiv = document.getElementById('auth');
-    if (authdiv) {
-      authdiv.innerHTML = `
+    } else {
+      // 用户未登录，显示登录按钮
+      const authdiv = document.getElementById('auth');
+      if (authdiv) {
+        authdiv.innerHTML = `
         <span id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</span>
         `;
+      }
     }
+  } catch (error) {
+    console.error('获取用户数据失败:', error);
+    showError('获取用户数据失败', error.message);  // 显示错误信息
   }
-
+  
   // 为登录表单添加提交事件监听
   const loginForm = document.getElementById('login-form');
   if (loginForm) {

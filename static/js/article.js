@@ -26,17 +26,17 @@ function processImageUrl(url) {
   try {
     // 解码 URL，以防它已经被编码
     let decodedUrl = decodeURIComponent(url);
-    
+
     // 如果是以斜杠开头的绝对路径，直接返回
     if (decodedUrl.startsWith('/')) {
       return decodedUrl;
     }
-    
+
     // 如果是完整的 HTTP/HTTPS URL，直接返回
     if (decodedUrl.startsWith('http://') || decodedUrl.startsWith('https://')) {
       return decodedUrl;
     }
-    
+
     // 否则将其视为相对于 static/img 目录的路径
     return `/static/img/${decodedUrl}`;
   } catch (e) {
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('文章容器元素不存在');
       return;
     }
-    
+
     // 显示错误消息和详细信息
     articleContainer.innerHTML = `
       <div class="error">
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('文章容器元素不存在');
       return;
     }
-    
+
     // 显示加载中提示
     articleContainer.innerHTML = `
       <div class="loading">
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 添加点击事件处理
       copyButton.addEventListener('click', async () => {
         let copied = false;
-    
+
         // try modern clipboard API first
         if (navigator.clipboard && window.isSecureContext) {
           try {
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // fall back
           }
         }
-    
+
         if (!copied) {
           try {
             // 创建临时textarea
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(textarea);
             textarea.focus();
             textarea.select();
-    
+
             document.execCommand('copy');
             copied = true;
             document.body.removeChild(textarea);
@@ -143,11 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
             copied = false;
           }
         }
-    
+
         // 状态反馈
         if (copied) {
           copyButton.textContent = '已复制！'; copyButton.classList.add('copied');
-          setTimeout(() => { copyButton.textContent = '复制'; copyButton.classList.remove('copied');}, 2000);
+          setTimeout(() => { copyButton.textContent = '复制'; copyButton.classList.remove('copied'); }, 2000);
         } else {
           copyButton.textContent = '复制失败';
           setTimeout(() => { copyButton.textContent = '复制'; }, 2000);
@@ -164,13 +164,13 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('文章容器元素不存在');
       return;
     }
-    
+
     console.log('文章数据:', article);
     console.log('文章创建日期:', article.created_at);
 
     // 更新页面标题
     document.title = `${article.title} - 我的博客`;
-    
+
     // 创建文章元信息 HTML（发布日期、作者、标签等）
     const metaHtml = `
       <div class="article-meta">
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 将 Markdown 内容转换为 HTML
     const contentHtml = marked.parse(article.content || '');
-    
+
     // 组合完整的文章 HTML
     articleContainer.innerHTML = `
       <h1>${article.title || '无标题'}</h1>
@@ -193,9 +193,14 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     // 更新文章操作按钮
-    const { session, profile, error } = await getUserInfo();  // 获取用户数据
-    if (session && (session?.user.email  === 'sl-wen@outlook.com' || profile?.username === article.author)) {
-      updateArticleActions(article.id);
+    try {
+      const { session, profile, error } = await getUserInfo();  // 获取用户数据
+      if (session && (session?.user.email === 'sl-wen@outlook.com' || profile?.username === article.author)) {
+        updateArticleActions(article.id);
+      }
+    } catch (error) {
+      console.error('更新文章操作按钮失败:', error);
+      showError('更新文章操作按钮失败', error.message);  // 显示错误信息
     }
     // 应用代码高亮（如果 hljs 可用）
     if (window.hljs) {

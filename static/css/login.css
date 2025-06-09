@@ -67,6 +67,8 @@ input[type="password"] {
     border-radius: var(--border-radius);
     font-size: 14px;
     min-width: 0;
+    z-index: 100;
+    position: relative;
 }
 
 .login-group input[type="text"]:focus,
@@ -75,6 +77,12 @@ input[type="password"]:focus {
     outline: none;
     border-color: var(--primary-color);
 }
+
+/* 当键盘打开时的样式 */
+body.keyboard-open {
+    /* 可以添加一些样式来适应键盘打开的情况 */
+    padding-bottom: 50vh;
+  }
 
 /* 响应式设计 */
 @media (max-width: 768px) {

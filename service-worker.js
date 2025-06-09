@@ -1,5 +1,7 @@
 // 缓存名称和版本控制
-const CACHE_NAME = 'blog-cache-v1';
+// 在你的 service-worker.js 中更新缓存版本
+const CACHE_VERSION = 'v2'; // 增加版本号
+const CACHE_NAME = `my-site-cache-${CACHE_VERSION}`;
 const STATIC_ASSETS = [
   '/',
   '/index.html',

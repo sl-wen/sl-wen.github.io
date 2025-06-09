@@ -1,8 +1,9 @@
 {
   "name": "鱼鱼的博客",
   "short_name": "博客",
-  "start_url": "/",
+  "start_url": "/?pwa=true",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#24292e",
   "icons": [

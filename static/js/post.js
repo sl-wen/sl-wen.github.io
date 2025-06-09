@@ -140,10 +140,11 @@ function initEditor() {
     }
 
     const authordiv = document.getElementById('author');
-    const userStr = localStorage.getItem('user');
+    const { data, error } = await supabase.auth.getSession();
+    const session = data?.session;
 
-    if (authordiv) {
-        authordiv.value = userStr ? (JSON.parse(userStr).username || 'slwen') : 'slwen';
+    if (authordiv && session) {
+        authordiv.value = session.user.email || 'sl-wen';
     }
 
     editor.addEventListener('input', () => {
@@ -190,7 +191,7 @@ function initEditor() {
         try {
             const title = document.getElementById('title').value.trim();
             const content = editor.value.trim();
-            const author = document.getElementById('author').value.trim() || 'slwen';
+            const author = document.getElementById('author').value.trim() || 'sl-wen';
             const tags = tagsInput.value
                 .split(',')
                 .map(tag => tag.trim())

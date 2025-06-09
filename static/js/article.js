@@ -192,8 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     // 更新文章操作按钮
-    const userStr = localStorage.getItem('user');
-    if (userStr && (JSON.parse(userStr).username === 'slwen' || JSON.parse(userStr).username === article.author)) {
+    const { data, error } = await supabase.auth.getSession();
+    const session = data?.session;
+    if (session && (session.user.email  === 'sl-wen@outlook.com' || session.user.email === article.author)) {
       updateArticleActions(article.id);
     }
     // 应用代码高亮（如果 hljs 可用）

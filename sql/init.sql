@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS posts (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 -- 创建用户表
-CREATE TABLE IF NOT EXISTS Userinfo (
+CREATE TABLE IF NOT EXISTS profiles (
+    id UUID REFERENCES auth.users(id),
     username TEXT PRIMARY KEY NOT NULL,
     email VARCHAR(100) DEFAULT null,
     password TEXT,
@@ -25,6 +26,25 @@ CREATE TABLE IF NOT EXISTS Userinfo (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 创建触发器，在用户注册时自动创建资料
+CREATE OR REPLACE FUNCTION public.handle_new_user() 
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.userinfo (id, username, email)
+  VALUES (
+    NEW.id, 
+    SPLIT_PART(NEW.email, '@', 1), -- 使用邮箱前缀作为默认用户名
+    NEW.email -- 使用邮箱   
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
 -- 创建评论表
 CREATE TABLE IF NOT EXISTS comments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

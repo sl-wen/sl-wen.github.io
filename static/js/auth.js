@@ -315,6 +315,10 @@ const usernamechange = async (profile, username) => {
     if (usernamechangeError) console.error('创建用户资料失败:', usernamechangeError);
 
     showMessage('变更用户资料成功！', 'success');
+    // 跳转到首页
+    setTimeout(() => {
+      window.location.href = `/pages/settings.html`;
+    }, 1000);
   } catch (error) {
     showMessage(error.message || '变更用户资料失败', 'error');
     return null;

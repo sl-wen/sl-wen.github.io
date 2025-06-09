@@ -6,8 +6,26 @@
                             <description>鱼鱼的博客</description>
                             <language>zh-cn</language>
                             <generator>Node+Supabase RSS自生成</generator>
-                            <lastBuildDate>Mon, 09 Jun 2025 01:25:03 GMT</lastBuildDate>
+                            <lastBuildDate>Mon, 09 Jun 2025 05:10:03 GMT</lastBuildDate>
                                 
+        <item>
+            <title><![CDATA[table]]></title>
+            <link>http://121.40.215.235/pages/article.html?id=5f1c3a97-c629-4a5f-b031-35df31292d13</link>
+            <description><![CDATA[<pre><code>ALTER TABLE public.userinfo
+ADD COLUMN user_id UUID REFERENCES auth.users(id) NOT NULL;
+</code></pre>
+<pre><code>UPDATE public.userinfo
+SET user_id = &#39;f4852085-609a-42bd-b512-b283185757ef&#39;
+where username = &#39;sl-wen&#39;;
+</code></pre>
+]]></description>
+            <author>slwen</author>
+            <category>table</category>
+            <pubDate>Mon, 09 Jun 2025 02:43:23 GMT</pubDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=5f1c3a97-c629-4a5f-b031-35df31292d13</guid>
+            <lastBuildDate>Mon, 09 Jun 2025 03:19:04 GMT</lastBuildDate>
+        </item>
+
         <item>
             <title><![CDATA[task]]></title>
             <link>http://121.40.215.235/pages/article.html?id=c3e79c51-8dd3-4799-993d-2b91dd059143</link>
@@ -534,7 +552,7 @@ git push
             <category>ali</category>
             <pubDate>Wed, 04 Jun 2025 09:24:26 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</guid>
-            <lastBuildDate>Mon, 09 Jun 2025 01:11:54 GMT</lastBuildDate>
+            <lastBuildDate>Mon, 09 Jun 2025 02:48:07 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -1435,7 +1453,7 @@ GitHubにSSHキーを設定する</p>
 <category>php</category>
             <pubDate>Tue, 18 Mar 2025 08:07:23 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=81132e66-c9a1-4e48-8247-ed8d6ac91169</guid>
-            <lastBuildDate>Thu, 05 Jun 2025 08:25:29 GMT</lastBuildDate>
+            <lastBuildDate>Mon, 09 Jun 2025 03:05:01 GMT</lastBuildDate>
         </item>
 
         <item>

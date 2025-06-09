@@ -6,8 +6,517 @@
                             <description>鱼鱼的博客</description>
                             <language>zh-cn</language>
                             <generator>Node+Supabase RSS自生成</generator>
-                            <lastBuildDate>Fri, 06 Jun 2025 06:15:03 GMT</lastBuildDate>
+                            <lastBuildDate>Mon, 09 Jun 2025 01:25:03 GMT</lastBuildDate>
                                 
+        <item>
+            <title><![CDATA[task]]></title>
+            <link>http://121.40.215.235/pages/article.html?id=c3e79c51-8dd3-4799-993d-2b91dd059143</link>
+            <description><![CDATA[<h2>等级划分</h2>
+<table>
+<thead>
+<tr>
+<th align="left">等级</th>
+<th align="center">称号</th>
+<th align="center">所需经验值</th>
+<th align="right">升级奖励(币)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">1</td>
+<td align="center">新手</td>
+<td align="center">0</td>
+<td align="right">-</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="center">学徒</td>
+<td align="center">100</td>
+<td align="right">50</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="center">进阶者</td>
+<td align="center">300</td>
+<td align="right">100</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="center">实践者</td>
+<td align="center">600</td>
+<td align="right">150</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="center">专家</td>
+<td align="center">1,000</td>
+<td align="right">200</td>
+</tr>
+<tr>
+<td align="left">6</td>
+<td align="center">大师</td>
+<td align="center">2,000</td>
+<td align="right">300</td>
+</tr>
+<tr>
+<td align="left">7</td>
+<td align="center">权威</td>
+<td align="center">4,000</td>
+<td align="right">500</td>
+</tr>
+<tr>
+<td align="left">8</td>
+<td align="center">宗师</td>
+<td align="center">8,000</td>
+<td align="right">800</td>
+</tr>
+<tr>
+<td align="left">9</td>
+<td align="center">传奇</td>
+<td align="center">15,000</td>
+<td align="right">1,200</td>
+</tr>
+<tr>
+<td align="left">10</td>
+<td align="center">殿堂级</td>
+<td align="center">30,000</td>
+<td align="right">2,000</td>
+</tr>
+</tbody></table>
+<h2>等级特权</h2>
+<table>
+<thead>
+<tr>
+<th align="left">等级</th>
+<th align="center">每日登录币</th>
+<th align="center">每日登录经验</th>
+<th align="center">文章发布币倍率</th>
+<th align="center">文章发布经验倍率</th>
+<th align="right">特殊权限</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">1</td>
+<td align="center">10</td>
+<td align="center">10</td>
+<td align="center">1.0x</td>
+<td align="center">1.0x</td>
+<td align="right">基础功能</td>
+</tr>
+<tr>
+<td align="left">2</td>
+<td align="center">12</td>
+<td align="center">12</td>
+<td align="center">1.1x</td>
+<td align="center">1.1x</td>
+<td align="right">自定义头像</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="center">15</td>
+<td align="center">15</td>
+<td align="center">1.2x</td>
+<td align="center">1.2x</td>
+<td align="right">文章置顶(1篇)</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="center">18</td>
+<td align="center">18</td>
+<td align="center">1.3x</td>
+<td align="center">1.3x</td>
+<td align="right">特殊表情包</td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="center">22</td>
+<td align="center">22</td>
+<td align="center">1.5x</td>
+<td align="center">1.5x</td>
+<td align="right">专属徽章</td>
+</tr>
+<tr>
+<td align="left">6</td>
+<td align="center">26</td>
+<td align="center">26</td>
+<td align="center">1.8x</td>
+<td align="center">1.8x</td>
+<td align="right">文章置顶(3篇)</td>
+</tr>
+<tr>
+<td align="left">7</td>
+<td align="center">30</td>
+<td align="center">30</td>
+<td align="center">2.0x</td>
+<td align="center">2.0x</td>
+<td align="right">自定义主题</td>
+</tr>
+<tr>
+<td align="left">8</td>
+<td align="center">35</td>
+<td align="center">35</td>
+<td align="center">2.5x</td>
+<td align="center">2.5x</td>
+<td align="right">内容优先展示</td>
+</tr>
+<tr>
+<td align="left">9</td>
+<td align="center">40</td>
+<td align="center">40</td>
+<td align="center">3.0x</td>
+<td align="center">3.0x</td>
+<td align="right">专属版块</td>
+</tr>
+<tr>
+<td align="left">10</td>
+<td align="center">50</td>
+<td align="center">50</td>
+<td align="center">4.0x</td>
+<td align="center">4.0x</td>
+<td align="right">内容审核权限</td>
+</tr>
+</tbody></table>
+<h2>2.2 行为奖励系统</h2>
+<h3>基础行为奖励</h3>
+<table>
+<thead>
+<tr>
+<th align="left">行为</th>
+<th align="center">获得币</th>
+<th align="center">获得经验</th>
+<th align="center">冷却时间</th>
+<th align="right">每日上限</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">每日首次登录</td>
+<td align="center">基于等级</td>
+<td align="center">基于等级</td>
+<td align="center">24小时</td>
+<td align="right">1次</td>
+</tr>
+<tr>
+<td align="left">连续登录奖励</td>
+<td align="center">+2/天 (最多+10)</td>
+<td align="center">+2/天 (最多+10)</td>
+<td align="center">-</td>
+<td align="right">-</td>
+</tr>
+<tr>
+<td align="left">发布文章</td>
+<td align="center">20 × 等级倍率</td>
+<td align="center">30 × 等级倍率</td>
+<td align="center">-</td>
+<td align="right">5篇</td>
+</tr>
+<tr>
+<td align="left">文章获赞</td>
+<td align="center">2/赞</td>
+<td align="center">3/赞</td>
+<td align="center">-</td>
+<td align="right">100赞</td>
+</tr>
+<tr>
+<td align="left">文章被收藏</td>
+<td align="center">5/次</td>
+<td align="center">8/次</td>
+<td align="center">-</td>
+<td align="right">50次</td>
+</tr>
+<tr>
+<td align="left">文章被分享</td>
+<td align="center">3/次</td>
+<td align="center">5/次</td>
+<td align="center">-</td>
+<td align="right">30次</td>
+</tr>
+<tr>
+<td align="left">评论文章</td>
+<td align="center">1</td>
+<td align="center">2</td>
+<td align="center">-</td>
+<td align="right">20条</td>
+</tr>
+<tr>
+<td align="left">回复评论</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">-</td>
+<td align="right">30条</td>
+</tr>
+</tbody></table>
+<h3>高质量内容奖励</h3>
+<table>
+<thead>
+<tr>
+<th align="left">内容质量</th>
+<th align="center">额外币奖励</th>
+<th align="center">额外经验奖励</th>
+<th align="right">判定机制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">优质文章</td>
+<td align="center">50</td>
+<td align="center">100</td>
+<td align="right">系统+人工审核</td>
+</tr>
+<tr>
+<td align="left">热门文章</td>
+<td align="center">100</td>
+<td align="center">200</td>
+<td align="right">24小时内阅读&gt;1000</td>
+</tr>
+<tr>
+<td align="left">精华文章</td>
+<td align="center">200</td>
+<td align="center">400</td>
+<td align="right">管理员评定</td>
+</tr>
+</tbody></table>
+<h2>2.3 任务系统</h2>
+<h3>日常任务</h3>
+<table>
+<thead>
+<tr>
+<th align="left">任务</th>
+<th align="center">获得币</th>
+<th align="center">获得经验</th>
+<th align="right">刷新周期</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">每日登录</td>
+<td align="center">基于等级</td>
+<td align="center">基于等级</td>
+<td align="right">每日</td>
+</tr>
+<tr>
+<td align="left">发布1篇文章</td>
+<td align="center">15</td>
+<td align="center">20</td>
+<td align="right">每日</td>
+</tr>
+<tr>
+<td align="left">评论3篇文章</td>
+<td align="center">10</td>
+<td align="center">15</td>
+<td align="right">每日</td>
+</tr>
+<tr>
+<td align="left">为5篇文章点赞</td>
+<td align="center">5</td>
+<td align="center">10</td>
+<td align="right">每日</td>
+</tr>
+</tbody></table>
+<h3>周常任务</h3>
+<table>
+<thead>
+<tr>
+<th align="left">任务</th>
+<th align="center">获得币</th>
+<th align="center">获得经验</th>
+<th align="right">刷新周期</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">连续登录7天</td>
+<td align="center">50</td>
+<td align="center">70</td>
+<td align="right">每周</td>
+</tr>
+<tr>
+<td align="left">发布3篇文章</td>
+<td align="center">60</td>
+<td align="center">80</td>
+<td align="right">每周</td>
+</tr>
+<tr>
+<td align="left">文章获得50个赞</td>
+<td align="center">40</td>
+<td align="center">60</td>
+<td align="right">每周</td>
+</tr>
+<tr>
+<td align="left">分享5篇文章到社交媒体</td>
+<td align="center">30</td>
+<td align="center">50</td>
+<td align="right">每周</td>
+</tr>
+</tbody></table>
+<h3>成就任务</h3>
+<table>
+<thead>
+<tr>
+<th align="left">成就</th>
+<th align="center">获得币</th>
+<th align="center">获得经验</th>
+<th align="right">条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">内容创作者</td>
+<td align="center">100</td>
+<td align="center">200</td>
+<td align="right">发布10篇文章</td>
+</tr>
+<tr>
+<td align="left">受欢迎作家</td>
+<td align="center">300</td>
+<td align="center">500</td>
+<td align="right">累计获得1000个赞</td>
+</tr>
+<tr>
+<td align="left">社区活跃者</td>
+<td align="center">200</td>
+<td align="center">300</td>
+<td align="right">发表500条评论</td>
+</tr>
+<tr>
+<td align="left">持之以恒</td>
+<td align="center">500</td>
+<td align="center">800</td>
+<td align="right">连续登录30天</td>
+</tr>
+<tr>
+<td align="left">影响力大师</td>
+<td align="center">1000</td>
+<td align="center">2000</td>
+<td align="right">文章被分享1000次</td>
+</tr>
+</tbody></table>
+]]></description>
+            <author>slwen</author>
+            <category>task</category>
+            <pubDate>Fri, 06 Jun 2025 09:31:25 GMT</pubDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=c3e79c51-8dd3-4799-993d-2b91dd059143</guid>
+            <lastBuildDate>Sun, 08 Jun 2025 22:32:06 GMT</lastBuildDate>
+        </item>
+
+        <item>
+            <title><![CDATA[CSS]]></title>
+            <link>http://121.40.215.235/pages/article.html?id=c6667a8f-2982-4154-b6b0-b66baf08f734</link>
+            <description><![CDATA[<h1>CSS笔记</h1>
+<hr>
+<h2>盒模型</h2>
+<p><img src="https://pengfeiw.github.io/images/blog/92.jpg" alt="盒模型" title="标题">
+margin：外边距</p>
+<ul>
+<li>margin-top</li>
+<li>margin-bottom</li>
+<li>margin-left</li>
+<li>margin-right
+border：边框</li>
+<li>border: 1px 宽度</li>
+<li>border-radius: 8px;转角弧度</li>
+<li>border-color: #d0d0d0;边框颜色</li>
+<li>border-bottom: 1px solid black;1像素实线黑色边框
+padding：内边距</li>
+<li>padding: 20px; /* 容器内边距20px */
+content：内容</li>
+<li>content: &#39;✓&#39;;</li>
+</ul>
+<hr>
+<h2>选择器</h2>
+<ul>
+<li>通配选择器</li>
+</ul>
+<pre><code>* {
+    margin: 0;
+    padding: 0;
+}
+</code></pre>
+<ul>
+<li>类型选择器/标记选择器</li>
+</ul>
+<pre><code>p {
+    font-size: 18px;
+    font-weight: bold;
+}
+</code></pre>
+<ul>
+<li>类选择器<br> 一个html元素可以有0个或者多个类名 空格分开
+<code>&lt;p class=&quot;p1 bold&quot;&gt;This is a statment.&lt;p&gt;</code></li>
+</ul>
+<pre><code>.bold {
+    color: red;
+}
+</code></pre>
+<ul>
+<li>ID选择器
+<code>&lt;p id=&quot;p1&quot;&gt;This is first paragraph.&lt;/p&gt;</code></li>
+</ul>
+<pre><code>#p1 {
+    color: red;
+}
+</code></pre>
+<ul>
+<li>属性选择器
+html元素可以设置属性，例如上面的class和id都是html元素的属性，我们也可以添加更多的属性
+<code>&lt;p att1=&quot;1&quot; att2=&quot;2&quot; att3=&quot;3&quot;&gt;This is a paragraph.&lt;/p&gt;</code></li>
+</ul>
+<pre><code>[att=&#39;attValue&#39;] {
+    color: red;
+}
+/* 匹配href属性值以“https”开头的元素 */
+[href^=&#39;https&#39;] {
+  color: green;
+}
+</code></pre>
+<ul>
+<li>组合选择器
+一个规则，并不一定只设置一个选择器，可以设置多个选择器，用逗号隔开即可。</li>
+</ul>
+<pre><code>p,
+a,
+#id,
+.class {
+    color: red;
+}
+</code></pre>
+<hr>
+<ul>
+<li>伪类
+伪类（Pseudo-classes），使元素在不同状态下，应用不同的样式规则。<br>当鼠标悬浮在元素上时，可以使用:hover指定规则应用于这个状态。</li>
+</ul>
+<pre><code>// 当鼠标悬浮在段落p上时，颜色为红色
+p:hover {
+    color: red
+}
+</code></pre>
+<ul>
+<li>伪元素
+伪元素是一个附加至选择器末的关键词，允许你对被选择元素的特定部分修改样式。使用伪元素，就好像你在html页面中插入了一个新的元素。伪元素用双冒号::表示。</li>
+</ul>
+<pre><code>/*会应用到类名为my-element的元素，在该元素前插入Prefix-文字*/
+.my-element::before {
+  content: &#39;Prefix - &#39;;
+}
+</code></pre>
+<hr>
+<ul>
+<li>组合器<blockquote>
+<p>后代选择器 : 用空格（ ）表示，匹配父元素后代子孙节点中的元素，例如div p匹配div中所有的段落，不一定是儿子结点，也可以是孙子结点。
+相邻下一个兄弟节点：用+表示，匹配同级节点的紧邻下一个元素。例如div+p匹配div后面与该div紧邻着的段落，p与div之间不能有其他元素。
+后面所有的兄弟节点：用~表示，匹配同级节点的后面的元素，不要求是紧邻的元素。例如div~p匹配div后面所有同级的&lt;P&gt;元素。
+子选择器：用&gt;表示，匹配某个元素的孩子结点。例如div&gt;p表示div中所有p孩子元素。</p>
+</blockquote>
+</li>
+<li>复合选择器</li>
+</ul>
+<pre><code>/*将规则应用于类名为cls的&lt;a&gt;元素*/
+a.cls {
+    color: red;
+}
+</code></pre>
+]]></description>
+            <author>slwen</author>
+            <category>css</category>
+            <pubDate>Fri, 06 Jun 2025 08:36:13 GMT</pubDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=c6667a8f-2982-4154-b6b0-b66baf08f734</guid>
+            <lastBuildDate>Fri, 06 Jun 2025 08:40:52 GMT</lastBuildDate>
+        </item>
+
         <item>
             <title><![CDATA[阿里云]]></title>
             <link>http://121.40.215.235/pages/article.html?id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</link>
@@ -25,7 +534,7 @@ git push
             <category>ali</category>
             <pubDate>Wed, 04 Jun 2025 09:24:26 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</guid>
-            <lastBuildDate>Fri, 06 Jun 2025 06:07:52 GMT</lastBuildDate>
+            <lastBuildDate>Mon, 09 Jun 2025 01:11:54 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -37,7 +546,7 @@ git push
             
             <pubDate>Wed, 04 Jun 2025 03:03:41 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=384236e7-b4f0-45bb-ba67-3beae150f3e3</guid>
-            <lastBuildDate>Wed, 04 Jun 2025 07:02:08 GMT</lastBuildDate>
+            <lastBuildDate>Fri, 06 Jun 2025 07:35:51 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -86,7 +595,7 @@ git push
             <category>摘要</category>
             <pubDate>Wed, 14 May 2025 06:02:57 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=91ebc7f9-3486-4f94-9c02-2d457fb9237c</guid>
-            <lastBuildDate>Wed, 04 Jun 2025 02:34:27 GMT</lastBuildDate>
+            <lastBuildDate>Fri, 06 Jun 2025 06:39:16 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -170,47 +679,47 @@ C:&gt;ECHO Y|DEL A :*.*
 <pre><code>ECHO 文件内容&gt;&gt;文件名
 </code></pre>
 <p>例如：
-C:&gt;ECHO @ECHO OFF&gt;AUTOEXEC.BAT建立自动批处理文件
-C:&gt;ECHO C:\CPAV\BOOTSAFE&gt;&gt;AUTOEXEC.BAT向自动批处理文件中追加内容
-C:&gt;TYPE AUTOEXEC.BAT显示该自动批处理文件
+C:&gt;<code>ECHO @ECHO OFF&gt;AUTOEXEC.BAT</code>建立自动批处理文件
+C:&gt;<code>ECHO C:\\CPAV\\BOOTSAFE&gt;&gt;AUTOEXEC.BAT</code>向自动批处理文件中追加内容
+C:&gt;<code>TYPE AUTOEXEC.BAT</code>显示该自动批处理文件
 @ECHO OFF
 C:\CPAV\BOOTSAFE</p>
 <h5>（8）向打印机输出打印内容或打印控制码</h5>
 <p>格式：ECHO 打印机控制码&gt;RN
 ECHO 打印内容&gt;RN
 下面的例子是向M－1724打印机输入打印控制码。＜Alt＞156是按住Alt键在小键盘键入156，类似情况依此类推：
-C:&gt;ECHO +156+42+116&gt;RN（输入下划线命令FS＊t）
-C:&gt;ECHO [email=+155@]+155@&gt;RN[/email]（输入初始化命令ESC@）
-C:&gt;ECHO.&gt;RN（换行）</p>
+C:&gt;<code>ECHO +156+42+116&gt;RN</code>（输入下划线命令FS＊t）
+C:&gt;<code>ECHO [email=+155@]+155@&gt;RN[/email]</code>（输入初始化命令ESC@）
+C:&gt;<code>ECHO.&gt;RN（换行）</code></p>
 <h5>（9）使喇叭鸣响</h5>
-<p>C:&gt;ECHO ^G
+<p>C:&gt;<code>ECHO ^G</code>
 “^G”是在dos窗口中用Ctrl＋G或Alt＋007输入，输入多个^G可以产生多声鸣响。使用方法是直接将其加入批处理文件中或做成批处理文件调用。
 这里的“^G”属于特殊符号的使用，请看本文后面的章节</p>
 <h4>3、PAUSE</h4>
 <p>PAUSE，玩游戏的人都知道，暂停的意思
 在这里就是停止系统命令的执行并显示下面的内容。
 例：
-PAUSE
+<code>PAUSE</code>
 运行显示：
-请按任意键继续. . .
+<code>请按任意键继续. . .</code>
 要显示其他提示语，可以这样用：
-Echo 其他提示语 pause &gt; nul</p>
-<p>4、errorlevel
-程序返回码
-echo %errorlevel%
+Echo 其他提示语 pause &gt; nul  </p>
+<h4>4、errorlevel</h4>
+<p>程序返回码
+<code>echo %errorlevel%</code>
 每个命令运行结束，可以用这个命令行格式查看返回码
 用于判断刚才的命令是否执行成功
 默认值为0，一般命令执行出错会设 errorlevel 为1</p>
-<p>5、title
-设置cmd窗口的标题
-title 新标题#可以看到cmd窗口的标题栏变了</p>
-<p>6、COLOR
-设置默认的控制台前景和背景颜色。
-COLOR [attr]
+<h4>5、title</h4>
+<p>设置cmd窗口的标题
+<code>title 新标题#</code>可以看到cmd窗口的标题栏变了</p>
+<h4>6、COLOR</h4>
+<p>设置默认的控制台前景和背景颜色。
+<code>COLOR [attr]</code>
 attr指定控制台输出的颜色属性
 颜色属性由两个十六进制数字指定 -- 第一个为背景，第二个则为
-前景。每个数字可以为以下任何值之一:
-0 = 黑色 8 = 灰色
+前景。每个数字可以为以下任何值之一:</p>
+<pre><code>0 = 黑色 8 = 灰色
 1 = 蓝色 9 = 淡蓝色
 2 = 绿色 A = 淡绿色
 3 = 湖蓝色 B = 淡浅绿色
@@ -218,14 +727,15 @@ attr指定控制台输出的颜色属性
 5 = 紫色 D = 淡紫色
 6 = ** E = 淡**
 7 = 白色 F = 亮白色
-如果没有给定任何参数，该命令会将颜色还原到 CMD.EXE 启动时
+</code></pre>
+<p>如果没有给定任何参数，该命令会将颜色还原到 CMD.EXE 启动时
 的颜色。这个值来自当前控制台窗口、/T 开关或
 DefaultColor 注册表值。
 如果用相同的前景和背景颜色来执行 COLOR 命令，COLOR 命令
 会将 ERRORLEVEL 设置为 1。
-例如: &quot;COLOR fc&quot; 在亮白色上产生亮红色</p>
-<p>7、mode 配置系统设备
-配置系统设备。
+例如: <code>\&quot;COLOR fc\&quot;</code> 在亮白色上产生亮红色</p>
+<h4>7、mode 配置系统设备</h4>
+<p>配置系统设备。
 串行口:　　　 MODE COMm[:] [BAUD=b] [PARITY=p] [DATA=d] [STOP=s]
 [to=on|off] [xon=on|off] [odsr=on|off]
 [octs=on|off] [dtr=on|off|hs]
@@ -237,36 +747,33 @@ DefaultColor 注册表值。
 显示模式:　　 MODE CON[:] [COLS=c] [LINES=n]
 击键率:　 MODE CON[:] [RATE=r DELAY=d]
 例：
-mode con cols=113 lines=15 color 9f
+<code>mode con cols=113 lines=15 color 9f</code>
 此命令设置DOS窗口大小：15行，113列</p>
-<p>8、GOTO 和 :
-GOTO会点编程的朋友就会知道这是跳转的意思。
+<h4>8、GOTO 和 :</h4>
+<p>GOTO会点编程的朋友就会知道这是跳转的意思。
 在批处理中允许以“:XXX”来构建一个标号，然后用GOTO XXX跳转到标号:XXX处，然后执行标号后的命令。
 例：</p>
-<p>if {%1}=={} goto noparms
-if &quot;%2&quot;==&quot;&quot; goto noparms</p>
+<pre><code>if {%1}=={} goto noparms
+if \&quot;%2\&quot;==\&quot;\&quot; goto noparms
+</code></pre>
 <p>标签的名字可以随便起，但是最好是有意义的字符串啦，前加个冒号用来表示这个字符串是标签，goto命令就是根据这个冒号（:）来寻找下一步跳到到那里。最好有一些说明这样你别人看起来才会理解你的意图啊。</p>
 <p>例：</p>
-<p>1
-2
-3
-4
-5
-6
-@echo off
+<pre><code>@echo off
 :start
 set /a var+=1
 echo %var%
 if %var% leq 3 GOTO start
-pause</p>
-<p>运行显示：
-1
+pause
+</code></pre>
+<p>运行显示：</p>
+<pre><code>1
 2
 3
-4</p>
-<p>9、find
-在文件中搜索字符串。
-FIND [/V] [/C] [/N] [/OFF[LINE]] &quot;string&quot; [[drive:][path]filename[ ...]]
+4
+</code></pre>
+<h4>9、find</h4>
+<p>在文件中搜索字符串。
+<code>FIND [/V] [/C] [/N] [/OFF[LINE]] \&quot;string\&quot; [[drive:][path]filename[ ...]]</code>
 /V显示所有未包含指定字符串的行。
 /C仅显示包含字符串的行数。
 /N显示行号。
@@ -282,44 +789,36 @@ Type [drive:][path]filename | find /v &quot;string&quot; #剔除文件中包含s
 Type [drive:][path]filename | find /c #显示文件行数
 以上用法将去除find命令自带的提示语（文件名提示）</p>
 <p>例：</p>
-<p>1
-2
-3
-4
-5
-6
-@echo off
+<pre><code>@echo off
 echo 111 &gt;test.txt
 echo 222 &gt;&gt;test.txt
-find &quot;111&quot; test.txt
+find \&quot;111\&quot; test.txt
 del test.txt
-pause</p>
-<p>运行显示如下：
----------- TEST.TXT
+pause
+</code></pre>
+<p>运行显示如下：</p>
+<pre><code>---------- TEST.TXT
 111
-请按任意键继续. . .</p>
+请按任意键继续. . .
+</code></pre>
 <p>例：</p>
-<p>1
-2
-3
-4
-5
-6
-@echo off
+<pre><code>@echo off
 echo 111 &gt;test.txt
 echo 222 &gt;&gt;test.txt
-type test.txt|find &quot;111&quot;
+type test.txt|find \&quot;111\&quot;
 del test.txt
-pause</p>
-<p>运行显示如下：
-111
-请按任意键继续. . .</p>
-<p>10、start 命令
-批处理中调用外部程序的命令（该外部程序在新窗口中运行，批处理程序继续往下执行，不理会外部程序的运行状况），如果直接运行外部程序则必须等外部程序完成后才继续执行剩下的指令
-例：start explorer d:\
+pause
+</code></pre>
+<p>运行显示如下：</p>
+<pre><code>111
+请按任意键继续. . .
+</code></pre>
+<h4>10、start 命令</h4>
+<p>批处理中调用外部程序的命令（该外部程序在新窗口中运行，批处理程序继续往下执行，不理会外部程序的运行状况），如果直接运行外部程序则必须等外部程序完成后才继续执行剩下的指令
+例：<code>start explorer d:\\</code>
 调用图形界面打开D盘</p>
-<p>11、assoc 和 ftype
-文件关联
+<h4>11、assoc 和 ftype</h4>
+<p>文件关联
 assoc 设置#39;文件扩展名&#39;关联，关联到&#39;文件类型&#39;
 ftype 设置#39;文件类型&#39;关联，关联到&#39;执行程序和参数&#39;
 当你双击一个.txt文件时，windows并不是根据.txt直接判断用 notepad.exe 打开
@@ -341,26 +840,21 @@ assoc .txt=txtfile
 如果该关联已经被破坏，可以运行 command.com ，再输入这条命令</p>
 <p>12、pushd 和 popd
 切换当前目录</p>
-<p>1
-2
-3
-4
-5
-6
-@echo off
-c: cd\ &amp; md mp3 #在 C:\ 建立 mp3 文件夹
-md d:\mp4 #在 D:\ 建立 mp4 文件夹
-cd /d d:\mp4#更改当前目录为 d:\mp4
-pushd c:\mp3#保存当前目录，并切换当前目录为 c:\mp3
-popd#恢复当前目录为刚才保存的 d:\mp4</p>
+<pre><code>@echo off
+c: cd\\ &amp; md mp3 #在 C:\\ 建立 mp3 文件夹
+md d:\\mp4 #在 D:\\ 建立 mp4 文件夹
+cd /d d:\\mp4#更改当前目录为 d:\\mp4
+pushd c:\\mp3#保存当前目录，并切换当前目录为 c:\\mp3
+popd#恢复当前目录为刚才保存的 d:\\mp4
+</code></pre>
 <p>一般用处不大，在当前目录名不确定时，会有点帮助。（dos编程中很有用）</p>
-<p>13、CALL
-CALL命令可以在批处理执行过程中调用另一个批处理，当另一个批处理执行完后，再继续执行原来的批处理
-CALL command
+<h4>13、CALL</h4>
+<p>CALL命令可以在批处理执行过程中调用另一个批处理，当另一个批处理执行完后，再继续执行原来的批处理
+<code>CALL command</code>
 调用一条批处理命令，和直接执行命令效果一样，特殊情况下很有用，比如变量的多级嵌套，见教程后面。在批处理编程中，可以根据一定条件生成命令字符串，用call可以执行该字符串，见例子。
-CALL [drive:][path]filename [batch-parameters]
+<code>CALL [drive:][path]filename [batch-parameters]</code>
 调用的其它批处理程序。filename 参数必须具有 .bat 或 .cmd 扩展名。
-CALL :label arguments
+<code>CALL :label arguments</code>
 调用本文件内命令段，相当于子程序。被调用的命令段以标签:label开头
 以命令goto :eof结尾。</p>
 <p>另外，批脚本文本参数参照(%0、%1、等等)已如下改变:</p>
@@ -376,98 +870,8 @@ CALL :label arguments
 %</del>a1- 将 %1 扩充到文件属性
 %<del>t1- 将 %1 扩充到文件的日期/时间
 %</del>z1- 将 %1 扩充到文件的大小
-%~
-P
-A
-T
-H
-:
-1
-−
-查
-找
-列
-在
-P
-A
-T
-H
-环
-境
-变
-量
-的
-目
-录
-，
-并
-将
-扩
-充
-到
-找
-到
-的
-第
-一
-个
-完
-全
-合
-格
-的
-名
-称
-。
-如
-果
-环
-境
-变
-量
-名
-未
-被
-定
-义
-，
-或
-者
-没
-有
-找
-到
-文
-件
-，
-此
-组
-合
-键
-会
-扩
-充
-到
-空
-字
-符
-串
-可
-以
-组
-合
-修
-定
-符
-来
-取
-得
-多
-重
-结
-果
-:
-PATH:1 - 在列在 PATH 环境变量中的目录里查找 %1，
+%~</p>
+<p>PATH:1 - 在列在 PATH 环境变量中的目录里查找 %1，
 并扩展到找到的第一个文件的驱动器号和路径。
 %<del>ftza1 - 将 %1 扩展到类似 DIR 的输出行。
 在上面的例子中，%1 和 PATH 可以被其他有效数值替换。
@@ -475,37 +879,10 @@ PATH:1 - 在列在 PATH 环境变量中的目录里查找 %1，
 注意：参数扩充时不理会参数所代表的文件是否真实存在，均以当前目录进行扩展
 要理解上面的知识，下面的例子很关键。</p>
 <p>例：</p>
-<p>1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-@echo off
+<pre><code>@echo off
 Echo 产生一个临时文件 &gt; tmp.txt
-Rem 下行先保存当前目录，再将c:\windows设为当前目录
-pushd c:\windows
+Rem 下行先保存当前目录，再将c:\\windows设为当前目录
+pushd c:\\windows
 Call :sub tmp.txt
 Rem 下行恢复前次的当前目录
 Popd
@@ -514,61 +891,48 @@ pause
 Del tmp.txt
 exit
 :sub
-Echo 删除引号： %<del>1
-Echo 扩充到路径： %</del>f1
-Echo 扩充到一个驱动器号： %<del>d1
-Echo 扩充到一个路径： %</del>p1
-Echo 扩充到一个文件名： %<del>n1
-Echo 扩充到一个文件扩展名： %</del>x1
-Echo 扩充的路径指含有短名： %<del>s1
-Echo 扩充到文件属性： %</del>a1
-Echo 扩充到文件的日期/时间： %<del>t1
-Echo 扩充到文件的大小： %</del>z1
-Echo 扩展到驱动器号和路径：%<del>dp1
-Echo 扩展到文件名和扩展名：%</del>nx1
+Echo 删除引号： %~1
+Echo 扩充到路径： %~f1
+Echo 扩充到一个驱动器号： %~d1
+Echo 扩充到一个路径： %~p1
+Echo 扩充到一个文件名： %~n1
+Echo 扩充到一个文件扩展名： %~x1
+Echo 扩充的路径指含有短名： %~s1
+Echo 扩充到文件属性： %~a1
+Echo 扩充到文件的日期/时间： %~t1
+Echo 扩充到文件的大小： %~z1
+Echo 扩展到驱动器号和路径：%~dp1
+Echo 扩展到文件名和扩展名：%~nx1
 Echo 扩展到类似 DIR 的输出行：%~ftza1
 Echo.
-Goto :eof</p>
+Goto :eof
+</code></pre>
 <p>例：</p>
-<p>set aa=123456
+<pre><code>set aa=123456
 set cmdstr=echo %aa%
 call %cmdstr%
-pause</p>
+pause
+</code></pre>
 <p>本例中如果不用call，而直接运行%cmdstr%，将显示结果%aa%，而不是123456</p>
-<p>14、shift
-更改批处理文件中可替换参数的位置。
-SHIFT [/n]
+<h4>14、shift</h4>
+<p>更改批处理文件中可替换参数的位置。
+<code>SHIFT [/n]</code>
 如果命令扩展名被启用，SHIFT 命令支持/n 命令行开关；该命令行开关告诉
 命令从第 n 个参数开始移位；n 介于零和八之间。例如:
-SHIFT /2
+<code>SHIFT /2</code>
 会将 %3 移位到 %2，将 %4 移位到 %3，等等；并且不影响 %0 和 %1。</p>
-<p>15、IF
-IF 条件判断语句，语法格式如下：
-IF [NOT] ERRORLEVEL number command
+<h4>15、IF</h4>
+<p>IF 条件判断语句，语法格式如下：</p>
+<pre><code>IF [NOT] ERRORLEVEL number command
 IF [NOT] string1==string2 command
 IF [NOT] EXIST filename command
-下面逐一介绍，更详细的分析请看后面章节。</p>
-<p>(1) IF [NOT] ERRORLEVEL number command
+</code></pre>
+<p>下面逐一介绍，更详细的分析请看后面章节。</p>
+<p>(1) <code>IF [NOT] ERRORLEVEL number command</code>
 IF ERRORLEVEL这个句子必须放在某一个命令的后面，执行命令后由IF ERRORLEVEL 来判断命令的返回值。
 Number的数字取值范围0~255，判断时值的排列顺序应该由大到小。返回的值大于等于指定的值时，条件成立
 例：</p>
-<p>1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-@echo off
+<pre><code>@echo off
 dir c:
 rem退出代码为&gt;=1就跳至标题1处执行，&gt;=0就跳至标题0处执行
 IF ERRORLEVEL 1 goto 1
@@ -583,91 +947,80 @@ echo 命令执行失败！
 Rem 程序执行完毕跳至标题exit处退出
 goto exit
 :exit
-pause</p>
-<p>运行显示：命令执行成功！
-(2) IF [NOT] string1==string2 command
+pause
+</code></pre>
+<p>运行显示：<code>命令执行成功！</code>
+(2) <code>IF [NOT] string1==string2 command</code>
 string1和string2都为字符的数据，英文内字符的大小写将看作不同，这个条件中的等于号必须是两个（绝对相等的意思）
 条件相等后即执行后面的command
-检测当前变量的值做出判断，为了防止字符串中含有空格，可用以下格式
-if [NOT] {string1}=={string2} command
+检测当前变量的值做出判断，为了防止字符串中含有空格，可用以下格式</p>
+<pre><code>if [NOT] {string1}=={string2} command
 if [NOT] [string1]==[string2] command
-if [NOT] &quot;string1&quot;==&quot;string2&quot; command
-这种写法实际上将括号或引号当成字符串的一部分了，只要等号左右两边一致就行了，比如下面的写法就不行：
-if {string1}==[string2] command</p>
-<p>(3) IF [NOT] EXIST filename command
+if [NOT] \&quot;string1\&quot;==\&quot;string2\&quot; command
+</code></pre>
+<p>这种写法实际上将括号或引号当成字符串的一部分了，只要等号左右两边一致就行了，比如下面的写法就不行：
+<code>if {string1}==[string2] command</code></p>
+<p>(3) <code>IF [NOT] EXIST filename command</code>
 EXIST filename为文件或目录存在的意思
 echo off
 IF EXIST autoexec.bat echo 文件存在！
 IF not EXIST autoexec.bat echo 文件不存在！
 这个批处理大家可以放在C盘和D盘分别执行，看看效果</p>
-<p>16、setlocal 与 变量延迟
-本条内容引用[英雄出品]的批处理教程：
+<h4>16、setlocal 与 变量延迟</h4>
+<p>本条内容引用[英雄出品]的批处理教程：
 要想进阶，变量延迟是必过的一关！所以这一部分希望你能认真看。
 为了更好的说明问题，我们先引入一个例子。
 例1:</p>
-<p>1
-2
-3
-4
-@echo off
+<pre><code>@echo off
 set a=4
 set a=5 echo %a%
-pause</p>
-<p>结果：4
+pause
+</code></pre>
+<p>结果：<code>4</code>
 解说：为什么是4而不是5呢？在echo之前明明已经把变量a的值改成5了？
 让我们先了解一下批处理运行命令的机制：
 批处理读取命令时是按行读取的（另外例如for命令等，其后用一对圆括号闭合的所有语句也当作一行），在处理之前要完成必要的预处理工作，这其中就包括对该行命令中的变量赋值。我们现在分析一下例1，批处理在运行到这句“set a=5 echo %a%”之前，先把这一句整句读取并做了预处理——对变量a赋了值，那么%a%当然就是4了！（没有为什么，批处理就是这样做的。）
 而为了能够感知环境变量的动态变化，批处理设计了变量延迟。简单来说，在读取了一条完整的语句之后，不立即对该行的变量赋值，而会在某个单条语句执行之前再进行赋值，也就是说“延迟”了对变量的赋值。
 那么如何开启变量延迟呢？变量延迟又需要注意什么呢？举个例子说明一下：</p>
 <p>例2:</p>
-<p>1
-2
-3
-4
-5
-@echo off
+<pre><code>@echo off
 setlocal enabledelayedexpansion
 set a=4
 set a=5 echo !a!
-pause</p>
-<p>结果：5
+pause
+</code></pre>
+<p>结果：<code>5</code>
 解说：启动了变量延迟，得到了正确答案。变量延迟的启动语句是“setlocal enabledelayedexpansion”，并且变量要用一对叹号“!!”括起来（注意要用英文的叹号），否则就没有变量延迟的效果。
 分析一下例2，首先“setlocal enabledelayedexpansion”开启变量延迟，然后“set a=4”先给变量a赋值为
 4，“set a=5 echo !a!”这句是给变量a赋值为5并输出（由于启动了变量延迟，所以批处理能够感知到动态变化，即不是先给该行变量赋值，而是在运行过程中给变量赋值，因此此时a的值就是5了）。
 再举一个例子巩固一下。
 例3:</p>
-<p>1
-2
-3
-4
-5
-6
-7
-@echo off
+<pre><code>@echo off
 setlocal enabledelayedexpansion
 for /l %%i in (1,1,5) do (
 set a=%%i
 echo !a!
 )
-pause</p>
+pause
+</code></pre>
 <p>结果：</p>
-<p>1
+<pre><code>1
 2
 3
 4
-5</p>
+5
+</code></pre>
 <p>解说：本例开启了变量延迟并用“!!”将变量扩起来，因此得到我们预期的结果。如果不用变量延迟会出现什
 么结果呢？结果是这样的：
 ECHO 处于关闭状态。
 ECHO 处于关闭状态。
-ECHO 处于关闭状态。
-E</p>
+ECHO 处于关闭状态。</p>
 ]]></description>
             <author>sl-wen</author>
             <category>bat</category>
             <pubDate>Fri, 28 Mar 2025 05:41:00 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=d5791554-2c7d-460b-bb2d-18c1c8c4482a</guid>
-            <lastBuildDate>Fri, 06 Jun 2025 01:26:31 GMT</lastBuildDate>
+            <lastBuildDate>Fri, 06 Jun 2025 07:52:01 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -1289,7 +1642,7 @@ ___
             <category>markdown</category>
             <pubDate>Fri, 08 Mar 2024 00:00:00 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=027ccc92-34a8-423c-93a9-4ae6dae69a5a</guid>
-            <lastBuildDate>Fri, 06 Jun 2025 02:39:22 GMT</lastBuildDate>
+            <lastBuildDate>Fri, 06 Jun 2025 08:04:39 GMT</lastBuildDate>
         </item>
                         </channel>
                      </rss>

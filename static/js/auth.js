@@ -293,7 +293,7 @@ const usernamechange = async (profile, username) => {
 
 
     // 获取用户详细信息
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', profileid)
@@ -304,7 +304,7 @@ const usernamechange = async (profile, username) => {
     }
 
     // 变更用户资料
-    const { error: profileError } = await supabase
+    const { error: usernamechangeError } = await supabase
       .from('profiles')
       .update({
         username: username,
@@ -312,7 +312,7 @@ const usernamechange = async (profile, username) => {
       })
       .eq('id', profileid);
 
-    if (profileError) console.error('创建用户资料失败:', profileError);
+    if (usernamechangeError) console.error('创建用户资料失败:', usernamechangeError);
 
     showMessage('变更用户资料成功！', 'success');
   } catch (error) {

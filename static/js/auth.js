@@ -100,7 +100,7 @@ const initAuth = async () => {
           adressdetail.innerHTML = `<span id="adress-detail" >${profile.adress || '未设置'}</span>`;
         }
         if (usernamedetail) {
-          adressdetail.value = profile?.username || session?.user.email;
+          usernamedetail.value = profile?.username || session?.user.email;
         }
       }
 

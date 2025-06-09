@@ -4,6 +4,10 @@
     margin: 0 auto;
 }
 
+.username {
+    margin: var(--spacing-medium) auto;
+}
+
 .username label {
     display: block;
     margin-bottom: var(--spacing-small);
@@ -11,7 +15,7 @@
     color: var(--text-color);
 }
 
-.username #username-detail input[type="text"] {
+.username input[type="text"] {
     width: 100%;
     box-sizing: border-box;
     padding: var(--spacing-small);
@@ -23,7 +27,7 @@
     position: relative;
 }
 
-.username #username-detail input[type="text"] :focus {
+.username input[type="text"] :focus {
     outline: none;
     border-color: var(--primary-color);
 }

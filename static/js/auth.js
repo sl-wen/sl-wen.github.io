@@ -83,18 +83,44 @@ const initAuth = async () => {
       // 用户已登录，显示用户信息
       if (profile) {
         const leveldetail = document.getElementById('level-detail');
-        const amountdetail = document.getElementById('amount-detail');
+        const coinsdetail = document.getElementById('coins-detail');
+        const experiencedetail = document.getElementById('experience-detail');
         const adressdetail = document.getElementById('adress-detail');
+        const usernamedetail = document.getElementById('username-detail');
         if (leveldetail) {
           leveldetail.innerHTML = `<span id="level-detail" >${profile.level || 0}</span>`;
         }
-        if (amountdetail) {
-          amountdetail.innerHTML = `<span id="amount-detail" >${profile.amount || 0}</span>`;
+        if (coinsdetail) {
+          coinsdetail.innerHTML = `<span id="coins-detail" >${profile.coins || 0}</span>`;
+        }
+        if (experiencedetail) {
+          experiencedetail.innerHTML = `<span id="experience-detail" >${profile.experience || 0}</span>`;
         }
         if (adressdetail) {
           adressdetail.innerHTML = `<span id="adress-detail" >${profile.adress || '未设置'}</span>`;
         }
+        if (usernamedetail) {
+          adressdetail.value = profile?.username || session?.user.email;
+        }
       }
+
+      // 为用户名表单添加提交事件监听
+      const usernameForm = document.getElementById('username-form');
+      if (usernameForm) {
+        usernameForm.addEventListener('submit', async (e) => {
+          e.preventDefault(); // 阻止表单默认提交行为
+          const username = document.getElementById('username-detail').value;
+
+          // 验证输入不为空
+          if (!username) {
+            showMessage('用户名不能为空', 'error');
+            return;
+          }
+
+          await usernamechange(profile, username);
+        });
+      }
+
     } else {
       // 用户未登录，显示登录按钮
       const authdiv = document.getElementById('auth');
@@ -108,7 +134,7 @@ const initAuth = async () => {
     console.error('获取用户数据失败:', error);
     showError('获取用户数据失败', error.message);  // 显示错误信息
   }
-  
+
   // 为登录表单添加提交事件监听
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
@@ -254,6 +280,43 @@ const signup = async (email, password) => {
     return data;
   } catch (error) {
     showMessage(error.message || '注册失败', 'error');
+    return null;
+  }
+};
+
+
+// 变更函数
+const usernamechange = async (profile, username) => {
+  const profileid = profile.id;
+  try {
+    showMessage('变更中...', 'info');
+
+
+    // 获取用户详细信息
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', profileid)
+      .single();
+
+    if (profile) {
+      showMessage('用户名已存在', 'error');
+    }
+
+    // 变更用户资料
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        username: username,
+        updated_at: new Date()
+      })
+      .eq('id', profileid);
+
+    if (profileError) console.error('创建用户资料失败:', profileError);
+
+    showMessage('变更用户资料成功！', 'success');
+  } catch (error) {
+    showMessage(error.message || '变更用户资料失败', 'error');
     return null;
   }
 };

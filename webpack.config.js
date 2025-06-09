@@ -35,11 +35,6 @@ export default {
       name: '[name]'
     }
   },
-  plugins: [
-    new webpack.ProvidePlugin({
-      marked: ['marked', 'marked']
-    })
-  ],
   module: {
     rules: [
       {
@@ -83,6 +78,7 @@ export default {
   },
   plugins: [
     new webpack.ProvidePlugin({
+      marked: ['marked', 'marked'],
       global: 'global',
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer']

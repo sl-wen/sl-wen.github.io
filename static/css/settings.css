@@ -1,0 +1,44 @@
+.settings-container {
+    flex: 1;
+    width: 40%;
+    margin: 0 auto;
+}
+
+.username label {
+    display: block;
+    margin-bottom: var(--spacing-small);
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.username #username-detail input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--spacing-small);
+    border: 1px solid var(--primary-border-color);
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    min-width: 0;
+    z-index: 100;
+    position: relative;
+}
+
+.username #username-detail input[type="text"] :focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* 当键盘打开时的样式 */
+body.keyboard-open {
+    /* 可以添加一些样式来适应键盘打开的情况 */
+    padding-bottom: 50vh;
+  }
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+
+    .settings-container {
+        width: 100%;
+    }
+
+}

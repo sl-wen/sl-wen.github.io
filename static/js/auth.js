@@ -16,30 +16,15 @@ function showMessage(message, type = 'info') {
 // 初始化认证UI
 const initAuth = () => {
   // 检查用户会话状态
-  const checkUserSession = async () => {
-    const { data, error } = await supabase.auth.getSession();
-    console.log('Auth session data:', data);
-    console.log('Auth session error:', error);
-    const session = data?.session;
+  const { session, profile, error } = await getUserInfo();  // 获取用户数据
+  if (session) {
+    // 用户已登录，显示用户信息和登出按钮
+    const authdiv = document.getElementById('auth');
 
-    if (session) {
-      // 用户已登录，显示用户信息和登出按钮
-      const authdiv = document.getElementById('auth');
-      const user = session.user;
-
-      // 获取用户详细信息
-      const { data: userProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      const username = userProfile?.username || user?.email || '用户';
-
-      authdiv.innerHTML = `
+    authdiv.innerHTML = `
         <div class="user-menu">
           <div class="user-profile" id="userProfileButton">
-            <span id="welcome">欢迎，${username}</span>
+            <span id="welcome">欢迎，${profile?.username}</span>
             <i class="dropdown-icon">▼</i>
           </div>
           <div class="dropdown-menu" id="userDropdownMenu">
@@ -52,76 +37,72 @@ const initAuth = () => {
         </div>
       `;
 
-      // 检查用户登录状态并显示发布链接
-      setTimeout(() => {
-        const postLink = document.getElementById('postLink');
-        const toolsLink = document.getElementById('toolsLink');
-        const parentingLink = document.getElementById('parentingLink');
-        if (postLink) {
-          postLink.style.display = '';
-        }
-        if (toolsLink) {
-          toolsLink.style.display = '';
-        }
-        if (parentingLink) {
-          parentingLink.style.display = '';
-        }
-      }, 0);
-
-      const userProfileButton = document.getElementById('userProfileButton');
-      const userDropdownMenu = document.getElementById('userDropdownMenu');
-
-      // 切换下拉菜单显示/隐藏
-      userProfileButton.addEventListener('click', function (e) {
-        e.stopPropagation();
-        userProfileButton.classList.toggle('active');
-        userDropdownMenu.classList.toggle('active');
-      });
-
-      // 点击页面其他区域关闭下拉菜单
-      document.addEventListener('click', function (e) {
-        if (!userProfileButton.contains(e.target) && !userDropdownMenu.contains(e.target)) {
-          userProfileButton.classList.remove('active');
-          userDropdownMenu.classList.remove('active');
-        }
-      });
-
-      // 添加登出事件监听
-      setTimeout(() => {
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-          logoutBtn.addEventListener('click', logout);
-        }
-      }, 0);
-
-      // 用户已登录，显示用户信息
-      if (userProfile) {
-        const leveldetail = document.getElementById('level-detail');
-        const amountdetail = document.getElementById('amount-detail');
-        const adressdetail = document.getElementById('adress-detail');
-        if (leveldetail) {
-          leveldetail.innerHTML = `<span id="level-detail" >${userProfile.level || 0}</span>`;
-        }
-        if (amountdetail) {
-          amountdetail.innerHTML = `<span id="amount-detail" >${userProfile.amount || 0}</span>`;
-        }
-        if (adressdetail) {
-          adressdetail.innerHTML = `<span id="adress-detail" >${userProfile.adress || '未设置'}</span>`;
-        }
+    // 检查用户登录状态并显示发布链接
+    setTimeout(() => {
+      const postLink = document.getElementById('postLink');
+      const toolsLink = document.getElementById('toolsLink');
+      const parentingLink = document.getElementById('parentingLink');
+      if (postLink) {
+        postLink.style.display = '';
       }
-    } else {
-      // 用户未登录，显示登录按钮
-      const authdiv = document.getElementById('auth');
-      if (authdiv) {
-        authdiv.innerHTML = `
-        <span id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</span>
-        `;
+      if (toolsLink) {
+        toolsLink.style.display = '';
+      }
+      if (parentingLink) {
+        parentingLink.style.display = '';
+      }
+    }, 0);
+
+    const userProfileButton = document.getElementById('userProfileButton');
+    const userDropdownMenu = document.getElementById('userDropdownMenu');
+
+    // 切换下拉菜单显示/隐藏
+    userProfileButton.addEventListener('click', function (e) {
+      e.stopPropagation();
+      userProfileButton.classList.toggle('active');
+      userDropdownMenu.classList.toggle('active');
+    });
+
+    // 点击页面其他区域关闭下拉菜单
+    document.addEventListener('click', function (e) {
+      if (!userProfileButton.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+        userProfileButton.classList.remove('active');
+        userDropdownMenu.classList.remove('active');
+      }
+    });
+
+    // 添加登出事件监听
+    setTimeout(() => {
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+      }
+    }, 0);
+
+    // 用户已登录，显示用户信息
+    if (profile) {
+      const leveldetail = document.getElementById('level-detail');
+      const amountdetail = document.getElementById('amount-detail');
+      const adressdetail = document.getElementById('adress-detail');
+      if (leveldetail) {
+        leveldetail.innerHTML = `<span id="level-detail" >${profile.level || 0}</span>`;
+      }
+      if (amountdetail) {
+        amountdetail.innerHTML = `<span id="amount-detail" >${profile.amount || 0}</span>`;
+      }
+      if (adressdetail) {
+        adressdetail.innerHTML = `<span id="adress-detail" >${profile.adress || '未设置'}</span>`;
       }
     }
-  };
-
-  // 检查用户会话
-  checkUserSession();
+  } else {
+    // 用户未登录，显示登录按钮
+    const authdiv = document.getElementById('auth');
+    if (authdiv) {
+      authdiv.innerHTML = `
+        <span id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</span>
+        `;
+    }
+  }
 
   // 为登录表单添加提交事件监听
   const loginForm = document.getElementById('login-form');
@@ -319,6 +300,44 @@ function isPasswordComplex(password) {
   return lengthOk && count >= 2;
 }
 
+/**
+ * 获取当前用户的会话和个人资料信息
+ * @returns {Promise<{session: Object|null, profile: Object|null, error: Error|null}>}
+ */
+async function getUserInfo() {
+  try {
+    // 获取会话信息
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error("获取会话失败:", error.message);
+      return { session: null, profile: null, error };
+    }
+
+    const session = data?.session;
+    if (!session) {
+      return { session: null, profile: null, error: null };
+    }
+
+    // 获取用户详细信息
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+
+    if (profileError) {
+      console.error("获取用户资料失败:", profileError.message);
+      return { session, profile: null, error: profileError };
+    }
+
+    return { session, profile, error: null };
+  } catch (error) {
+    console.error("获取用户信息时发生异常:", error);
+    return { session: null, profile: null, error };
+  }
+}
+
 // 在页面加载完成后初始化认证
 document.addEventListener('DOMContentLoaded', initAuth);
 
@@ -327,5 +346,6 @@ export {
   showMessage,
   login,
   signup,
-  resetPassword
+  resetPassword,
+  getUserInfo
 };

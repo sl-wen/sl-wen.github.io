@@ -1,6 +1,7 @@
 // 发布页面的打包入口文件
 import { marked } from 'marked';
 import { supabase } from './supabase-config.js';
+import { getUserInfo } from './auth.js';  // 导入获取文章的服务函数
 
 // 安全的 marked 解析函数
 function safeMarked(content) {
@@ -140,11 +141,10 @@ function initEditor() {
     }
 
     const authordiv = document.getElementById('author');
-    const { data, error } = await supabase.auth.getSession();
-    const session = data?.session;
+    const { session, profile, error } = await getUserInfo();  // 获取用户数据
 
     if (authordiv && session) {
-        authordiv.value = session.user.email || 'sl-wen';
+        authordiv.value = profile?.username || session?.user.email;
     }
 
     editor.addEventListener('input', () => {

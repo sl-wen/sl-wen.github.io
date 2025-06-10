@@ -11,6 +11,23 @@
       "src": "/static/img/logopwa-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
+    },
+    {
+      "src": "/static/img/pwa-icon-artistic-no-text.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/img/ios-pwa-icon-180x180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

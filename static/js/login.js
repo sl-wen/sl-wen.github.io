@@ -94,7 +94,7 @@ if (forgetForm) {
             return;
         }
 
-        if (!isValidEmail(email)) {
+        if (!common.isValidEmail(email)) {
             common.showMessage('请输入有效的邮箱地址', 'error');
             return;
         }
@@ -116,7 +116,7 @@ const login = async (email, password) => {
         if (error) throw error;
 
         common.showMessage('登录成功！', 'success');
-        const { data: sessiondata, error : sessionerror } = await supabase.auth.getSession();
+        const { data: sessiondata, error: sessionerror } = await supabase.auth.getSession();
         const session = sessiondata?.session;
         // 获取用户详细信息
         const { data: profile, error: profileError } = await supabase
@@ -223,13 +223,18 @@ async function logout() {
 const newpassword = document.getElementById('new-password');
 const signuppassword = document.getElementById('signup-password');
 
-newpassword.addEventListener('input', function () {
-    common.updatePasswordStrength(this.value);
-});
+if (newpassword) {
+    newpassword.addEventListener('input', function () {
+        common.updatePasswordStrength(this.value);
+    });
+}
 
-signuppassword.addEventListener('input', function () {
-    common.updatePasswordStrength(this.value);
-});
+if (signuppassword) {
+    signuppassword.addEventListener('input', function () {
+        common.updatePasswordStrength(this.value);
+    });
+}
+
 // 添加登出事件监听
 setTimeout(() => {
     const logoutBtn = document.getElementById('logout-btn');

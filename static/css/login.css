@@ -1,4 +1,4 @@
-.settings-container {
+.loign-container {
     flex: 1;
     width: 40%;
     margin: 0 auto;
@@ -82,6 +82,18 @@ input[type="password"]:focus {
 body.keyboard-open {
     /* 可以添加一些样式来适应键盘打开的情况 */
     padding-bottom: 50vh;
+  }
+
+.password-strength {
+    height: 5px;
+    margin-top: 5px;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+  
+.password-feedback {
+    font-size: 0.8rem;
+    margin-top: 5px;
   }
 
 /* 响应式设计 */

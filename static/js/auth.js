@@ -424,6 +424,88 @@ function isPasswordComplex(password) {
   return lengthOk && count >= 2;
 }
 
+// 评估密码强度
+function evaluatePasswordStrength(password) {
+  if (!password) return { score: 0, feedback: '' };
+
+  let score = 0;
+  let feedback = [];
+
+  // 长度评分
+  if (password.length >= 8) score += 1;
+  if (password.length >= 12) score += 1;
+
+  // 复杂度评分
+  if (/[A-Z]/.test(password)) score += 1;
+  if (/[a-z]/.test(password)) score += 1;
+  if (/[0-9]/.test(password)) score += 1;
+  if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+  // 反馈信息
+  if (password.length < 8) {
+    feedback.push('密码太短');
+  }
+
+  if (!/[A-Z]/.test(password) && !/[a-z]/.test(password)) {
+    feedback.push('建议添加字母');
+  }
+
+  if (!/[0-9]/.test(password)) {
+    feedback.push('建议添加数字');
+  }
+
+  if (!/[^A-Za-z0-9]/.test(password)) {
+    feedback.push('建议添加特殊字符');
+  }
+
+  // 标准化分数到 0-100
+  const normalizedScore = Math.min(100, Math.round((score / 6) * 100));
+
+  return {
+    score: normalizedScore,
+    feedback: feedback.join('，')
+  };
+}
+
+// 更新密码强度指示器
+function updatePasswordStrength(password) {
+  const strengthBar = document.getElementById('password-strength');
+  const feedbackElement = document.getElementById('password-feedback');
+
+  if (!password) {
+    strengthBar.style.width = '0%';
+    strengthBar.style.backgroundColor = '#e9ecef';
+    feedbackElement.textContent = '';
+    return;
+  }
+
+  const { score, feedback } = evaluatePasswordStrength(password);
+
+  // 更新强度条
+  strengthBar.style.width = `${score}%`;
+
+  // 根据分数设置颜色
+  if (score < 30) {
+    strengthBar.style.backgroundColor = '#dc3545'; // 弱
+    feedbackElement.style.color = '#dc3545';
+  } else if (score < 70) {
+    strengthBar.style.backgroundColor = '#ffc107'; // 中
+    feedbackElement.style.color = '#856404';
+  } else {
+    strengthBar.style.backgroundColor = '#28a745'; // 强
+    feedbackElement.style.color = '#28a745';
+  }
+
+  // 更新反馈文本
+  if (score < 30) {
+    feedbackElement.textContent = `密码强度：弱 ${feedback ? '- ' + feedback : ''}`;
+  } else if (score < 70) {
+    feedbackElement.textContent = `密码强度：中 ${feedback ? '- ' + feedback : ''}`;
+  } else {
+    feedbackElement.textContent = `密码强度：强`;
+  }
+}
+
 /**
  * 获取当前用户的会话和个人资料信息
  * @returns {Promise<{session: Object|null, profile: Object|null, error: Error|null}>}
@@ -464,6 +546,16 @@ async function getUserInfo() {
 
 // 在页面加载完成后初始化认证
 document.addEventListener('DOMContentLoaded', initAuth);
+
+// 设置密码强度监听
+const newpassword = document.getElementById('new-password');
+const signuppassword = document.getElementById('signup-password');
+newpassword.addEventListener('input', function () {
+  updatePasswordStrength(this.value);
+});
+signuppassword.addEventListener('input', function () {
+  updatePasswordStrength(this.value);
+});
 
 // 导出函数供其他模块使用
 export {

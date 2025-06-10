@@ -8,11 +8,6 @@
   "theme_color": "#24292e",
   "icons": [
     {
-      "src": "/static/img/pwa-icon-artistic-no-text.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
-    },
-    {
       "src": "/static/img/logopwa-192x192.png",
       "sizes": "192x192",
       "type": "image/png"

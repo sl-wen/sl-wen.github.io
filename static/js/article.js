@@ -1,7 +1,6 @@
 // 导入必要的模块和函数
 import { getArticle } from './articleService.js';  // 导入获取文章的服务函数
 import { marked } from 'marked';  // 导入 Markdown 解析器
-import { getUserInfo } from './auth.js';  // 导入获取文章的服务函数
 
 // 自定义 marked 渲染器配置
 const renderer = {
@@ -193,14 +192,11 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     // 更新文章操作按钮
-    try {
-      const { session, profile, error } = await getUserInfo();  // 获取用户数据
-      if (session && (session?.user.email === 'sl-wen@outlook.com' || profile?.username === article.author)) {
-        updateArticleActions(article.id);
-      }
-    } catch (error) {
-      console.error('更新文章操作按钮失败:', error);
-      showError('更新文章操作按钮失败', error.message);  // 显示错误信息
+    // 检查用户会话状态
+    const userSession = sessionStorage.getItem('userSession');
+    const userProfile = sessionStorage.getItem('userProfile');
+    if (userSession && (userSession?.user.email === 'sl-wen@outlook.com' || userProfile?.username === article.author)) {
+      updateArticleActions(article.id);
     }
     // 应用代码高亮（如果 hljs 可用）
     if (window.hljs) {

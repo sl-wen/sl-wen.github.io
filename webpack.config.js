@@ -23,6 +23,8 @@ export default {
     article: './static/js/article.js',
     edit: './static/js/edit.js',
     post: './static/js/post.js',
+    login: './static/js/login.js',
+    reset: './static/js/reset.js',
     categories: './static/js/categories.js',
     search: './static/js/search.js'
   },

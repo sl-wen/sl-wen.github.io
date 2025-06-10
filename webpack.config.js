@@ -14,13 +14,13 @@ export default {
     supabase: './static/js/supabase-config.js',
     articleService: './static/js/articleService.js',
     stats: './static/js/stats.js',
-    auth: './static/js/auth.js',
     marked: './node_modules/marked/lib/marked.esm.js',
     about: './static/js/about.js',
     
     // 文章相关页面
     index: './static/js/index.js',
     article: './static/js/article.js',
+    settings: './static/js/settings.js',
     edit: './static/js/edit.js',
     post: './static/js/post.js',
     login: './static/js/login.js',

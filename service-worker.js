@@ -10,7 +10,7 @@ const STATIC_ASSETS = [
   '/static/js/supabase-config.js',
   '/static/js/click-effect.js',
   '/static/js/dist/stats.bundle.js',
-  '/static/js/dist/auth.bundle.js',
+  '/static/js/auth.js',
   '/static/js/dist/supabase.bundle.js',
   '/static/img/logo.png',
   '/manifest.json'

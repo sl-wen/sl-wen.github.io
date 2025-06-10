@@ -1,6 +1,6 @@
 // 缓存名称和版本控制
 // 在你的 service-worker.js 中更新缓存版本
-const CACHE_VERSION = 'v2'; // 增加版本号
+const CACHE_VERSION = 'v3'; // 增加版本号
 const CACHE_NAME = `my-site-cache-${CACHE_VERSION}`;
 const STATIC_ASSETS = [
   '/',
@@ -41,3 +41,24 @@ self.addEventListener('fetch', event => {
       .then(response => response || fetch(event.request))
   );
 });
+
+// 监听登出消息
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'LOGOUT') {
+    // 清除所有缓存
+    clearAllCaches();
+  }
+});
+
+// 清除所有缓存
+async function clearAllCaches() {
+  try {
+    const cacheNames = await caches.keys();
+    await Promise.all(
+      cacheNames.map(cacheName => caches.delete(cacheName))
+    );
+    console.log('Service Worker: 所有缓存已清除');
+  } catch (error) {
+    console.error('Service Worker: 清除缓存失败', error);
+  }
+}

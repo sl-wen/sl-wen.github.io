@@ -85,17 +85,39 @@ async function initAuth() {
 // 登出
 async function logout() {
   try {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-
-    sessionStorage.removeItem('userSession');
-    sessionStorage.removeItem('userProfile');
-
+    // 显示登出中状态
     const authdiv = document.getElementById('auth');
-    authdiv.innerHTML = `
-    <span id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</span>
-    `;
+    if (authdiv) {
+      authdiv.innerHTML = `<span>登出中...</span>`;
+    }
+    
+    //  清除所有本地存储
+    sessionStorage.clear(); // 清除所有 sessionStorage
+    
+    //  调用 Supabase 登出 API
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.warn('Supabase 登出 API 调用失败:', error);
+      // 继续执行，不要中断登出流程
+    }
+    
+    //  更新 UI
+    if (authdiv) {
+      authdiv.innerHTML = `
+        <span id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</span>
+      `;
+    }
+    
+    // 通知 Service Worker 清除缓存
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'LOGOUT'
+      });
+    }
+    
+    //  强制刷新页面，确保所有状态重置
     window.location.href = '/';
+    
   } catch (error) {
     console.error('登出失败:', error);
   }

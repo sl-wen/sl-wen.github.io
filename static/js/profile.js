@@ -12,16 +12,16 @@ document.addEventListener('DOMContentLoaded', function () {
         const adressdetail = document.getElementById('adress-detail');
 
         if (leveldetail) {
-            leveldetail.innerHTML = `<span id="level-detail" >${userProfile.level || 0}</span>`;
+            leveldetail.innerHTML = `<span>${userProfile.level || 0}</span>`;
         }
         if (coinsdetail) {
-            coinsdetail.innerHTML = `<span id="coins-detail" >${userProfile.coins || 0}</span>`;
+            coinsdetail.innerHTML = `<span>${userProfile.coins || 0}</span>`;
         }
         if (experiencedetail) {
-            experiencedetail.innerHTML = `<span id="experience-detail" >${userProfile.experience || 0}</span>`;
+            experiencedetail.innerHTML = `<span>${userProfile.experience || 0}</span>`;
         }
         if (adressdetail) {
-            adressdetail.innerHTML = `<span id="adress-detail" >${userProfile.adress || '未设置'}</span>`;
+            adressdetail.innerHTML = `<span>${userProfile.adress || '未设置'}</span>`;
         }
 
     }

@@ -1,0 +1,111 @@
+.profile-container {
+    flex: 1;
+    width: 60%;
+    margin: 0 auto;
+}
+
+.level,
+.coins,
+.experience,
+.adress
+{
+    display: flex;
+    margin: 10px;
+}
+
+.level label {
+    display: block;
+    padding: var(--spacing-small);
+    font-weight: 500;
+    font-size: 18px;
+    text-decoration: none;
+    white-space: nowrap; /* 防止文本换行 */
+    width: 12%;
+    color: var(--text-color);
+}
+
+.level #level-detail {
+    width: auto;
+    min-width: 200px;
+    box-sizing: border-box;
+    padding: var(--spacing-small);
+    border: 1px solid var(--primary-border-color);
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.coins label {
+    display: block;
+    padding: var(--spacing-small);
+    font-weight: 500;
+    font-size: 18px;
+    text-decoration: none;
+    white-space: nowrap; /* 防止文本换行 */
+    width: 12%;
+    color: var(--text-color);
+}
+
+.coins #coins-detail {
+    width: auto;
+    min-width: 200px;
+    box-sizing: border-box;
+    padding: var(--spacing-small);
+    border: 1px solid var(--primary-border-color);
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.experience label {
+    display: block;
+    padding: var(--spacing-small);
+    font-weight: 500;
+    font-size: 18px;
+    text-decoration: none;
+    white-space: nowrap; /* 防止文本换行 */
+    width: 12%;
+    color: var(--text-color);
+}
+
+.experience #experience-detail {
+    width: auto;
+    min-width: 200px;
+    box-sizing: border-box;
+    padding: var(--spacing-small);
+    border: 1px solid var(--primary-border-color);
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.adress label {
+    display: block;
+    padding: var(--spacing-small);
+    font-weight: 500;
+    font-size: 18px;
+    text-decoration: none;
+    white-space: nowrap; /* 防止文本换行 */
+    width: 12%;
+    color: var(--text-color);
+}
+
+.adress #adress-detail {
+    width: auto;
+    min-width: 200px;
+    box-sizing: border-box;
+    padding: var(--spacing-small);
+    border: 1px solid var(--primary-border-color);
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+
+    .profile-container {
+        width: 100%;
+    }
+
+}

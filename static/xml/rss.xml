@@ -6,8 +6,21 @@
                             <description>鱼鱼的博客</description>
                             <language>zh-cn</language>
                             <generator>Node+Supabase RSS自生成</generator>
-                            <lastBuildDate>Mon, 09 Jun 2025 05:10:03 GMT</lastBuildDate>
+                            <lastBuildDate>Tue, 10 Jun 2025 05:15:03 GMT</lastBuildDate>
                                 
+        <item>
+            <title><![CDATA[url]]></title>
+            <link>http://121.40.215.235/pages/article.html?id=2e7fd814-42d6-411b-a5d1-2543c6f21222</link>
+            <description><![CDATA[<p><a href="https://pcwbtcsigmjnrigkfixm.supabase.co/auth/v1/verify?token=920f1c9d3794f91482c8eb3fbba211add812e6250010542931340e1a&type=recovery&redirect_to=https://121.40.215.235/pages/reset-password.html">https://pcwbtcsigmjnrigkfixm.supabase.co/auth/v1/verify?token=920f1c9d3794f91482c8eb3fbba211add812e6250010542931340e1a&amp;type=recovery&amp;redirect_to=https://121.40.215.235/pages/reset-password.html</a></p>
+<p><a href="https://121.40.215.235/pages/reset-password.html#access_token=eyJhbGciOiJIUzI1NiIsImtpZCI6ImNBL1ZhNWMvRDVTaTVrV2IiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3Bjd2J0Y3NpZ21qbnJpZ2tmaXhtLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJmNDg1MjA4NS02MDlhLTQyYmQtYjUxMi1iMjgzMTg1NzU3ZWYiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzQ5NTIzNjk1LCJpYXQiOjE3NDk1MjAwOTUsImVtYWlsIjoic2wtd2VuQG91dGxvb2suY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbCI6InNsLXdlbkBvdXRsb29rLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInN1YiI6ImY0ODUyMDg1LTYwOWEtNDJiZC1iNTEyLWIyODMxODU3NTdlZiJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6Im90cCIsInRpbWVzdGFtcCI6MTc0OTUyMDA5NX1dLCJzZXNzaW9uX2lkIjoiMTNhZmRiYTktNGQ4ZC00ZGVlLThhYTAtZTRiYmE3NGFiYTg2IiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.nfM-yF0ZN5A2LLVgJlFitq5NVe_ZUniwtdZ2HvUj74c&expires_at=1749523695&expires_in=3600&refresh_token=lf7q2axjskrt&token_type=bearer&type=recovery">https://121.40.215.235/pages/reset-password.html#access_token=eyJhbGciOiJIUzI1NiIsImtpZCI6ImNBL1ZhNWMvRDVTaTVrV2IiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3Bjd2J0Y3NpZ21qbnJpZ2tmaXhtLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJmNDg1MjA4NS02MDlhLTQyYmQtYjUxMi1iMjgzMTg1NzU3ZWYiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzQ5NTIzNjk1LCJpYXQiOjE3NDk1MjAwOTUsImVtYWlsIjoic2wtd2VuQG91dGxvb2suY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbCI6InNsLXdlbkBvdXRsb29rLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInN1YiI6ImY0ODUyMDg1LTYwOWEtNDJiZC1iNTEyLWIyODMxODU3NTdlZiJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6Im90cCIsInRpbWVzdGFtcCI6MTc0OTUyMDA5NX1dLCJzZXNzaW9uX2lkIjoiMTNhZmRiYTktNGQ4ZC00ZGVlLThhYTAtZTRiYmE3NGFiYTg2IiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.nfM-yF0ZN5A2LLVgJlFitq5NVe_ZUniwtdZ2HvUj74c&amp;expires_at=1749523695&amp;expires_in=3600&amp;refresh_token=lf7q2axjskrt&amp;token_type=bearer&amp;type=recovery</a></p>
+]]></description>
+            <author>sl-wen</author>
+            
+            <pubDate>Tue, 10 Jun 2025 01:43:08 GMT</pubDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=2e7fd814-42d6-411b-a5d1-2543c6f21222</guid>
+            <lastBuildDate>Tue, 10 Jun 2025 01:49:00 GMT</lastBuildDate>
+        </item>
+
         <item>
             <title><![CDATA[table]]></title>
             <link>http://121.40.215.235/pages/article.html?id=5f1c3a97-c629-4a5f-b031-35df31292d13</link>
@@ -18,12 +31,29 @@ ADD COLUMN user_id UUID REFERENCES auth.users(id) NOT NULL;
 SET user_id = &#39;f4852085-609a-42bd-b512-b283185757ef&#39;
 where username = &#39;sl-wen&#39;;
 </code></pre>
+<pre><code>CREATE OR REPLACE FUNCTION public.handle_new_user() 
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.userinfo (id, username, email)
+  VALUES (
+    NEW.id, 
+    SPLIT_PART(NEW.email, &#39;@&#39;, 1), -- 使用邮箱前缀作为默认用户名
+    NEW.email -- 使用邮箱   
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+</code></pre>
+<pre><code>CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+</code></pre>
 ]]></description>
             <author>slwen</author>
             <category>table</category>
             <pubDate>Mon, 09 Jun 2025 02:43:23 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=5f1c3a97-c629-4a5f-b031-35df31292d13</guid>
-            <lastBuildDate>Mon, 09 Jun 2025 03:19:04 GMT</lastBuildDate>
+            <lastBuildDate>Mon, 09 Jun 2025 14:47:07 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -552,7 +582,7 @@ git push
             <category>ali</category>
             <pubDate>Wed, 04 Jun 2025 09:24:26 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</guid>
-            <lastBuildDate>Mon, 09 Jun 2025 02:48:07 GMT</lastBuildDate>
+            <lastBuildDate>Tue, 10 Jun 2025 05:14:41 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -600,7 +630,7 @@ git push
             <category>服务器</category>
             <pubDate>Sun, 18 May 2025 13:11:27 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=2db1fd10-661b-4718-bda1-c293da163f04</guid>
-            <lastBuildDate>Thu, 05 Jun 2025 07:37:53 GMT</lastBuildDate>
+            <lastBuildDate>Mon, 09 Jun 2025 05:38:04 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -1209,7 +1239,7 @@ chmod -R 755 /opt/
 <category>command</category>
             <pubDate>Wed, 19 Mar 2025 03:28:40 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=652b63b8-f77d-4657-be41-79152a8b4eee</guid>
-            <lastBuildDate>Sun, 01 Jun 2025 03:56:18 GMT</lastBuildDate>
+            <lastBuildDate>Tue, 10 Jun 2025 01:07:01 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -1453,7 +1483,7 @@ GitHubにSSHキーを設定する</p>
 <category>php</category>
             <pubDate>Tue, 18 Mar 2025 08:07:23 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=81132e66-c9a1-4e48-8247-ed8d6ac91169</guid>
-            <lastBuildDate>Mon, 09 Jun 2025 03:05:01 GMT</lastBuildDate>
+            <lastBuildDate>Tue, 10 Jun 2025 02:09:20 GMT</lastBuildDate>
         </item>
 
         <item>

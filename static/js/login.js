@@ -130,10 +130,10 @@ const login = async (email, password) => {
         // 跳转到首页
         window.location.href = '/';
 
-        return;
+        return profile;
     } catch (error) {
         common.showMessage(error.message || '登录失败，请检查邮箱和密码', 'error');
-        return;
+        return null;
     }
 };
 

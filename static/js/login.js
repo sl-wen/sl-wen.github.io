@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .single();
 
             sessionStorage.setItem('userSession', JSON.stringify(session));
-            sessionStorage.setItem('userprofile', JSON.stringify(profile));
+            sessionStorage.setItem('userProfile', JSON.stringify(profile));
             // 跳转到首页
             setTimeout(() => {
                 window.location.href = '/';

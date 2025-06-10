@@ -3,7 +3,7 @@ import { supabase } from './supabase-config.js';
 import common from './common.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const resetForm = document.getElementById('reset-password-form"');
+    const resetForm = document.getElementById('reset-password-form');
     if (resetForm) {
         resetForm.addEventListener('submit', async (e) => {
             e.preventDefault(); // 阻止表单默认提交行为
@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 sessionStorage.setItem('userSession', JSON.stringify(session));
 
                 common.showMessage('密码重置成功！即将跳转到登录页面...', 'success');
+
                 setTimeout(() => {
                     window.location.href = '/pages/login.html';
                 }, 2000);
@@ -56,5 +57,41 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
         });
+
+        // 设置密码强度监听
+        const newpassword = document.getElementById('new-password');
+
+        if (newpassword) {
+            newpassword.addEventListener('input', function () {
+                common.updatePasswordStrength(this.value);
+            });
+        }
+
     }
+    // 检查URL中是否包含token
+    checkResetToken();
 });
+
+// 检查重置令牌
+function checkResetToken() {
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get('access_token');
+    const type = params.get('type');
+
+    if (!accessToken) {
+        common.showMessage('无效的密码重置链接，请重新申请密码重置', 'error');
+    } else if (type !== 'recovery') {
+        common.showMessage('无效的密码重置链接类型', 'error');
+    } else {
+        // 设置Supabase会话
+        supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: params.get('refresh_token') || ''
+        }).then(({ data, error }) => {
+            if (error) {
+                common.showMessage('无法验证重置链接，请重新申请', 'error');
+            }
+        });
+    }
+}

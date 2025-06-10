@@ -202,20 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // 设置密码强度监听
-    const newpassword = document.getElementById('new-password');
     const signuppassword = document.getElementById('signup-password');
-
-    if (newpassword) {
-        newpassword.addEventListener('input', function () {
-            common.updatePasswordStrength(this.value);
-        });
-    }
 
     if (signuppassword) {
         signuppassword.addEventListener('input', function () {
             common.updatePasswordStrength(this.value);
         });
     }
-
 
 });

@@ -123,7 +123,7 @@ const usernamechange = async (profile, newusername) => {
     if (usernamechangeError) console.error('变更用户资料失败:', usernamechangeError);
 
     common.showMessage('变更用户资料成功！', 'success');
-    const { data: newprofile, error } = await supabase
+    const { data: newprofile } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', profileid)

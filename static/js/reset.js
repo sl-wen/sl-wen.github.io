@@ -36,13 +36,13 @@ if (resetForm) {
     }
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      const { error: updateerror } = await supabase.auth.updateUser({
         password: newpassword
       });
 
-      if (error) throw error;
+      if (updateerror) throw updateerror;
 
-      const { data, error } = await supabase.auth.getSession();
+      const { data, error:sessionerror } = await supabase.auth.getSession();
       const session = data?.session;
       sessionStorage.setItem('userSession', JSON.stringify(session));
 

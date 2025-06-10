@@ -116,8 +116,8 @@ const login = async (email, password) => {
         if (error) throw error;
 
         common.showMessage('登录成功！', 'success');
-        const { data, error } = await supabase.auth.getSession();
-        const session = data?.session;
+        const { data: sessiondata, error : sessionerror } = await supabase.auth.getSession();
+        const session = sessiondata?.session;
         // 获取用户详细信息
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
@@ -130,10 +130,10 @@ const login = async (email, password) => {
         // 跳转到首页
         window.location.href = '/';
 
-        return data;
+        return;
     } catch (error) {
         common.showMessage(error.message || '登录失败，请检查邮箱和密码', 'error');
-        return null;
+        return;
     }
 };
 

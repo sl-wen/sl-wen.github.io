@@ -111,3 +111,11 @@ export function showMessage(message, type = 'info') {
         </div>
     `;
 }
+
+export default {
+    isValidEmail,
+    isPasswordComplex,
+    evaluatePasswordStrength,
+    updatePasswordStrength,
+    showMessage
+  };

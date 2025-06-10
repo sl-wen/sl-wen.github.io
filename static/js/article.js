@@ -193,8 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 更新文章操作按钮
     // 检查用户会话状态
-    const userSession = sessionStorage.getItem('userSession');
-    const userProfile = sessionStorage.getItem('userProfile');
+    const userSessionStr = sessionStorage.getItem('userSession');
+    const userProfileStr = sessionStorage.getItem('userProfile');
+    // 解析 JSON 字符串
+    const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
+    const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
     if (userSession && (userSession?.user.email === 'sl-wen@outlook.com' || userProfile?.username === article.author)) {
       updateArticleActions(article.id);
     }

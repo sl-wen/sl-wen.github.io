@@ -184,7 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-
     // 重置密码函数
     const resetPassword = async (email) => {
         try {
@@ -202,26 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 登出
-    async function logout() {
-        try {
-            const { error } = await supabase.auth.signOut();
-            if (error) throw error;
-
-            sessionStorage.removeItem('userSession', JSON.stringify(session));
-            sessionStorage.removeItem('userProfile', JSON.stringify(profile));
-
-            const authdiv = document.getElementById('auth');
-            authdiv.innerHTML = `
-      <span id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</span>
-      `;
-            window.location.href = '/';
-        } catch (error) {
-            console.error('登出失败:', error);
-            common.showMessage('登出失败', 'error');
-        }
-    }
-
     // 设置密码强度监听
     const newpassword = document.getElementById('new-password');
     const signuppassword = document.getElementById('signup-password');
@@ -238,12 +217,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 添加登出事件监听
-    setTimeout(() => {
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', logout);
-        }
-    }, 0);
 
 });

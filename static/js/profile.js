@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    const userProfile = sessionStorage.getItem('userProfile');
+    const userProfileStr = sessionStorage.getItem('userProfile');
+    // 解析 JSON 字符串
+    const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
 
     // 用户已登录，显示用户信息
     if (userProfile) {

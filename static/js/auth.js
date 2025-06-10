@@ -5,8 +5,11 @@ document.addEventListener('DOMContentLoaded', initAuth);
 async function initAuth() {
 
   // 检查用户会话状态
-  const userSession = sessionStorage.getItem('userSession');
-  const userProfile = sessionStorage.getItem('userProfile');
+  const userSessionStr = sessionStorage.getItem('userSession');
+  const userProfileStr = sessionStorage.getItem('userProfile');
+  // 解析 JSON 字符串
+  const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
+  const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
   const authdiv = document.getElementById('auth');
 
   if (userSession && authdiv) {
@@ -59,6 +62,14 @@ async function initAuth() {
       }
     });
 
+    // 添加登出事件监听
+    setTimeout(() => {
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+      }
+    }, 0);
+
   } else {
     // 用户未登录，显示登录按钮
     if (authdiv) {
@@ -66,5 +77,25 @@ async function initAuth() {
         <span id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</span>
         `;
     }
+  }
+}
+
+// 登出
+async function logout() {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+
+    sessionStorage.removeItem('userSession');
+    sessionStorage.removeItem('userProfile');
+
+    const authdiv = document.getElementById('auth');
+    authdiv.innerHTML = `
+    <span id="auth-btn" class="primary-btn active" onclick="window.location.href='/pages/login.html'">登录</span>
+    `;
+    window.location.href = '/';
+  } catch (error) {
+    console.error('登出失败:', error);
+    common.showMessage('登出失败', 'error');
   }
 }

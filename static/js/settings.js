@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 变更用户名函数
     const usernamechange = async (newusername) => {
-        const userProfile = sessionStorage.getItem('userProfile');
+        const userProfileStr = sessionStorage.getItem('userProfile');
+        const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
         const profileid = userProfile.id;
         try {
             common.showMessage('变更中...', 'info');

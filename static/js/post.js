@@ -140,8 +140,11 @@ async function initEditor() {
     }
 
     const authordiv = document.getElementById('author');
-    const userSession = sessionStorage.getItem('userSession');
-    const userProfile = sessionStorage.getItem('userProfile');
+    const userSessionStr = sessionStorage.getItem('userSession');
+    const userProfileStr = sessionStorage.getItem('userProfile');
+    // 解析 JSON 字符串
+    const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
+    const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
     if (authordiv && userSession) {
         authordiv.value = userProfile?.username || userSession?.user.email;
     }

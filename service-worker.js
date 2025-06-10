@@ -6,6 +6,9 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/static/css/common.css',
+  '/static/js/common-components.js',
+  '/static/js/supabase-config.js',
+  '/static/js/dist/auth.bundle.js',
   '/static/js/dist/supabase.bundle.js',
   '/static/img/logo.png',
   '/manifest.json'

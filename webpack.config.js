@@ -60,10 +60,7 @@ export default {
     ],
     alias: {
       'marked': path.resolve(__dirname, 'node_modules/marked/lib/marked.esm.js'),
-      '@supabase/supabase-js': path.resolve(__dirname, 'node_modules/@supabase/supabase-js'),
-      'firebase/app': path.resolve(__dirname, 'node_modules/firebase/app'),
-      'firebase/firestore': path.resolve(__dirname, 'node_modules/firebase/firestore'),
-      'firebase/auth': path.resolve(__dirname, 'node_modules/firebase/auth')
+      '@supabase/supabase-js': path.resolve(__dirname, 'node_modules/@supabase/supabase-js')
     },
     fallback: {
       "path": false,

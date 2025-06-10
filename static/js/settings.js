@@ -5,6 +5,16 @@ import * as common from './common.js';
 document.addEventListener('DOMContentLoaded', function () {
     // 为用户名表单添加提交事件监听
     const usernameForm = document.getElementById('username-form');
+    const usernamedetail = document.getElementById('username-detail');
+    // 检查用户会话状态
+    const userSessionStr = sessionStorage.getItem('userSession');
+    const userProfileStr = sessionStorage.getItem('userProfile');
+    // 解析 JSON 字符串
+    const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
+    const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
+    if (usernamedetail) {
+        usernamedetail.value = userProfile?.username || userSession?.user.email;
+    }
     if (usernameForm) {
         usernameForm.addEventListener('submit', async (e) => {
             e.preventDefault(); // 阻止表单默认提交行为
@@ -16,15 +26,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            await usernamechange(newusername);
+            await usernamechange(userProfile, newusername);
         });
     }
 
     // 变更用户名函数
-    const usernamechange = async (newusername) => {
-        const userProfileStr = sessionStorage.getItem('userProfile');
-        const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
-        const profileid = userProfile.id;
+    const usernamechange = async (Profile, newusername) => {
+        const profileid = Profile.id;
         try {
             common.showMessage('变更中...', 'info');
 

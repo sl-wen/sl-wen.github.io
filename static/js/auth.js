@@ -1,3 +1,5 @@
+// 导入supabase客户端
+import { supabase } from './supabase-config.js';
 // 在页面加载完成后初始化认证
 document.addEventListener('DOMContentLoaded', initAuth);
 
@@ -63,12 +65,10 @@ async function initAuth() {
     });
 
     // 添加登出事件监听
-    setTimeout(() => {
-      const logoutBtn = document.getElementById('logout-btn');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-      }
-    }, 0);
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', logout);
+    }
 
   } else {
     // 用户未登录，显示登录按钮
@@ -81,7 +81,7 @@ async function initAuth() {
 }
 
 // 登出
-async function logout() {
+function logout() {
   try {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
@@ -96,6 +96,5 @@ async function logout() {
     window.location.href = '/';
   } catch (error) {
     console.error('登出失败:', error);
-    common.showMessage('登出失败', 'error');
   }
 }

@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const coinsdetail = document.getElementById('coins-detail');
         const experiencedetail = document.getElementById('experience-detail');
         const adressdetail = document.getElementById('adress-detail');
-        const usernamedetail = document.getElementById('username-detail');
+
         if (leveldetail) {
             leveldetail.innerHTML = `<span id="level-detail" >${userProfile.level || 0}</span>`;
         }
@@ -23,8 +23,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (adressdetail) {
             adressdetail.innerHTML = `<span id="adress-detail" >${userProfile.adress || '未设置'}</span>`;
         }
-        if (usernamedetail) {
-            usernamedetail.value = userProfile?.username || userSession?.user.email;
-        }
+
     }
 });

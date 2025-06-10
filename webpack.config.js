@@ -16,6 +16,7 @@ export default {
     stats: './static/js/stats.js',
     marked: './node_modules/marked/lib/marked.esm.js',
     about: './static/js/about.js',
+    auth: './static/js/auth.js',
     
     // 文章相关页面
     index: './static/js/index.js',

@@ -12,6 +12,8 @@ async function initAuth() {
   // 解析 JSON 字符串
   const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
   const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
+  console.log('userSession:', userSession);
+  console.log('userProfile:', userProfile);
   const authdiv = document.getElementById('auth');
 
   if (userSession && authdiv) {
@@ -81,7 +83,7 @@ async function initAuth() {
 }
 
 // 登出
-function logout() {
+async function logout() {
   try {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;

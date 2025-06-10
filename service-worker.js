@@ -8,6 +8,8 @@ const STATIC_ASSETS = [
   '/static/css/common.css',
   '/static/js/common-components.js',
   '/static/js/supabase-config.js',
+  '/static/js/click-effect.js',
+  '/static/js/dist/stats.bundle.js',
   '/static/js/dist/auth.bundle.js',
   '/static/js/dist/supabase.bundle.js',
   '/static/img/logo.png',

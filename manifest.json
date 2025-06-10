@@ -1,7 +1,7 @@
 {
   "name": "鱼鱼的博客",
   "short_name": "博客",
-  "start_url": "/?pwa=true",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",

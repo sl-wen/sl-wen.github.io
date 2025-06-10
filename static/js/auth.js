@@ -1,6 +1,6 @@
 // 导入supabase客户端
 import { supabase } from './supabase-config.js';
-import common from './common.js';
+import * as common from './common.js';
 
 // 检查用户会话状态
 const userSession = sessionStorage.getItem('userSession');

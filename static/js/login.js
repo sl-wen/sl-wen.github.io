@@ -1,6 +1,6 @@
 // 导入supabase客户端
 import { supabase } from './supabase-config.js';
-import * as common from './common.js';
+import { showMessage } from './common.js';
 
 // 为标签按钮添加切换功能
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 验证输入不为空
             if (!email || !password) {
-                common.showMessage('邮箱和密码不能为空', 'error');
+                showMessage('邮箱和密码不能为空', 'error');
                 return;
             }
 
@@ -56,24 +56,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 验证输入不为空
             if (!email || !password || !passwordAgain) {
-                common.showMessage('所有字段都必须填写', 'error');
+                showMessage('所有字段都必须填写', 'error');
                 return;
             }
 
             // 验证两次密码输入是否一致
             if (password !== passwordAgain) {
-                common.showMessage('两次输入的密码不一致', 'error');
+                showMessage('两次输入的密码不一致', 'error');
                 return;
             }
 
             // 验证邮箱格式
-            if (!common.isValidEmail(email)) {
-                common.showMessage('请输入有效的邮箱地址', 'error');
+            if (!isValidEmail(email)) {
+                showMessage('请输入有效的邮箱地址', 'error');
                 return;
             }
 
-            if (!common.isPasswordComplex(password)) {
-                common.showMessage('密码需至少8位，且包含大写、小写、数字、特殊字符中的最少两种', 'error');
+            if (!isPasswordComplex(password)) {
+                showMessage('密码需至少8位，且包含大写、小写、数字、特殊字符中的最少两种', 'error');
                 return;
             }
 
@@ -89,12 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = document.getElementById('forget-email').value;
 
             if (!email) {
-                common.showMessage('请输入邮箱', 'error');
+                showMessage('请输入邮箱', 'error');
                 return;
             }
 
-            if (!common.isValidEmail(email)) {
-                common.showMessage('请输入有效的邮箱地址', 'error');
+            if (!isValidEmail(email)) {
+                showMessage('请输入有效的邮箱地址', 'error');
                 return;
             }
 
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 登录函数
     const login = async (email, password) => {
         try {
-            common.showMessage('登录中...', 'info');
+            showMessage('登录中...', 'info');
 
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (error) throw error;
 
-            common.showMessage('登录成功！', 'success');
+            showMessage('登录成功！', 'success');
             const { data: sessiondata, error: sessionerror } = await supabase.auth.getSession();
             const session = sessiondata?.session;
             // 获取用户详细信息
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return profile;
         } catch (error) {
-            common.showMessage(error.message || '登录失败，请检查邮箱和密码', 'error');
+            showMessage(error.message || '登录失败，请检查邮箱和密码', 'error');
             return null;
         }
     };
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 注册函数
     const signup = async (email, password) => {
         try {
-            common.showMessage('注册中...', 'info');
+            showMessage('注册中...', 'info');
 
             // 使用Supabase Auth注册
             const { data, error } = await supabase.auth.signUp({
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (profileError) console.error('创建用户资料失败:', profileError);
             }
 
-            common.showMessage('注册成功！请验证您的邮箱后登录', 'success');
+            showMessage('注册成功！请验证您的邮箱后登录', 'success');
             // 切换到登录表单
             setTimeout(() => {
                 document.querySelector('[data-tag="login"]').click();
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return data;
         } catch (error) {
-            common.showMessage(error.message || '注册失败', 'error');
+            showMessage(error.message || '注册失败', 'error');
             return null;
         }
     };
@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 重置密码函数
     const resetPassword = async (email) => {
         try {
-            common.showMessage('处理中...', 'info');
+            showMessage('处理中...', 'info');
 
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: `${window.location.origin}/pages/reset-password.html`,
@@ -195,9 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (error) throw error;
 
-            common.showMessage('重置密码链接已发送到您的邮箱', 'success');
+            showMessage('重置密码链接已发送到您的邮箱', 'success');
         } catch (error) {
-            common.showMessage(error.message || '重置密码请求失败', 'error');
+            showMessage(error.message || '重置密码请求失败', 'error');
         }
     };
 
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (signuppassword) {
         signuppassword.addEventListener('input', function () {
-            common.updatePasswordStrength(this.value);
+            updatePasswordStrength(this.value);
         });
     }
 

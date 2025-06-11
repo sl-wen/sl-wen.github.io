@@ -1,16 +1,7 @@
 // Supabase主页面的入口文件
 import { marked } from 'marked';
 import { supabase } from './supabase-config.js';
-
-// 格式化日期
-function formatDate(timestamp) {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    });
-}
+import { formatDate } from './common.js';
 
 // 按年份分组文章
 function groupPostsByYear(posts) {
@@ -145,5 +136,4 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // 导出函数和变量，使其在全局可用
-window.getPosts = getPosts;
 window.marked = marked;

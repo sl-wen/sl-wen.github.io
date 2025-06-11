@@ -1,6 +1,6 @@
 // 导入supabase客户端
 import { supabase } from './supabase-config.js';
-import * as common from './common.js';
+import { showMessage } from './common.js';
 
 document.addEventListener('DOMContentLoaded', function () {
     // 为用户名表单添加提交事件监听
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // 验证输入不为空
             if (!newusername) {
-                common.showMessage('用户名不能为空', 'error');
+                showMessage('用户名不能为空', 'error');
                 return;
             }
 
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const usernamechange = async (Profile, newusername) => {
         const profileid = Profile.id;
         try {
-            common.showMessage('变更中...', 'info');
+            showMessage('变更中...', 'info');
 
 
             // 获取用户详细信息
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .single();
 
             if (profile.username) {
-                common.showMessage('用户名已存在', 'error');
+                showMessage('用户名已存在', 'error');
                 return null;
             }
 
@@ -67,14 +67,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 .single();
 
             sessionStorage.setItem('userProfile', JSON.stringify(newprofile));
-            common.showMessage('变更用户资料成功！', 'success');
+            showMessage('变更用户资料成功！', 'success');
 
             // 跳转到首页
             setTimeout(() => {
                 window.location.href = `/`;
             }, 1500);
         } catch (error) {
-            common.showMessage(error.message || '变更用户资料失败', 'error');
+            showMessage(error.message || '变更用户资料失败', 'error');
             return null;
         }
     };

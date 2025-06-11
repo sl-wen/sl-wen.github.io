@@ -1,5 +1,6 @@
 import { supabase } from './supabase-config.js';
 import { marked } from 'marked';
+import { getCursorLine, renderPreviewByLine, scrollPreviewToLine, onScrollEnd, getVisibleFirstLine } from './common.js';
 
 // 配置 marked 选项
 marked.setOptions({
@@ -9,117 +10,6 @@ marked.setOptions({
     mangle: false, // 不转义标题中的字符
     sanitize: true, // 允许 HTML 标签
 });
-
-function getCursorLine(textarea) {
-    const value = textarea.value;
-    const selectionStart = textarea.selectionStart;
-
-    // 截取到光标，统计有多少个换行符，就是光标所在行号
-    return value.substring(0, selectionStart).split('\n').length - 1;
-}
-
-function renderPreviewByLine(text) {
-    // 1. 分割原始Markdown文本为行
-    const markdownLines = text.split('\n');
-    
-    // 2. 标记各种特殊Markdown结构
-    let inCodeBlock = false;
-    let inTable = false;
-    let inHtmlBlock = false;
-    
-    const markedLines = markdownLines.map((line, i) => {
-        // 检测代码块开始和结束
-        if (line.trim().startsWith('```')) {
-            inCodeBlock = !inCodeBlock;
-        }
-        
-        // 检测表格行
-        if (line.trim().startsWith('|') && line.includes('|', 1)) {
-            inTable = true;
-        } else if (inTable && line.trim() === '') {
-            inTable = false;
-        }
-        
-        // 检测HTML块
-        if (line.trim().startsWith('<') && !line.trim().startsWith('</') && !line.includes('/>')) {
-            inHtmlBlock = true;
-        } else if (inHtmlBlock && line.includes('</')) {
-            inHtmlBlock = false;
-        }
-        
-        // 只在安全区域添加行锚点标记
-        if (!inCodeBlock && !inTable && !inHtmlBlock) {
-            // 使用一个不太可能在正常文本中出现的标记
-            return `${line}\n<!-- SAFE_LINE_ANCHOR_${i} -->`;
-        }
-        return line;
-    });
-    
-    // 3. 渲染Markdown
-    const htmlContent = safeMarked(markedLines.join('\n'));
-    
-    // 4. 将自定义标记替换为实际的锚点span
-    const contentWithAnchors = htmlContent.replace(
-        /<!-- SAFE_LINE_ANCHOR_(\d+) -->/g, 
-        (match, lineNum) => `<span class="md-line-anchor" data-line="${lineNum}" id="line-anchor-${lineNum}"></span>`
-    );
-    
-    return contentWithAnchors;
-}
-
-function scrollPreviewToLine(lineNumber) {
-    const anchor = document.querySelector(`#line-anchor-${lineNumber}`);
-    if (anchor) {
-        anchor.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    }
-}
-
-// 添加滚动结束检测
-function onScrollEnd(element, callback) {
-    let timer;
-    element.addEventListener('scroll', function () {
-        // 清除之前的定时器
-        clearTimeout(timer);
-        // 设置新的定时器，滚动停止后执行回调
-        timer = setTimeout(function () {
-            callback();
-        }, 300); // 300ms 无滚动视为滚动结束
-    });
-}
-
-/**
- * 计算编辑框中可见的第一行行号
- * @param {HTMLTextAreaElement} textarea - 文本区域元素
- * @return {number} 可见的第一行行号（从0开始）
- */
-function getVisibleFirstLine(textarea) {
-    // 获取文本框的滚动位置
-    const scrollTop = textarea.scrollTop;
-    
-    // 获取文本框的样式
-    const style = window.getComputedStyle(textarea);
-    
-    // 获取内边距
-    const paddingTop = parseFloat(style.paddingTop) || 0;
-    
-    // 计算实际滚动位置（考虑内边距）
-    const effectiveScrollTop = Math.max(0, scrollTop - paddingTop);
-    
-    // 获取行高
-    let lineHeight;
-    if (style.lineHeight === 'normal') {
-        // 'normal'通常是字体大小的1.2倍左右
-        const fontSize = parseFloat(style.fontSize) || 16;
-        lineHeight = fontSize * 1.2;
-    } else {
-        lineHeight = parseFloat(style.lineHeight) || 18;
-    }
-    
-    // 估算第一个可见行（从0开始）
-    const firstVisibleLine = Math.floor(effectiveScrollTop / lineHeight);
-    
-    return firstVisibleLine;
-}
 
 // 创建自定义渲染器
 const renderer = new marked.Renderer();
@@ -153,32 +43,9 @@ renderer.image = function (href, title, text) {
     }
 };
 
-// 安全的 marked 解析函数
-function safeMarked(content) {
-    if (!content || typeof content !== 'string') {
-        return '';
-    }
-    try {
-        return marked(content);
-    } catch (error) {
-        console.error('Markdown 解析错误:', error);
-        return '内容解析错误';
-    }
-}
+
 
 marked.setOptions({ renderer });
-
-// 显示消息
-function showMessage(message, type = 'info') {
-    const container = document.getElementById('message-container');
-    if (!container) return;
-
-    container.innerHTML = `
-        <div class="${type}-message">
-            ${message}
-        </div>
-    `;
-}
 
 // 加载文章
 async function loadArticle(articleId) {
@@ -191,7 +58,7 @@ async function loadArticle(articleId) {
             .single();
 
         if (error || !article) {
-            showMessage('文章不存在', 'error');
+            common.showmessage('文章不存在', 'error');
             return;
         }
         console.log('获取到文章数据:', article);
@@ -207,7 +74,7 @@ async function loadArticle(articleId) {
 
     } catch (error) {
         console.error('加载文章失败:', error);
-        showMessage(`加载文章失败: ${error.message}`, 'error');
+        common.showmessage(`加载文章失败: ${error.message}`, 'error');
     }
 }
 
@@ -223,7 +90,7 @@ async function updateArticle(articleId) {
         const content = document.getElementById('editor').value.trim();
 
         if (!title || !content) {
-            showMessage('标题和内容不能为空', 'error');
+            common.showmessage('标题和内容不能为空', 'error');
             return;
         }
 
@@ -239,14 +106,14 @@ async function updateArticle(articleId) {
             })
             .eq('id', articleId);
 
-        showMessage('文章更新成功！', 'success');
+        common.showmessage('文章更新成功！', 'success');
         setTimeout(() => {
             window.location.href = `/pages/article.html?id=${articleId}`;
         }, 1500);
 
     } catch (error) {
         console.error('更新文章失败:', error);
-        showMessage(`更新文章失败: ${error.message}`, 'error');
+        common.showmessage(`更新文章失败: ${error.message}`, 'error');
     }
 }
 
@@ -261,13 +128,13 @@ async function handleDeleteArticle(articleId) {
             .from('posts')
             .delete()
             .eq('id', articleId);
-        showMessage('文章删除成功！', 'success');
+        common.showmessage('文章删除成功！', 'success');
         setTimeout(() => {
             window.location.href = '/';
         }, 1500);
     } catch (error) {
         console.error('删除文章失败:', error);
-        showMessage(`删除文章失败: ${error.message}`, 'error');
+        common.showmessage(`删除文章失败: ${error.message}`, 'error');
     }
 }
 
@@ -281,7 +148,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const articleId = urlParams.get('id');
 
         if (!articleId) {
-            showMessage('错误：未指定文章ID', 'error');
+            common.showmessage('错误：未指定文章ID', 'error');
             return;
         }
 
@@ -345,6 +212,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     } catch (error) {
         console.error('初始化失败:', error);
-        showMessage(`初始化失败: ${error.message}`, 'error');
+        common.showmessage(`初始化失败: ${error.message}`, 'error');
     }
 });

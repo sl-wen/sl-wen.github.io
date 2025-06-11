@@ -25,7 +25,7 @@
 }
 
 .level #level-detail {
-    width: auto;
+    width: 100%;
     min-width: 200px;
     box-sizing: border-box;
     padding: var(--spacing-small);
@@ -47,7 +47,7 @@
 }
 
 .coins #coins-detail {
-    width: auto;
+    width: 100%;
     min-width: 200px;
     box-sizing: border-box;
     padding: var(--spacing-small);
@@ -69,7 +69,7 @@
 }
 
 .experience #experience-detail {
-    width: auto;
+    width: 100%;
     min-width: 200px;
     box-sizing: border-box;
     padding: var(--spacing-small);
@@ -91,7 +91,7 @@
 }
 
 .adress #adress-detail {
-    width: auto;
+    width: 100%;
     min-width: 200px;
     box-sizing: border-box;
     padding: var(--spacing-small);

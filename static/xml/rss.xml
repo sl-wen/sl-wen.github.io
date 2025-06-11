@@ -6,7 +6,7 @@
                             <description>鱼鱼的博客</description>
                             <language>zh-cn</language>
                             <generator>Node+Supabase RSS自生成</generator>
-                            <lastBuildDate>Wed, 11 Jun 2025 06:45:04 GMT</lastBuildDate>
+                            <lastBuildDate>Wed, 11 Jun 2025 08:45:03 GMT</lastBuildDate>
                                 
         <item>
             <title><![CDATA[table]]></title>
@@ -40,7 +40,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
             <category>table</category>
             <pubDate>Mon, 09 Jun 2025 02:43:23 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=5f1c3a97-c629-4a5f-b031-35df31292d13</guid>
-            <lastBuildDate>Mon, 09 Jun 2025 14:47:07 GMT</lastBuildDate>
+            <lastBuildDate>Wed, 11 Jun 2025 08:08:32 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -569,7 +569,7 @@ git push
             <category>ali</category>
             <pubDate>Wed, 04 Jun 2025 09:24:26 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</guid>
-            <lastBuildDate>Tue, 10 Jun 2025 09:35:00 GMT</lastBuildDate>
+            <lastBuildDate>Wed, 11 Jun 2025 08:29:59 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -1323,16 +1323,26 @@ git push</p>
 <li><p>pushの取り消し</p>
 <blockquote>
 <p>git reset --hard &lt;戻したいコミットのハッシュ値&gt;
-git push -f</p>
+git push -f
+强制回退
+确认目标 commit 的哈希值</p>
 </blockquote>
 </li>
 </ul>
+<pre><code>git log --oneline
+</code></pre>
+<p>本地回退到目标 commit</p>
+<pre><code>git reset --hard a1b2c3d
+</code></pre>
+<p>强制推送到远程仓库</p>
+<pre><code>git push -f origin &lt;branch-name&gt;
+</code></pre>
 ]]></description>
             <author>slwen</author>
             <category>git</category>
             <pubDate>Tue, 18 Mar 2025 08:25:15 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=88456219-d82e-4326-ae41-94952b07162b</guid>
-            <lastBuildDate>Tue, 10 Jun 2025 13:05:25 GMT</lastBuildDate>
+            <lastBuildDate>Wed, 11 Jun 2025 08:32:31 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -1470,7 +1480,7 @@ GitHubにSSHキーを設定する</p>
 <category>php</category>
             <pubDate>Tue, 18 Mar 2025 08:07:23 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=81132e66-c9a1-4e48-8247-ed8d6ac91169</guid>
-            <lastBuildDate>Tue, 10 Jun 2025 02:09:20 GMT</lastBuildDate>
+            <lastBuildDate>Wed, 11 Jun 2025 08:07:00 GMT</lastBuildDate>
         </item>
 
         <item>

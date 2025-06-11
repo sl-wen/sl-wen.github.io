@@ -1,7 +1,7 @@
 // 发布页面的打包入口文件
 import { marked } from 'marked';
 import { supabase } from './supabase-config.js';
-import { getCursorLine, renderPreviewByLine, scrollPreviewToLine, onScrollEnd, getVisibleFirstLine } from './common.js';
+import { getCursorLine, scrollPreviewToLine, onScrollEnd, getVisibleFirstLine } from './common.js';
 
 // 安全的 marked 解析函数
 function safeMarked(content) {

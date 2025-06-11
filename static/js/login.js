@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
     // 为注册表单添加提交事件监听
     const signupForm = document.getElementById('signup-form');
     if (signupForm) {

@@ -1,11 +1,15 @@
 // 缓存名称和版本控制
 // 在你的 service-worker.js 中更新缓存版本
-const CACHE_VERSION = 'v3'; // 增加版本号
+const CACHE_VERSION = 'v1.0.4'; // 增加版本号
 const CACHE_NAME = `my-site-cache-${CACHE_VERSION}`;
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/static/css/common.css',
+  '/static/css/index.css',
+  '/static/css/login.css',
+  '/static/css/article.css',
+  '/static/css/edit-post.css',
   '/static/js/common-components.js',
   '/static/js/supabase-config.js',
   '/static/js/click-effect.js',

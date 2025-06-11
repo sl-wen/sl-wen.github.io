@@ -193,9 +193,7 @@ export default {
     updatePasswordStrength,
     showMessage,
     formatDate,
-    safeMarked,
     getCursorLine,
-    renderPreviewByLine,
     scrollPreviewToLine,
     onScrollEnd,
     getVisibleFirstLine

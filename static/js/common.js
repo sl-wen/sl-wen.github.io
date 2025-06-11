@@ -122,18 +122,7 @@ export function formatDate(timestamp) {
     });
 }
 
-// 安全的 marked 解析函数
-export function safeMarked(content) {
-    if (!content || typeof content !== 'string') {
-        return '';
-    }
-    try {
-        return window.marked.parse(content);
-    } catch (error) {
-        console.error('Markdown 解析错误:', error);
-        return '内容解析错误';
-    }
-}
+
 
 export function getCursorLine(textarea) {
     const value = textarea.value;
@@ -141,55 +130,6 @@ export function getCursorLine(textarea) {
 
     // 截取到光标，统计有多少个换行符，就是光标所在行号
     return value.substring(0, selectionStart).split('\n').length - 1;
-}
-
-export function renderPreviewByLine(text) {
-    // 1. 分割原始Markdown文本为行
-    const markdownLines = text.split('\n');
-    
-    // 2. 标记各种特殊Markdown结构
-    let inCodeBlock = false;
-    let inTable = false;
-    let inHtmlBlock = false;
-    
-    const markedLines = markdownLines.map((line, i) => {
-        // 检测代码块开始和结束
-        if (line.trim().startsWith('```')) {
-            inCodeBlock = !inCodeBlock;
-        }
-        
-        // 检测表格行
-        if (line.trim().startsWith('|') && line.includes('|', 1)) {
-            inTable = true;
-        } else if (inTable && line.trim() === '') {
-            inTable = false;
-        }
-        
-        // 检测HTML块
-        if (line.trim().startsWith('<') && !line.trim().startsWith('</') && !line.includes('/>')) {
-            inHtmlBlock = true;
-        } else if (inHtmlBlock && line.includes('</')) {
-            inHtmlBlock = false;
-        }
-        
-        // 只在安全区域添加行锚点标记
-        if (!inCodeBlock && !inTable && !inHtmlBlock) {
-            // 使用一个不太可能在正常文本中出现的标记
-            return `${line}\n<!-- SAFE_LINE_ANCHOR_${i} -->`;
-        }
-        return line;
-    });
-    
-    // 3. 渲染Markdown
-    const htmlContent = safeMarked(markedLines.join('\n'));
-    
-    // 4. 将自定义标记替换为实际的锚点span
-    const contentWithAnchors = htmlContent.replace(
-        /<!-- SAFE_LINE_ANCHOR_(\d+) -->/g, 
-        (match, lineNum) => `<span class="md-line-anchor" data-line="${lineNum}" id="line-anchor-${lineNum}"></span>`
-    );
-    
-    return contentWithAnchors;
 }
 
 export function scrollPreviewToLine(lineNumber) {

@@ -1,5 +1,4 @@
 // Supabase主页面的入口文件
-import { marked } from 'marked';
 import { supabase } from './supabase-config.js';
 import { formatDate } from './common.js';
 
@@ -134,6 +133,3 @@ window.addEventListener('DOMContentLoaded', () => {
     // 执行获取文章
     getPosts();
 });
-
-// 导出函数和变量，使其在全局可用
-window.marked = marked;

@@ -1,16 +1,12 @@
+import { marked } from 'marked';
 // 加载 README 内容
 function loadReadme() {
     fetch('/README.md')
         .then(response => response.text())
         .then(text => {
             const readmeContent = document.getElementById('readme-content');
-            // 使用全局变量方式访问 marked
-            if (window.marked) {
-                readmeContent.innerHTML = window.marked.parse(text);
-            } else {
-                console.error('marked library not loaded');
-                readmeContent.innerHTML = '<p class="error">Markdown 解析器未加载，请稍后重试。</p>';
-            }
+
+            readmeContent.innerHTML = marked.parse(text);
         })
         .catch(error => {
             const readmeContent = document.getElementById('readme-content');

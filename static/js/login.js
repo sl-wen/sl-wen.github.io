@@ -121,12 +121,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('id', session.user.id)
+                .eq('user_id', session.user.id)
                 .single();
 
             sessionStorage.setItem('userSession', JSON.stringify(session));
             sessionStorage.setItem('userProfile', JSON.stringify(profile));
-            handleLoginRewards(profile);
+            await handleLoginRewards(profile);
             // 跳转到首页
             setTimeout(() => {
                 window.location.href = '/';
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .insert([{
-                        id: data.user.id,
+                        user_id: data.user.id,
                         username: email.split('@')[0],
                         level: 0,
                         amount: 0,

@@ -1,6 +1,6 @@
 -- 创建文章表
 CREATE TABLE IF NOT EXISTS posts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    post_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title TEXT NOT NULL,
     content TEXT,
     author TEXT DEFAULT 'Admin',
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 -- 创建用户表
 CREATE TABLE IF NOT EXISTS profiles (
-    id UUID REFERENCES auth.users(id),
+    user_id UUID REFERENCES auth.users(id),
     username TEXT PRIMARY KEY NOT NULL,
     email VARCHAR(100) DEFAULT null,
     level INTEGER DEFAULT 0,
@@ -31,9 +31,9 @@ CREATE TABLE IF NOT EXISTS profiles (
 
 -- 创建评论表
 CREATE TABLE IF NOT EXISTS comments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    comment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    author_id UUID NOT NULL REFERENCES profiles(id),
+    user_id UUID NOT NULL REFERENCES profiles(id),
     parent_id UUID REFERENCES comments(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
     is_approved BOOLEAN DEFAULT true,
@@ -45,10 +45,10 @@ CREATE TABLE IF NOT EXISTS comments (
 
 -- 创建评论表
 CREATE TABLE IF NOT EXISTS reactions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reaction_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    author_id UUID NOT NULL REFERENCES profiles(id),
-    type  TEXT NOT NULL, -- like, dislike
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    type  TEXT NOT NULL -- like, dislike
 );
 
 
@@ -75,13 +75,19 @@ INSERT INTO user_levels (level, required_exp, daily_login_exp, daily_login_coins
 (10, 4500, 80, 60, 400, '神话', '已成为传说'),
 (11, 5500, 100, 80, 500, '至尊', '达到了巅峰');
 
+CREATE TABLE task_types (
+    tasktype_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) NOT NULL,
+    description TEXT
+);
+
 -- 任务表 (tasks)
 CREATE TABLE tasks (
     task_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     task_name VARCHAR(100) NOT NULL,
     task_description TEXT,
- 　 type_id INTEGER REFERENCES task_types(id) NOT NULL,
-  　action_type TEXT NOT NULL, -- login, like, comment, post, etc.
+    type_id UUID REFERENCES task_types(id) NOT NULL,
+    action_type TEXT NOT NULL, -- login, like, comment, post, etc.
     required_count INT NOT NULL, --任务次数
     coins_reward INT NOT NULL,
     exp_reward INT NOT NULL,
@@ -127,7 +133,7 @@ CREATE TABLE tasks (
 
 -- 用户任务进度表 (user_tasks)
 CREATE TABLE user_tasks (
-    id SERIAL PRIMARY KEY,
+    usertask_id SERIAL PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id),
     task_id INT NOT NULL,
     current_count INTEGER DEFAULT 0,
@@ -151,7 +157,7 @@ CREATE TABLE user_activities (
 );
 --任务奖励历史表 (task_reward_history)
 CREATE TABLE task_reward_history (
-  id SERIAL PRIMARY KEY,
+  task_reward_history_id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id),
   task_id INTEGER REFERENCES tasks(id) NOT NULL,
   experience_gained INTEGER NOT NULL DEFAULT 0,
@@ -160,7 +166,7 @@ CREATE TABLE task_reward_history (
 );
 -- 创建统计表
 CREATE TABLE IF NOT EXISTS stats (
-    id TEXT PRIMARY KEY,
+    stats_id TEXT PRIMARY KEY,
     total_views INTEGER DEFAULT 0
 );
 
@@ -177,7 +183,7 @@ BEGIN
   -- 获取任务的重置频率
   SELECT reset_frequency INTO task_reset_frequency
   FROM tasks
-  WHERE id = NEW.task_id;
+  WHERE task_id = NEW.task_id;
   
   -- 如果是首次创建记录，不需要重置
   IF TG_OP = 'INSERT' THEN

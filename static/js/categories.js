@@ -40,7 +40,7 @@ async function getCategories() {
                 }
                 
                 categorizedPosts[tag].push({
-                    id: post.id,
+                    post_id: post.post_id,
                     title: post.title || '无标题',
                     created_at: post.created_at,
                     views: post.views || 0
@@ -69,7 +69,7 @@ async function getCategories() {
                 categoriesHtml += `
                     <li>
                         <span class="post-date">${date}</span>
-                        <a href="/pages/article.html?id=${post.id}">${post.title}</a>
+                        <a href="/pages/article.html?id=${post.post_id}">${post.title}</a>
                         <span class="post-views">👁️‍🗨️ ${post.views}</span>
                     </li>
                 `;

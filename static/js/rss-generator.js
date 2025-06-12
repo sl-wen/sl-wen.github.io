@@ -32,7 +32,7 @@ async function generateRSS() {
     // 1. 查询最新N条文章
     const { data: posts, error } = await supabase
         .from('posts')
-        .select('id, title, content, author, tags, created_at, updated_at')
+        .select('post_id, title, content, author, tags, created_at, updated_at')
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -47,7 +47,7 @@ async function generateRSS() {
 
     // 2. 拼装 RSS 的每项
     const items = posts.map(post => {
-        const postUrl = SITE_LINK.replace(/\/$/, '') + `/pages/article.html?id=${post.id}`; // 你也可以用post.id
+        const postUrl = SITE_LINK.replace(/\/$/, '') + `/pages/article.html?id=${post.post_id}`; // 你也可以用post.post_id
         const pubDate = new Date(post.created_at).toUTCString();
         const updateDate = new Date(post.updated_at).toUTCString();
         // 将 Markdown 内容转换为 HTML

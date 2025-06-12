@@ -173,7 +173,7 @@ async function initEditor() {
             if (error) throw error;
 
             if (statusDiv) {
-                statusDiv.innerHTML += `<p>文章添加成功，ID: ${newPost.id}</p>`;
+                statusDiv.innerHTML += `<p>文章添加成功，ID: ${newPost.post_id}</p>`;
             }
 
             // 显示成功消息
@@ -191,7 +191,7 @@ async function initEditor() {
                 statusDiv.innerHTML += '<p>3秒后将跳转到文章页面</p>';
             }
             setTimeout(() => {
-                window.location.href = `/pages/article.html?id=${newPost.id}`;
+                window.location.href = `/pages/article.html?id=${newPost.post_id}`;
             }, 3000);
 
         } catch (error) {

@@ -23,7 +23,7 @@ export async function getArticle(id) {
             const { data, error } = await supabase
                 .from('posts')
                 .select('*')
-                .eq('id', id)
+                .eq('post_id', id)
                 .single();
                 
             if (error) throw error;
@@ -33,7 +33,7 @@ export async function getArticle(id) {
             const { error: updateError } = await supabase
                 .from('posts')
                 .update({ views: (data.views || 0) + 1 })
-                .eq('id', id);
+                .eq('post_id', id);
                 
             if (updateError) {
                 console.warn('更新访问量失败:', updateError);
@@ -139,7 +139,7 @@ export async function deleteArticle(id) {
         const { error } = await supabase
             .from('posts')
             .delete()
-            .eq('id', id);
+            .eq('post_id', id);
             
         if (error) throw error;
         return true;

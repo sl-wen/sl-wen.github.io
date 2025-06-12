@@ -18,6 +18,7 @@ export default {
     auth: './static/js/auth.js',
     reaction: './static/js/reaction.js',
     task: './static/js/task.js',
+    comments: './static/js/comments.js',
     
     // 文章相关页面
     index: './static/js/index.js',

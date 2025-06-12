@@ -116,7 +116,7 @@ async function loadArticle(articleId) {
         const { data: article, error } = await supabase
             .from('posts')
             .select('*')
-            .eq('id', articleId)
+            .eq('post_id', articleId)
             .single();
 
         if (error || !article) {
@@ -166,7 +166,7 @@ async function updateArticle(articleId) {
                 content,
                 updated_at: new Date()
             })
-            .eq('id', articleId);
+            .eq('post_id', articleId);
 
         showmessage('文章更新成功！', 'success');
         setTimeout(() => {
@@ -189,7 +189,7 @@ async function handleDeleteArticle(articleId) {
         const { error } = await supabase
             .from('posts')
             .delete()
-            .eq('id', articleId);
+            .eq('post_id', articleId);
         showmessage('文章删除成功！', 'success');
         setTimeout(() => {
             window.location.href = '/';

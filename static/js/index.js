@@ -64,7 +64,7 @@ async function getPosts() {
         
         // 处理文章数据
         const processedPosts = posts.map(post => ({
-            id: post.id,
+            post_id: post.post_id,
             title: post.title || '无标题',
             author: post.author || '未知',
             created_at: post.created_at,
@@ -90,7 +90,7 @@ async function getPosts() {
                 postsHtml += `
                     <li>
                         <span class="post-date">${date}</span>
-                        <a href="/pages/article.html?id=${post.id}">${post.title}</a>
+                        <a href="/pages/article.html?id=${post.post_id}">${post.title}</a>
                         <span class="post-views">👁️‍🗨️ ${post.views}</span>
                     </li>
                 `;

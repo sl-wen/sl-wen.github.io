@@ -8,14 +8,14 @@ async function updateTotalViews() {
         const { data: statsData, error: getError } = await supabase
             .from('stats')
             .select('total_views')
-            .eq('id', 'views')
+            .eq('status_id', 'views')
             .maybeSingle();
         
         if (!statsData) {
             // 如果统计记录不存在，创建新记录
             const { data: newStats, error: insertError } = await supabase
                 .from('stats')
-                .insert([{ id: 'views', total_views: 1 }], {
+                .insert([{ status_id: 'views', total_views: 1 }], {
                     returning: 'representation'
                 })
                 .select()
@@ -31,7 +31,7 @@ async function updateTotalViews() {
             .update({ total_views: (statsData.total_views || 0) + 1 }, {
                 returning: 'representation'
             })
-            .eq('id', 'views')
+            .eq('status_id', 'views')
             .select()
             .single();
             

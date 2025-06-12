@@ -26,6 +26,8 @@
     <script src="/static/js/dist/article.bundle.js"></script> <!-- 文章页面主要功能 -->
     <script src="/static/js/dist/reaction.bundle.js"></script> <!-- 点赞/踩计数功能 -->
     <script src="/static/js/dist/stats.bundle.js"></script> <!-- 统计相关功能 -->
+    <script src="/static/js/dist/comments.bundle.js"></script> <!-- 评论功能 -->
+    <script src="/static/js/dist/task.bundle.js"></script> <!-- 任务功能 -->
     <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
 
 </head>
@@ -83,88 +85,29 @@
             <!-- 评论区开始 -->
             <section class="comments-section" id="comments">
                 <div class="comments-header">
-                    <h2 class="comments-count">评论 (25)</h2>
-                    <div class="comments-sort"> <span class="sort-label">排序方式:</span> <select class="sort-select">
+                    <h3 class="comments-count">评论 (0)</h3>
+                    <div class="comments-sort">
+                        <select class="sort-select">
                             <option value="newest">最新</option>
                             <option value="oldest">最早</option>
-                            <option value="popular">最受欢迎</option>
-                        </select> </div>
-                </div> 
-                <!-- 评论表单 -->
-                <div class="comment-form">
-                    <h3 class="comment-form-title">发表评论</h3>
-                    <form id="main-comment-form">
+                            <option value="popular">最热</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="comment-form" id="main-comment-form">
+                    <form>
                         <div class="form-group">
-                            <textarea id="comment-content" class="form-control" placeholder="分享你的想法..."
-                                required></textarea>
+                            <textarea id="comment-content" class="form-control" placeholder="写下你的评论..." required></textarea>
                         </div>
                         <div class="form-footer">
-                            <div class="form-info"> <small>请遵守社区规范，文明发言</small> </div>
-                            <div class="button-group">
-                                <button type="submit" class="primary-button">发表评论</button>
+                            <div class="form-buttons">
+                                <button type="submit" class="btn btn-primary">发表评论</button>
                             </div>
                         </div>
                     </form>
                 </div>
-                <!-- 评论列表 -->
                 <ul class="comments-list">
-                    <!-- 评论项 1 -->
-                    <li class="comment" id="comment-1">
-                        <div class="comment-header">
-                            <div class="comment-author"> <img src="https://i.pravatar.cc/150?img=1" alt="用户头像"
-                                    class="author-avatar"> <span class="author-name">张三</span> </div>
-                            <div class="comment-meta"> <time datetime="2023-06-15T14:30:00">2023年6月15日 14:30</time>
-                            </div>
-                        </div>
-                        <div class="comment-body">
-                            <p>这篇文章写得非常好，我学到了很多新知识。特别是关于数据结构的部分，解释得非常清晰。希望能看到更多类似的内容！</p>
-                        </div>
-                        <div class="comment-actions">
-                            <div class="comment-action like-action"> <i class="icon-like">👍</i> <span
-                                    class="like-count">加载中</span> </div>
-                            <div class="comment-action dislike-action"> <i class="icon-dislike">👎</i> <span
-                                    class="dislike-count">加载中</span> </div>
-                            <div class="comment-action reply-action" data-comment-id="1"> <i class="icon-reply">↩️</i>
-                                <span>回复</span> </div>
-                        </div> 
-                        <!-- 回复表单 -->
-                        <div class="reply-form" id="reply-form-1">
-                            <form>
-                                <div class="form-group"> <label for="reply-content-1" class="form-label">回复 @张三</label>
-                                    <textarea id="reply-content-1" class="form-control" placeholder="写下你的回复..."
-                                        required></textarea> </div>
-                                <div class="form-footer">
-                                    <div class="form-buttons"> <button type="button" class="btn btn-cancel cancel-reply"
-                                            data-comment-id="1">取消</button> <button type="submit"
-                                            class="btn btn-primary">回复</button> </div>
-                                </div>
-                            </form>
-                        </div>
-                        <!-- 回复列表 -->
-                        <div class="replies">
-                            <!-- 回复项 1 -->
-                            <div class="reply" id="reply-1-1">
-                                <div class="comment-header">
-                                    <div class="comment-author"> <img src="https://i.pravatar.cc/150?img=2" alt="用户头像"
-                                            class="author-avatar"> <span class="author-name">李四</span> </div>
-                                    <div class="comment-meta"> <time datetime="2023-06-15T15:45:00">2023年6月15日
-                                            15:45</time> </div>
-                                </div>
-                                <div class="comment-body">
-                                    <p><strong>@张三</strong> 我也觉得这篇文章写得很好，尤其是实例部分非常实用。</p>
-                                </div>
-                                <div class="comment-actions">
-                                    <div class="comment-action like-action"> <i class="icon-like">👍</i> <span
-                                            class="like-count">5</span> </div>
-                                    <div class="comment-action dislike-action"> <i class="icon-dislike">👎</i> <span
-                                            class="dislike-count">0</span> </div>
-                                    <div class="comment-action reply-action" data-comment-id="1-1"> <i
-                                            class="icon-reply">↩️</i> <span>回复</span> </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </li>
+                    <!-- 评论将通过 JavaScript 动态加载 -->
                 </ul>
             </section>
         </div>

@@ -1,3 +1,19 @@
+// 显示消息
+export function showMessage(message, type = 'info') {
+    const container = document.getElementById('message-container');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="${type}-message">
+            ${message}
+        </div>
+    `;
+
+    setTimeout(() => {
+        container.innerHTML = '';
+    }, 10000);
+}
+
 // 验证邮箱格式
 export function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -100,21 +116,6 @@ export function updatePasswordStrength(password) {
     }
 }
 
-// 显示消息
-export function showMessage(message, type = 'info') {
-    const container = document.getElementById('message-container');
-    if (!container) return;
-
-    container.innerHTML = `
-        <div class="${type}-message">
-            ${message}
-        </div>
-    `;
-
-    setTimeout(() => {
-        container.innerHTML = '';
-    }, 3000);
-}
 
 // 格式化日期
 export function formatDate(timestamp) {

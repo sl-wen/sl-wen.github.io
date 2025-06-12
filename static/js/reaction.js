@@ -5,7 +5,7 @@ import { showMessage } from './common.js';
 document.addEventListener('DOMContentLoaded', () => {
 
     const urlParams = new URLSearchParams(window.location.search);
-    const postId = urlParams.get('id');
+    const post_id = urlParams.get('id');
     const likeButton = document.getElementById('likeButton');
     const dislikeButton = document.getElementById('dislikeButton');
     // 获取当前用户
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
     if (likeButton && dislikeButton) {
-        const reaction = fetchReactions(userProfile, postId);
+        let reaction = fetchReactions(userProfile, post_id);
         updateUI(reaction);
 
         // 添加事件监听器
@@ -26,26 +26,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-async function fetchReactions(userProfile, postId) {
+async function fetchReactions(userProfile, post_id) {
 
     try {
         // 获取文章的点赞/踩计数
         const { data: postData, error: postError } = await supabase
             .from('posts')
             .select('likes_count, dislikes_count')
-            .eq('id', postId)
+            .eq('post_id', post_id)
             .single();
 
         if (postError) throw postError;
-        showMessage('获取文章的点赞/踩计数成功', 'info');
-        const reaction = {};
+        showMessage('获取文章的点赞/踩计数成功', 'success');
+        let reaction = {};
         // 如果用户已登录，获取用户对该文章的反应
         if (userProfile) {
             const { data: reactionData, error: reactionError } = await supabase
                 .from('reactions')
                 .select('user_id, post_id, type')
-                .eq('user_id', userProfile.id)
-                .eq('post_id', postId)
+                .eq('user_id', userProfile.user_id)
+                .eq('post_id', post_id)
                 .maybeSingle();
 
             if (reactionError) throw reactionError;
@@ -53,16 +53,16 @@ async function fetchReactions(userProfile, postId) {
                 return reaction = {
                     likes_count: postData.likes_count,
                     dislikes_count: postData.dislikes_count,
-                    user_id: userProfile.id,
-                    post_id: postId,
+                    user_id: userProfile.user_id,
+                    post_id: post_id,
                     type: reactionData.type
                 }
             } else {
                 return reaction = {
                     likes_count: postData.likes_count,
                     dislikes_count: postData.dislikes_count,
-                    user_id: userProfile.id,
-                    post_id: postId,
+                    user_id: userProfile.user_id,
+                    post_id: post_id,
                     type: null
                 }
             }
@@ -71,7 +71,7 @@ async function fetchReactions(userProfile, postId) {
                 likes_count: postData.likes_count,
                 dislikes_count: postData.dislikes_count,
                 user_id: null,
-                post_id: postId,
+                post_id: post_id,
                 type: null
             }
         }
@@ -86,6 +86,14 @@ async function handleReaction(reaction, type) {
     try {
         // 如果用户已经有相同的反应，则删除反应（取消点赞/踩）
         if (reaction.type === type) {
+            // 删除反应
+            const { error: deleteError } = await supabase
+                .from('reactions')
+                .delete()
+                .eq('user_id', reaction.user_id)
+                .eq('post_id', reaction.post_id);
+
+            if (deleteError) throw deleteError;
 
             // 更新状态
             reaction.type = null;
@@ -97,7 +105,6 @@ async function handleReaction(reaction, type) {
         }
         // 如果用户已经有不同的反应，则更新反应
         else if (reaction.type) {
-            // 更新用户的反应
             const { error } = await supabase
                 .from('reactions')
                 .update({ type })
@@ -137,10 +144,32 @@ async function handleReaction(reaction, type) {
             }
         }
 
+        // 更新文章的点赞/踩计数
+        const { error: updatePostError } = await supabase
+            .from('posts')
+            .update({
+                likes_count: reaction.likes_count,
+                dislikes_count: reaction.dislikes_count
+            })
+            .eq('post_id', reaction.post_id);
+
+        if (updatePostError) throw updatePostError;
+
         // 更新UI
-        this.updateUI(reaction);
+        updateUI(reaction);
+        
+        // 如果是点赞，更新任务完成状态
+        if (type === 'like') {
+            // 导入评论模块中的更新点赞任务函数
+            import('./comments.js').then(module => {
+                if (module.updateLikeTask) {
+                    module.updateLikeTask(reaction.user_id, reaction.post_id);
+                }
+            }).catch(err => console.error('无法导入评论模块:', err));
+        }
     } catch (error) {
         console.error('Error handling reaction:', error);
+        showMessage('处理反应失败，请稍后重试', 'error');
     }
 }
 

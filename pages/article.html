@@ -1,136 +1,248 @@
 <!DOCTYPE html> <!-- HTML5文档类型声明 -->
-<html lang="zh-CN"> <!-- HTML根元素，设置语言为中文 -->
-<head> <!-- 文档头部，包含元数据 -->
+<html lang="zh-CN">
+<!-- HTML根元素，设置语言为中文 -->
+
+<head>
+    <!-- 文档头部，包含元数据 -->
     <meta charset="UTF-8"> <!-- 设置文档字符编码为UTF-8 -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#24292e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"> <!-- 设置移动设备的视口属性 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <!-- 设置移动设备的视口属性 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script> <!-- 内容安全策略设置，定义允许加载的资源来源 -->
     <title>文章详情 - 我的博客</title> <!-- 页面标题 -->
     <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon"> <!-- 设置网站图标 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script> <!-- 引入代码高亮库 -->
     <link rel="stylesheet" href="/static/css/article.css"> <!-- 引入文章页面特定的CSS -->
     <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS -->
-    
-    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->   
+
+    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
     <!-- 其他依赖的脚本 -->
     <script src="/static/js/dist/auth.bundle.js"></script>
     <script src="/static/js/dist/supabase.bundle.js"></script> <!-- 加载Supabase相关功能 -->
     <script src="/static/js/dist/articleService.bundle.js"></script> <!-- 文章服务相关功能 -->
     <script src="/static/js/dist/article.bundle.js"></script> <!-- 文章页面主要功能 -->
+    <script src="/static/js/dist/reaction.bundle.js"></script> <!-- 点赞/踩计数功能 -->
     <script src="/static/js/dist/stats.bundle.js"></script> <!-- 统计相关功能 -->
     <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
 
 </head>
-<body> <!-- 文档主体 -->
-    <div class="page"> <!-- 页面主容器 -->
+
+<body>
+    <!-- 文档主体 -->
+    <div class="page">
+        <!-- 页面主容器 -->
         <div id="common-header"></div> <!-- 公共页头容器 -->
 
-        <div class="container"> <!-- 主要内容容器 -->
-            <div class="article-actions"> <!-- 文章操作按钮区域 -->
+        <div class="container">
+            <!-- 主要内容容器 -->
+            <div class="button-area">
+                <div class="article-actions"></div> <!-- 文章操作按钮区域 -->
+                <div class="reaction-actions">
+                    <button id="likeButton">
+                        <span role="img" aria-label="like">👍</span>
+                    </button>
+                    <button id="dislikeButton">
+                        <span role="img" aria-label="dislike">👎</span>
+                    </button>
+                </div> <!-- 点赞/踩计数按钮区域 -->
             </div>
             <!-- AI功能区域 -->
-            <div class="ai-tools"> <!-- AI工具容器 -->
-                <div class="ai-summary-section"> <!-- AI摘要部分 -->
-                    <div class="summary-header"> <!-- 摘要标题区域 -->
+            <div class="ai-tools">
+                <!-- AI工具容器 -->
+                <div class="ai-summary-section">
+                    <!-- AI摘要部分 -->
+                    <div class="summary-header">
+                        <!-- 摘要标题区域 -->
                         <span class="summary-icon">🤖 AI 总结</span> <!-- AI图标和标题 -->
                         <button id="generate-summary" class="ai-button">生成摘要</button> <!-- 生成摘要按钮 -->
                     </div>
-                    <div id="summary-container" class="ai-result-container" style="display: none;"> <!-- 摘要结果容器 -->
+                    <div id="summary-container" class="ai-result-container" style="display: none;">
+                        <!-- 摘要结果容器 -->
                         <div id="summary-content"></div> <!-- 摘要内容显示区域 -->
                     </div>
                 </div>
             </div>
-            <div id="article-container" class="article-container"> <!-- 文章内容容器 -->
+            <div id="article-container" class="article-container">
+                <!-- 文章内容容器 -->
                 <div class="loading">
                     <div class="octocat-container">
-                        <svg class="octocat" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="32" height="32">
-                          <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                        <svg class="octocat" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="32"
+                            height="32">
+                            <path fill-rule="evenodd"
+                                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
+                            </path>
                         </svg>
                         <div class="octocat-arm"></div>
                     </div>
                     <p class="loading-text">加载中...</p>
                 </div> <!-- 加载提示 -->
             </div>
-            <div id="status-messages" class="status-messages"></div> <!-- 状态消息显示区域 -->
+            <!-- 评论区开始 -->
+            <section class="comments-section" id="comments">
+                <div class="comments-header">
+                    <h2 class="comments-count">评论 (25)</h2>
+                    <div class="comments-sort"> <span class="sort-label">排序方式:</span> <select class="sort-select">
+                            <option value="newest">最新</option>
+                            <option value="oldest">最早</option>
+                            <option value="popular">最受欢迎</option>
+                        </select> </div>
+                </div> 
+                <!-- 评论表单 -->
+                <div class="comment-form">
+                    <h3 class="comment-form-title">发表评论</h3>
+                    <form id="main-comment-form">
+                        <div class="form-group">
+                            <textarea id="comment-content" class="form-control" placeholder="分享你的想法..."
+                                required></textarea>
+                        </div>
+                        <div class="form-footer">
+                            <div class="form-info"> <small>请遵守社区规范，文明发言</small> </div>
+                            <div class="button-group">
+                                <button type="submit" class="primary-button">发表评论</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!-- 评论列表 -->
+                <ul class="comments-list">
+                    <!-- 评论项 1 -->
+                    <li class="comment" id="comment-1">
+                        <div class="comment-header">
+                            <div class="comment-author"> <img src="https://i.pravatar.cc/150?img=1" alt="用户头像"
+                                    class="author-avatar"> <span class="author-name">张三</span> </div>
+                            <div class="comment-meta"> <time datetime="2023-06-15T14:30:00">2023年6月15日 14:30</time>
+                            </div>
+                        </div>
+                        <div class="comment-body">
+                            <p>这篇文章写得非常好，我学到了很多新知识。特别是关于数据结构的部分，解释得非常清晰。希望能看到更多类似的内容！</p>
+                        </div>
+                        <div class="comment-actions">
+                            <div class="comment-action like-action"> <i class="icon-like">👍</i> <span
+                                    class="like-count">加载中</span> </div>
+                            <div class="comment-action dislike-action"> <i class="icon-dislike">👎</i> <span
+                                    class="dislike-count">加载中</span> </div>
+                            <div class="comment-action reply-action" data-comment-id="1"> <i class="icon-reply">↩️</i>
+                                <span>回复</span> </div>
+                        </div> 
+                        <!-- 回复表单 -->
+                        <div class="reply-form" id="reply-form-1">
+                            <form>
+                                <div class="form-group"> <label for="reply-content-1" class="form-label">回复 @张三</label>
+                                    <textarea id="reply-content-1" class="form-control" placeholder="写下你的回复..."
+                                        required></textarea> </div>
+                                <div class="form-footer">
+                                    <div class="form-buttons"> <button type="button" class="btn btn-cancel cancel-reply"
+                                            data-comment-id="1">取消</button> <button type="submit"
+                                            class="btn btn-primary">回复</button> </div>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- 回复列表 -->
+                        <div class="replies">
+                            <!-- 回复项 1 -->
+                            <div class="reply" id="reply-1-1">
+                                <div class="comment-header">
+                                    <div class="comment-author"> <img src="https://i.pravatar.cc/150?img=2" alt="用户头像"
+                                            class="author-avatar"> <span class="author-name">李四</span> </div>
+                                    <div class="comment-meta"> <time datetime="2023-06-15T15:45:00">2023年6月15日
+                                            15:45</time> </div>
+                                </div>
+                                <div class="comment-body">
+                                    <p><strong>@张三</strong> 我也觉得这篇文章写得很好，尤其是实例部分非常实用。</p>
+                                </div>
+                                <div class="comment-actions">
+                                    <div class="comment-action like-action"> <i class="icon-like">👍</i> <span
+                                            class="like-count">5</span> </div>
+                                    <div class="comment-action dislike-action"> <i class="icon-dislike">👎</i> <span
+                                            class="dislike-count">0</span> </div>
+                                    <div class="comment-action reply-action" data-comment-id="1-1"> <i
+                                            class="icon-reply">↩️</i> <span>回复</span> </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </li>
+                </ul>
+            </section>
         </div>
 
         <div id="common-footer"></div> <!-- 公共页脚容器 -->
-    </div>
-      
-    <!-- AI功能脚本 -->
-    <script>
-        const API_BASE_URL = 'https://autoapi-six.vercel.app'; // AI API的基础URL
-        
-        // 生成摘要的事件处理函数
-        document.getElementById('generate-summary').addEventListener('click', async function() {
-            const articleContent = document.querySelector('.markdown-body').textContent; // 获取文章内容
-            const summaryContainer = document.getElementById('summary-container');
-            const summaryContent = document.getElementById('summary-content');
-            
-            try {
-                summaryContent.innerHTML = '<div class="loading">正在生成摘要...</div>'; // 显示加载提示
-                summaryContainer.style.display = 'block';
 
-                // 验证文章内容
-                if (!articleContent || articleContent.trim().length < 10) {
-                    throw new Error('文章内容太短，无法生成摘要');
-                }
+        <!-- AI功能脚本 -->
+        <script>
+            const API_BASE_URL = 'https://autoapi-six.vercel.app'; // AI API的基础URL
 
-                // 限制文章长度，避免请求过大
-                const maxInputLength = 1000;
-                const truncatedContent = articleContent.length > maxInputLength 
-                    ? articleContent.substring(0, maxInputLength) + '...'
-                    : articleContent;
+            // 生成摘要的事件处理函数
+            document.getElementById('generate-summary').addEventListener('click', async function () {
+                const articleContent = document.querySelector('.markdown-body').textContent; // 获取文章内容
+                const summaryContainer = document.getElementById('summary-container');
+                const summaryContent = document.getElementById('summary-content');
 
-                // 发送API请求生成摘要
-                const response = await fetch(`${API_BASE_URL}/api/summarize`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        text: truncatedContent,
-                        model: 'huggingface:mt5',  // 使用多语言mT5模型
-                        maxLength: 1000
-                    })
-                });
-
-                // 处理API响应
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`API请求失败 (${response.status})`);
-                }
-
-                // 解析API响应
-                let responseText;
                 try {
-                    responseText = await response.text();
-                    const data = JSON.parse(responseText);
-                    
-                    if (data.summary) {
-                        summaryContent.innerHTML = `<p>${data.summary}</p>`; // 显示生成的摘要
-                    } else if (data.error) {
-                        throw new Error(data.error);
-                    } else {
-                        throw new Error('返回数据格式不正确');
+                    summaryContent.innerHTML = '<div class="loading">正在生成摘要...</div>'; // 显示加载提示
+                    summaryContainer.style.display = 'block';
+
+                    // 验证文章内容
+                    if (!articleContent || articleContent.trim().length < 10) {
+                        throw new Error('文章内容太短，无法生成摘要');
                     }
-                } catch (parseError) {
-                    throw new Error('无法解析服务器响应');
+
+                    // 限制文章长度，避免请求过大
+                    const maxInputLength = 1000;
+                    const truncatedContent = articleContent.length > maxInputLength
+                        ? articleContent.substring(0, maxInputLength) + '...'
+                        : articleContent;
+
+                    // 发送API请求生成摘要
+                    const response = await fetch(`${API_BASE_URL}/api/summarize`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            text: truncatedContent,
+                            model: 'huggingface:mt5',  // 使用多语言mT5模型
+                            maxLength: 1000
+                        })
+                    });
+
+                    // 处理API响应
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`API请求失败 (${response.status})`);
+                    }
+
+                    // 解析API响应
+                    let responseText;
+                    try {
+                        responseText = await response.text();
+                        const data = JSON.parse(responseText);
+
+                        if (data.summary) {
+                            summaryContent.innerHTML = `<p>${data.summary}</p>`; // 显示生成的摘要
+                        } else if (data.error) {
+                            throw new Error(data.error);
+                        } else {
+                            throw new Error('返回数据格式不正确');
+                        }
+                    } catch (parseError) {
+                        throw new Error('无法解析服务器响应');
+                    }
+                } catch (error) {
+                    // 错误处理
+                    summaryContent.innerHTML = `<p class="error">生成摘要失败: ${error.message}</p>`;
+
+                    if (error.message.includes('500')) {
+                        summaryContent.innerHTML = `<p class="error">服务器暂时无法处理请求，请稍后重试</p>`;
+                    }
                 }
-            } catch (error) {
-                // 错误处理
-                summaryContent.innerHTML = `<p class="error">生成摘要失败: ${error.message}</p>`;
-                
-                if (error.message.includes('500')) {
-                    summaryContent.innerHTML = `<p class="error">服务器暂时无法处理请求，请稍后重试</p>`;
-                }
-            }
-        });
-    </script>
+            });
+        </script>
 
 </body>
+
 </html>

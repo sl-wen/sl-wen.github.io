@@ -110,6 +110,10 @@ export function showMessage(message, type = 'info') {
             ${message}
         </div>
     `;
+
+    setTimeout(() => {
+        container.innerHTML = '';
+    }, 3000);
 }
 
 // 格式化日期

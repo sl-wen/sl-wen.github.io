@@ -1,6 +1,7 @@
 // 导入supabase客户端
 import { supabase } from './supabase-config.js';
 import { showMessage } from './common.js';
+import { handleLoginRewards } from './task.js';
 
 // 为标签按钮添加切换功能
 document.addEventListener('DOMContentLoaded', () => {
@@ -125,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             sessionStorage.setItem('userSession', JSON.stringify(session));
             sessionStorage.setItem('userProfile', JSON.stringify(profile));
+            handleLoginRewards(profile);
             // 跳转到首页
             setTimeout(() => {
                 window.location.href = '/';

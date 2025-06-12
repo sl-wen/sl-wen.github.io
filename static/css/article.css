@@ -16,10 +16,31 @@
     margin-right: 16px;
 }
 
-.article-actions {
+.button-area {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     justify-content: flex-end;
     gap: var(--spacing-small); 
+}
+
+#likeButton,
+#dislikeButton
+ {
+    padding: 5px 16px;
+    border: 1px solid var(--button-border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+}
+
+.article-actions,
+.reaction-actions
+ {
+    display: flex;
+    justify-content: flex-end;
     margin-bottom: var(--spacing-medium);
 }
 /* edit-button样式*/
@@ -254,6 +275,236 @@ table tr:nth-child(2n) {
     border-color: #d0d0d0;
     color: #333;
 }
+
+
+/* 评论区样式 */
+.comments-section {
+    margin-top: 40px;
+  }
+  
+  .comments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .comments-count {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .comments-sort {
+    display: flex;
+    align-items: center;
+  }
+  
+  .sort-label {
+    margin-right: 10px;
+    color: #666;
+  }
+  
+  .sort-select {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 0.9rem;
+  }
+  
+  /* 评论表单 */
+  .comment-form {
+    margin: 0 auto;
+    align-items: center;
+    width: 100%;
+  }
+
+  .comment-form-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 auto;
+  }
+  
+  .form-group {
+
+    margin: 0 auto;
+  }
+  
+  .form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+  }
+  
+  .form-control {
+    width: 100%;
+    max-width: 100%;               /* 防止超宽 */
+    padding: 10px 15px;
+    box-sizing: border-box; /* 确保padding不会增加元素总宽度 */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+  
+  .form-control:focus {
+    border-color: #4a90e2;
+    outline: none;
+  }
+  
+  textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+  }
+  
+  .form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* 评论列表 */
+  .comments-list {
+    list-style: none;
+  }
+  
+  .comment {
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .comment:last-child {
+    border-bottom: none;
+  }
+  
+  .comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  .comment-author {
+    display: flex;
+    align-items: center;
+  }
+  
+  .author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+  }
+  
+  .author-name {
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .comment-meta {
+    color: #888;
+    font-size: 0.9rem;
+  }
+  
+  .comment-body {
+    margin-bottom: 15px;
+    line-height: 1.7;
+  }
+  
+  .comment-actions {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .comment-action {
+    display: flex;
+    align-items: center;
+    color: #666;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  
+  .comment-action:hover {
+    color: #4a90e2;
+  }
+  
+  .comment-action i {
+    margin-right: 5px;
+  }
+  
+  /* 嵌套回复 */
+  .replies {
+    margin-top: 20px;
+    margin-left: 50px;
+    padding-left: 20px;
+    border-left: 2px solid #eee;
+  }
+  
+  .reply {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .reply:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  
+  /* 回复表单 */
+  .reply-form {
+    margin-top: 15px;
+    margin-left: 50px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    display: none; /* 默认隐藏，点击回复按钮时显示 */
+  }
+  
+  .reply-form.active {
+    display: block;
+  }
+  
+  /* 分页 */
+  .comments-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+  }
+  
+  .pagination {
+    display: flex;
+    list-style: none;
+    gap: 5px;
+  }
+  
+  .page-item {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .page-link {
+    display: block;
+    padding: 8px 12px;
+    color: #4a90e2;
+    text-decoration: none;
+  }
+  
+  .page-item.active {
+    background-color: #4a90e2;
+    border-color: #4a90e2;
+  }
+  
+  .page-item.active .page-link {
+    color: white;
+  }
 
 /* 响应式设计 */
 @media (max-width: 768px) {

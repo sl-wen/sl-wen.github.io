@@ -15,8 +15,9 @@ export default {
     articleService: './static/js/articleService.js',
     stats: './static/js/stats.js',
     marked: './node_modules/marked/lib/marked.esm.js',
-    about: './static/js/about.js',
     auth: './static/js/auth.js',
+    reaction: './static/js/reaction.js',
+    task: './static/js/task.js',
     
     // 文章相关页面
     index: './static/js/index.js',
@@ -27,7 +28,8 @@ export default {
     login: './static/js/login.js',
     reset: './static/js/reset.js',
     categories: './static/js/categories.js',
-    search: './static/js/search.js'
+    search: './static/js/search.js',
+    about: './static/js/about.js'
   },
   output: {
     filename: '[name].bundle.js',

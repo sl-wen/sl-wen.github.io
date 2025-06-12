@@ -271,7 +271,7 @@ body {
 
 /* 按钮组样式 */
 .button-group {
-    margin: var(--spacing-large) 0;
+    margin: var(--spacing-small) 0;
     display: flex;
     justify-content: flex-end;
     gap: var(--spacing-medium);

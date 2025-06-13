@@ -1,6 +1,6 @@
 // 导入supabase客户端
 import { supabase } from './supabase-config.js';
-import { showMessage } from './common.js';
+import { updatePasswordStrength, showMessage } from './common.js';
 import { handleLoginRewards } from './task.js';
 
 // 为标签按钮添加切换功能

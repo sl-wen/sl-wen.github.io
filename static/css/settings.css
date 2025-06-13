@@ -4,18 +4,21 @@
     margin: 0 auto;
 }
 
-.username {
+.username,
+.avatar_url {
     margin: var(--spacing-medium) auto;
 }
 
-.username label {
+.username label,
+.avatar_url label {
     display: block;
     margin-bottom: var(--spacing-small);
     font-weight: 500;
     color: var(--text-color);
 }
 
-.username input[type="text"] {
+.username input[type="text"] ,
+.avatar_url input[type="text"] {
     width: 100%;
     box-sizing: border-box;
     padding: var(--spacing-small);
@@ -27,7 +30,8 @@
     position: relative;
 }
 
-.username input[type="text"] :focus {
+.username input[type="text"] :focus,
+.avatar_url input[type="text"] :focus {
     outline: none;
     border-color: var(--primary-color);
 }

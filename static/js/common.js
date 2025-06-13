@@ -1,5 +1,5 @@
 // 显示消息
-function showMessage(message, type = 'info') {
+export function showMessage(message, type = 'info') {
     const container = document.getElementById('message-container');
     if (!container) return;
 

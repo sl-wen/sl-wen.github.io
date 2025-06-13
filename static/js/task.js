@@ -134,7 +134,7 @@ async function handleLoginRewards(profile) {
         profile.consecutive_logins || 0
     );
 
-    const userlevel = getuserlevels();
+    const userlevel = await getuserlevels();
     // 检查是否为当天首次登录
     const isFirstLogin = isFirstLoginOfDay(profile.last_login);
 
@@ -149,7 +149,7 @@ async function handleLoginRewards(profile) {
     } else {
         rewards_experience = userlevel.daily_login_exp || 0;
         rewards_coins = userlevel.daily_login_exp || 0;
-        const consecutiveLoginsrewards = getconsecutiveLoginsrewards(consecutiveLogins);
+        const consecutiveLoginsrewards = await getconsecutiveLoginsrewards(consecutiveLogins);
         rewards_experience += consecutiveLoginsrewards.rewards_exp || 0;
         rewards_coins += consecutiveLoginsrewards.rewards_coins || 0;
 

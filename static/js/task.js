@@ -149,7 +149,7 @@ async function handleLoginRewards(profile) {
         let updlevel = profile.level;
         // 如果不是当天首次登录，只更新登录时间，不给予奖励
         if (!isFirstLogin) {
-            updprofileslastlogin();
+            await updprofileslastlogin(profile.user_id);
 
             showMessage('今日已领取登录奖励', 'success')
         } else {

@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS comments (
     comment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     post_id UUID NOT NULL REFERENCES posts(post_id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES profiles(user_id),
-    parent_id UUID REFERENCES comments(id) ON DELETE CASCADE,
+    parent_id UUID REFERENCES comments(comment_id) ON DELETE CASCADE,
     content TEXT NOT NULL,
     is_approved BOOLEAN DEFAULT true,
     likes_count INTEGER DEFAULT 0,

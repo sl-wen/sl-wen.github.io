@@ -231,7 +231,7 @@ function createCommentElement(comment, replies = [], userProfile = null, userRea
 
     // 获取用户信息
     const username = userProfile ? userProfile.username : '匿名用户';
-    const avatarUrl = userProfile && cuserProfile.avatar_url
+    const avatarUrl = userProfile && userProfile.avatar_url
         ? userProfile.avatar_url
         : 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70);
 

@@ -15,12 +15,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
     if (likeButton && dislikeButton) {
-        let reaction = fetchReactions(userProfile, post_id);
-        updateUI(reaction);
+        console.log('post_id:', post_id);
+        let post_reaction = fetchReactions(userProfile, post_id);
+        console.log('post_reaction:', post_reaction);
+        updateUI(post_reaction);
         // 添加事件监听器
         if (userSession) {
-            likeButton.addEventListener('click', handleReaction(reaction, 'like'));
-            dislikeButton.addEventListener('click', handleReaction(reaction, 'dislike'));
+            likeButton.addEventListener('click', handleReaction(post_reaction, 'like'));
+            dislikeButton.addEventListener('click', handleReaction(post_reaction, 'dislike'));
         }
     }
 });
@@ -51,7 +53,7 @@ async function fetchReactions(userProfile, post_id) {
 
             if (reactionError) throw reactionError;
             if (reactionData) {
-                return reaction = {
+                reaction = {
                     likes_count: postData.likes_count || 0,
                     dislikes_count: postData.dislikes_count || 0,
                     user_id: reactionData.user_id,
@@ -59,7 +61,7 @@ async function fetchReactions(userProfile, post_id) {
                     type: reactionData.type
                 }
             } else {
-                return reaction = {
+                reaction = {
                     likes_count: postData.likes_count || 0,
                     dislikes_count: postData.dislikes_count || 0,
                     user_id: userProfile.user_id,
@@ -68,7 +70,7 @@ async function fetchReactions(userProfile, post_id) {
                 }
             }
         } else {
-            return reaction = {
+            reaction = {
                 likes_count: postData.likes_count || 0,
                 dislikes_count: postData.dislikes_count || 0,
                 user_id: null,
@@ -76,52 +78,56 @@ async function fetchReactions(userProfile, post_id) {
                 type: null
             }
         }
+        console.log('fetching_reaction:', reaction);
+        return reaction;
 
     } catch (error) {
         console.log('Error fetching post_reactions:', error);
     }
 }
 
-async function handleReaction(reaction, type) {
+async function handleReaction(post_reaction, type) {
+
+    const user_post_reaction = post_reaction;
 
     try {
         // 如果用户已经有相同的反应，则删除反应（取消点赞/踩）
-        if (reaction.type === type) {
+        if (user_post_reaction.type === type) {
             // 删除反应
             const { error: deleteError } = await supabase
                 .from('post_reactions')
                 .delete()
-                .eq('user_id', reaction.user_id)
-                .eq('post_id', reaction.post_id);
+                .eq('user_id', user_post_reaction.user_id)
+                .eq('post_id', user_post_reaction.post_id);
 
             if (deleteError) throw deleteError;
 
             // 更新状态
-            reaction.type = null;
+            user_post_reaction.type = null;
             if (type === 'like') {
-                reaction.likes_count = Math.max(0, reaction.likes_count - 1);
+                user_post_reaction.likes_count = Math.max(0, user_post_reaction.likes_count - 1);
             } else {
-                reaction.dislikes_count = Math.max(0, reaction.dislikes_count - 1);
+                user_post_reaction.dislikes_count = Math.max(0, user_post_reaction.dislikes_count - 1);
             }
         }
         // 如果用户已经有不同的反应，则更新反应
-        else if (reaction.type) {
+        else if (user_post_reaction.type) {
             const { error } = await supabase
                 .from('post_reactions')
                 .update({ type })
-                .eq('user_id', reaction.user_id)
-                .eq('post_id', reaction.post_id);
+                .eq('user_id', user_post_reaction.user_id)
+                .eq('post_id', user_post_reaction.post_id);
 
             if (error) throw error;
 
             if (type === 'like') {
-                reaction.likes_count += 1;
-                reaction.dislikes_count = Math.max(0, reaction.dislikes_count - 1);
+                user_post_reaction.likes_count += 1;
+                user_post_reaction.dislikes_count = Math.max(0, user_post_reaction.dislikes_count - 1);
             } else {
-                reaction.dislikes_count += 1;
-                reaction.likes_count = Math.max(0, reaction.likes_count - 1);
+                user_post_reaction.dislikes_count += 1;
+                user_post_reaction.likes_count = Math.max(0, user_post_reaction.likes_count - 1);
             }
-            reaction.type = type;
+            user_post_reaction.type = type;
         }
         // 如果用户没有反应，则创建新反应
         else {
@@ -129,19 +135,19 @@ async function handleReaction(reaction, type) {
             const { error } = await supabase
                 .from('post_reactions')
                 .insert({
-                    user_id: reaction.user_id,
-                    post_id: reaction.post_id,
+                    user_id: user_post_reaction.user_id,
+                    post_id: user_post_reaction.post_id,
                     type
                 });
 
             if (error) throw error;
 
             // 更新状态
-            reaction.type = type;
+            user_post_reaction.type = type;
             if (type === 'like') {
-                reaction.likes_count += 1;
+                user_post_reaction.likes_count += 1;
             } else {
-                reaction.dislikes_count += 1;
+                user_post_reaction.dislikes_count += 1;
             }
         }
 
@@ -149,15 +155,16 @@ async function handleReaction(reaction, type) {
         const { error: updatePostError } = await supabase
             .from('posts')
             .update({
-                likes_count: reaction.likes_count,
-                dislikes_count: reaction.dislikes_count
+                likes_count: user_post_reaction.likes_count,
+                dislikes_count: user_post_reaction.dislikes_count
             })
-            .eq('post_id', reaction.post_id);
+            .eq('post_id', user_post_reaction.post_id);
 
         if (updatePostError) throw updatePostError;
 
         // 更新UI
-        updateUI(reaction);
+        updateUI(user_post_reaction);
+        console.log('user_post_reaction:', user_post_reaction);
         
         // 如果是点赞，更新任务完成状态
         // if (type === 'like') {

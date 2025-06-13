@@ -173,12 +173,13 @@ async function handleLoginRewards(profile) {
         }
         console.log('updatedProfile:',updatedProfile);
         try{
-        const { data, error } = await supabase
+        const { data: newprofile, error } = await supabase
             .from('profiles')
             .update(updatedProfile)
             .eq('user_id', profile.user_id)
             .select();
 
+            sessionStorage.setItem('userProfile', JSON.stringify(newprofile));
         } catch (error) {
             showMessage(error.message || '更新用户资料失败', 'error');
             return null;

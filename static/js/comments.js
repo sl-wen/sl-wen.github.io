@@ -129,8 +129,7 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
             .select(`
                 comment_id, content, created_at, 
                 user_id, parent_id, 
-                likes_count, dislikes_count,
-                profiles(username, avatar_url)
+                likes_count, dislikes_count
             `)
             .eq('post_id', post_id)
             .is('parent_id', null); // 只获取顶级评论
@@ -183,8 +182,7 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
                 .select(`
                     comment_id, content, created_at, 
                     user_id, parent_id, 
-                    likes_count, dislikes_count,
-                    profiles(username, avatar_url)
+                    likes_count, dislikes_count
                 `)
                 .eq('post_id', post_id)
                 .eq('parent_id', comment.comment_id)
@@ -206,7 +204,7 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
             }
             
             // 渲染评论
-            const commentElement = createCommentElement(comment, replies, userReaction);
+            const commentElement = createCommentElement(comment, replies, userProfile, userReaction);
             commentsList.appendChild(commentElement);
         }
     } catch (error) {
@@ -222,15 +220,15 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
  * @param {string} userReaction - 当前用户对该评论的反应类型
  * @returns {HTMLElement} - 评论元素
  */
-function createCommentElement(comment, replies = [], userReaction = null) {
+function createCommentElement(comment, replies = [], userProfile = null , userReaction = null) {
     const li = document.createElement('li');
     li.className = 'comment';
     li.id = `comment-${comment.comment_id}`;
     
     // 获取用户信息
-    const username = comment.profiles ? comment.profiles.username : '匿名用户';
-    const avatarUrl = comment.profiles && comment.profiles.avatar_url 
-        ? comment.profiles.avatar_url 
+    const username = userProfile ? userProfile.username : '匿名用户';
+    const avatarUrl = userProfile && cuserProfile.avatar_url 
+        ? userProfile.avatar_url 
         : 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70);
     
     // 格式化日期
@@ -285,7 +283,7 @@ function createCommentElement(comment, replies = [], userReaction = null) {
     if (replies && replies.length > 0) {
         const repliesContainer = li.querySelector('.replies');
         replies.forEach(reply => {
-            repliesContainer.appendChild(createReplyElement(reply, userReaction));
+            repliesContainer.appendChild(createReplyElement(reply, userProfile, userReaction));
         });
     }
     
@@ -298,15 +296,15 @@ function createCommentElement(comment, replies = [], userReaction = null) {
  * @param {string} userReaction - 当前用户对该回复的反应类型
  * @returns {HTMLElement} - 回复元素
  */
-function createReplyElement(reply, userReaction = null) {
+function createReplyElement(reply, userProfile = null, userReaction = null) {
     const div = document.createElement('div');
     div.className = 'reply';
     div.id = `reply-${reply.id}`;
     
     // 获取用户信息
-    const username = reply.profiles ? reply.profiles.username : '匿名用户';
-    const avatarUrl = reply.profiles && reply.profiles.avatar_url 
-        ? reply.profiles.avatar_url 
+    const username = userProfile ? userProfile.username : '匿名用户';
+    const avatarUrl = userProfile && userProfile.avatar_url 
+        ? userProfile.avatar_url 
         : 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70);
     
     // 格式化日期
@@ -390,7 +388,7 @@ async function addComment(post_id, user_id, content) {
  * @param {string} user_id - 用户ID
  * @param {string} content - 回复内容
  */
-async function addReply(post_id, parentId, user_id, content) {
+async function addReply(post_id, parent_id, user_id, content) {
     try {
         // 插入回复
         const { data, error } = await supabase

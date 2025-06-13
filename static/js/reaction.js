@@ -36,12 +36,14 @@ async function fetchReactions(userProfile, post_id) {
             .single();
 
         if (postError) throw postError;
-        showMessage('获取文章的点赞/踩计数成功', 'success');
+        console.log('likes_count:', postData.likes_count);
+        console.log('dislikes_count:', postData.dislikes_count);
+        console.log('获取文章的点赞/踩计数成功');
         let reaction = {};
         // 如果用户已登录，获取用户对该文章的反应
         if (userProfile) {
             const { data: reactionData, error: reactionError } = await supabase
-                .from('reactions')
+                .from('post_reactions')
                 .select('user_id, post_id, type')
                 .eq('user_id', userProfile.user_id)
                 .eq('post_id', post_id)
@@ -50,16 +52,16 @@ async function fetchReactions(userProfile, post_id) {
             if (reactionError) throw reactionError;
             if (reactionData) {
                 return reaction = {
-                    likes_count: postData.likes_count,
-                    dislikes_count: postData.dislikes_count,
+                    likes_count: postData.likes_count || 0,
+                    dislikes_count: postData.dislikes_count || 0,
                     user_id: reactionData.user_id,
                     post_id: post_id,
                     type: reactionData.type
                 }
             } else {
                 return reaction = {
-                    likes_count: postData.likes_count,
-                    dislikes_count: postData.dislikes_count,
+                    likes_count: postData.likes_count || 0,
+                    dislikes_count: postData.dislikes_count || 0,
                     user_id: userProfile.user_id,
                     post_id: post_id,
                     type: null
@@ -67,8 +69,8 @@ async function fetchReactions(userProfile, post_id) {
             }
         } else {
             return reaction = {
-                likes_count: postData.likes_count,
-                dislikes_count: postData.dislikes_count,
+                likes_count: postData.likes_count || 0,
+                dislikes_count: postData.dislikes_count || 0,
                 user_id: null,
                 post_id: post_id,
                 type: null
@@ -76,7 +78,7 @@ async function fetchReactions(userProfile, post_id) {
         }
 
     } catch (error) {
-        console.log('Error fetching reactions:', error);
+        console.log('Error fetching post_reactions:', error);
     }
 }
 
@@ -87,7 +89,7 @@ async function handleReaction(reaction, type) {
         if (reaction.type === type) {
             // 删除反应
             const { error: deleteError } = await supabase
-                .from('reactions')
+                .from('post_reactions')
                 .delete()
                 .eq('user_id', reaction.user_id)
                 .eq('post_id', reaction.post_id);
@@ -105,7 +107,7 @@ async function handleReaction(reaction, type) {
         // 如果用户已经有不同的反应，则更新反应
         else if (reaction.type) {
             const { error } = await supabase
-                .from('reactions')
+                .from('post_reactions')
                 .update({ type })
                 .eq('user_id', reaction.user_id)
                 .eq('post_id', reaction.post_id);
@@ -125,7 +127,7 @@ async function handleReaction(reaction, type) {
         else {
             // 创建新的反应
             const { error } = await supabase
-                .from('reactions')
+                .from('post_reactions')
                 .insert({
                     user_id: reaction.user_id,
                     post_id: reaction.post_id,

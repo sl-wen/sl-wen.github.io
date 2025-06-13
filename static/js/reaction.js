@@ -16,13 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
     if (likeButton && dislikeButton) {
         console.log('post_id:', post_id);
-        let post_reaction = fetchReactions(userProfile, post_id);
+        let post_reaction = await fetchReactions(userProfile, post_id);
         console.log('post_reaction:', post_reaction);
         updateUI(post_reaction);
         // 添加事件监听器
         if (userSession) {
-            likeButton.addEventListener('click', handleReaction(post_reaction, 'like'));
-            dislikeButton.addEventListener('click', handleReaction(post_reaction, 'dislike'));
+            likeButton.addEventListener('click', await handleReaction(post_reaction, 'like'));
+            dislikeButton.addEventListener('click', await handleReaction(post_reaction, 'dislike'));
         }
     }
 });
@@ -79,11 +79,11 @@ async function fetchReactions(userProfile, post_id) {
             }
         }
         console.log('fetching_reaction:', reaction);
-        return reaction;
 
     } catch (error) {
         console.log('Error fetching post_reactions:', error);
     }
+    return reaction || {};
 }
 
 async function handleReaction(post_reaction, type) {

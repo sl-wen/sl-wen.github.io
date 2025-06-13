@@ -180,6 +180,8 @@ function updateUI(reaction) {
     const dislikeButton = document.getElementById('dislikeButton');
     likeButton.textContent = reaction.likes_count;
     dislikeButton.textContent = reaction.dislikes_count;
+    console.log('updateUI');
+    console.log('reaction:', reaction);
     console.log('likes_count:', reaction.likes_count);
     console.log('dislikes_count:', reaction.dislikes_count);
 

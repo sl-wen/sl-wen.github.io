@@ -47,15 +47,15 @@ CREATE TABLE IF NOT EXISTS comments (
 -- 创建点赞表
 CREATE TABLE IF NOT EXISTS post_reactions (
     reaction_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    post_id UUID NOT NULL REFERENCES posts(post_id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES profiles(user_id),
+    post_id UUID  REFERENCES posts(post_id) ON DELETE CASCADE,
+    user_id UUID  REFERENCES profiles(user_id),
     type  TEXT -- like, dislike
 );
 
 CREATE TABLE IF NOT EXISTS comment_reactions (
     reaction_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    comment_id UUID NOT NULL REFERENCES comments(comment_id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES profiles(user_id),
+    comment_id UUID   REFERENCES comments(comment_id) ON DELETE CASCADE,
+    user_id UUID   REFERENCES profiles(user_id),
     type  TEXT -- like, dislike
 );
 

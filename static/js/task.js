@@ -137,7 +137,9 @@ async function handleLoginRewards(profile) {
             profile.consecutive_logins || 0
         );
         console.log('更新连续登录天数:', consecutiveLogins);
+        console.log('profile:', profile);
         const userlevel = await getuserlevels(profile.level);
+        console.log('userlevel:', userlevel);
         // 检查是否为当天首次登录
         const isFirstLogin = isFirstLoginOfDay(profile.last_login);
         console.log('是否为当天首次登录:', isFirstLogin);

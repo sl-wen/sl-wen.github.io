@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 跳转到首页
             setTimeout(() => {
                 window.location.href = '/';
-            }, 1000);
+            }, 3000);
 
             return profile;
         } catch (error) {

@@ -171,13 +171,20 @@ async function handleLoginRewards(profile) {
             last_login: new Date().toISOString(),
             updated_at: new Date().toISOString()
         }
-        console.log('updatedProfile:',updatedProfile);
-        try{
-        const { data: newprofile, error } = await supabase
-            .from('profiles')
-            .update(updatedProfile)
-            .eq('user_id', profile.user_id)
-            .select();
+        console.log('updatedProfile:', updatedProfile);
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .update(updatedProfile)
+                .eq('user_id', profile.user_id)
+                .select();
+
+            // 获取用户详细信息
+            const { data: newprofile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('user_id', profile.user.id)
+                .single();
 
             sessionStorage.setItem('userProfile', JSON.stringify(newprofile));
         } catch (error) {
@@ -193,7 +200,7 @@ async function handleLoginRewards(profile) {
 // 点赞任务处理函数
 async function handleLikeTask(user_id) {
     if (!user_id) return;
-    
+
     try {
         // 获取用户的任务完成情况
         const { data: taskData, error: taskError } = await supabase
@@ -203,33 +210,33 @@ async function handleLikeTask(user_id) {
             .eq('task_type', 'like')
             .eq('completed_date', new Date().toISOString().split('T')[0])
             .maybeSingle();
-            
+
         if (taskError) throw taskError;
-        
+
         // 如果今天已经完成了点赞任务，则不再处理
         if (taskData) return;
-        
+
         // 获取用户资料
         const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('user_id', user_id)
             .single();
-            
+
         if (profileError) throw profileError;
-        
+
         // 点赞任务奖励：经验值+5，金币+10
         const expReward = 5;
         const coinReward = 10;
-        
+
         // 更新用户经验值和金币
         const newExp = (profileData.experience || 0) + expReward;
         const newCoins = (profileData.coins || 0) + coinReward;
-        
+
         // 检查是否升级
         const currentLevel = profileData.level || 1;
         const { newLevel, levelUp } = calculateNewLevel(newExp, currentLevel);
-        
+
         // 更新用户资料
         const { error: updateError } = await supabase
             .from('profiles')
@@ -239,9 +246,9 @@ async function handleLikeTask(user_id) {
                 level: newLevel
             })
             .eq('user_id', user_id);
-            
+
         if (updateError) throw updateError;
-        
+
         // 记录任务完成
         const { error: insertError } = await supabase
             .from('user_tasks')
@@ -252,20 +259,20 @@ async function handleLikeTask(user_id) {
                 reward_exp: expReward,
                 reward_coins: coinReward
             });
-            
+
         if (insertError) throw insertError;
-        
+
         // 显示奖励消息
         showMessage(`点赞任务完成！获得 ${expReward} 经验和 ${coinReward} 金币`, 'success');
-        
+
         // 如果升级，显示升级消息
         if (levelUp) {
             showMessage(`恭喜你升级到 ${newLevel} 级！`, 'success');
         }
-        
+
         // 更新会话中的用户资料
         updateSessionProfile(user_id, newExp, newCoins, newLevel);
-        
+
     } catch (error) {
         console.error('处理点赞任务时出错:', error);
     }
@@ -274,7 +281,7 @@ async function handleLikeTask(user_id) {
 // 评论任务处理函数
 async function handleCommentTask(user_id) {
     if (!user_id) return;
-    
+
     try {
         // 获取用户的任务完成情况
         const { data: taskData, error: taskError } = await supabase
@@ -284,33 +291,33 @@ async function handleCommentTask(user_id) {
             .eq('task_type', 'comment')
             .eq('completed_date', new Date().toISOString().split('T')[0])
             .maybeSingle();
-            
+
         if (taskError) throw taskError;
-        
+
         // 如果今天已经完成了评论任务，则不再处理
         if (taskData) return;
-        
+
         // 获取用户资料
         const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('user_id', user_id)
             .single();
-            
+
         if (profileError) throw profileError;
-        
+
         // 评论任务奖励：经验值+10，金币+20
         const expReward = 10;
         const coinReward = 20;
-        
+
         // 更新用户经验值和金币
         const newExp = (profileData.experience || 0) + expReward;
         const newCoins = (profileData.coins || 0) + coinReward;
-        
+
         // 检查是否升级
         const currentLevel = profileData.level || 1;
         const { newLevel, levelUp } = calculateNewLevel(newExp, currentLevel);
-        
+
         // 更新用户资料
         const { error: updateError } = await supabase
             .from('profiles')
@@ -320,9 +327,9 @@ async function handleCommentTask(user_id) {
                 level: newLevel
             })
             .eq('user_id', user_id);
-            
+
         if (updateError) throw updateError;
-        
+
         // 记录任务完成
         const { error: insertError } = await supabase
             .from('user_tasks')
@@ -333,20 +340,20 @@ async function handleCommentTask(user_id) {
                 reward_exp: expReward,
                 reward_coins: coinReward
             });
-            
+
         if (insertError) throw insertError;
-        
+
         // 显示奖励消息
         showMessage(`评论任务完成！获得 ${expReward} 经验和 ${coinReward} 金币`, 'success');
-        
+
         // 如果升级，显示升级消息
         if (levelUp) {
             showMessage(`恭喜你升级到 ${newLevel} 级！`, 'success');
         }
-        
+
         // 更新会话中的用户资料
         updateSessionProfile(user_id, newExp, newCoins, newLevel);
-        
+
     } catch (error) {
         console.error('处理评论任务时出错:', error);
     }
@@ -377,9 +384,9 @@ function updateSessionProfile(user_id, experience, coins, level) {
 }
 
 // 导出函数
-export { 
-    updprofileslevel, 
-    handleLikeTask, 
+export {
+    updprofileslevel,
+    handleLikeTask,
     handleCommentTask,
     calculateNewLevel,
     updateSessionProfile,

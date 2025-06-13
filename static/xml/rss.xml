@@ -6,46 +6,37 @@
                             <description>鱼鱼的博客</description>
                             <language>zh-cn</language>
                             <generator>Node+Supabase RSS自生成</generator>
-                            <lastBuildDate>Wed, 11 Jun 2025 08:45:03 GMT</lastBuildDate>
+                            <lastBuildDate>Fri, 13 Jun 2025 03:40:03 GMT</lastBuildDate>
                                 
         <item>
             <title><![CDATA[table]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=5f1c3a97-c629-4a5f-b031-35df31292d13</link>
-            <description><![CDATA[<pre><code>ALTER TABLE public.userinfo
-ADD COLUMN user_id UUID REFERENCES auth.users(id) NOT NULL;
+            <link>http://121.40.215.235/pages/article.html?post_id=5f1c3a97-c629-4a5f-b031-35df31292d13</link>
+            <description><![CDATA[<pre><code>-- 创建点赞表
+CREATE TABLE IF NOT EXISTS post_reactions (
+    reaction_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    post_id UUID  REFERENCES posts(post_id) ON DELETE CASCADE,
+    user_id UUID  REFERENCES profiles(user_id),
+    type  TEXT -- like, dislike
+);
 </code></pre>
-<pre><code>UPDATE public.userinfo
-SET user_id = &#39;f4852085-609a-42bd-b512-b283185757ef&#39;
-where username = &#39;sl-wen&#39;;
-</code></pre>
-<pre><code>CREATE OR REPLACE FUNCTION public.handle_new_user() 
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.userinfo (id, username, email)
-  VALUES (
-    NEW.id, 
-    SPLIT_PART(NEW.email, &#39;@&#39;, 1), -- 使用邮箱前缀作为默认用户名
-    NEW.email -- 使用邮箱   
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-</code></pre>
-<pre><code>CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+<pre><code>CREATE TABLE IF NOT EXISTS comment_reactions (
+    reaction_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    comment_id UUID   REFERENCES comments(comment_id) ON DELETE CASCADE,
+    user_id UUID   REFERENCES profiles(user_id),
+    type  TEXT -- like, dislike
+);
 </code></pre>
 ]]></description>
             <author>slwen</author>
             <category>table</category>
             <pubDate>Mon, 09 Jun 2025 02:43:23 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=5f1c3a97-c629-4a5f-b031-35df31292d13</guid>
-            <lastBuildDate>Wed, 11 Jun 2025 08:08:32 GMT</lastBuildDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=5f1c3a97-c629-4a5f-b031-35df31292d13</guid>
+            <lastBuildDate>Fri, 13 Jun 2025 03:37:47 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[task]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=c3e79c51-8dd3-4799-993d-2b91dd059143</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=c3e79c51-8dd3-4799-993d-2b91dd059143</link>
             <description><![CDATA[<h2>等级划分</h2>
 <table>
 <thead>
@@ -424,13 +415,13 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
             <author>slwen</author>
             <category>task</category>
             <pubDate>Fri, 06 Jun 2025 09:31:25 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=c3e79c51-8dd3-4799-993d-2b91dd059143</guid>
-            <lastBuildDate>Tue, 10 Jun 2025 09:16:15 GMT</lastBuildDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=c3e79c51-8dd3-4799-993d-2b91dd059143</guid>
+            <lastBuildDate>Thu, 12 Jun 2025 08:17:56 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[CSS]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=c6667a8f-2982-4154-b6b0-b66baf08f734</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=c6667a8f-2982-4154-b6b0-b66baf08f734</link>
             <description><![CDATA[<h1>CSS笔记</h1>
 <hr>
 <h2>盒模型</h2>
@@ -548,13 +539,13 @@ a.cls {
             <author>slwen</author>
             <category>css</category>
             <pubDate>Fri, 06 Jun 2025 08:36:13 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=c6667a8f-2982-4154-b6b0-b66baf08f734</guid>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=c6667a8f-2982-4154-b6b0-b66baf08f734</guid>
             <lastBuildDate>Fri, 06 Jun 2025 08:40:52 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[阿里云]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</link>
             <description><![CDATA[<pre><code>ssh root@121.40.215.235
 </code></pre>
 <pre><code>cd /usr/share/nginx/html/
@@ -568,74 +559,74 @@ git push
             <author>slwen</author>
             <category>ali</category>
             <pubDate>Wed, 04 Jun 2025 09:24:26 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</guid>
-            <lastBuildDate>Wed, 11 Jun 2025 08:29:59 GMT</lastBuildDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</guid>
+            <lastBuildDate>Fri, 13 Jun 2025 03:23:11 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[feed]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=384236e7-b4f0-45bb-ba67-3beae150f3e3</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=384236e7-b4f0-45bb-ba67-3beae150f3e3</link>
             <description><![CDATA[<p>This message is used to verify that this feed (feedId:147823966754130944) belongs to me (userId:76466871819188224). Join me in enjoying the next generation information browser <a href="https://follow.is">https://follow.is</a>.</p>
 ]]></description>
             <author>slwen</author>
             
             <pubDate>Wed, 04 Jun 2025 03:03:41 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=384236e7-b4f0-45bb-ba67-3beae150f3e3</guid>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=384236e7-b4f0-45bb-ba67-3beae150f3e3</guid>
             <lastBuildDate>Fri, 06 Jun 2025 07:35:51 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[糖果屋]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=81e8730c-6150-46a0-8c34-62b635823fde</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=81e8730c-6150-46a0-8c34-62b635823fde</link>
             <description><![CDATA[<p><a href="https://akilar.top/">https://akilar.top/</a></p>
 ]]></description>
             <author>Admin</author>
             
             <pubDate>Wed, 21 May 2025 15:59:37 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=81e8730c-6150-46a0-8c34-62b635823fde</guid>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=81e8730c-6150-46a0-8c34-62b635823fde</guid>
             <lastBuildDate>Mon, 02 Jun 2025 14:52:52 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[feed]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=d7062406-00fb-4be4-9c95-cc8c4b01228e</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=d7062406-00fb-4be4-9c95-cc8c4b01228e</link>
             <description><![CDATA[<p>feedid:147823966754130944+userId:76466871819188224</p>
 ]]></description>
             <author>Admin</author>
             
             <pubDate>Wed, 21 May 2025 06:15:49 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=d7062406-00fb-4be4-9c95-cc8c4b01228e</guid>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=d7062406-00fb-4be4-9c95-cc8c4b01228e</guid>
             <lastBuildDate>Sun, 01 Jun 2025 03:46:05 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[负载]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=2db1fd10-661b-4718-bda1-c293da163f04</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=2db1fd10-661b-4718-bda1-c293da163f04</link>
             <description><![CDATA[<p><a href="http://121.40.215.235/">http://121.40.215.235/</a></p>
 ]]></description>
             <author>Admin</author>
             <category>服务器</category>
             <pubDate>Sun, 18 May 2025 13:11:27 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=2db1fd10-661b-4718-bda1-c293da163f04</guid>
-            <lastBuildDate>Tue, 10 Jun 2025 14:01:18 GMT</lastBuildDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=2db1fd10-661b-4718-bda1-c293da163f04</guid>
+            <lastBuildDate>Wed, 11 Jun 2025 14:35:55 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[每日摘要]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=91ebc7f9-3486-4f94-9c02-2d457fb9237c</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=91ebc7f9-3486-4f94-9c02-2d457fb9237c</link>
             <description><![CDATA[<pre><code>除去睡眠，人的一生有一万多天。但是人与人之间的区别就在于，你究竟是活了一万多天，还是仅仅活了一天，却重复了一万多次。
 </code></pre>
 ]]></description>
             <author>slwen</author>
             <category>摘要</category>
             <pubDate>Wed, 14 May 2025 06:02:57 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=91ebc7f9-3486-4f94-9c02-2d457fb9237c</guid>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=91ebc7f9-3486-4f94-9c02-2d457fb9237c</guid>
             <lastBuildDate>Fri, 06 Jun 2025 06:39:16 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[bat]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=d5791554-2c7d-460b-bb2d-18c1c8c4482a</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=d5791554-2c7d-460b-bb2d-18c1c8c4482a</link>
             <description><![CDATA[<h1>bat命令入门与高级技巧详解</h1>
 <p>这里为您介绍一下基础的bat命令知道及详细的bat命令使用方法，让我们使用bat命令解决windows当中一些需要手动操作的问题</p>
 <h2>第一章 批处理基础</h2>
@@ -1054,13 +1045,13 @@ ECHO 处于关闭状态。</p>
             <author>sl-wen</author>
             <category>bat</category>
             <pubDate>Fri, 28 Mar 2025 05:41:00 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=d5791554-2c7d-460b-bb2d-18c1c8c4482a</guid>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=d5791554-2c7d-460b-bb2d-18c1c8c4482a</guid>
             <lastBuildDate>Fri, 06 Jun 2025 07:52:01 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[file_list]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=efbabc47-885d-4b69-8b3f-18910918475a</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=efbabc47-885d-4b69-8b3f-18910918475a</link>
             <description><![CDATA[<h3>file_list.bat</h3>
 <pre><code class="language-script">@echo off
 chcp 65001 &gt;nul
@@ -1091,13 +1082,13 @@ exit
             <category>bat</category>
 <category>file_list</category>
             <pubDate>Fri, 28 Mar 2025 02:35:16 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=efbabc47-885d-4b69-8b3f-18910918475a</guid>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=efbabc47-885d-4b69-8b3f-18910918475a</guid>
             <lastBuildDate>Wed, 04 Jun 2025 09:26:37 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[releasetool]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=f1726200-b88d-4344-8e29-95da55a3a058</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=f1726200-b88d-4344-8e29-95da55a3a058</link>
             <description><![CDATA[<pre><code class="language-shell">cp -pr /usr/local/lib/XXXX /usr/local/lib/$1
 cd /usr/local/lib/XXXX/
 sudo chown -R root:root /usr/local/lib/XXXX
@@ -1126,13 +1117,13 @@ echo $3&quot;リリース完了しました(&quot;$2&quot;)&quot;
             <category>releasetool</category>
 <category>release</category>
             <pubDate>Thu, 20 Mar 2025 06:46:29 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=f1726200-b88d-4344-8e29-95da55a3a058</guid>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=f1726200-b88d-4344-8e29-95da55a3a058</guid>
             <lastBuildDate>Tue, 10 Jun 2025 13:05:38 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[laminas-migration]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=5ba1df80-3e15-4f10-aa84-c32d7d170dbe</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=5ba1df80-3e15-4f10-aa84-c32d7d170dbe</link>
             <description><![CDATA[<h2>参照</h2>
 <pre><code>https://docs.laminas.dev/migration/
 </code></pre>
@@ -1182,13 +1173,13 @@ composer remove phpunit/php-token-stream phpunit/phpunit-mock-objects
             <category>laminas</category>
 <category>php</category>
             <pubDate>Thu, 20 Mar 2025 06:43:22 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=5ba1df80-3e15-4f10-aa84-c32d7d170dbe</guid>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=5ba1df80-3e15-4f10-aa84-c32d7d170dbe</guid>
             <lastBuildDate>Sun, 01 Jun 2025 03:26:20 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[Linux]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=652b63b8-f77d-4657-be41-79152a8b4eee</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=652b63b8-f77d-4657-be41-79152a8b4eee</link>
             <description><![CDATA[<h3>権限付与 root</h3>
 <pre><code>sudo su -
 </code></pre>
@@ -1225,13 +1216,13 @@ chmod -R 755 /opt/
             <category>Linux</category>
 <category>command</category>
             <pubDate>Wed, 19 Mar 2025 03:28:40 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=652b63b8-f77d-4657-be41-79152a8b4eee</guid>
-            <lastBuildDate>Tue, 10 Jun 2025 01:07:01 GMT</lastBuildDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=652b63b8-f77d-4657-be41-79152a8b4eee</guid>
+            <lastBuildDate>Thu, 12 Jun 2025 08:17:58 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[git]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=88456219-d82e-4326-ae41-94952b07162b</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=88456219-d82e-4326-ae41-94952b07162b</link>
             <description><![CDATA[<h1>安装和配置 Git</h1>
 <h5>首先，需要在本地计算机上安装 Git。安装完成后，可以通过配置用户名和邮箱来初始化 Git 仓库。</h5>
 <ul>
@@ -1323,31 +1314,32 @@ git push</p>
 <li><p>pushの取り消し</p>
 <blockquote>
 <p>git reset --hard &lt;戻したいコミットのハッシュ値&gt;
-git push -f
-强制回退
-确认目标 commit 的哈希值</p>
+git push -f</p>
 </blockquote>
 </li>
 </ul>
-<pre><code>git log --oneline
+<hr>
+<p>Git 强制回退到指定 Commit 节点并推送到远程仓库
+步骤 1: 确认目标 commit 的哈希值</p>
+<pre><code>git log
 </code></pre>
-<p>本地回退到目标 commit</p>
+<p>步骤 2: 本地回退到目标 commit</p>
 <pre><code>git reset --hard a1b2c3d
 </code></pre>
-<p>强制推送到远程仓库</p>
+<p>步骤 3: 强制推送到远程仓库</p>
 <pre><code>git push -f origin &lt;branch-name&gt;
 </code></pre>
 ]]></description>
             <author>slwen</author>
             <category>git</category>
             <pubDate>Tue, 18 Mar 2025 08:25:15 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=88456219-d82e-4326-ae41-94952b07162b</guid>
-            <lastBuildDate>Wed, 11 Jun 2025 08:32:31 GMT</lastBuildDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=88456219-d82e-4326-ae41-94952b07162b</guid>
+            <lastBuildDate>Wed, 11 Jun 2025 09:17:51 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[release]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=bbf63406-eb88-4a60-b51d-3defcb72def1</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=bbf63406-eb88-4a60-b51d-3defcb72def1</link>
             <description><![CDATA[<ul>
 <li>git init</li>
 <li>git remote add origin <a href="mailto:git@github.com">git@github.com</a>:sl-wen/so-novel.git</li>
@@ -1368,13 +1360,13 @@ git push -f
             <author>slwen</author>
             <category>release</category>
             <pubDate>Tue, 18 Mar 2025 08:18:44 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=bbf63406-eb88-4a60-b51d-3defcb72def1</guid>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=bbf63406-eb88-4a60-b51d-3defcb72def1</guid>
             <lastBuildDate>Tue, 10 Jun 2025 13:07:36 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[SSH設定]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=41559f85-4f2d-4133-9960-410fe42154df</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=41559f85-4f2d-4133-9960-410fe42154df</link>
             <description><![CDATA[<p>root権限に変更する</p>
 <pre><code>sudo su -
 </code></pre>
@@ -1408,13 +1400,13 @@ GitHubにSSHキーを設定する</p>
             <author>slwen</author>
             <category>SSH</category>
             <pubDate>Tue, 18 Mar 2025 08:14:34 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=41559f85-4f2d-4133-9960-410fe42154df</guid>
-            <lastBuildDate>Fri, 06 Jun 2025 01:52:05 GMT</lastBuildDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=41559f85-4f2d-4133-9960-410fe42154df</guid>
+            <lastBuildDate>Thu, 12 Jun 2025 15:56:03 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[PHPLibrary]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=81132e66-c9a1-4e48-8247-ed8d6ac91169</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=81132e66-c9a1-4e48-8247-ed8d6ac91169</link>
             <description><![CDATA[<ul>
 <li>composer/pcre</li>
 <li>composer/semver</li>
@@ -1479,13 +1471,13 @@ GitHubにSSHキーを設定する</p>
             <category>Library</category>
 <category>php</category>
             <pubDate>Tue, 18 Mar 2025 08:07:23 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=81132e66-c9a1-4e48-8247-ed8d6ac91169</guid>
-            <lastBuildDate>Wed, 11 Jun 2025 08:07:00 GMT</lastBuildDate>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=81132e66-c9a1-4e48-8247-ed8d6ac91169</guid>
+            <lastBuildDate>Fri, 13 Jun 2025 03:35:14 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[Markdown语法详解]]></title>
-            <link>http://121.40.215.235/pages/article.html?id=027ccc92-34a8-423c-93a9-4ae6dae69a5a</link>
+            <link>http://121.40.215.235/pages/article.html?post_id=027ccc92-34a8-423c-93a9-4ae6dae69a5a</link>
             <description><![CDATA[<p>以下为Markdown语法详解，结构清晰，涵盖常用语法及扩展功能：</p>
 <hr>
 <h3>标题</h3>
@@ -1686,7 +1678,7 @@ ___
             <author>sl-wen</author>
             <category>markdown</category>
             <pubDate>Fri, 08 Mar 2024 00:00:00 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?id=027ccc92-34a8-423c-93a9-4ae6dae69a5a</guid>
+            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=027ccc92-34a8-423c-93a9-4ae6dae69a5a</guid>
             <lastBuildDate>Fri, 06 Jun 2025 08:04:39 GMT</lastBuildDate>
         </item>
                         </channel>

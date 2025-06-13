@@ -1,6 +1,6 @@
 import { supabase } from './supabase-config.js';
 import { marked } from 'marked';
-import { getCursorLine, scrollPreviewToLine, onScrollEnd, getVisibleFirstLine } from './common.js';
+import { getCursorLine, scrollPreviewToLine, showMessage,onScrollEnd, getVisibleFirstLine } from './common.js';
 
 // 安全的 marked 解析函数
 function safeMarked(content) {

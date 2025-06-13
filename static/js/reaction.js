@@ -16,13 +16,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
     if (likeButton && dislikeButton) {
         console.log('post_id:', post_id);
-        let post_reaction = await fetchReactions(userProfile, post_id);
-        console.log('post_reaction:', post_reaction);
-        updateUI(post_reaction);
-        // 添加事件监听器
-        if (userSession) {
-            likeButton.addEventListener('click', async function () { await handleReaction(post_reaction, 'like'); });
-            dislikeButton.addEventListener('click', async function () { await handleReaction(post_reaction, 'dislike'); });
+        try {
+            let post_reaction = await fetchReactions(userProfile, post_id);
+            console.log('post_reaction:', post_reaction);
+            updateUI(post_reaction);
+            // 添加事件监听器
+            if (userSession) {
+                likeButton.addEventListener('click', async function () { await handleReaction(post_reaction, 'like'); });
+                dislikeButton.addEventListener('click', async function () { await handleReaction(post_reaction, 'dislike'); });
+            }
+        } catch (error) {
+            console.log('Error fetching reactions:');
         }
     }
 });

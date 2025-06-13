@@ -4,7 +4,7 @@ import { showMessage } from './common.js';
 import { handleLoginRewards } from './task.js';
 
 // 为标签按钮添加切换功能
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const tagButtons = document.querySelectorAll('.tag-btn');
     const displaySections = document.querySelectorAll('.displaydiv');
 

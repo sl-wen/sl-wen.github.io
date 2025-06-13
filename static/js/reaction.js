@@ -2,7 +2,7 @@
 import { supabase } from './supabase-config.js';
 import { showMessage } from './common.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
     const urlParams = new URLSearchParams(window.location.search);
     const post_id = urlParams.get('post_id');
@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI(post_reaction);
         // 添加事件监听器
         if (userSession) {
-            likeButton.addEventListener('click', await handleReaction(post_reaction, 'like'));
-            dislikeButton.addEventListener('click', await handleReaction(post_reaction, 'dislike'));
+            likeButton.addEventListener('click', async function () { await handleReaction(post_reaction, 'like'); });
+            dislikeButton.addEventListener('click', async function () { await handleReaction(post_reaction, 'dislike'); });
         }
     }
 });
@@ -165,7 +165,7 @@ async function handleReaction(post_reaction, type) {
         // 更新UI
         updateUI(user_post_reaction);
         console.log('user_post_reaction:', user_post_reaction);
-        
+
         // 如果是点赞，更新任务完成状态
         // if (type === 'like') {
         //     // 导入评论模块中的更新点赞任务函数

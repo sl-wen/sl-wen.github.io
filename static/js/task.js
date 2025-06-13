@@ -127,73 +127,78 @@ function getconsecutivelogins(last_login, consecutive_logins) {
  * @param profile 用户
  */
 async function handleLoginRewards(profile) {
+    try {
+        // 更新连续登录天数
+        console.log('处理用户登录奖励开始');
+        const consecutiveLogins = getconsecutivelogins(
+            profile.last_login,
+            profile.consecutive_logins || 0
+        );
+        console.log('更新连续登录天数:',consecutiveLogins);
+        const userlevel = await getuserlevels();
+        // 检查是否为当天首次登录
+        const isFirstLogin = isFirstLoginOfDay(profile.last_login);
+        console.log('是否为当天首次登录:',isFirstLogin);
 
-    // 更新连续登录天数
-    const consecutiveLogins = getconsecutivelogins(
-        profile.last_login,
-        profile.consecutive_logins || 0
-    );
+        let rewards_experience = 0;
+        let rewards_coins = 0;
+        let updlevel = profile.level;
+        // 如果不是当天首次登录，只更新登录时间，不给予奖励
+        if (!isFirstLogin) {
+            updprofileslastlogin();
 
-    const userlevel = await getuserlevels();
-    // 检查是否为当天首次登录
-    const isFirstLogin = isFirstLoginOfDay(profile.last_login);
+            showMessage('今日已领取登录奖励', 'success')
+        } else {
+            rewards_experience = userlevel.daily_login_exp || 0;
+            rewards_coins = userlevel.daily_login_exp || 0;
+            const consecutiveLoginsrewards = await getconsecutiveLoginsrewards(consecutiveLogins);
+            rewards_experience += consecutiveLoginsrewards.rewards_exp || 0;
+            rewards_coins += consecutiveLoginsrewards.rewards_coins || 0;
+            console.log('连续登录:', consecutiveLoginsrewards);
 
-    let rewards_experience = 0;
-    let rewards_coins = 0;
-    let updlevel = profile.level;
-    // 如果不是当天首次登录，只更新登录时间，不给予奖励
-    if (!isFirstLogin) {
-        updprofileslastlogin();
+            if (consecutiveLogins > 1) {
+                showMessage(`连续登录 ${consecutiveLogins} 天,获得 ${consecutiveLoginsrewards.rewards_exp} 经验和 ${consecutiveLoginsrewards.rewards_coins} 币)`, 'info')
+            }
 
-        showMessage('今日已领取登录奖励', 'success')
-    } else {
-        rewards_experience = userlevel.daily_login_exp || 0;
-        rewards_coins = userlevel.daily_login_exp || 0;
-        const consecutiveLoginsrewards = await getconsecutiveLoginsrewards(consecutiveLogins);
-        rewards_experience += consecutiveLoginsrewards.rewards_exp || 0;
-        rewards_coins += consecutiveLoginsrewards.rewards_coins || 0;
+            if ((profile.experience + rewards_experience) > userlevel.required_exp) {
+                updlevel = updlevel + 1;
+                rewards_coins += userlevel.level_up_reward_coins;
+                showMessage(`恭喜升级！到达 ${updlevel} 级,获得${userlevel.level_up_reward_coins} 币`, 'info')
+            }
+            // 更新用户资料
+            const updatedProfile = {
+                experience: (profile.experience || 0) + rewards_experience,
+                coins: (profile.coins || 0) + rewards_coins,
+                consecutive_logins: consecutiveLogins,
+                level: updlevel,
+                last_login: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            }
+            console.log('updatedProfile:', updatedProfile);
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .update(updatedProfile)
+                    .eq('user_id', profile.user_id)
+                    .select();
 
-        if (consecutiveLogins > 1) {
-            showMessage(`连续登录 ${consecutiveLogins} 天,获得 ${consecutiveLoginsrewards.rewards_exp} 经验和 ${consecutiveLoginsrewards.rewards_coins} 币)`, 'info')
+                // 获取用户详细信息
+                const { data: newprofile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('user_id', profile.user.id)
+                    .single();
+
+                sessionStorage.setItem('userProfile', JSON.stringify(newprofile));
+            } catch (error) {
+                showMessage(error.message || '更新用户资料失败', 'error');
+            }
+
+            // 返回结果
+            showMessage(`获得 ${rewards_experience} 经验和 ${rewards_experience} 币`, 'info')
         }
-
-        if ((profile.experience + rewards_experience) > userlevel.required_exp) {
-            updlevel = updlevel + 1;
-            rewards_coins += userlevel.level_up_reward_coins;
-            showMessage(`恭喜升级！到达 ${updlevel} 级,获得${userlevel.level_up_reward_coins} 币`, 'info')
-        }
-        // 更新用户资料
-        const updatedProfile = {
-            experience: (profile.experience || 0) + rewards_experience,
-            coins: (profile.coins || 0) + rewards_coins,
-            consecutive_logins: consecutiveLogins,
-            level: updlevel,
-            last_login: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        }
-        console.log('updatedProfile:', updatedProfile);
-        try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .update(updatedProfile)
-                .eq('user_id', profile.user_id)
-                .select();
-
-            // 获取用户详细信息
-            const { data: newprofile, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('user_id', profile.user.id)
-                .single();
-
-            sessionStorage.setItem('userProfile', JSON.stringify(newprofile));
-        } catch (error) {
-            showMessage(error.message || '更新用户资料失败', 'error');
-            return null;
-        }
-
-        // 返回结果
-        showMessage(`获得 ${rewards_experience} 经验和 ${rewards_experience} 币`, 'info')
+    } catch (error) {
+        showMessage(`error:${error} `, 'error')
     }
 }
 

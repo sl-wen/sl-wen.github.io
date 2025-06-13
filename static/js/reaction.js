@@ -15,12 +15,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
     if (likeButton && dislikeButton) {
-        console.log('post_id:', post_id);
         try {
             let post_reaction = {};
-            console.log('post_reaction:', await fetchReactions(userProfile, post_id));
             post_reaction = await fetchReactions(userProfile, post_id);
-            console.log('post_reaction:', post_reaction);
             updateUI(post_reaction);
             // 添加事件监听器
             if (userSession) {
@@ -84,7 +81,6 @@ async function fetchReactions(userProfile, post_id) {
                 type: null
             }
         }
-        console.log('fetching_reaction:', reaction);
         return reaction || {};
 
     } catch (error) {
@@ -171,7 +167,6 @@ async function handleReaction(post_reaction, type) {
 
         // 更新UI
         updateUI(user_post_reaction);
-        console.log('user_post_reaction:', user_post_reaction);
 
         // 如果是点赞，更新任务完成状态
         // if (type === 'like') {
@@ -192,13 +187,9 @@ function updateUI(reaction) {
     // 更新计数显示
     const likeButton = document.getElementById('likeButton');
     const dislikeButton = document.getElementById('dislikeButton');
-    likeButton.textContent = reaction.likes_count;
-    dislikeButton.textContent = reaction.dislikes_count;
-    console.log('updateUI');
-    console.log('reaction:', reaction);
-    console.log('likes_count:', reaction.likes_count);
-    console.log('dislikes_count:', reaction.dislikes_count);
 
+    likeButton.querySelector('.likescount').textContent = reaction.likes_count;
+    dislikeButton.querySelector('.dislikescount').textContent = reaction.dislikes_count;
     // 更新按钮状态
     likeButton.classList.toggle('active', reaction.type === 'like');
     dislikeButton.classList.toggle('active', reaction.type === 'dislike');

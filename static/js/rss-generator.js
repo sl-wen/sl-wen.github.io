@@ -47,7 +47,7 @@ async function generateRSS() {
 
     // 2. 拼装 RSS 的每项
     const items = posts.map(post => {
-        const postUrl = SITE_LINK.replace(/\/$/, '') + `/pages/article.html?id=${post.post_id}`; // 你也可以用post.post_id
+        const postUrl = SITE_LINK.replace(/\/$/, '') + `/pages/article.html?post_id=${post.post_id}`; // 你也可以用post.post_id
         const pubDate = new Date(post.created_at).toUTCString();
         const updateDate = new Date(post.updated_at).toUTCString();
         // 将 Markdown 内容转换为 HTML

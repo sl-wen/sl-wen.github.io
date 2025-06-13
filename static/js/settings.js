@@ -31,8 +31,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // 变更用户名函数
-    const usernamechange = async (Profile, newusername) => {
-        const profileid = Profile.id;
+    const usernamechange = async (userProfile, newusername) => {
+        const user_id = userProfile.user_id;
         try {
             showMessage('变更中...', 'info');
 
@@ -56,14 +56,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     username: newusername,
                     updated_at: new Date()
                 })
-                .eq('id', profileid);
+                .eq('user_id', user_id);
 
             if (usernamechangeError) console.error('变更用户资料失败:', usernamechangeError);
 
             const { data: newprofile } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('id', profileid)
+                .eq('user_id', user_id)
                 .single();
 
             sessionStorage.setItem('userProfile', JSON.stringify(newprofile));

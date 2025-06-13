@@ -46,7 +46,7 @@ function processImageUrl(url) {
 
 // 从 URL 参数中获取文章 ID
 const urlParams = new URLSearchParams(window.location.search);
-const articleId = urlParams.get('id');
+const post_id = urlParams.get('post_id');
 
 // 等待 DOM 完全加载后执行
 document.addEventListener('DOMContentLoaded', () => {
@@ -55,10 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const articleActions = document.querySelector('.article-actions');     // 文章操作按钮容器
 
   // 更新文章操作按钮（如编辑按钮）
-  function updateArticleActions(id) {
+  function updateArticleActions(post_id) {
     if (articleActions) {
       articleActions.innerHTML = `
-        <a href="/pages/edit.html?id=${id}" class="edit-button">编辑</a>
+        <a href="/pages/edit.html?post_id=${post_id}" class="edit-button">编辑</a>
       `;
     }
   }
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
     if (userSession && (userSession?.user.email === 'sl-wen@outlook.com' || userProfile?.username === article.author)) {
-      updateArticleActions(article.id);
+      updateArticleActions(article.post_id);
     }
     // 应用代码高亮（如果 hljs 可用）
     if (window.hljs) {
@@ -214,14 +214,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 加载并显示文章的异步函数
   async function loadArticle() {
-    if (!articleId) {
+    if (!post_id) {
       showError('未找到文章 ID');  // 如果没有文章 ID，显示错误
       return;
     }
 
     try {
       showLoading();  // 显示加载状态
-      const article = await getArticle(articleId);  // 获取文章数据
+      const article = await getArticle(post_id);  // 获取文章数据
       showArticle(article);  // 显示文章内容
     } catch (error) {
       console.error('加载文章失败:', error);

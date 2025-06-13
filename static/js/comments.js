@@ -6,7 +6,7 @@ import { showMessage, formatDate } from './common.js';
 document.addEventListener('DOMContentLoaded', () => {
     // 获取文章ID
     const urlParams = new URLSearchParams(window.location.search);
-    const post_id = urlParams.get('id');
+    const post_id = urlParams.get('post_id');
     
     // 获取当前用户信息
     const userSessionStr = sessionStorage.getItem('userSession');
@@ -714,7 +714,7 @@ async function updateLikeTask(user_id) {
             
             const { data: taskLog, error: taskLogError } = await supabase
                 .from('task_logs')
-                .select('id')
+                .select('task_logs_id')
                 .eq('user_id', user_id)
                 .eq('task_id', task.task_id)
                 .gte('completed_at', today.toISOString())

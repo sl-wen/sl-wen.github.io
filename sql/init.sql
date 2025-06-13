@@ -1,17 +1,3 @@
--- 创建文章表
-CREATE TABLE IF NOT EXISTS posts (
-    post_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    title TEXT NOT NULL,
-    content TEXT,
-    author TEXT DEFAULT 'Admin',
-    tags TEXT[] DEFAULT '{}',
-    views INTEGER DEFAULT 0,
-    likes_count INTEGER DEFAULT 0,
-    dislikes_count INTEGER DEFAULT 0,
-    comments_count INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
 -- 创建用户表
 CREATE TABLE IF NOT EXISTS profiles (
     user_id UUID REFERENCES auth.users(id),
@@ -28,12 +14,27 @@ CREATE TABLE IF NOT EXISTS profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 创建文章表
+CREATE TABLE IF NOT EXISTS posts (
+    post_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title TEXT NOT NULL,
+    content TEXT,
+    author TEXT DEFAULT 'Admin',
+    tags TEXT[] DEFAULT '{}',
+    views INTEGER DEFAULT 0,
+    likes_count INTEGER DEFAULT 0,
+    dislikes_count INTEGER DEFAULT 0,
+    comments_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 
 -- 创建评论表
 CREATE TABLE IF NOT EXISTS comments (
     comment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES profiles(id),
+    post_id UUID NOT NULL REFERENCES posts(post_id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES profiles(user_id),
     parent_id UUID REFERENCES comments(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
     is_approved BOOLEAN DEFAULT true,
@@ -43,11 +44,11 @@ CREATE TABLE IF NOT EXISTS comments (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 创建评论表
+-- 创建点赞表
 CREATE TABLE IF NOT EXISTS reactions (
     reaction_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES profiles(id),
+    post_id UUID NOT NULL REFERENCES posts(post_id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES profiles(user_id),
     type  TEXT NOT NULL -- like, dislike
 );
 
@@ -86,7 +87,7 @@ CREATE TABLE tasks (
     task_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     task_name VARCHAR(100) NOT NULL,
     task_description TEXT,
-    type_id UUID REFERENCES task_types(id) NOT NULL,
+    type_id UUID REFERENCES task_types(tasktype_id) NOT NULL,
     action_type TEXT NOT NULL, -- login, like, comment, post, etc.
     required_count INT NOT NULL, --任务次数
     coins_reward INT NOT NULL,
@@ -159,7 +160,7 @@ CREATE TABLE user_activities (
 CREATE TABLE task_reward_history (
   task_reward_history_id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id),
-  task_id INTEGER REFERENCES tasks(id) NOT NULL,
+  task_id INTEGER REFERENCES tasks(task_id) NOT NULL,
   experience_gained INTEGER NOT NULL DEFAULT 0,
   coins_gained INTEGER NOT NULL DEFAULT 0,
   claimed_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())

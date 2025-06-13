@@ -5,7 +5,7 @@ import { showMessage } from './common.js';
 document.addEventListener('DOMContentLoaded', () => {
 
     const urlParams = new URLSearchParams(window.location.search);
-    const post_id = urlParams.get('id');
+    const post_id = urlParams.get('post_id');
     const likeButton = document.getElementById('likeButton');
     const dislikeButton = document.getElementById('dislikeButton');
     // 获取当前用户
@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (likeButton && dislikeButton) {
         let reaction = fetchReactions(userProfile, post_id);
         updateUI(reaction);
-
         // 添加事件监听器
         if (userSession) {
             likeButton.addEventListener('click', handleReaction(reaction, 'like'));
@@ -53,7 +52,7 @@ async function fetchReactions(userProfile, post_id) {
                 return reaction = {
                     likes_count: postData.likes_count,
                     dislikes_count: postData.dislikes_count,
-                    user_id: userProfile.user_id,
+                    user_id: reactionData.user_id,
                     post_id: post_id,
                     type: reactionData.type
                 }
@@ -77,7 +76,7 @@ async function fetchReactions(userProfile, post_id) {
         }
 
     } catch (error) {
-        console.error('Error fetching reactions:', error);
+        console.log('Error fetching reactions:', error);
     }
 }
 
@@ -159,16 +158,16 @@ async function handleReaction(reaction, type) {
         updateUI(reaction);
         
         // 如果是点赞，更新任务完成状态
-        if (type === 'like') {
-            // 导入评论模块中的更新点赞任务函数
-            import('./comments.js').then(module => {
-                if (module.updateLikeTask) {
-                    module.updateLikeTask(reaction.user_id, reaction.post_id);
-                }
-            }).catch(err => console.error('无法导入评论模块:', err));
-        }
+        // if (type === 'like') {
+        //     // 导入评论模块中的更新点赞任务函数
+        //     import('./comments.js').then(module => {
+        //         if (module.updateLikeTask) {
+        //             module.updateLikeTask(reaction.user_id, reaction.post_id);
+        //         }
+        //     }).catch(err => console.error('无法导入评论模块:', err));
+        // }
     } catch (error) {
-        console.error('Error handling reaction:', error);
+        console.log('Error handling reaction:', error);
         showMessage('处理反应失败，请稍后重试', 'error');
     }
 }
@@ -179,6 +178,8 @@ function updateUI(reaction) {
     const dislikeButton = document.getElementById('dislikeButton');
     likeButton.textContent = reaction.likes_count;
     dislikeButton.textContent = reaction.dislikes_count;
+    console.log('likes_count:', reaction.likes_count);
+    console.log('dislikes_count:', reaction.dislikes_count);
 
     // 更新按钮状态
     likeButton.classList.toggle('active', reaction.type === 'like');

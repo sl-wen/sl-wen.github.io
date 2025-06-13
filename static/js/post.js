@@ -191,7 +191,7 @@ async function initEditor() {
                 statusDiv.innerHTML += '<p>3秒后将跳转到文章页面</p>';
             }
             setTimeout(() => {
-                window.location.href = `/pages/article.html?id=${newPost.post_id}`;
+                window.location.href = `/pages/article.html?post_id=${newPost.post_id}`;
             }, 3000);
 
         } catch (error) {

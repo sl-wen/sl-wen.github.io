@@ -14,16 +14,16 @@ async function retry(fn, retries = 3, delay = 1000) {
 }
 
 // 获取单篇文章的函数
-export async function getArticle(id) {
+export async function getArticle(post_id) {
     try {
-        console.log('开始获取文章:', id);
+        console.log('开始获取文章:', post_id);
         
         // 使用重试逻辑获取文章
         const article = await retry(async () => {
             const { data, error } = await supabase
                 .from('posts')
                 .select('*')
-                .eq('post_id', id)
+                .eq('post_id', post_id)
                 .single();
                 
             if (error) throw error;
@@ -33,7 +33,7 @@ export async function getArticle(id) {
             const { error: updateError } = await supabase
                 .from('posts')
                 .update({ views: (data.views || 0) + 1 })
-                .eq('post_id', id);
+                .eq('post_id', post_id);
                 
             if (updateError) {
                 console.warn('更新访问量失败:', updateError);
@@ -113,7 +113,7 @@ export async function createArticle(article) {
 }
 
 // 更新文章的函数
-export async function updateArticle(id, updates) {
+export async function updateArticle(post_id, updates) {
     try {
         const { data, error } = await supabase
             .from('posts')
@@ -121,7 +121,7 @@ export async function updateArticle(id, updates) {
                 ...updates,
                 updated_at: new Date().toISOString()
             })
-            .eq('id', id)
+            .eq('post_id', post_id)
             .select()
             .single();
             
@@ -134,12 +134,12 @@ export async function updateArticle(id, updates) {
 }
 
 // 删除文章的函数
-export async function deleteArticle(id) {
+export async function deleteArticle(post_id) {
     try {
         const { error } = await supabase
             .from('posts')
             .delete()
-            .eq('post_id', id);
+            .eq('post_id', post_id);
             
         if (error) throw error;
         return true;

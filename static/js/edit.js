@@ -110,13 +110,13 @@ renderer.image = function (href, title, text) {
 marked.setOptions({ renderer });
 
 // 加载文章
-async function loadArticle(articleId) {
+async function loadArticle(post_id) {
     try {
-        console.log('正在加载文章:', articleId);
+        console.log('正在加载文章:', post_id);
         const { data: article, error } = await supabase
             .from('posts')
             .select('*')
-            .eq('post_id', articleId)
+            .eq('post_id', post_id)
             .single();
 
         if (error || !article) {
@@ -141,7 +141,7 @@ async function loadArticle(articleId) {
 }
 
 // 更新文章
-async function updateArticle(articleId) {
+async function updateArticle(post_id) {
     try {
         const title = document.getElementById('title').value.trim();
         const author = document.getElementById('author').value.trim();
@@ -166,11 +166,11 @@ async function updateArticle(articleId) {
                 content,
                 updated_at: new Date()
             })
-            .eq('post_id', articleId);
+            .eq('post_id', post_id);
 
         showmessage('文章更新成功！', 'success');
         setTimeout(() => {
-            window.location.href = `/pages/article.html?id=${articleId}`;
+            window.location.href = `/pages/article.html?post_id=${post_id}`;
         }, 1500);
 
     } catch (error) {
@@ -180,7 +180,7 @@ async function updateArticle(articleId) {
 }
 
 // 删除文章
-async function handleDeleteArticle(articleId) {
+async function handleDeleteArticle(post_id) {
     if (!confirm('确定要删除这篇文章吗？此操作不可恢复！')) {
         return;
     }
@@ -189,7 +189,7 @@ async function handleDeleteArticle(articleId) {
         const { error } = await supabase
             .from('posts')
             .delete()
-            .eq('post_id', articleId);
+            .eq('post_id', post_id);
         showmessage('文章删除成功！', 'success');
         setTimeout(() => {
             window.location.href = '/';
@@ -207,15 +207,15 @@ window.deleteArticle = handleDeleteArticle;
 window.addEventListener('DOMContentLoaded', () => {
     try {
         const urlParams = new URLSearchParams(window.location.search);
-        const articleId = urlParams.get('id');
+        const post_id = urlParams.get('post_id');
 
-        if (!articleId) {
+        if (!post_id) {
             showmessage('错误：未指定文章ID', 'error');
             return;
         }
 
         // 加载文章
-        loadArticle(articleId);
+        loadArticle(post_id);
 
         // 绑定按钮事件
         const updateButton = document.getElementById('update-button');
@@ -226,16 +226,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
         if (updateButton) {
-            updateButton.addEventListener('click', () => updateArticle(articleId));
+            updateButton.addEventListener('click', () => updateArticle(post_id));
         }
 
         if (deleteButton) {
-            deleteButton.addEventListener('click', () => handleDeleteArticle(articleId));
+            deleteButton.addEventListener('click', () => handleDeleteArticle(post_id));
         }
 
         if (cancelButton) {
             cancelButton.addEventListener('click', () => {
-                window.location.href = `/pages/article.html?id=${articleId}`;
+                window.location.href = `/pages/article.html?post_id=${post_id}`;
             });
         }
 

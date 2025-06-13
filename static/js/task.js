@@ -171,7 +171,7 @@ async function handleLoginRewards(profile) {
             last_login: new Date().toISOString(),
             updated_at: new Date().toISOString()
         }
-        console.log(updatedProfile);
+        console.log('updatedProfile:',updatedProfile);
         try{
         const { data, error } = await supabase
             .from('profiles')
@@ -191,7 +191,7 @@ async function handleLoginRewards(profile) {
 
 // 点赞任务处理函数
 async function handleLikeTask(user_id) {
-    if (!userId) return;
+    if (!user_id) return;
     
     try {
         // 获取用户的任务完成情况

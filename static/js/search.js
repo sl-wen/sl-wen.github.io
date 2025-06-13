@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       // 创建文章标题
       const title = document.createElement('h3');
       const titleLink = document.createElement('a');
-      titleLink.href = `/pages/article.html?id=${post.post_id}`;
+      titleLink.href = `/pages/article.html?post_id=${post.post_id}`;
       titleLink.innerHTML = highlightKeyword(post.title || '无标题', keyword);
       title.appendChild(titleLink);
 
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       const preview = document.createElement('p');
       if (post.content) {
         const previewLink = document.createElement('a');
-        previewLink.href = `/pages/article.html?id=${post.post_id}`;
+        previewLink.href = `/pages/article.html?post_id=${post.post_id}`;
         previewLink.innerHTML = highlightKeyword(marked.parse(post.content.substring(0, 200) + '...'), keyword);
         preview.appendChild(previewLink);
       } else {

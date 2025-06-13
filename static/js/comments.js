@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 初始化评论表单提交事件
     const commentForm = document.getElementById('main-comment-form');
     if (commentForm) {
-        commentForm.addEventListener('submit', (e) => {
+        commentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!userSession) {
                 showMessage('请先登录后再发表评论', 'error');
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 初始化回复按钮点击事件
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', async (e) => {
         // 回复按钮点击事件
         if (e.target.closest('.reply-action')) {
             if (!userProfile) {
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // 初始化回复表单提交事件
-    document.addEventListener('submit', (e) => {
+    document.addEventListener('submit', async (e) => {
         if (e.target.closest('.reply-form form')) {
             e.preventDefault();
             if (!userProfile) {

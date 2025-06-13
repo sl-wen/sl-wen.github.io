@@ -3,39 +3,43 @@ import { supabase } from './supabase-config.js';
 import { showMessage, formatDate } from './common.js';
 
 // 当页面加载完成时初始化评论功能
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // 获取文章ID
     const urlParams = new URLSearchParams(window.location.search);
     const post_id = urlParams.get('post_id');
-    
+
     // 获取当前用户信息
     const userSessionStr = sessionStorage.getItem('userSession');
     const userProfileStr = sessionStorage.getItem('userProfile');
     const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
-    
+
     // 初始化评论区
     if (post_id) {
-        initComments(post_id, userProfile);
+        try {
+            await initComments(post_id, userProfile);
+        } catch (error) {
+            showMessage('初始化评论区失败', 'error');
+        }
     }
-    
+
     // 初始化评论表单提交事件
     const commentForm = document.getElementById('main-comment-form');
     if (commentForm) {
         commentForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            if (!userProfile) {
+            if (!userSession) {
                 showMessage('请先登录后再发表评论', 'error');
                 return;
             }
-            
+
             const commentContent = document.getElementById('comment-content').value.trim();
             if (commentContent) {
-                addComment(post_id, userProfile.user_id, commentContent);
+                await addComment(post_id, userProfile.user_id, commentContent);
             }
         });
     }
-    
+
     // 初始化回复按钮点击事件
     document.addEventListener('click', (e) => {
         // 回复按钮点击事件
@@ -44,42 +48,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 showMessage('请先登录后再回复评论', 'error');
                 return;
             }
-            
+
             const commentId = e.target.closest('.reply-action').dataset.commentId;
             toggleReplyForm(commentId);
         }
-        
+
         // 取消回复按钮点击事件
         if (e.target.closest('.cancel-reply')) {
             const commentId = e.target.closest('.cancel-reply').dataset.commentId;
             hideReplyForm(commentId);
         }
-        
+
         // 评论点赞按钮点击事件
         if (e.target.closest('.like-action')) {
             if (!userProfile) {
                 showMessage('请先登录后再点赞', 'error');
                 return;
             }
-            
+
             const commentElement = e.target.closest('.comment, .reply');
             const commentId = commentElement.id.replace('comment-', '').replace('reply-', '');
-            handleCommentReaction(commentId, 'like', userProfile.user_id);
+            await handleCommentReaction(commentId, 'like', userProfile.user_id);
         }
-        
+
         // 评论踩按钮点击事件
         if (e.target.closest('.dislike-action')) {
             if (!userProfile) {
                 showMessage('请先登录后再踩', 'error');
                 return;
             }
-            
+
             const commentElement = e.target.closest('.comment, .reply');
             const commentId = commentElement.id.replace('comment-', '').replace('reply-', '');
             handleCommentReaction(commentId, 'dislike', userProfile.user_id);
         }
     });
-    
+
     // 初始化回复表单提交事件
     document.addEventListener('submit', (e) => {
         if (e.target.closest('.reply-form form')) {
@@ -88,23 +92,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 showMessage('请先登录后再回复评论', 'error');
                 return;
             }
-            
+
             const replyForm = e.target;
             const commentId = replyForm.closest('.reply-form').id.replace('reply-form-', '');
             const replyContent = replyForm.querySelector('textarea').value.trim();
-            
+
             if (replyContent) {
-                addReply(post_id, commentId, userProfile.user_id, replyContent);
+                await addReply(post_id, commentId, userProfile.user_id, replyContent);
                 hideReplyForm(commentId);
             }
         }
     });
-    
+
     // 初始化评论排序下拉框事件
     const sortSelect = document.querySelector('.sort-select');
     if (sortSelect) {
-        sortSelect.addEventListener('change', () => {
-            initComments(post_id, userProfile, sortSelect.value);
+        sortSelect.addEventListener('change', async () => {
+            await initComments(post_id, userProfile, sortSelect.value);
         });
     }
 });
@@ -119,10 +123,10 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
     try {
         const commentsList = document.querySelector('.comments-list');
         if (!commentsList) return;
-        
+
         // 显示加载中
         commentsList.innerHTML = '<div class="loading">加载评论中...</div>';
-        
+
         // 获取评论数据
         let query = supabase
             .from('comments')
@@ -133,7 +137,7 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
             `)
             .eq('post_id', post_id)
             .is('parent_id', null); // 只获取顶级评论
-        
+
         // 根据排序方式设置排序
         switch (sortBy) {
             case 'newest':
@@ -146,34 +150,34 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
                 query = query.order('likes_count', { ascending: false });
                 break;
         }
-        
+
         const { data: comments, error } = await query;
-        
+
         if (error) throw error;
-        
+
         // 获取评论总数
         const { count, error: countError } = await supabase
             .from('comments')
             .select('comment_id', { count: 'exact' })
             .eq('post_id', post_id);
-            
+
         if (countError) throw countError;
-        
+
         // 更新评论数量显示
         const commentsCount = document.querySelector('.comments-count');
         if (commentsCount) {
             commentsCount.textContent = `评论 (${count || 0})`;
         }
-        
+
         // 如果没有评论
         if (!comments || comments.length === 0) {
             commentsList.innerHTML = '<div class="no-comments">暂无评论，快来发表第一条评论吧！</div>';
             return;
         }
-        
+
         // 清空评论列表
         commentsList.innerHTML = '';
-        
+
         // 渲染评论列表
         for (const comment of comments) {
             // 获取该评论的回复
@@ -187,9 +191,9 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
                 .eq('post_id', post_id)
                 .eq('parent_id', comment.comment_id)
                 .order('created_at', { ascending: true });
-                
+
             if (repliesError) throw repliesError;
-            
+
             // 获取当前用户对该评论的反应
             let userReaction = null;
             if (userProfile) {
@@ -199,10 +203,10 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
                     .eq('user_id', userProfile.user_id)
                     .eq('comment_id', comment.comment_id)
                     .maybeSingle();
-                    
+
                 userReaction = reactionData ? reactionData.type : null;
             }
-            
+
             // 渲染评论
             const commentElement = createCommentElement(comment, replies, userProfile, userReaction);
             commentsList.appendChild(commentElement);
@@ -220,20 +224,20 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
  * @param {string} userReaction - 当前用户对该评论的反应类型
  * @returns {HTMLElement} - 评论元素
  */
-function createCommentElement(comment, replies = [], userProfile = null , userReaction = null) {
+function createCommentElement(comment, replies = [], userProfile = null, userReaction = null) {
     const li = document.createElement('li');
     li.className = 'comment';
     li.id = `comment-${comment.comment_id}`;
-    
+
     // 获取用户信息
     const username = userProfile ? userProfile.username : '匿名用户';
-    const avatarUrl = userProfile && cuserProfile.avatar_url 
-        ? userProfile.avatar_url 
+    const avatarUrl = userProfile && cuserProfile.avatar_url
+        ? userProfile.avatar_url
         : 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70);
-    
+
     // 格式化日期
     const formattedDate = formatDate(comment.created_at);
-    
+
     // 设置评论HTML
     li.innerHTML = `
         <div class="comment-header">
@@ -278,7 +282,7 @@ function createCommentElement(comment, replies = [], userProfile = null , userRe
         </div>
         <div class="replies"></div>
     `;
-    
+
     // 添加回复
     if (replies && replies.length > 0) {
         const repliesContainer = li.querySelector('.replies');
@@ -286,7 +290,7 @@ function createCommentElement(comment, replies = [], userProfile = null , userRe
             repliesContainer.appendChild(createReplyElement(reply, userProfile, userReaction));
         });
     }
-    
+
     return li;
 }
 
@@ -300,16 +304,16 @@ function createReplyElement(reply, userProfile = null, userReaction = null) {
     const div = document.createElement('div');
     div.className = 'reply';
     div.id = `reply-${reply.id}`;
-    
+
     // 获取用户信息
     const username = userProfile ? userProfile.username : '匿名用户';
-    const avatarUrl = userProfile && userProfile.avatar_url 
-        ? userProfile.avatar_url 
+    const avatarUrl = userProfile && userProfile.avatar_url
+        ? userProfile.avatar_url
         : 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70);
-    
+
     // 格式化日期
     const formattedDate = formatDate(reply.created_at);
-    
+
     // 设置回复HTML
     div.innerHTML = `
         <div class="comment-header">
@@ -335,7 +339,7 @@ function createReplyElement(reply, userProfile = null, userReaction = null) {
             </div>
         </div>
     `;
-    
+
     return div;
 }
 
@@ -357,23 +361,23 @@ async function addComment(post_id, user_id, content) {
                 created_at: new Date().toISOString()
             })
             .select();
-            
+
         if (error) throw error;
-        
+
         // 清空评论输入框
         document.getElementById('comment-content').value = '';
-        
+
         // 更新任务完成状态
-        updateCommentTask(user_id);
-        
+        await updateCommentTask(user_id);
+
         // 重新加载评论列表
         const userProfileStr = sessionStorage.getItem('userProfile');
         const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
         const sortSelect = document.querySelector('.sort-select');
         const sortBy = sortSelect ? sortSelect.value : 'newest';
-        
-        initComments(post_id, userProfile, sortBy);
-        
+
+        await initComments(post_id, userProfile, sortBy);
+
         showMessage('评论发表成功', 'success');
     } catch (error) {
         console.error('添加评论失败:', error);
@@ -401,20 +405,20 @@ async function addReply(post_id, parent_id, user_id, content) {
                 created_at: new Date().toISOString()
             })
             .select();
-            
+
         if (error) throw error;
-        
+
         // 更新任务完成状态
         updateCommentTask(user_id);
-        
+
         // 重新加载评论列表
         const userProfileStr = sessionStorage.getItem('userProfile');
         const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
         const sortSelect = document.querySelector('.sort-select');
         const sortBy = sortSelect ? sortSelect.value : 'newest';
-        
+
         initComments(post_id, userProfile, sortBy);
-        
+
         showMessage('回复发表成功', 'success');
     } catch (error) {
         console.error('添加回复失败:', error);
@@ -436,9 +440,9 @@ async function handleCommentReaction(comment_id, type, user_id) {
             .select('likes_count, dislikes_count')
             .eq('comment_id', comment_id)
             .single();
-            
+
         if (commentError) throw commentError;
-        
+
         // 获取用户对该评论的反应
         const { data: reaction, error: reactionError } = await supabase
             .from('comment_reactions')
@@ -446,12 +450,12 @@ async function handleCommentReaction(comment_id, type, user_id) {
             .eq('user_id', user_id)
             .eq('comment_id', comment_id)
             .maybeSingle();
-            
+
         if (reactionError) throw reactionError;
-        
+
         let likesCount = comment.likes_count || 0;
         let dislikesCount = comment.dislikes_count || 0;
-        
+
         // 如果用户已经有相同的反应，则删除反应（取消点赞/踩）
         if (reaction && reaction.type === type) {
             // 删除反应
@@ -460,9 +464,9 @@ async function handleCommentReaction(comment_id, type, user_id) {
                 .delete()
                 .eq('user_id', user_id)
                 .eq('comment_id', comment_id);
-                
+
             if (deleteError) throw deleteError;
-            
+
             // 更新计数
             if (type === 'like') {
                 likesCount = Math.max(0, likesCount - 1);
@@ -478,9 +482,9 @@ async function handleCommentReaction(comment_id, type, user_id) {
                 .update({ type })
                 .eq('user_id', user_id)
                 .eq('comment_id', comment_id);
-                
+
             if (updateError) throw updateError;
-            
+
             // 更新计数
             if (type === 'like') {
                 likesCount += 1;
@@ -500,9 +504,9 @@ async function handleCommentReaction(comment_id, type, user_id) {
                     comment_id: comment_id,
                     type
                 });
-                
+
             if (insertError) throw insertError;
-            
+
             // 更新计数
             if (type === 'like') {
                 likesCount += 1;
@@ -510,7 +514,7 @@ async function handleCommentReaction(comment_id, type, user_id) {
                 dislikesCount += 1;
             }
         }
-        
+
         // 更新评论的点赞/踩计数
         const { error: updateCountError } = await supabase
             .from('comments')
@@ -519,12 +523,12 @@ async function handleCommentReaction(comment_id, type, user_id) {
                 dislikes_count: dislikesCount
             })
             .eq('comment_id', commentId);
-            
+
         if (updateCountError) throw updateCountError;
-        
+
         // 更新UI
         updateCommentReactionUI(commentId, type, likesCount, dislikesCount, reaction ? reaction.type : null);
-        
+
         // 更新任务完成状态
         if (type === 'like') {
             updateLikeTask(user_id);
@@ -547,18 +551,18 @@ function updateCommentReactionUI(commentId, newType, likesCount, dislikesCount, 
     // 获取评论元素
     const commentElement = document.getElementById(`comment-${commentId}`) || document.getElementById(`reply-${commentId}`);
     if (!commentElement) return;
-    
+
     // 更新点赞/踩计数
     const likeCountElement = commentElement.querySelector('.like-count');
     const dislikeCountElement = commentElement.querySelector('.dislike-count');
-    
+
     if (likeCountElement) likeCountElement.textContent = likesCount;
     if (dislikeCountElement) dislikeCountElement.textContent = dislikesCount;
-    
+
     // 更新按钮状态
     const likeButton = commentElement.querySelector('.like-action');
     const dislikeButton = commentElement.querySelector('.dislike-action');
-    
+
     // 如果是取消相同类型的反应
     if (oldType === newType) {
         likeButton.classList.toggle('active', false);
@@ -582,10 +586,10 @@ function toggleReplyForm(comment_id) {
                 form.style.display = 'none';
             }
         });
-        
+
         // 切换当前回复表单的显示状态
         replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
-        
+
         // 如果显示表单，则聚焦到文本框
         if (replyForm.style.display === 'block') {
             const textarea = replyForm.querySelector('textarea');
@@ -617,39 +621,39 @@ async function updateCommentTask(user_id) {
             .select('task_id, rewards_exp, rewards_coins')
             .eq('action_type', 'comment')
             .single();
-            
+
         if (taskError) return;
-        
+
         // 获取用户资料
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('experience, coins, level')
             .eq('user_id', user_id)
             .single();
-            
+
         if (profileError) return;
-        
+
         // 获取用户等级信息
         const { data: levelInfo, error: levelError } = await supabase
             .from('user_levels')
             .select('required_exp, level_up_reward_coins')
             .eq('level', profile.level)
             .single();
-            
+
         if (levelError) return;
-        
+
         // 更新用户经验和金币
         let newExperience = (profile.experience || 0) + (task.rewards_exp || 0);
         let newCoins = (profile.coins || 0) + (task.rewards_coins || 0);
         let newLevel = profile.level;
-        
+
         // 检查是否升级
         if (newExperience >= levelInfo.required_exp) {
             newLevel += 1;
             newCoins += levelInfo.level_up_reward_coins || 0;
             showMessage(`恭喜升级！到达 ${newLevel} 级，获得 ${levelInfo.level_up_reward_coins} 币`, 'success');
         }
-        
+
         // 更新用户资料
         const { error: updateError } = await supabase
             .from('profiles')
@@ -660,9 +664,9 @@ async function updateCommentTask(user_id) {
                 updated_at: new Date().toISOString()
             })
             .eq('user_id', user_id);
-            
+
         if (updateError) return;
-        
+
         // 更新任务完成记录
         const { error: taskLogError } = await supabase
             .from('task_logs')
@@ -671,7 +675,7 @@ async function updateCommentTask(user_id) {
                 task_id: task.id,
                 completed_at: new Date().toISOString()
             });
-            
+
         if (!taskLogError) {
             showMessage(`完成评论任务，获得 ${task.rewards_exp} 经验和 ${task.rewards_coins} 币`, 'success');
         }
@@ -686,7 +690,7 @@ async function updateCommentTask(user_id) {
  */
 async function updateLikeTask(user_id) {
     if (!user_id) return;
-    
+
     try {
         // 导入任务模块中的点赞任务处理函数
         const { handleLikeTask } = await import('./task.js');
@@ -695,7 +699,7 @@ async function updateLikeTask(user_id) {
             await handleLikeTask(user_id);
         } else {
             console.warn('找不到点赞任务处理函数');
-            
+
             // 如果导入失败，使用旧的实现方式
             // 获取点赞任务信息
             const { data: task, error: taskError } = await supabase
@@ -703,13 +707,13 @@ async function updateLikeTask(user_id) {
                 .select('task_id, rewards_exp, rewards_coins')
                 .eq('action_type', 'like')
                 .single();
-                
+
             if (taskError) return;
-            
+
             // 检查今天是否已完成该任务
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            
+
             const { data: taskLog, error: taskLogError } = await supabase
                 .from('task_logs')
                 .select('task_logs_id')
@@ -717,42 +721,42 @@ async function updateLikeTask(user_id) {
                 .eq('task_id', task.task_id)
                 .gte('completed_at', today.toISOString())
                 .maybeSingle();
-                
+
             if (taskLogError) return;
-            
+
             // 如果今天已完成任务，则不再奖励
             if (taskLog) return;
-            
+
             // 获取用户资料
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('experience, coins, level')
                 .eq('user_id', user_id)
                 .single();
-                
+
             if (profileError) return;
-            
+
             // 获取用户等级信息
             const { data: levelInfo, error: levelError } = await supabase
                 .from('user_levels')
                 .select('required_exp, level_up_reward_coins')
                 .eq('level', profile.level)
                 .single();
-                
+
             if (levelError) return;
-            
+
             // 更新用户经验和金币
             let newExperience = (profile.experience || 0) + (task.rewards_exp || 0);
             let newCoins = (profile.coins || 0) + (task.rewards_coins || 0);
             let newLevel = profile.level;
-            
+
             // 检查是否升级
             if (newExperience >= levelInfo.required_exp) {
                 newLevel += 1;
                 newCoins += levelInfo.level_up_reward_coins || 0;
                 showMessage(`恭喜升级！到达 ${newLevel} 级，获得 ${levelInfo.level_up_reward_coins} 币`, 'success');
             }
-            
+
             // 更新用户资料
             const { error: updateError } = await supabase
                 .from('profiles')
@@ -763,9 +767,9 @@ async function updateLikeTask(user_id) {
                     updated_at: new Date().toISOString()
                 })
                 .eq('user_id', user_id);
-                
+
             if (updateError) return;
-            
+
             // 更新任务完成记录
             const { error: insertError } = await supabase
                 .from('task_logs')
@@ -774,7 +778,7 @@ async function updateLikeTask(user_id) {
                     task_id: task.task_id,
                     completed_at: new Date().toISOString()
                 });
-                
+
             if (!insertError) {
                 showMessage(`完成点赞任务，获得 ${task.rewards_exp} 经验和 ${task.rewards_coins} 币`, 'success');
             }

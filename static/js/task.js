@@ -10,6 +10,7 @@ async function getuserlevels(level) {
             .eq('level', level)
             .single();
 
+        console.log('user_levels:', user_levels);
         return user_levels;
 
     } catch (error) {
@@ -29,6 +30,7 @@ async function getconsecutiveLoginsrewards(consecutiveLogins) {
             .order('required_count', { ascending: false })  // 按consecutiveLogins降序排列
             .limit(1);  // 只取第一条记录
 
+        console.log('consecutiveLoginsrewards:', consecutiveLoginsrewards);
         return consecutiveLoginsrewards;
 
     } catch (error) {
@@ -134,11 +136,11 @@ async function handleLoginRewards(profile) {
             profile.last_login,
             profile.consecutive_logins || 0
         );
-        console.log('更新连续登录天数:',consecutiveLogins);
-        const userlevel = await getuserlevels();
+        console.log('更新连续登录天数:', consecutiveLogins);
+        const userlevel = await getuserlevels(profile.level);
         // 检查是否为当天首次登录
         const isFirstLogin = isFirstLoginOfDay(profile.last_login);
-        console.log('是否为当天首次登录:',isFirstLogin);
+        console.log('是否为当天首次登录:', isFirstLogin);
 
         let rewards_experience = 0;
         let rewards_coins = 0;

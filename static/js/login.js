@@ -128,9 +128,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             sessionStorage.setItem('userProfile', JSON.stringify(profile));
             await handleLoginRewards(profile);
             // 跳转到首页
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 3000);
+            // setTimeout(() => {
+            //     window.location.href = '/';
+            // }, 3000);
 
             return profile;
         } catch (error) {

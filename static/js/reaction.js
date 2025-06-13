@@ -85,11 +85,12 @@ async function fetchReactions(userProfile, post_id) {
             }
         }
         console.log('fetching_reaction:', reaction);
+        return reaction || {};
 
     } catch (error) {
         console.log('Error fetching post_reactions:', error);
+        return {};
     }
-    return reaction || {};
 }
 
 async function handleReaction(post_reaction, type) {

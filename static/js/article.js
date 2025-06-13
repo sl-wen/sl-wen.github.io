@@ -165,7 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     console.log('文章数据:', article);
-    console.log('文章创建日期:', article.created_at);
 
     // 更新页面标题
     document.title = `${article.title} - 我的博客`;

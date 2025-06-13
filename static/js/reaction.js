@@ -17,7 +17,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (likeButton && dislikeButton) {
         console.log('post_id:', post_id);
         try {
-            let post_reaction = await fetchReactions(userProfile, post_id);
+            let post_reaction = {};
+            console.log('post_reaction:', await fetchReactions(userProfile, post_id));
+            post_reaction = await fetchReactions(userProfile, post_id);
             console.log('post_reaction:', post_reaction);
             updateUI(post_reaction);
             // 添加事件监听器

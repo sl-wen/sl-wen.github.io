@@ -127,10 +127,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             sessionStorage.setItem('userSession', JSON.stringify(session));
             sessionStorage.setItem('userProfile', JSON.stringify(profile));
             await handleLoginRewards(profile);
-            // 跳转到首页
-            // setTimeout(() => {
-            //     window.location.href = '/';
-            // }, 3000);
+            showMessage('3秒后跳转到首页', 'success');
+            //跳转到首页
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 3000);
 
             return profile;
         } catch (error) {

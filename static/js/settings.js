@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .eq('username', newusername)
                 .single();
 
-            if (profile.username) {
+            if (profile) {
                 showMessage('用户名已存在', 'error');
                 return null;
             }

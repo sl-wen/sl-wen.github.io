@@ -16,11 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 初始化评论区
     if (post_id) {
-        try {
-            await initComments(post_id, userProfile);
-        } catch (error) {
-            showMessage('初始化评论区失败', 'error');
-        }
+        await initComments(post_id, userProfile);
     }
 
     // 初始化评论表单提交事件
@@ -49,14 +45,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const commentId = e.target.closest('.reply-action').dataset.commentId;
-            toggleReplyForm(commentId);
+            const comment_id = e.target.closest('.reply-action').dataset.comment_id;
+            toggleReplyForm(comment_id);
         }
 
         // 取消回复按钮点击事件
         if (e.target.closest('.cancel-reply')) {
-            const commentId = e.target.closest('.cancel-reply').dataset.commentId;
-            hideReplyForm(commentId);
+            const comment_id = e.target.closest('.cancel-reply').dataset.comment_id;
+            hideReplyForm(comment_id);
         }
 
         // 评论点赞按钮点击事件
@@ -67,8 +63,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const commentElement = e.target.closest('.comment, .reply');
-            const commentId = commentElement.id.replace('comment-', '').replace('reply-', '');
-            await handleCommentReaction(commentId, 'like', userProfile.user_id);
+            const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
+            await handleCommentReaction(comment_id, 'like', userProfile.user_id);
         }
 
         // 评论踩按钮点击事件
@@ -79,8 +75,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const commentElement = e.target.closest('.comment, .reply');
-            const commentId = commentElement.id.replace('comment-', '').replace('reply-', '');
-            handleCommentReaction(commentId, 'dislike', userProfile.user_id);
+            const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
+            await handleCommentReaction(comment_id, 'dislike', userProfile.user_id);
         }
     });
 
@@ -94,12 +90,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const replyForm = e.target;
-            const commentId = replyForm.closest('.reply-form').id.replace('reply-form-', '');
+            const comment_id = replyForm.closest('.reply-form').id.replace('reply-form-', '');
             const replyContent = replyForm.querySelector('textarea').value.trim();
 
             if (replyContent) {
-                await addReply(post_id, commentId, userProfile.user_id, replyContent);
-                hideReplyForm(commentId);
+                await addReply(post_id, comment_id, userProfile.user_id, replyContent);
+                hideReplyForm(comment_id);
             }
         }
     });
@@ -428,7 +424,7 @@ async function addReply(post_id, parent_id, user_id, content) {
 
 /**
  * 处理评论点赞/踩
- * @param {string} commentId - 评论ID
+ * @param {string} comment_id - 评论ID
  * @param {string} type - 反应类型：like, dislike
  * @param {string} user_id - 用户ID
  */
@@ -522,12 +518,12 @@ async function handleCommentReaction(comment_id, type, user_id) {
                 likes_count: likesCount,
                 dislikes_count: dislikesCount
             })
-            .eq('comment_id', commentId);
+            .eq('comment_id', comment_id);
 
         if (updateCountError) throw updateCountError;
 
         // 更新UI
-        updateCommentReactionUI(commentId, type, likesCount, dislikesCount, reaction ? reaction.type : null);
+        updateCommentReactionUI(comment_id, type, likesCount, dislikesCount, reaction ? reaction.type : null);
 
         // 更新任务完成状态
         if (type === 'like') {
@@ -541,15 +537,15 @@ async function handleCommentReaction(comment_id, type, user_id) {
 
 /**
  * 更新评论反应UI
- * @param {string} commentId - 评论ID
+ * @param {string} comment_id - 评论ID
  * @param {string} newType - 新的反应类型
  * @param {number} likesCount - 点赞数
  * @param {number} dislikesCount - 踩数
  * @param {string} oldType - 旧的反应类型
  */
-function updateCommentReactionUI(commentId, newType, likesCount, dislikesCount, oldType) {
+function updateCommentReactionUI(comment_id, newType, likesCount, dislikesCount, oldType) {
     // 获取评论元素
-    const commentElement = document.getElementById(`comment-${commentId}`) || document.getElementById(`reply-${commentId}`);
+    const commentElement = document.getElementById(`comment-${comment_id}`) || document.getElementById(`reply-${comment_id}`);
     if (!commentElement) return;
 
     // 更新点赞/踩计数

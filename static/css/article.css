@@ -42,6 +42,12 @@
   border-color: rgb(175, 75, 75);
 }
 
+#likeButton.processing,
+#dislikeButton.processing {
+  background-color: #f0f0f0;
+  border-color: rgb(175, 75, 75);
+}
+
 .article-actions,
 .reaction-actions
  {

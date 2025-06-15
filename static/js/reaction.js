@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 解析 JSON 字符串
     const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
+    let postlikeisProcessing = false;
+    let postdislikeisProcessing = false;
     if (likeButton && dislikeButton) {
         try {
             let post_reaction = {};
@@ -92,6 +94,17 @@ async function fetchReactions(userProfile, post_id) {
 async function handleReaction(post_reaction, type) {
 
     const user_post_reaction = post_reaction;
+    if (type === 'like') {
+        if (postlikeisProcessing) {
+            showMessage('正在处理点赞...', 'info');
+            return;
+        }
+    } else if (type === 'dislike') {
+        if (postdislikeisProcessing) {
+            showMessage('正在处理踩...', 'info');
+            return;
+        }
+    }
 
     try {
         // 如果用户已经有相同的反应，则删除反应（取消点赞/踩）
@@ -180,6 +193,12 @@ async function handleReaction(post_reaction, type) {
     } catch (error) {
         console.log('Error handling reaction:', error);
         showMessage('处理反应失败，请稍后重试', 'error');
+    } finally {
+        if (type === 'like') {
+            postlikeisProcessing = false;
+        } else if (type === 'dislike') {
+            postdislikeisProcessing = false;
+        }
     }
 }
 
@@ -188,8 +207,8 @@ function updateUI(reaction) {
     const likeButton = document.getElementById('likeButton');
     const dislikeButton = document.getElementById('dislikeButton');
 
-    likeButton.querySelector('.likescount').textContent = reaction.likes_count;
-    dislikeButton.querySelector('.dislikescount').textContent = reaction.dislikes_count;
+    likeButton.querySelector('likescount').textContent = reaction.likes_count;
+    dislikeButton.querySelector('dislikescount').textContent = reaction.dislikes_count;
     // 更新按钮状态
     likeButton.classList.toggle('active', reaction.type === 'like');
     dislikeButton.classList.toggle('active', reaction.type === 'dislike');

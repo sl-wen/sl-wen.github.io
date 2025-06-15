@@ -161,7 +161,7 @@ async function handleLoginRewards(profile) {
             console.log('连续登录:', consecutiveLoginsrewards);
 
             if (consecutiveLogins > 1) {
-                showMessage(`连续登录 ${consecutiveLogins} 天,获得 ${consecutiveLoginsrewards.rewards_exp} 经验和 ${consecutiveLoginsrewards.rewards_coins} 币)`, 'info')
+                showMessage(`连续登录 ${consecutiveLogins} 天,获得 ${consecutiveLoginsrewards.exp_reward} 经验和 ${consecutiveLoginsrewards.coins_reward} 币`, 'success')
             }
 
             if ((profile.experience + rewards_experience) > userlevel.required_exp) {

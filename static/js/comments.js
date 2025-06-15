@@ -3,6 +3,10 @@ import { supabase } from './supabase-config.js';
 import { showMessage, formatDate } from './common.js';
 
 // 当页面加载完成时初始化评论功能
+// 添加状态锁变量
+let isSubmittingComment = false;
+let isSubmittingReply = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
     // 获取文章ID
     const urlParams = new URLSearchParams(window.location.search);
@@ -29,9 +33,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
+            if (isSubmittingComment) {
+                showMessage('评论正在提交中，请稍候...', 'info');
+                return;
+            }
+
             const commentContent = document.getElementById('comment-content').value.trim();
             if (commentContent) {
-                await addComment(post_id, userProfile.user_id, commentContent);
+                isSubmittingComment = true;
+                try {
+                    await addComment(post_id, userProfile.user_id, commentContent);
+                } finally {
+                    isSubmittingComment = false;
+                }
             }
         });
     }
@@ -89,13 +103,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
+            if (isSubmittingReply) {
+                showMessage('回复正在提交中，请稍候...', 'info');
+                return;
+            }
+
             const replyForm = e.target;
             const comment_id = replyForm.closest('.reply-form').id.replace('reply-form-', '');
             const replyContent = replyForm.querySelector('textarea').value.trim();
 
             if (replyContent) {
-                await addReply(post_id, comment_id, userProfile.user_id, replyContent);
-                hideReplyForm(comment_id);
+                isSubmittingReply = true;
+                try {
+                    await addReply(post_id, comment_id, userProfile.user_id, replyContent);
+                    hideReplyForm(comment_id);
+                } finally {
+                    isSubmittingReply = false;
+                }
             }
         }
     });
@@ -428,7 +452,20 @@ async function addReply(post_id, parent_id, user_id, content) {
  * @param {string} type - 反应类型：like, dislike
  * @param {string} user_id - 用户ID
  */
+// 添加状态锁变量
+let commentReactionLocks = {};
+
 async function handleCommentReaction(comment_id, type, user_id) {
+    // 检查是否正在处理
+    const lockKey = `${comment_id}_${user_id}`;
+    if (commentReactionLocks[lockKey]) {
+        showMessage('请等待上一个操作完成', 'info');
+        return;
+    }
+    
+    // 设置状态锁
+    commentReactionLocks[lockKey] = true;
+    
     try {
         // 获取当前评论
         const { data: comment, error: commentError } = await supabase
@@ -532,6 +569,9 @@ async function handleCommentReaction(comment_id, type, user_id) {
     } catch (error) {
         console.error('处理评论反应失败:', error);
         showMessage('处理评论反应失败，请稍后重试', 'error');
+    } finally {
+        // 释放状态锁
+        commentReactionLocks[lockKey] = false;
     }
 }
 

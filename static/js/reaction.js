@@ -14,25 +14,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 解析 JSON 字符串
     const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
-    let postlikeisProcessing = false;
-    let postdislikeisProcessing = false;
+    // 状态锁变量声明
     if (likeButton && dislikeButton) {
         try {
             let post_reaction = {};
-            post_reaction = await fetchReactions(userProfile, post_id);
-            updateUI(post_reaction);
+            post_reaction = await fetchpostReactions(userProfile, post_id);
+            updatepostUI(post_reaction);
             // 添加事件监听器
             if (userSession) {
-                likeButton.addEventListener('click', async function () { await handleReaction(post_reaction, 'like'); });
-                dislikeButton.addEventListener('click', async function () { await handleReaction(post_reaction, 'dislike'); });
+                likeButton.addEventListener('click', async function () {
+                    // 添加loading状态
+                    likeButton.classList.add('loading');
+                    await handlepostReaction(post_reaction, 'like');
+                });
+                dislikeButton.addEventListener('click', async function () {
+                    dislikeButton.classList.add('loading');
+                    await handlepostReaction(post_reaction, 'dislike');
+
+                });
             }
         } catch (error) {
-            console.log('Error fetching reactions:');
+            console.log('Error fetching reactions:', error);
         }
     }
 });
 
-async function fetchReactions(userProfile, post_id) {
+async function fetchpostReactions(userProfile, post_id) {
 
     try {
         // 获取文章的点赞/踩计数
@@ -91,20 +98,9 @@ async function fetchReactions(userProfile, post_id) {
     }
 }
 
-async function handleReaction(post_reaction, type) {
+async function handlepostReaction(post_reaction, type) {
 
     const user_post_reaction = post_reaction;
-    if (type === 'like') {
-        if (postlikeisProcessing) {
-            showMessage('正在处理点赞...', 'info');
-            return;
-        }
-    } else if (type === 'dislike') {
-        if (postdislikeisProcessing) {
-            showMessage('正在处理踩...', 'info');
-            return;
-        }
-    }
 
     try {
         // 如果用户已经有相同的反应，则删除反应（取消点赞/踩）
@@ -179,7 +175,7 @@ async function handleReaction(post_reaction, type) {
         if (updatePostError) throw updatePostError;
 
         // 更新UI
-        updateUI(user_post_reaction);
+        updatepostUI(user_post_reaction);
 
         // 如果是点赞，更新任务完成状态
         // if (type === 'like') {
@@ -194,25 +190,35 @@ async function handleReaction(post_reaction, type) {
         console.log('Error handling reaction:', error);
         showMessage('处理反应失败，请稍后重试', 'error');
     } finally {
+        // 移除loading状态
         if (type === 'like') {
-            postlikeisProcessing = false;
-        } else if (type === 'dislike') {
-            postdislikeisProcessing = false;
+            likeButton.classList.remove('loading');
+        }
+        if (type === 'dislike') {
+            dislikeButton.classList.remove('loading');
         }
     }
 }
 
-function updateUI(reaction) {
+function updatepostUI(post_reaction) {
     // 更新计数显示
+    console.log('更新计数开始:', post_reaction);
     const likeButton = document.getElementById('likeButton');
     const dislikeButton = document.getElementById('dislikeButton');
 
-    likeButton.querySelector('likescount').textContent = reaction.likes_count;
-    dislikeButton.querySelector('dislikescount').textContent = reaction.dislikes_count;
+    likeButton.querySelector('.likes-count').textContent = post_reaction.likes_count;
+    dislikeButton.querySelector('.dislikes-count').textContent = post_reaction.dislikes_count;
     // 更新按钮状态
-    likeButton.classList.toggle('active', reaction.type === 'like');
-    dislikeButton.classList.toggle('active', reaction.type === 'dislike');
-    console.log('更新计数成功:', reaction);
-    showMessage('更新计数成功', 'info');
+    if (post_reaction.type === 'like') {
+        likeButton.classList.add('active');
+        dislikeButton.classList.remove('active');
+    } else if (post_reaction.type === 'dislike') {
+        likeButton.classList.remove('active');
+        dislikeButton.classList.add('active');
+    } else {
+        likeButton.classList.remove('active');
+        dislikeButton.classList.remove('active');
+    }
+    console.log('更新计数成功:', post_reaction);
 }
 

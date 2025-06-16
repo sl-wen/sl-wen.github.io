@@ -34,6 +34,8 @@
     font-size: 14px;
     font-weight: 500;
     line-height: 20px;
+    transform: none !important;
+    transition: none !important;
 }
 
 #likeButton.active,
@@ -42,10 +44,10 @@
   border-color: rgb(175, 75, 75);
 }
 
-#likeButton.processing,
-#dislikeButton.processing {
-  background-color: #f0f0f0;
-  border-color: rgb(175, 75, 75);
+#likeButton.loading,
+#dislikeButton.loading {
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 .article-actions,

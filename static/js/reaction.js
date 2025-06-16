@@ -212,6 +212,7 @@ function updateUI(reaction) {
     // 更新按钮状态
     likeButton.classList.toggle('active', reaction.type === 'like');
     dislikeButton.classList.toggle('active', reaction.type === 'dislike');
+    console.log('更新计数成功:', reaction);
     showMessage('更新计数成功', 'info');
 }
 

@@ -217,7 +217,7 @@ async function handleLikeTask(user_id) {
             .select('*')
             .eq('user_id', user_id)
             .eq('task_type', 'like')
-            .eq('completed_date', new Date().toISOString().split('T')[0])
+            .eq('is_completed', true)
             .maybeSingle();
 
         if (taskError) throw taskError;
@@ -234,9 +234,18 @@ async function handleLikeTask(user_id) {
 
         if (profileError) throw profileError;
 
+
+        // 获取用户资料
+        const { data: tasksData, error: tasksError } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('reset_frequency', 'daily')
+            .eq('action_type', 'like')
+            .single();
+
         // 点赞任务奖励：经验值+5，金币+10
-        const expReward = 5;
-        const coinReward = 10;
+        const expReward = tasksData.exp_reward;
+        const coinReward = tasksData.coins_reward;
 
         // 更新用户经验值和金币
         const newExp = (profileData.experience || 0) + expReward;
@@ -244,7 +253,8 @@ async function handleLikeTask(user_id) {
 
         // 检查是否升级
         const currentLevel = profileData.level || 1;
-        const { newLevel, levelUp } = calculateNewLevel(newExp, currentLevel);
+        const { data: userlevelsData } = await getuserlevels(profileData.level);
+        const newLevel = calculateNewLevel(profileData.experience, expReward,userlevelsData.required_exp) ? profileData.level +1 : profileData.level;
 
         // 更新用户资料
         const { error: updateError } = await supabase
@@ -264,9 +274,7 @@ async function handleLikeTask(user_id) {
             .insert({
                 user_id: user_id,
                 task_type: 'like',
-                completed_date: new Date().toISOString().split('T')[0],
-                reward_exp: expReward,
-                reward_coins: coinReward
+                current_count:1
             });
 
         if (insertError) throw insertError;
@@ -326,6 +334,7 @@ async function handleCommentTask(user_id) {
         // 检查是否升级
         const currentLevel = profileData.level || 1;
         const { newLevel, levelUp } = calculateNewLevel(newExp, currentLevel);
+        calculateNewLevel(profileData.experience, expReward,userlevelsData.required_exp)
 
         // 更新用户资料
         const { error: updateError } = await supabase
@@ -369,13 +378,12 @@ async function handleCommentTask(user_id) {
 }
 
 // 计算新等级
-function calculateNewLevel(experience, currentLevel) {
+function calculateNewLevel(experience, rewards_experience,required_exp) {
     // 简单的等级计算公式：每100经验值升一级
-    const newLevel = Math.floor(experience / 100) + 1;
-    return {
-        newLevel: Math.max(newLevel, currentLevel), // 确保等级不会降低
-        levelUp: newLevel > currentLevel
-    };
+    if ((experience + rewards_experience) > required_exp) {
+        return true;
+    }
+    return false;
 }
 
 // 更新会话中的用户资料

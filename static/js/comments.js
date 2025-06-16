@@ -228,7 +228,7 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
             }
 
             // 渲染评论
-            const commentElement = createCommentElement(comment, replies, userProfile, userReaction);
+            const commentElement = await createCommentElement(comment, replies, userProfile, userReaction);
             commentsList.appendChild(commentElement);
         }
     } catch (error) {
@@ -244,15 +244,27 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
  * @param {string} userReaction - 当前用户对该评论的反应类型
  * @returns {HTMLElement} - 评论元素
  */
-function createCommentElement(comment, replies = [], userProfile = null, userReaction = null) {
+async function createCommentElement(comment, replies = [], userProfile = null, userReaction = null) {
     const li = document.createElement('li');
     li.className = 'comment';
     li.id = `comment-${comment.comment_id}`;
 
-    // 获取用户信息
-    const username = userProfile ? userProfile.username : '匿名用户';
-    const avatarUrl = userProfile && userProfile.avatar_url
-        ? userProfile.avatar_url
+    let profilesData = {};
+    try {
+        // 获取用户信息
+        profilesData = await supabase
+            .from('profiles')
+            .select('username,level,avatar_url')
+            .eq('user_id', comment.user_id)
+            .maybeSingle();
+    } catch (error) {
+        console.log('创建评论元素获取用户信息失败');
+    }
+
+    const username = profilesData ? profilesData.username : '匿名用户';
+    const userlevel = profilesData ? profilesData.level : '1';
+    const avatarUrl = profilesData && profilesData.avatar_url
+        ? profilesData.avatar_url
         : 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70);
 
     // 格式化日期
@@ -264,6 +276,7 @@ function createCommentElement(comment, replies = [], userProfile = null, userRea
             <div class="comment-author"> 
                 <img src="${avatarUrl}" alt="用户头像" class="author-avatar"> 
                 <span class="author-name">${username}</span> 
+                <span class="author-level">Lv${userlevel}</span> 
             </div>
             <div class="comment-meta"> 
                 <time datetime="${comment.created_at}">${formattedDate}</time>
@@ -462,10 +475,10 @@ async function handleCommentReaction(comment_id, type, user_id) {
         showMessage('请等待上一个操作完成', 'info');
         return;
     }
-    
+
     // 设置状态锁
     commentReactionLocks[lockKey] = true;
-    
+
     try {
         // 获取当前评论
         const { data: comment, error: commentError } = await supabase
@@ -732,7 +745,7 @@ async function updateLikeTask(user_id) {
         const { handleLikeTask } = await import('./task.js');
         if (handleLikeTask) {
             // 调用任务模块中的点赞任务处理函数
-            await handleLikeTask(user_id);
+            // await handleLikeTask(user_id);
         } else {
             console.warn('找不到点赞任务处理函数');
 

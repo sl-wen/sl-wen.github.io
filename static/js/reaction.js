@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
             await handleCommentReaction(comment_id, 'dislike', userProfile.user_id);
         }
-    }
+    });
 });
 
 

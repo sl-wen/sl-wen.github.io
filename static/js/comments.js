@@ -688,7 +688,6 @@ async function updateLikeTask(user_id) {
 export {
     initComments,
     addComment,
-    ,
     updateCommentTask,
     updateLikeTask
 };

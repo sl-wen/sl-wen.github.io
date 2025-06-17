@@ -297,7 +297,7 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
     // 添加回复
     if (replies && replies.length > 0) {
         const repliesContainer = li.querySelector('.replies');
-        replies.forEach(reply => {
+        replies.forEach(async (reply) => {
             try {
                 // 获取当前用户对该回复的反应
                 let replyreaction = null;

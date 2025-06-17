@@ -48,8 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     showMessage('请先登录后再点赞', 'error');
                     return;
                 }
-                // 添加loading状态
-                likeButton.classList.add('loading');
                 await handlepostReaction(post_id, 'like', postData.likes_count, postData.dislikes_count, userProfile.user_id, reactiontype);
             });
             dislikeButton.addEventListener('click', async function () {
@@ -57,7 +55,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     showMessage('请先登录后再点赞', 'error');
                     return;
                 }
-                dislikeButton.classList.add('loading');
                 await handlepostReaction(post_id, 'dislike', postData.likes_count, postData.dislikes_count, userProfile.user_id, reactiontype);
             });
         } catch (error) {
@@ -99,11 +96,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 * @param {string} user_id - 用户ID
 * @param {string} reactiontype - 当前反应类型
 */
-async function handlepostReaction(post_id, type, likes_count, dislikes_count, user_id, reactiontype) {
+async function handlepostReaction(post_id, newtype, likes_count, dislikes_count, user_id, reactiontype) {
 
     try {
         // 如果用户已经有相同的反应，则删除反应（取消点赞/踩）
-        if (type === reactiontype) {
+        if (newtype === reactiontype) {
             // 删除反应
             const { error: deleteError } = await supabase
                 .from('post_reactions')
@@ -113,7 +110,7 @@ async function handlepostReaction(post_id, type, likes_count, dislikes_count, us
 
             if (deleteError) throw deleteError;
 
-            if (type === 'like') {
+            if (reactiontype === 'like') {
                 likes_count = Math.max(0, likes_count - 1);
             } else {
                 dislikes_count = Math.max(0, dislikes_count - 1);
@@ -125,20 +122,20 @@ async function handlepostReaction(post_id, type, likes_count, dislikes_count, us
         else if (reactiontype) {
             const { error } = await supabase
                 .from('post_reactions')
-                .update({ type })
+                .update({ newtype })
                 .eq('user_id', user_id)
                 .eq('post_id', post_id);
 
             if (error) throw error;
 
-            if (type === 'like') {
+            if (newtype === 'like') {
                 likes_count += 1;
                 dislikes_count = Math.max(0, dislikes_count - 1);
             } else {
                 dislikes_count += 1;
                 likes_count = Math.max(0, likes_count - 1);
             }
-            reactiontype = type;
+            reactiontype = newtype;
         }
         // 如果用户没有反应，则创建新反应
         else {
@@ -148,18 +145,18 @@ async function handlepostReaction(post_id, type, likes_count, dislikes_count, us
                 .insert({
                     user_id: user_id,
                     post_id: post_id,
-                    type
+                    type: newtype
                 });
 
             if (error) throw error;
 
-            if (type === 'like') {
+            if (newtype === 'like') {
                 likes_count += 1;
             } else {
                 dislikes_count += 1;
             }
             // 更新状态
-            reactiontype = type;
+            reactiontype = newtype;
         }
 
         // 更新文章的点赞/踩计数
@@ -188,14 +185,6 @@ async function handlepostReaction(post_id, type, likes_count, dislikes_count, us
     } catch (error) {
         console.log('Error handling reaction:', error);
         showMessage('处理反应失败，请稍后重试', 'error');
-    } finally {
-        // 移除loading状态
-        if (type === 'like') {
-            likeButton.classList.remove('loading');
-        }
-        if (type === 'dislike') {
-            dislikeButton.classList.remove('loading');
-        }
     }
 }
 
@@ -205,26 +194,26 @@ async function handlepostReaction(post_id, type, likes_count, dislikes_count, us
  * @param {number} likesCount - 点赞数
  * @param {number} dislikesCount - 踩数
  */
-function updatepostUI(Type, likesCount, dislikesCount) {
+function updatepostUI(newtype, likesCount, dislikesCount) {
     // 更新计数显示
-    console.log('更新计数开始:', Type);
+    console.log('更新计数开始:', newtype);
     const likeButton = document.getElementById('likeButton');
     const dislikeButton = document.getElementById('dislikeButton');
 
     likeButton.querySelector('.likes-count').textContent = likesCount;
     dislikeButton.querySelector('.dislikes-count').textContent = dislikesCount;
     // 更新按钮状态
-    if (Type === 'like') {
+    if (newtype === 'like') {
         likeButton.classList.add('active');
         dislikeButton.classList.remove('active');
-    } else if (Type === 'dislike') {
+    } else if (newtype === 'dislike') {
         likeButton.classList.remove('active');
         dislikeButton.classList.add('active');
     } else {
         likeButton.classList.remove('active');
         dislikeButton.classList.remove('active');
     }
-    console.log('更新计数成功:', Type);
+    console.log('更新计数成功:', newtype);
 }
 
 /**
@@ -345,7 +334,7 @@ async function handleCommentReaction(comment_id, type, user_id) {
 
         // 更新任务完成状态
         if (type === 'like') {
-            updateLikeTask(user_id);
+            //updateLikeTask(user_id);
         }
     } catch (error) {
         console.error('处理评论反应失败:', error);

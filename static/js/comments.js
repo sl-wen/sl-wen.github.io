@@ -311,7 +311,8 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
 
                     replyreaction = replyreactionData ? replyreactionData.type : null;
                 }
-                repliesContainer.appendChild(createReplyElement(reply, replyreaction));
+                const ReplyElement = await createReplyElement(reply, replyreaction);
+                repliesContainer.appendChild(ReplyElement);
             } catch (error) {
                 console.log('获取当前用户对该回复的反应失败');
             }
@@ -327,7 +328,7 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
  * @param {string} userReaction - 当前用户对该回复的反应类型
  * @returns {HTMLElement} - 回复元素
  */
-function createReplyElement(reply, userReaction = null) {
+async function createReplyElement(reply, userReaction = null) {
     const div = document.createElement('div');
     div.className = 'reply';
     div.id = `reply-${reply.comment_id}`;

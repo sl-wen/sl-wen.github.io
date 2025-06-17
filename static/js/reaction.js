@@ -207,7 +207,7 @@ async function handlepostReaction(post_id, type, likes_count, dislikes_count, us
  */
 function updatepostUI(Type, likesCount, dislikesCount) {
     // 更新计数显示
-    console.log('更新计数开始:', post_reaction);
+    console.log('更新计数开始:', Type);
     const likeButton = document.getElementById('likeButton');
     const dislikeButton = document.getElementById('dislikeButton');
 
@@ -224,7 +224,7 @@ function updatepostUI(Type, likesCount, dislikesCount) {
         likeButton.classList.remove('active');
         dislikeButton.classList.remove('active');
     }
-    console.log('更新计数成功:', post_reaction);
+    console.log('更新计数成功:', Type);
 }
 
 /**

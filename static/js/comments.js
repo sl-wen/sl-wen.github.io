@@ -69,29 +69,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             hideReplyForm(comment_id);
         }
 
-        // 评论点赞按钮点击事件
-        if (e.target.closest('.like-action')) {
-            if (!userProfile) {
-                showMessage('请先登录后再点赞', 'error');
-                return;
-            }
-
-            const commentElement = e.target.closest('.comment, .reply');
-            const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
-            await handleCommentReaction(comment_id, 'like', userProfile.user_id);
-        }
-
-        // 评论踩按钮点击事件
-        if (e.target.closest('.dislike-action')) {
-            if (!userProfile) {
-                showMessage('请先登录后再踩', 'error');
-                return;
-            }
-
-            const commentElement = e.target.closest('.comment, .reply');
-            const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
-            await handleCommentReaction(comment_id, 'dislike', userProfile.user_id);
-        }
     });
 
     // 初始化回复表单提交事件
@@ -241,6 +218,7 @@ async function initComments(post_id, userProfile, sortBy = 'newest') {
  * 创建评论元素
  * @param {object} comment - 评论数据
  * @param {array} replies - 回复数据
+ * @param {object} comment - 用户数据
  * @param {string} userReaction - 当前用户对该评论的反应类型
  * @returns {HTMLElement} - 评论元素
  */
@@ -249,9 +227,9 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
     li.className = 'comment';
     li.id = `comment-${comment.comment_id}`;
 
-    let profilesData = {};
+    let profilesData = null;
     try {
-        // 获取用户信息
+        // 获取评论的用户信息
         profilesData = await supabase
             .from('profiles')
             .select('username,level,avatar_url')
@@ -276,7 +254,7 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
             <div class="comment-author"> 
                 <img src="${avatarUrl}" alt="用户头像" class="author-avatar"> 
                 <span class="author-name">${username}</span> 
-                <span class="author-level">Lv${userlevel}</span> 
+                <span class="author-level">Lv.${userlevel}</span> 
             </div>
             <div class="comment-meta"> 
                 <time datetime="${comment.created_at}">${formattedDate}</time>
@@ -286,14 +264,14 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
             <p>${comment.content}</p>
         </div>
         <div class="comment-actions">
-            <div class="comment-action like-action ${userReaction === 'like' ? 'active' : ''}"> 
-                <i class="icon-like">👍</i> 
-                <span class="like-count">${comment.likes_count || 0}</span> 
-            </div>
-            <div class="comment-action dislike-action ${userReaction === 'dislike' ? 'active' : ''}"> 
-                <i class="icon-dislike">👎</i> 
-                <span class="dislike-count">${comment.dislikes_count || 0}</span> 
-            </div>
+            <div class="comment-reaction-actions">
+                <button id="comment-${comment.comment_id}" class="commentlike like-action ${userReaction === 'like' ? 'active' : ''}>
+                    👍<span role="img" class="like-count" >${comment.likes_count || 0}</span>
+                </button>
+                <button id="comment-${comment.comment_id}" class="commentdislike dislike-action ${userReaction === 'dislike' ? 'active' : ''}>
+                    👎<span role="img" class="dislike-count" >${comment.dislikes_count || 0}</span>
+                </button>
+            </div> <!-- 评论点赞/踩计数按钮区域 -->
             <div class="comment-action reply-action" data-comment-id="${comment.comment_id}"> 
                 <i class="icon-reply">↩️</i>
                 <span>回复</span> 
@@ -320,7 +298,23 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
     if (replies && replies.length > 0) {
         const repliesContainer = li.querySelector('.replies');
         replies.forEach(reply => {
-            repliesContainer.appendChild(createReplyElement(reply, userProfile, userReaction));
+            try {
+                // 获取当前用户对该回复的反应
+                let replyreaction = null;
+                if (userProfile) {
+                    const replyreactionData = await supabase
+                        .from('comment_reactions')
+                        .select('type')
+                        .eq('user_id', userProfile.user_id)
+                        .eq('comment_id', reply.comment_id)
+                        .maybeSingle();
+
+                    replyreaction = replyreactionData ? replyreactionData.type : null;
+                }
+                repliesContainer.appendChild(createReplyElement(reply, replyreaction));
+            } catch (error) {
+                console.log('获取当前用户对该回复的反应失败');
+            }
         });
     }
 
@@ -333,15 +327,27 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
  * @param {string} userReaction - 当前用户对该回复的反应类型
  * @returns {HTMLElement} - 回复元素
  */
-function createReplyElement(reply, userProfile = null, userReaction = null) {
+function createReplyElement(reply, userReaction = null) {
     const div = document.createElement('div');
     div.className = 'reply';
-    div.id = `reply-${reply.id}`;
+    div.id = `reply-${reply.comment_id}`;
+
+    let replyprofilesData = null;
+    try {
+        // 获取回复的用户信息
+        replyprofilesData = await supabase
+            .from('profiles')
+            .select('username,level,avatar_url')
+            .eq('user_id', reply.user_id)
+            .maybeSingle();
+    } catch (error) {
+        console.log('创建评论元素获取用户信息失败');
+    }
 
     // 获取用户信息
-    const username = userProfile ? userProfile.username : '匿名用户';
-    const avatarUrl = userProfile && userProfile.avatar_url
-        ? userProfile.avatar_url
+    const username = replyprofilesData ? replyprofilesData.username : '匿名用户';
+    const avatarUrl = replyprofilesData && replyprofilesData.avatar_url
+        ? replyprofilesData.avatar_url
         : 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70);
 
     // 格式化日期
@@ -353,6 +359,7 @@ function createReplyElement(reply, userProfile = null, userReaction = null) {
             <div class="comment-author"> 
                 <img src="${avatarUrl}" alt="用户头像" class="author-avatar"> 
                 <span class="author-name">${username}</span> 
+                <span class="author-level">Lv.${userlevel}</span> 
             </div>
             <div class="comment-meta"> 
                 <time datetime="${reply.created_at}">${formattedDate}</time> 
@@ -362,14 +369,14 @@ function createReplyElement(reply, userProfile = null, userReaction = null) {
             <p>${reply.content}</p>
         </div>
         <div class="comment-actions">
-            <div class="comment-action like-action ${userReaction === 'like' ? 'active' : ''}"> 
-                <i class="icon-like">👍</i> 
-                <span class="like-count">${reply.likes_count || 0}</span> 
-            </div>
-            <div class="comment-action dislike-action ${userReaction === 'dislike' ? 'active' : ''}"> 
-                <i class="icon-dislike">👎</i> 
-                <span class="dislike-count">${reply.dislikes_count || 0}</span> 
-            </div>
+            <div class="reply-reaction-actions">
+            <button id="reply-${reply.comment_id}" class="replylike like-action ${userReaction === 'like' ? 'active' : ''}>
+                👍<span role="img" class="like-count" >${reply.likes_count || 0}</span>
+            </button>
+            <button id="reply-${reply.comment_id}" class="replydislike dislike-action ${userReaction === 'dislike' ? 'active' : ''}>
+                👎<span role="img" class="dislike-count" >${reply.dislikes_count || 0}</span>
+            </button>
+            </div> <!-- 评论点赞/踩计数按钮区域 -->
         </div>
     `;
 
@@ -401,7 +408,7 @@ async function addComment(post_id, user_id, content) {
         document.getElementById('comment-content').value = '';
 
         // 更新任务完成状态
-        await updateCommentTask(user_id);
+        //await updateCommentTask(user_id);
 
         // 重新加载评论列表
         const userProfileStr = sessionStorage.getItem('userProfile');
@@ -442,7 +449,7 @@ async function addReply(post_id, parent_id, user_id, content) {
         if (error) throw error;
 
         // 更新任务完成状态
-        updateCommentTask(user_id);
+        //updateCommentTask(user_id);
 
         // 重新加载评论列表
         const userProfileStr = sessionStorage.getItem('userProfile');
@@ -450,7 +457,7 @@ async function addReply(post_id, parent_id, user_id, content) {
         const sortSelect = document.querySelector('.sort-select');
         const sortBy = sortSelect ? sortSelect.value : 'newest';
 
-        initComments(post_id, userProfile, sortBy);
+        await initComments(post_id, userProfile, sortBy);
 
         showMessage('回复发表成功', 'success');
     } catch (error) {
@@ -459,174 +466,13 @@ async function addReply(post_id, parent_id, user_id, content) {
     }
 }
 
-/**
- * 处理评论点赞/踩
- * @param {string} comment_id - 评论ID
- * @param {string} type - 反应类型：like, dislike
- * @param {string} user_id - 用户ID
- */
-// 添加状态锁变量
-let commentReactionLocks = {};
-
-async function handleCommentReaction(comment_id, type, user_id) {
-    // 检查是否正在处理
-    const lockKey = `${comment_id}_${user_id}`;
-    if (commentReactionLocks[lockKey]) {
-        showMessage('请等待上一个操作完成', 'info');
-        return;
-    }
-
-    // 设置状态锁
-    commentReactionLocks[lockKey] = true;
-
-    try {
-        // 获取当前评论
-        const { data: comment, error: commentError } = await supabase
-            .from('comments')
-            .select('likes_count, dislikes_count')
-            .eq('comment_id', comment_id)
-            .single();
-
-        if (commentError) throw commentError;
-
-        // 获取用户对该评论的反应
-        const { data: reaction, error: reactionError } = await supabase
-            .from('comment_reactions')
-            .select('type')
-            .eq('user_id', user_id)
-            .eq('comment_id', comment_id)
-            .maybeSingle();
-
-        if (reactionError) throw reactionError;
-
-        let likesCount = comment.likes_count || 0;
-        let dislikesCount = comment.dislikes_count || 0;
-
-        // 如果用户已经有相同的反应，则删除反应（取消点赞/踩）
-        if (reaction && reaction.type === type) {
-            // 删除反应
-            const { error: deleteError } = await supabase
-                .from('comment_reactions')
-                .delete()
-                .eq('user_id', user_id)
-                .eq('comment_id', comment_id);
-
-            if (deleteError) throw deleteError;
-
-            // 更新计数
-            if (type === 'like') {
-                likesCount = Math.max(0, likesCount - 1);
-            } else {
-                dislikesCount = Math.max(0, dislikesCount - 1);
-            }
-        }
-        // 如果用户已经有不同的反应，则更新反应
-        else if (reaction) {
-            // 更新反应
-            const { error: updateError } = await supabase
-                .from('comment_reactions')
-                .update({ type })
-                .eq('user_id', user_id)
-                .eq('comment_id', comment_id);
-
-            if (updateError) throw updateError;
-
-            // 更新计数
-            if (type === 'like') {
-                likesCount += 1;
-                dislikesCount = Math.max(0, dislikesCount - 1);
-            } else {
-                dislikesCount += 1;
-                likesCount = Math.max(0, likesCount - 1);
-            }
-        }
-        // 如果用户没有反应，则创建新反应
-        else {
-            // 创建新的反应
-            const { error: insertError } = await supabase
-                .from('comment_reactions')
-                .insert({
-                    user_id: user_id,
-                    comment_id: comment_id,
-                    type
-                });
-
-            if (insertError) throw insertError;
-
-            // 更新计数
-            if (type === 'like') {
-                likesCount += 1;
-            } else {
-                dislikesCount += 1;
-            }
-        }
-
-        // 更新评论的点赞/踩计数
-        const { error: updateCountError } = await supabase
-            .from('comments')
-            .update({
-                likes_count: likesCount,
-                dislikes_count: dislikesCount
-            })
-            .eq('comment_id', comment_id);
-
-        if (updateCountError) throw updateCountError;
-
-        // 更新UI
-        updateCommentReactionUI(comment_id, type, likesCount, dislikesCount, reaction ? reaction.type : null);
-
-        // 更新任务完成状态
-        if (type === 'like') {
-            updateLikeTask(user_id);
-        }
-    } catch (error) {
-        console.error('处理评论反应失败:', error);
-        showMessage('处理评论反应失败，请稍后重试', 'error');
-    } finally {
-        // 释放状态锁
-        commentReactionLocks[lockKey] = false;
-    }
-}
-
-/**
- * 更新评论反应UI
- * @param {string} comment_id - 评论ID
- * @param {string} newType - 新的反应类型
- * @param {number} likesCount - 点赞数
- * @param {number} dislikesCount - 踩数
- * @param {string} oldType - 旧的反应类型
- */
-function updateCommentReactionUI(comment_id, newType, likesCount, dislikesCount, oldType) {
-    // 获取评论元素
-    const commentElement = document.getElementById(`comment-${comment_id}`) || document.getElementById(`reply-${comment_id}`);
-    if (!commentElement) return;
-
-    // 更新点赞/踩计数
-    const likeCountElement = commentElement.querySelector('.like-count');
-    const dislikeCountElement = commentElement.querySelector('.dislike-count');
-
-    if (likeCountElement) likeCountElement.textContent = likesCount;
-    if (dislikeCountElement) dislikeCountElement.textContent = dislikesCount;
-
-    // 更新按钮状态
-    const likeButton = commentElement.querySelector('.like-action');
-    const dislikeButton = commentElement.querySelector('.dislike-action');
-
-    // 如果是取消相同类型的反应
-    if (oldType === newType) {
-        likeButton.classList.toggle('active', false);
-        dislikeButton.classList.toggle('active', false);
-    } else {
-        likeButton.classList.toggle('active', newType === 'like');
-        dislikeButton.classList.toggle('active', newType === 'dislike');
-    }
-}
 
 /**
  * 显示回复表单
  * @param {string} comment_id - 评论ID
  */
 function toggleReplyForm(comment_id) {
+    console.log('显示回复表单开始');
     const replyForm = document.getElementById(`reply-form-${comment_id}`);
     if (replyForm) {
         // 隐藏所有其他回复表单
@@ -644,6 +490,7 @@ function toggleReplyForm(comment_id) {
             const textarea = replyForm.querySelector('textarea');
             if (textarea) textarea.focus();
         }
+        console.log('显示回复表单完了');
     }
 }
 
@@ -841,8 +688,7 @@ async function updateLikeTask(user_id) {
 export {
     initComments,
     addComment,
-    addReply,
-    handleCommentReaction,
+    ,
     updateCommentTask,
     updateLikeTask
 };

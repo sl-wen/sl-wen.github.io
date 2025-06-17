@@ -230,11 +230,12 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
     let profilesData = null;
     try {
         // 获取评论的用户信息
-        profilesData = await supabase
+        const { data: profiles } = await supabase
             .from('profiles')
             .select('username,level,avatar_url')
             .eq('user_id', comment.user_id)
             .maybeSingle();
+        profilesData = profiles ? profiles : null;
     } catch (error) {
         console.log('创建评论元素获取用户信息失败');
     }
@@ -302,7 +303,7 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
                 // 获取当前用户对该回复的反应
                 let replyreaction = null;
                 if (userProfile) {
-                    const replyreactionData = await supabase
+                    const { data: replyreactionData } = await supabase
                         .from('comment_reactions')
                         .select('type')
                         .eq('user_id', userProfile.user_id)
@@ -336,11 +337,12 @@ async function createReplyElement(reply, userReaction = null) {
     let replyprofilesData = null;
     try {
         // 获取回复的用户信息
-        replyprofilesData = await supabase
+        const { data: replyprofiles } = await supabase
             .from('profiles')
             .select('username,level,avatar_url')
             .eq('user_id', reply.user_id)
             .maybeSingle();
+        replyprofilesData = replyprofiles ? replyprofiles : null;
     } catch (error) {
         console.log('创建评论元素获取用户信息失败');
     }

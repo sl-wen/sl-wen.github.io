@@ -110,6 +110,27 @@
     border-radius: 2px;
 }
 
+/* 代码块样式 */
+.search-item pre.markdown-body {
+    background-color: #e7eaef;
+    border-radius: 6px;
+    padding: 16px;
+    overflow: hidden;
+    font-size: 85%;
+    line-height: 1.45;
+    margin-bottom: 16px;
+}
+
+.search-item pre.markdown-body code {
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+    font-size: 85%;
+    background-color: transparent;
+    border: 0;
+    line-height: inherit;
+    margin: 0;
+    max-width: 100%;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     #search-results h2 {

@@ -267,10 +267,10 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
         </div>
         <div class="comment-actions">
             <div class="comment-reaction-actions">
-                <button id="comment-${comment.comment_id}" class="commentlike like-action ${userReaction === 'like' ? 'active' : ''}>
+                <button id="comment-${comment.comment_id}" class="commentlike like-action ${userReaction === 'like' ? 'active' : ''}">
                     👍<span role="img" class="like-count" >${comment.likes_count || 0}</span>
                 </button>
-                <button id="comment-${comment.comment_id}" class="commentdislike dislike-action ${userReaction === 'dislike' ? 'active' : ''}>
+                <button id="comment-${comment.comment_id}" class="commentdislike dislike-action ${userReaction === 'dislike' ? 'active' : ''}">
                     👎<span role="img" class="dislike-count" >${comment.dislikes_count || 0}</span>
                 </button>
             </div> <!-- 评论点赞/踩计数按钮区域 -->
@@ -374,10 +374,10 @@ async function createReplyElement(reply, userReaction = null) {
         </div>
         <div class="comment-actions">
             <div class="reply-reaction-actions">
-            <button id="reply-${reply.comment_id}" class="replylike like-action ${userReaction === 'like' ? 'active' : ''}>
+            <button id="reply-${reply.comment_id}" class="replylike like-action ${userReaction === 'like' ? 'active' : ''}">
                 👍<span role="img" class="like-count" >${reply.likes_count || 0}</span>
             </button>
-            <button id="reply-${reply.comment_id}" class="replydislike dislike-action ${userReaction === 'dislike' ? 'active' : ''}>
+            <button id="reply-${reply.comment_id}" class="replydislike dislike-action ${userReaction === 'dislike' ? 'active' : ''}">
                 👎<span role="img" class="dislike-count" >${reply.dislikes_count || 0}</span>
             </button>
             </div> <!-- 评论点赞/踩计数按钮区域 -->

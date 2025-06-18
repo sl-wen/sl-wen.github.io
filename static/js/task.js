@@ -193,7 +193,7 @@ async function handleLoginRewards(profile) {
                     .eq('user_id', profile.user.id)
                     .single();
 
-                sessionStorage.setItem('userProfile', JSON.stringify(newprofile));
+                localStorage.setItem('userProfile', JSON.stringify(newprofile));
             } catch (error) {
                 showMessage(error.message || '更新用户资料失败', 'error');
             }
@@ -388,14 +388,14 @@ function calculateNewLevel(experience, rewards_experience,required_exp) {
 
 // 更新会话中的用户资料
 function updateSessionProfile(user_id, experience, coins, level) {
-    const userProfileStr = sessionStorage.getItem('userProfile');
+    const userProfileStr = localStorage.getItem('userProfile');
     if (userProfileStr) {
         const userProfile = JSON.parse(userProfileStr);
         if (userProfile.user_id === user_id) {
             userProfile.experience = experience;
             userProfile.coins = coins;
             userProfile.level = level;
-            sessionStorage.setItem('userProfile', JSON.stringify(userProfile));
+            localStorage.setItem('userProfile', JSON.stringify(userProfile));
         }
     }
 }

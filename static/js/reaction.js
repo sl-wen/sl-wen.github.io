@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const likeButton = document.getElementById('likeButton');
     const dislikeButton = document.getElementById('dislikeButton');
     // 获取当前用户
-    //const userSessionStr = sessionStorage.getItem('userSession');
-    const userProfileStr = sessionStorage.getItem('userProfile');
+    //const userSessionStr = localStorage.getItem('userSession');
+    const userProfileStr = localStorage.getItem('userProfile');
     // 解析 JSON 字符串
     //const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;

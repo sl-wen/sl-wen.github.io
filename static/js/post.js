@@ -83,8 +83,8 @@ async function initEditor() {
     }
 
     const authordiv = document.getElementById('author');
-    const userSessionStr = sessionStorage.getItem('userSession');
-    const userProfileStr = sessionStorage.getItem('userProfile');
+    const userSessionStr = localStorage.getItem('userSession');
+    const userProfileStr = localStorage.getItem('userProfile');
     // 解析 JSON 字符串
     const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;

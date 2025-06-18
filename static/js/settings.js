@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const usernamedetail = document.getElementById('username-detail');
     const avatarurldetail = document.getElementById('avatar_url-detail');
     // 检查用户会话状态
-    const userSessionStr = sessionStorage.getItem('userSession');
-    const userProfileStr = sessionStorage.getItem('userProfile');
+    const userSessionStr = localStorage.getItem('userSession');
+    const userProfileStr = localStorage.getItem('userProfile');
     // 解析 JSON 字符串
     const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .eq('user_id', user_id)
                 .single();
 
-            sessionStorage.setItem('userProfile', JSON.stringify(newprofile));
+            localStorage.setItem('userProfile', JSON.stringify(newprofile));
             showMessage('变更用户资料成功！', 'success');
 
             // 跳转到首页

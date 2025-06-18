@@ -124,8 +124,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .eq('user_id', session.user.id)
                 .single();
 
-            sessionStorage.setItem('userSession', JSON.stringify(session));
-            sessionStorage.setItem('userProfile', JSON.stringify(profile));
+            localStorage.setItem('userSession', JSON.stringify(session));
+            localStorage.setItem('userProfile', JSON.stringify(profile));
             await handleLoginRewards(profile);
             showMessage('3秒后跳转到首页', 'success');
             //跳转到首页

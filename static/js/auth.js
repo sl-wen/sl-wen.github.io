@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', initAuth);
 async function initAuth() {
 
   // 检查用户会话状态
-  const userSessionStr = sessionStorage.getItem('userSession');
-  const userProfileStr = sessionStorage.getItem('userProfile');
+  const userSessionStr = localStorage.getItem('userSession');
+  const userProfileStr = localStorage.getItem('userProfile');
   // 解析 JSON 字符串
   const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
   const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
@@ -92,7 +92,7 @@ async function logout() {
     }
     
     //  清除所有本地存储
-    sessionStorage.clear(); // 清除所有 sessionStorage
+    localStorage.clear(); // 清除所有 localStorage
     
     //  调用 Supabase 登出 API
     const { error } = await supabase.auth.signOut();

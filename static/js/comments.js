@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const post_id = urlParams.get('post_id');
 
     // 获取当前用户信息
-    const userSessionStr = sessionStorage.getItem('userSession');
-    const userProfileStr = sessionStorage.getItem('userProfile');
+    const userSessionStr = localStorage.getItem('userSession');
+    const userProfileStr = localStorage.getItem('userProfile');
     const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
 
@@ -418,7 +418,7 @@ async function addComment(post_id, user_id, content) {
         //await updateCommentTask(user_id);
 
         // 重新加载评论列表
-        const userProfileStr = sessionStorage.getItem('userProfile');
+        const userProfileStr = localStorage.getItem('userProfile');
         const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
         const sortSelect = document.querySelector('.sort-select');
         const sortBy = sortSelect ? sortSelect.value : 'newest';
@@ -459,7 +459,7 @@ async function addReply(post_id, parent_id, user_id, content) {
         //updateCommentTask(user_id);
 
         // 重新加载评论列表
-        const userProfileStr = sessionStorage.getItem('userProfile');
+        const userProfileStr = localStorage.getItem('userProfile');
         const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
         const sortSelect = document.querySelector('.sort-select');
         const sortBy = sortSelect ? sortSelect.value : 'newest';

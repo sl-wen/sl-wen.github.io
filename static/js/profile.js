@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    const userProfileStr = sessionStorage.getItem('userProfile');
+    const userProfileStr = localStorage.getItem('userProfile');
     // 解析 JSON 字符串
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
 

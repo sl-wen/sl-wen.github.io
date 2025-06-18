@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const { data, error: sessionerror } = await supabase.auth.getSession();
                 const session = data?.session;
-                sessionStorage.setItem('userSession', JSON.stringify(session));
+                localStorage.setItem('userSession', JSON.stringify(session));
 
                 showMessage('密码重置成功！即将跳转到登录页面...', 'success');
 

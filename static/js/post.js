@@ -153,6 +153,7 @@ async function initEditor() {
             const post = {
                 title,
                 content,
+                user_id: userProfile.user_id,
                 author,
                 tags,
                 created_at: new Date().toISOString(),

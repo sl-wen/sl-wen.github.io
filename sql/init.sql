@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS posts (
     title TEXT NOT NULL,
     content TEXT,
     author TEXT DEFAULT 'Admin',
+    user_id UUID REFERENCES auth.users(id),
     tags TEXT[] DEFAULT '{}',
     views INTEGER DEFAULT 0,
     likes_count INTEGER DEFAULT 0,

@@ -18,16 +18,17 @@
 
 .button-area {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     justify-content: flex-end;
     gap: var(--spacing-small); 
 }
 
 #likeButton,
-#dislikeButton
+#dislikeButton,
+.comment-reaction-actions button,
+.reply-reaction-actions button
  {
-    padding: 5px 16px;
+    padding: 5px 8px;
     border: 1px solid var(--button-border-color);
     border-radius: var(--border-radius);
     cursor: pointer;
@@ -38,8 +39,22 @@
     transition: none !important;
 }
 
+.form-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+
 #likeButton.active,
-#dislikeButton.active {
+#dislikeButton.active,
+.comment-reaction-actions button.active,
+.reply-reaction-actions button.active
+{
   background-color: #f0f0f0;
   border-color: rgb(175, 75, 75);
 }
@@ -55,8 +70,8 @@
  {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: var(--spacing-medium);
 }
+
 /* edit-button样式*/
 .edit-button {
     padding: 5px 16px;
@@ -293,15 +308,15 @@ table tr:nth-child(2n) {
 
 /* 评论区样式 */
 .comments-section {
-    margin-top: 40px;
+    margin-top: 20px;
   }
   
   .comments-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
     border-bottom: 1px solid #eee;
   }
   
@@ -309,6 +324,7 @@ table tr:nth-child(2n) {
     font-size: 1.2rem;
     font-weight: 600;
     color: #333;
+    margin:8px;
   }
   
   .comments-sort {
@@ -343,7 +359,6 @@ table tr:nth-child(2n) {
   }
   
   .form-group {
-
     margin: 0 auto;
   }
   
@@ -357,7 +372,7 @@ table tr:nth-child(2n) {
   .form-control {
     width: 100%;
     max-width: 100%;               /* 防止超宽 */
-    padding: 10px 15px;
+    padding: 10px 10px;
     box-sizing: border-box; /* 确保padding不会增加元素总宽度 */
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -371,7 +386,7 @@ table tr:nth-child(2n) {
   }
   
   textarea.form-control {
-    min-height: 120px;
+    min-height: 50px;
     resize: vertical;
   }
   
@@ -384,11 +399,13 @@ table tr:nth-child(2n) {
   /* 评论列表 */
   .comments-list {
     list-style: none;
+    margin: var(--spacing-xs);
+    padding-inline-start: 10px;
   }
   
   .comment {
-    margin-bottom: 25px;
-    padding-bottom: 25px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
     border-bottom: 1px solid #eee;
   }
   
@@ -399,7 +416,6 @@ table tr:nth-child(2n) {
   .comment-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
   }
   
   .comment-author {
@@ -409,8 +425,8 @@ table tr:nth-child(2n) {
   }
   
   .author-avatar {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     margin-right: 10px;
     object-fit: cover;
@@ -427,8 +443,12 @@ table tr:nth-child(2n) {
   }
   
   .comment-body {
-    margin-bottom: 15px;
     line-height: 1.7;
+    margin:8px;
+  }
+
+  .comment-body p {
+    margin:8px;
   }
   
   .comment-actions {
@@ -455,15 +475,15 @@ table tr:nth-child(2n) {
   
   /* 嵌套回复 */
   .replies {
-    margin-top: 20px;
+    margin-top: 10px;
     margin-left: 50px;
-    padding-left: 20px;
+    padding-left: 10px;
     border-left: 2px solid #eee;
   }
   
   .reply {
-    margin-bottom: 20px;
-    padding-bottom: 20px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
     border-bottom: 1px solid #f0f0f0;
   }
   
@@ -475,9 +495,8 @@ table tr:nth-child(2n) {
   
   /* 回复表单 */
   .reply-form {
-    margin-top: 15px;
     margin-left: 50px;
-    padding: 15px;
+    padding: 10px;
     background-color: #f9f9f9;
     border-radius: 8px;
     display: none; /* 默认隐藏，点击回复按钮时显示 */

@@ -1,6 +1,6 @@
 // 导入 Supabase 客户端和通用函数
 import { supabase } from './supabase-config.js';
-import { showMessage, formatDate } from './common.js';
+import { showMessage, formatDateALL } from './common.js';
 
 // 当页面加载完成时初始化评论功能
 // 添加状态锁变量
@@ -248,7 +248,7 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
         : 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70);
 
     // 格式化日期
-    const formattedDate = formatDate(comment.created_at);
+    const formattedDate = formatDateALL(comment.created_at);
 
     // 设置评论HTML
     li.innerHTML = `
@@ -358,7 +358,7 @@ async function createReplyElement(reply, userReaction = null) {
         : 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70);
 
     // 格式化日期
-    const formattedDate = formatDate(reply.created_at);
+    const formattedDate = formatDateALL(reply.created_at);
 
     // 设置回复HTML
     div.innerHTML = `

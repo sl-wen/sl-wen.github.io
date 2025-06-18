@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 解析 JSON 字符串
     const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
-    if (userSession && (userSession?.user.email === 'sl-wen@outlook.com' || userProfile?.username === article.author)) {
+    if (userSession && (userSession?.user.email === 'sl-wen@outlook.com' || userProfile?.username === article.author || userProfile?.user_id === article.user_id)) {
       updateArticleActions(article.post_id);
     }
     // 应用代码高亮（如果 hljs 可用）

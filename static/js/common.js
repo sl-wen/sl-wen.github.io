@@ -127,6 +127,20 @@ export function formatDate(timestamp) {
     });
 }
 
+// 格式化日期
+export function formatDateALL(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false // 使用24小时制
+    });
+}
+
 
 
 export function getCursorLine(textarea) {
@@ -198,6 +212,7 @@ export default {
     updatePasswordStrength,
     showMessage,
     formatDate,
+    formatDateALL,
     getCursorLine,
     scrollPreviewToLine,
     onScrollEnd,

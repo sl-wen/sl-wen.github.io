@@ -85,33 +85,6 @@ export async function getArticlesByTag(tag) {
     }
 }
 
-// 创建新文章的函数
-export async function createArticle(article) {
-    try {
-        const { data, error } = await supabase
-            .from('posts')
-            .insert([
-                {
-                    title: article.title,
-                    content: article.content,
-                    author: article.author,
-                    tags: article.tags,
-                    views: 0,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                }
-            ])
-            .select()
-            .single();
-            
-        if (error) throw error;
-        return data;
-    } catch (error) {
-        console.error('创建文章失败:', error);
-        throw error;
-    }
-}
-
 // 更新文章的函数
 export async function updateArticle(post_id, updates) {
     try {

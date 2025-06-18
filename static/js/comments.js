@@ -59,14 +59,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const comment_id = e.target.closest('.reply-action').dataset.comment_id;
+            const comment_id = e.target.closest('.reply-action').id;
             console.log('comment_id:',comment_id);
             toggleReplyForm(comment_id);
         }
 
         // 取消回复按钮点击事件
         if (e.target.closest('.cancel-reply')) {
-            const comment_id = e.target.closest('.cancel-reply').dataset.comment_id;
+            const comment_id = e.target.closest('.cancel-reply').id;
             hideReplyForm(comment_id);
         }
 
@@ -274,7 +274,7 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
                     👎<span role="img" class="dislike-count" >${comment.dislikes_count || 0}</span>
                 </button>
             </div> <!-- 评论点赞/踩计数按钮区域 -->
-            <div class="comment-action reply-action" data-comment-id="${comment.comment_id}"> 
+            <div class="comment-action reply-action" id="${comment.comment_id}"> 
                 <i class="icon-reply">↩️</i>
                 <span>回复</span> 
             </div>
@@ -287,7 +287,7 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
                 </div>
                 <div class="form-footer">
                     <div class="form-buttons"> 
-                        <button type="button" class="btn btn-cancel cancel-reply" data-comment-id="${comment.comment_id}">取消</button> 
+                        <button type="button" class="btn btn-cancel cancel-reply" id="${comment.comment_id}">取消</button> 
                         <button type="submit" class="btn btn-primary">回复</button> 
                     </div>
                 </div>

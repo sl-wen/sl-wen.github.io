@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const commentElement = e.target.closest('.commentlike, .replylike');
             const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
             console.log('comment_id:', comment_id);
-            const commentreactiontype = null;
+            let commentreactiontype = null;
             if (commentElement.classList.contains('active')) {
                 commentreactiontype = 'like';
             }
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const commentElement = e.target.closest('.commentdislike, .replydislike');
             const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
             console.log('comment_id:', comment_id);
-            const commentreactiontype = null;
+            let commentreactiontype = null;
             if (commentElement.classList.contains('active')) {
                 commentreactiontype = 'dislike';
             }

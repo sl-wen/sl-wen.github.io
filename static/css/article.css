@@ -70,6 +70,7 @@
  {
     display: flex;
     justify-content: flex-end;
+    gap:4px;
 }
 
 /* edit-button样式*/
@@ -122,6 +123,10 @@ table th {
 
 table tr:nth-child(2n) {
     background-color: #f6f8fa;
+}
+
+.markdown-body{
+    border-bottom: 1px solid #d0d7de;
 }
 
 /* 代码块样式 */
@@ -330,6 +335,7 @@ table tr:nth-child(2n) {
   .comments-sort {
     display: flex;
     align-items: center;
+    color: #333;  
   }
   
   .sort-label {

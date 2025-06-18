@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       // 创建标签列表
       const author = document.createElement('span');
       author.className = 'author';
-      author.innerHTML = highlightKeyword(('author:' + post.author) || '', keyword); 
+      author.innerHTML = highlightKeyword(('作成者: ' + post.author) || '', keyword); 
 
       // 创建标签列表
       const tags = document.createElement('div');

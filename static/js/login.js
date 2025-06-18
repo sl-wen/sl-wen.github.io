@@ -114,7 +114,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) throw error;
 
-            showMessage('登录成功！', 'success');
             const { data: sessiondata, error: sessionerror } = await supabase.auth.getSession();
             const session = sessiondata?.session;
             // 获取用户详细信息
@@ -127,11 +126,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             localStorage.setItem('userSession', JSON.stringify(session));
             localStorage.setItem('userProfile', JSON.stringify(profile));
             await handleLoginRewards(profile);
-            showMessage('3秒后跳转到首页', 'success');
+            showMessage('登录成功！1秒后跳转到首页', 'success');
             //跳转到首页
             setTimeout(() => {
                 window.location.href = '/';
-            }, 3000);
+            }, 1000);
 
             return profile;
         } catch (error) {

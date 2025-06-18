@@ -73,8 +73,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
             console.log('comment_id:', comment_id);
             let commentreactiontype = null;
-            if (commentElement.classList.contains('active')) {
+            const reactionElement = e.target.closest('.comment-reaction-actions,.reply-reaction-actions');
+            if (reactionElement.querySelector('.commentlike, .replylike').classList.contains('active')) {
                 commentreactiontype = 'like';
+            }else if(reactionElement.querySelector('.commentdislike, .replydislike').classList.contains('active')){
+                commentreactiontype = 'dislike';
             }
             console.log('commentreactiontype:', commentreactiontype);
             await handleCommentReaction(comment_id, 'like', userProfile.user_id, commentreactiontype);
@@ -91,7 +94,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
             console.log('comment_id:', comment_id);
             let commentreactiontype = null;
-            if (commentElement.classList.contains('active')) {
+            const reactionElement = e.target.closest('.comment-reaction-actions,.reply-reaction-actions');
+            if (reactionElement.querySelector('.commentlike, .replylike').classList.contains('active')) {
+                commentreactiontype = 'like';
+            }else if(reactionElement.querySelector('.commentdislike, .replydislike').classList.contains('active')){
                 commentreactiontype = 'dislike';
             }
             console.log('commentreactiontype:', commentreactiontype);

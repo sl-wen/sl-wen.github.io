@@ -299,6 +299,7 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
     // 添加回复
     if (replies && replies.length > 0) {
         const repliesContainer = li.querySelector('.replies');
+        console.log('replies:',replies);
         replies.forEach(async (reply) => {
             try {
                 // 获取当前用户对该回复的反应
@@ -331,6 +332,7 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
  * @returns {HTMLElement} - 回复元素
  */
 async function createReplyElement(reply, userReaction = null) {
+    console.log('创建回复元素开始 userReaction：',userReaction);
     const div = document.createElement('div');
     div.className = 'reply';
     div.id = `reply-${reply.comment_id}`;

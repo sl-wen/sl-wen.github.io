@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const comment_id = e.target.closest('.reply-action').dataset.comment_id;
+            console.log('comment_id:',comment_id);
             toggleReplyForm(comment_id);
         }
 
@@ -476,6 +477,8 @@ async function addReply(post_id, parent_id, user_id, content) {
  */
 function toggleReplyForm(comment_id) {
     console.log('显示回复表单开始');
+    console.log(`reply-form-comment_id:reply-form-${comment_id}`);
+    console.log(`表单显示状态: ${replyForm.style.display}`);
     const replyForm = document.getElementById(`reply-form-${comment_id}`);
     if (replyForm) {
         // 隐藏所有其他回复表单
@@ -487,6 +490,7 @@ function toggleReplyForm(comment_id) {
 
         // 切换当前回复表单的显示状态
         replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+        console.log(`表单显示状态: ${replyForm.style.display}`);
 
         // 如果显示表单，则聚焦到文本框
         if (replyForm.style.display === 'block') {
@@ -494,6 +498,8 @@ function toggleReplyForm(comment_id) {
             if (textarea) textarea.focus();
         }
         console.log('显示回复表单完了');
+    } else {
+        console.error(`未找到ID为reply-form-${comment_id}的元素`);
     }
 }
 

@@ -352,6 +352,7 @@ async function createReplyElement(reply, userReaction = null) {
 
     // 获取用户信息
     const username = replyprofilesData ? replyprofilesData.username : '匿名用户';
+    const userlevel = replyprofilesData ? replyprofilesData.level : '1';
     const avatarUrl = replyprofilesData && replyprofilesData.avatar_url
         ? replyprofilesData.avatar_url
         : 'https://i.pravatar.cc/150?img=' + Math.floor(Math.random() * 70);

@@ -88,7 +88,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const commentElement = e.target.closest('.commentdislike, .replydislike');
-            const commentElement = document.getElementById(`comment-${comment_id}`) || document.getElementById(`reply-${comment_id}`);
             const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
             console.log('comment_id:', comment_id);
             let commentreactiontype = null;

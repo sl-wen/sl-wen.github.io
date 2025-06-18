@@ -302,7 +302,7 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
         replies.forEach(async (reply) => {
             try {
                 // 获取当前用户对该回复的反应
-                let replyreaction = null;
+                let replyreactiontype = null;
                 if (userProfile) {
                     const { data: replyreactionData } = await supabase
                         .from('comment_reactions')
@@ -311,12 +311,12 @@ async function createCommentElement(comment, replies = [], userProfile = null, u
                         .eq('comment_id', reply.comment_id)
                         .maybeSingle();
 
-                    replyreaction = replyreactionData ? replyreactionData.type : null;
+                    replyreactiontype = replyreactionData ? replyreactionData.type : null;
                 }
-                const ReplyElement = await createReplyElement(reply, replyreaction);
+                const ReplyElement = await createReplyElement(reply, replyreactiontype);
                 repliesContainer.appendChild(ReplyElement);
             } catch (error) {
-                console.log('获取当前用户对该回复的反应失败');
+                console.log('获取当前用户对该回复的反应失败',error);
             }
         });
     }
@@ -345,7 +345,7 @@ async function createReplyElement(reply, userReaction = null) {
             .maybeSingle();
         replyprofilesData = replyprofiles ? replyprofiles : null;
     } catch (error) {
-        console.log('创建评论元素获取用户信息失败');
+        console.log('创建评论元素获取用户信息失败',error);
     }
 
     // 获取用户信息

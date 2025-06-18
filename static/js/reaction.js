@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (commentElement.classList.contains('active')) {
                 commentreactiontype = 'like';
             }
+            console.log('commentreactiontype:', commentreactiontype);
             await handleCommentReaction(comment_id, 'like', userProfile.user_id, commentreactiontype);
         }
 
@@ -87,12 +88,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const commentElement = e.target.closest('.commentdislike, .replydislike');
+            const commentElement = document.getElementById(`comment-${comment_id}`) || document.getElementById(`reply-${comment_id}`);
             const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
             console.log('comment_id:', comment_id);
             let commentreactiontype = null;
             if (commentElement.classList.contains('active')) {
                 commentreactiontype = 'dislike';
             }
+            console.log('commentreactiontype:', commentreactiontype);
             await handleCommentReaction(comment_id, 'dislike', userProfile.user_id, commentreactiontype);
         }
     });

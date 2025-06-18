@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const commentElement = e.target.closest('.comment, .reply');
             const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
+            console.log('comment_id:', comment_id);
             await handleCommentReaction(comment_id, 'like', userProfile.user_id);
         }
 
@@ -83,6 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const commentElement = e.target.closest('.comment, .reply');
             const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
+            console.log('comment_id:', comment_id);
             await handleCommentReaction(comment_id, 'dislike', userProfile.user_id);
         }
     });
@@ -228,6 +230,7 @@ let commentReactionLocks = {};
 async function handleCommentReaction(comment_id, type, user_id) {
     // 检查是否正在处理
     const lockKey = `${comment_id}_${user_id}`;
+    console.log('commentReactionLocks:', commentReactionLocks);
     if (commentReactionLocks[lockKey]) {
         showMessage('请等待上一个操作完成', 'info');
         return;
@@ -331,6 +334,7 @@ async function handleCommentReaction(comment_id, type, user_id) {
 
         // 更新UI
         updateCommentReactionUI(comment_id, type, likesCount, dislikesCount);
+    
 
         // 更新任务完成状态
         if (type === 'like') {
@@ -356,6 +360,10 @@ function updateCommentReactionUI(comment_id, Type, likesCount, dislikesCount) {
     // 获取评论元素
     const commentElement = document.getElementById(`comment-${comment_id}`) || document.getElementById(`reply-${comment_id}`);
     if (!commentElement) return;
+    console.log('comment_id:', comment_id);
+    console.log('Type:', Type);
+    console.log('likesCount:', likesCount);
+    console.log('dislikesCount:', dislikesCount);
 
     // 更新点赞/踩计数
     const likeCountElement = commentElement.querySelector('.like-count');

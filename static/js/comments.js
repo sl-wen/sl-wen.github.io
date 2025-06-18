@@ -478,8 +478,8 @@ async function addReply(post_id, parent_id, user_id, content) {
 function toggleReplyForm(comment_id) {
     console.log('显示回复表单开始');
     console.log(`reply-form-comment_id:reply-form-${comment_id}`);
-    console.log(`表单显示状态: ${replyForm.style.display}`);
     const replyForm = document.getElementById(`reply-form-${comment_id}`);
+    console.log(`表单显示状态: ${replyForm.style.display}`);
     if (replyForm) {
         // 隐藏所有其他回复表单
         document.querySelectorAll('.reply-form').forEach(form => {

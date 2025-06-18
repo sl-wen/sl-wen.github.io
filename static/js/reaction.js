@@ -9,10 +9,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const likeButton = document.getElementById('likeButton');
     const dislikeButton = document.getElementById('dislikeButton');
     // 获取当前用户
-    const userSessionStr = sessionStorage.getItem('userSession');
+    //const userSessionStr = sessionStorage.getItem('userSession');
     const userProfileStr = sessionStorage.getItem('userProfile');
     // 解析 JSON 字符串
-    const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
+    //const userSession = userSessionStr ? JSON.parse(userSessionStr) : null;
     const userProfile = userProfileStr ? JSON.parse(userProfileStr) : null;
     // 状态锁变量声明
     if (likeButton && dislikeButton) {
@@ -69,10 +69,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const commentElement = e.target.closest('.comment, .reply');
+            const commentElement = e.target.closest('.commentlike, .replylike');
             const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
             console.log('comment_id:', comment_id);
-            await handleCommentReaction(comment_id, 'like', userProfile.user_id);
+            const commentreactiontype = null;
+            if (commentElement.classList.contains('active')) {
+                commentreactiontype = 'like';
+            }
+            await handleCommentReaction(comment_id, 'like', userProfile.user_id, commentreactiontype);
         }
 
         // 评论踩按钮点击事件
@@ -82,10 +86,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const commentElement = e.target.closest('.comment, .reply');
+            const commentElement = e.target.closest('.commentdislike, .replydislike');
             const comment_id = commentElement.id.replace('comment-', '').replace('reply-', '');
             console.log('comment_id:', comment_id);
-            await handleCommentReaction(comment_id, 'dislike', userProfile.user_id);
+            const commentreactiontype = null;
+            if (commentElement.classList.contains('active')) {
+                commentreactiontype = 'dislike';
+            }
+            await handleCommentReaction(comment_id, 'dislike', userProfile.user_id, commentreactiontype);
         }
     });
 });
@@ -221,13 +229,14 @@ function updatepostUI(newtype, likesCount, dislikesCount) {
 /**
  * 处理评论点赞/踩
  * @param {string} comment_id - 评论ID
- * @param {string} type - 反应类型：like, dislike
+ * @param {string} type -新反应类型：like, dislike
  * @param {string} user_id - 用户ID
+ * @param {string} commentreactiontype - 现反应类型：like, dislike
  */
 // 添加状态锁变量
 let commentReactionLocks = {};
 
-async function handleCommentReaction(comment_id, type, user_id) {
+async function handleCommentReaction(comment_id, type, user_id, commentreactiontype) {
     // 检查是否正在处理
     const lockKey = `${comment_id}_${user_id}`;
     console.log('commentReactionLocks:', commentReactionLocks);
@@ -249,21 +258,21 @@ async function handleCommentReaction(comment_id, type, user_id) {
 
         if (commentError) throw commentError;
 
-        // 获取用户对该评论的反应
-        const { data: reaction, error: reactionError } = await supabase
-            .from('comment_reactions')
-            .select('type')
-            .eq('user_id', user_id)
-            .eq('comment_id', comment_id)
-            .maybeSingle();
-
-        if (reactionError) throw reactionError;
 
         let likesCount = comment.likes_count || 0;
         let dislikesCount = comment.dislikes_count || 0;
 
         // 如果用户已经有相同的反应，则删除反应（取消点赞/踩）
-        if (reaction && reaction.type === type) {
+        if (commentreactiontype === type) {
+            // 更新UI
+            // 更新计数
+            if (type === 'like') {
+                likesCount = Math.max(0, likesCount - 1);
+            } else {
+                dislikesCount = Math.max(0, dislikesCount - 1);
+            }
+            type = null;
+            updateCommentReactionUI(comment_id, type, likesCount, dislikesCount);
             // 删除反应
             const { error: deleteError } = await supabase
                 .from('comment_reactions')
@@ -273,15 +282,18 @@ async function handleCommentReaction(comment_id, type, user_id) {
 
             if (deleteError) throw deleteError;
 
-            // 更新计数
-            if (type === 'like') {
-                likesCount = Math.max(0, likesCount - 1);
-            } else {
-                dislikesCount = Math.max(0, dislikesCount - 1);
-            }
         }
         // 如果用户已经有不同的反应，则更新反应
-        else if (reaction) {
+        else if (commentreactiontype) {
+            // 更新计数
+            if (type === 'like') {
+                likesCount += 1;
+                dislikesCount = Math.max(0, dislikesCount - 1);
+            } else {
+                dislikesCount += 1;
+                likesCount = Math.max(0, likesCount - 1);
+            }
+            updateCommentReactionUI(comment_id, type, likesCount, dislikesCount);
             // 更新反应
             const { error: updateError } = await supabase
                 .from('comment_reactions')
@@ -291,17 +303,17 @@ async function handleCommentReaction(comment_id, type, user_id) {
 
             if (updateError) throw updateError;
 
-            // 更新计数
-            if (type === 'like') {
-                likesCount += 1;
-                dislikesCount = Math.max(0, dislikesCount - 1);
-            } else {
-                dislikesCount += 1;
-                likesCount = Math.max(0, likesCount - 1);
-            }
         }
         // 如果用户没有反应，则创建新反应
         else {
+            // 更新计数
+            if (type === 'like') {
+                likesCount += 1;
+            } else {
+                dislikesCount += 1;
+            }
+            // 更新UI
+            updateCommentReactionUI(comment_id, type, likesCount, dislikesCount);
             // 创建新的反应
             const { error: insertError } = await supabase
                 .from('comment_reactions')
@@ -312,13 +324,6 @@ async function handleCommentReaction(comment_id, type, user_id) {
                 });
 
             if (insertError) throw insertError;
-
-            // 更新计数
-            if (type === 'like') {
-                likesCount += 1;
-            } else {
-                dislikesCount += 1;
-            }
         }
 
         // 更新评论的点赞/踩计数
@@ -331,10 +336,6 @@ async function handleCommentReaction(comment_id, type, user_id) {
             .eq('comment_id', comment_id);
 
         if (updateCountError) throw updateCountError;
-
-        // 更新UI
-        updateCommentReactionUI(comment_id, type, likesCount, dislikesCount);
-    
 
         // 更新任务完成状态
         if (type === 'like') {

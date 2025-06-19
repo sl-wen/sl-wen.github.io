@@ -1,7 +1,7 @@
 // 导入supabase客户端
 import { supabase } from './supabase-config.js';
 import { updatePasswordStrength, showMessage } from './common.js';
-import { handleLoginRewards } from './task.js';
+import { handleLoginRewards,initusertasks } from './task.js';
 
 // 为标签按钮添加切换功能
 document.addEventListener('DOMContentLoaded', async () => {
@@ -125,6 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             localStorage.setItem('userSession', JSON.stringify(session));
             localStorage.setItem('userProfile', JSON.stringify(profile));
+            await initusertasks(profile.user_id);
             await handleLoginRewards(profile);
             showMessage('登录成功！1秒后跳转到首页', 'success');
             //跳转到首页

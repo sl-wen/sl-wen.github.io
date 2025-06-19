@@ -91,6 +91,42 @@ function isFirstLoginOfDay(last_login) {
         lastLogin.getDate() === now.getDate()
     );
 }
+/**
+ * 检查是否为当周首次登录
+ * @param last_login 上次登录时间
+ * @returns 是否为当天首次登录
+ */
+/**
+ * 检查当前时间是否与上次登录时间在同一周
+ * @param {string|number|Date} last_login - 上次登录时间
+ * @returns {boolean} - 如果不在同一周返回true，否则返回false
+ */
+function isFirstLoginOfWeek(last_login) {
+    if (!last_login) {
+        return true; // 如果没有上次登录时间，视为首次登录
+    }
+
+    const lastLogin = new Date(last_login);
+    const now = new Date();
+
+    // 计算两个日期距离1970年1月1日（周四）的天数
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const lastLoginDays = Math.floor(lastLogin.getTime() / msPerDay);
+    const nowDays = Math.floor(now.getTime() / msPerDay);
+
+    // 计算两个日期分别是周几 (0 = 周一, ..., 6 = 周日)
+    // 注意：JavaScript中getDay()返回的0是周日，所以需要调整
+    const lastLoginDay = (lastLogin.getDay() + 6) % 7;
+    const nowDay = (now.getDay() + 6) % 7;
+
+    // 计算两个日期所在周的周一的天数
+    const lastLoginMonday = lastLoginDays - lastLoginDay;
+    const nowMonday = nowDays - nowDay;
+
+    // 如果两个日期的周一是同一天，则它们在同一周
+    return lastLoginMonday !== nowMonday;
+}
+
 
 /**
  * 更新连续登录天数
@@ -206,179 +242,242 @@ async function handleLoginRewards(profile) {
     }
 }
 
-// 点赞任务处理函数
-async function handleLikeTask(user_id) {
-    if (!user_id) return;
-
+// 初始化任务处理函数
+async function initusertasks(user_id) {
     try {
-        // 获取用户的任务完成情况
-        const { data: taskData, error: taskError } = await supabase
-            .from('user_tasks')
-            .select('*')
-            .eq('user_id', user_id)
-            .eq('task_type', 'like')
-            .eq('is_completed', true)
-            .maybeSingle();
-
-        if (taskError) throw taskError;
-
-        // 如果今天已经完成了点赞任务，则不再处理
-        if (taskData) return;
-
-        // 获取用户资料
-        const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', user_id)
-            .single();
-
-        if (profileError) throw profileError;
-
-
-        // 获取用户资料
-        const { data: tasksData, error: tasksError } = await supabase
-            .from('tasks')
-            .select('*')
-            .eq('reset_frequency', 'daily')
-            .eq('action_type', 'like')
-            .single();
-
-        // 点赞任务奖励：经验值+5，金币+10
-        const expReward = tasksData.exp_reward;
-        const coinReward = tasksData.coins_reward;
-
-        // 更新用户经验值和金币
-        const newExp = (profileData.experience || 0) + expReward;
-        const newCoins = (profileData.coins || 0) + coinReward;
-
-        // 检查是否升级
-        const currentLevel = profileData.level || 1;
-        const { data: userlevelsData } = await getuserlevels(profileData.level);
-        const newLevel = calculateNewLevel(profileData.experience, expReward,userlevelsData.required_exp) ? profileData.level +1 : profileData.level;
-
-        // 更新用户资料
-        const { error: updateError } = await supabase
-            .from('profiles')
-            .update({
-                experience: newExp,
-                coins: newCoins,
-                level: newLevel
-            })
-            .eq('user_id', user_id);
-
-        if (updateError) throw updateError;
-
-        // 记录任务完成
-        const { error: insertError } = await supabase
-            .from('user_tasks')
-            .insert({
-                user_id: user_id,
-                task_type: 'like',
-                current_count:1
+        const usertasksdatas = await getusertasks(userProfile.user_id);
+        if (!usertasksdatas) {
+            const tasksdatas = await gettasksALL();
+            if (tasksdatas && tasksdatas.length > 0) {
+                tasksdatas.forEach(async (tasksdata) => {
+                    try {
+                        const newusertask = {
+                            user_id: userProfile.user_id,
+                            task_id: tasksdata.task_id,
+                            current_count: 0,
+                            is_claimed: false,
+                            claimed_at: null,
+                        };
+                        await insusertasks(newusertask);
+                    } catch (error) {
+                        console.log('用户任务进度初期追加失败', error);
+                    }
+                });
+            }
+        } else {
+            usertasksdatas.forEach(async (usertasksdata) => {
+                try {
+                    const taskdata = await gettasks(usertasksdata.task_id);
+                    const tasktypesdata = await gettasktypes(taskdata.type_id);
+                    if (tasktypesdata.name = 'daily' && isFirstLoginOfDay(updated_at)) {
+                        await resetusertasks(usertasksdata.usertask_id);
+                    }
+                    if (tasktypesdata.name = 'weekly' && isFirstLoginOfWeek(updated_at)) {
+                        await resetusertasks(usertasksdata.usertask_id);
+                    }
+                } catch (error) {
+                    console.log('用户任务进度初期追加失败', error);
+                }
             });
 
-        if (insertError) throw insertError;
-
-        // 显示奖励消息
-        showMessage(`点赞任务完成！获得 ${expReward} 经验和 ${coinReward} 金币`, 'success');
-
-        // 如果升级，显示升级消息
-        if (levelUp) {
-            showMessage(`恭喜你升级到 ${newLevel} 级！`, 'success');
         }
-
-        // 更新会话中的用户资料
-        updateSessionProfile(user_id, newExp, newCoins, newLevel);
-
     } catch (error) {
-        console.error('处理点赞任务时出错:', error);
+        console.log('初始化任务进度失败', error);
     }
 }
 
-// 评论任务处理函数
-async function handleCommentTask(user_id) {
-    if (!user_id) return;
-
+// 更新任务进度处理函数
+async function updusertasks(user_id) {
     try {
-        // 获取用户的任务完成情况
-        const { data: taskData, error: taskError } = await supabase
-            .from('user_tasks')
-            .select('*')
-            .eq('user_id', user_id)
-            .eq('task_type', 'comment')
-            .eq('completed_date', new Date().toISOString().split('T')[0])
-            .maybeSingle();
+        const usertasksdatas = await getusertasks(userProfile.user_id);
+        usertasksdatas.forEach(async (usertasksdata) => {
+            try {
+                const taskdata = await gettasks(usertasksdata.task_id);
+                const tasktypesdata = await gettasktypes(taskdata.type_id);
 
-        if (taskError) throw taskError;
-
-        // 如果今天已经完成了评论任务，则不再处理
-        if (taskData) return;
-
-        // 获取用户资料
-        const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', user_id)
-            .single();
-
-        if (profileError) throw profileError;
-
-        // 评论任务奖励：经验值+10，金币+20
-        const expReward = 10;
-        const coinReward = 20;
-
-        // 更新用户经验值和金币
-        const newExp = (profileData.experience || 0) + expReward;
-        const newCoins = (profileData.coins || 0) + coinReward;
-
-        // 检查是否升级
-        const currentLevel = profileData.level || 1;
-        const { newLevel, levelUp } = calculateNewLevel(newExp, currentLevel);
-        calculateNewLevel(profileData.experience, expReward,userlevelsData.required_exp)
-
-        // 更新用户资料
-        const { error: updateError } = await supabase
-            .from('profiles')
-            .update({
-                experience: newExp,
-                coins: newCoins,
-                level: newLevel
-            })
-            .eq('user_id', user_id);
-
-        if (updateError) throw updateError;
-
-        // 记录任务完成
-        const { error: insertError } = await supabase
-            .from('user_tasks')
-            .insert({
-                user_id: user_id,
-                task_type: 'comment',
-                completed_date: new Date().toISOString().split('T')[0],
-                reward_exp: expReward,
-                reward_coins: coinReward
-            });
-
-        if (insertError) throw insertError;
-
-        // 显示奖励消息
-        showMessage(`评论任务完成！获得 ${expReward} 经验和 ${coinReward} 金币`, 'success');
-
-        // 如果升级，显示升级消息
-        if (levelUp) {
-            showMessage(`恭喜你升级到 ${newLevel} 级！`, 'success');
-        }
-
-        // 更新会话中的用户资料
-        updateSessionProfile(user_id, newExp, newCoins, newLevel);
+            } catch (error) {
+                console.log('更新任务进度失败', error);
+            }
+        });
 
     } catch (error) {
-        console.error('处理评论任务时出错:', error);
+        console.log('更新任务进度失败', error);
     }
 }
+
+// // 点赞任务处理函数
+// async function handleLikeTask(user_id) {
+//     if (!user_id) return;
+
+//     try {
+//         // 获取用户的任务完成情况
+//         const { data: taskData, error: taskError } = await supabase
+//             .from('user_tasks')
+//             .select('*')
+//             .eq('user_id', user_id)
+//             .eq('task_type', 'like')
+//             .eq('is_completed', true)
+//             .maybeSingle();
+
+//         if (taskError) throw taskError;
+
+//         // 如果今天已经完成了点赞任务，则不再处理
+//         if (taskData) return;
+
+//         // 获取用户资料
+//         const { data: profileData, error: profileError } = await supabase
+//             .from('profiles')
+//             .select('*')
+//             .eq('user_id', user_id)
+//             .single();
+
+//         if (profileError) throw profileError;
+
+
+//         // 获取用户资料
+//         const { data: tasksData, error: tasksError } = await supabase
+//             .from('tasks')
+//             .select('*')
+//             .eq('reset_frequency', 'daily')
+//             .eq('action_type', 'like')
+//             .single();
+
+//         // 点赞任务奖励：经验值+5，金币+10
+//         const expReward = tasksData.exp_reward;
+//         const coinReward = tasksData.coins_reward;
+
+//         // 更新用户经验值和金币
+//         const newExp = (profileData.experience || 0) + expReward;
+//         const newCoins = (profileData.coins || 0) + coinReward;
+
+//         // 检查是否升级
+//         const currentLevel = profileData.level || 1;
+//         const { data: userlevelsData } = await getuserlevels(profileData.level);
+//         const newLevel = calculateNewLevel(profileData.experience, expReward,userlevelsData.required_exp) ? profileData.level +1 : profileData.level;
+
+//         // 更新用户资料
+//         const { error: updateError } = await supabase
+//             .from('profiles')
+//             .update({
+//                 experience: newExp,
+//                 coins: newCoins,
+//                 level: newLevel
+//             })
+//             .eq('user_id', user_id);
+
+//         if (updateError) throw updateError;
+
+//         // 记录任务完成
+//         const { error: insertError } = await supabase
+//             .from('user_tasks')
+//             .insert({
+//                 user_id: user_id,
+//                 task_type: 'like',
+//                 current_count:1
+//             });
+
+//         if (insertError) throw insertError;
+
+//         // 显示奖励消息
+//         showMessage(`点赞任务完成！获得 ${expReward} 经验和 ${coinReward} 金币`, 'success');
+
+//         // 如果升级，显示升级消息
+//         if (levelUp) {
+//             showMessage(`恭喜你升级到 ${newLevel} 级！`, 'success');
+//         }
+
+//         // 更新会话中的用户资料
+//         updateSessionProfile(user_id, newExp, newCoins, newLevel);
+
+//     } catch (error) {
+//         console.error('处理点赞任务时出错:', error);
+//     }
+// }
+
+// // 评论任务处理函数
+// async function handleCommentTask(user_id) {
+//     if (!user_id) return;
+
+//     try {
+//         // 获取用户的任务完成情况
+//         const { data: taskData, error: taskError } = await supabase
+//             .from('user_tasks')
+//             .select('*')
+//             .eq('user_id', user_id)
+//             .eq('task_type', 'comment')
+//             .eq('completed_date', new Date().toISOString().split('T')[0])
+//             .maybeSingle();
+
+//         if (taskError) throw taskError;
+
+//         // 如果今天已经完成了评论任务，则不再处理
+//         if (taskData) return;
+
+//         // 获取用户资料
+//         const { data: profileData, error: profileError } = await supabase
+//             .from('profiles')
+//             .select('*')
+//             .eq('user_id', user_id)
+//             .single();
+
+//         if (profileError) throw profileError;
+
+//         // 评论任务奖励：经验值+10，金币+20
+//         const expReward = 10;
+//         const coinReward = 20;
+
+//         // 更新用户经验值和金币
+//         const newExp = (profileData.experience || 0) + expReward;
+//         const newCoins = (profileData.coins || 0) + coinReward;
+
+//         // 检查是否升级
+//         const currentLevel = profileData.level || 1;
+//         const { newLevel, levelUp } = calculateNewLevel(newExp, currentLevel);
+//         calculateNewLevel(profileData.experience, expReward,userlevelsData.required_exp)
+
+//         // 更新用户资料
+//         const { error: updateError } = await supabase
+//             .from('profiles')
+//             .update({
+//                 experience: newExp,
+//                 coins: newCoins,
+//                 level: newLevel
+//             })
+//             .eq('user_id', user_id);
+
+//         if (updateError) throw updateError;
+
+//         // 记录任务完成
+//         const { error: insertError } = await supabase
+//             .from('user_tasks')
+//             .insert({
+//                 user_id: user_id,
+//                 task_type: 'comment',
+//                 completed_date: new Date().toISOString().split('T')[0],
+//                 reward_exp: expReward,
+//                 reward_coins: coinReward
+//             });
+
+//         if (insertError) throw insertError;
+
+//         // 显示奖励消息
+//         showMessage(`评论任务完成！获得 ${expReward} 经验和 ${coinReward} 金币`, 'success');
+
+//         // 如果升级，显示升级消息
+//         if (levelUp) {
+//             showMessage(`恭喜你升级到 ${newLevel} 级！`, 'success');
+//         }
+
+//         // 更新会话中的用户资料
+//         updateSessionProfile(user_id, newExp, newCoins, newLevel);
+
+//     } catch (error) {
+//         console.error('处理评论任务时出错:', error);
+//     }
+// }
 
 // 计算新等级
-function calculateNewLevel(experience, rewards_experience,required_exp) {
+function calculateNewLevel(experience, rewards_experience, required_exp) {
     // 简单的等级计算公式：每100经验值升一级
     if ((experience + rewards_experience) > required_exp) {
         return true;
@@ -386,26 +485,129 @@ function calculateNewLevel(experience, rewards_experience,required_exp) {
     return false;
 }
 
-// 更新会话中的用户资料
-function updateSessionProfile(user_id, experience, coins, level) {
-    const userProfileStr = localStorage.getItem('userProfile');
-    if (userProfileStr) {
-        const userProfile = JSON.parse(userProfileStr);
-        if (userProfile.user_id === user_id) {
-            userProfile.experience = experience;
-            userProfile.coins = coins;
-            userProfile.level = level;
-            localStorage.setItem('userProfile', JSON.stringify(userProfile));
-        }
+// // 更新会话中的用户资料
+// function updateSessionProfile(user_id, experience, coins, level) {
+//     const userProfileStr = localStorage.getItem('userProfile');
+//     if (userProfileStr) {
+//         const userProfile = JSON.parse(userProfileStr);
+//         if (userProfile.user_id === user_id) {
+//             userProfile.experience = experience;
+//             userProfile.coins = coins;
+//             userProfile.level = level;
+//             localStorage.setItem('userProfile', JSON.stringify(userProfile));
+//         }
+//     }
+// }
+
+
+async function getusertasks(user_id) {
+    try {
+        const { data: usertasks, error } = await supabase
+            .from('user_tasks')
+            .select('*')
+            .eq('user_id', user_id)
+            .single();
+        return usertasks;
+    } catch (error) {
+        console.log('getusertasks error', error);
     }
+
+}
+
+async function insusertasks(newusertask) {
+    try {
+        const { data, error } = await supabase
+            .from('user_tasks')
+            .insert([newusertask])
+            .select()
+            .single();
+        return;
+    } catch (error) {
+        console.log('insusertasks error', error);
+    }
+
+}
+
+async function resetusertasks(usertask_id) {
+    try {
+        const { data, error } = await supabase
+            .from('user_tasks')
+            .update({
+                current_count: 0,
+                updated_at: new Date().toISOString()
+            })
+            .eq('usertask_id', usertask_id);
+        return;
+    } catch (error) {
+        console.log('resetusertasks error', error);
+    }
+
+}
+
+async function gettasks(task_id) {
+    try {
+        const { data: tasks, error } = await supabase
+            .from('tasks')
+            .select('*')
+            .eq('task_id', task_id)
+            .single();
+        return tasks;
+    } catch (error) {
+        console.log('gettasks error', error);
+    }
+
+}
+
+async function gettasksALL() {
+    try {
+        const { data: tasks, error } = await supabase
+            .from('tasks')
+            .select('*')
+            .single();
+        return tasks;
+    } catch (error) {
+        console.log('gettasksALL error', error);
+    }
+
+}
+
+async function gettasktypes(tasktype_id) {
+    try {
+        const { data: tasktypes, error } = await supabase
+            .from('task_types')
+            .select('*')
+            .eq('tasktype_id', tasktype_id)
+            .single();
+        return tasktypes;
+    } catch (error) {
+        console.log('gettasktypes error', error);
+    }
+
+}
+
+
+async function gettaskrewardhistory(user_id) {
+    try {
+        const { data: taskrewardhistorys, error } = await supabase
+            .from('task_reward_history')
+            .select('*')
+            .eq('user_id', user_id)
+            .single();
+        return taskrewardhistorys;
+    } catch (error) {
+        console.log('gettaskrewardhistory error', error);
+    }
+
 }
 
 // 导出函数
 export {
     updprofileslevel,
-    handleLikeTask,
-    handleCommentTask,
     calculateNewLevel,
-    updateSessionProfile,
-    handleLoginRewards
+    handleLoginRewards,
+    getusertasks,
+    gettasks,
+    gettasktypes,
+    gettaskrewardhistory,
+    initusertasks
 };

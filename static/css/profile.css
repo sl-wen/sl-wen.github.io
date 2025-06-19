@@ -101,6 +101,37 @@
     line-height: 1.2;
 }
 
+
+table {
+    border-collapse: collapse;
+    width: 95%;
+    margin-bottom: 20px;
+}
+
+.active {
+    display: table; /* 显示当前table */
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px 10px;
+    text-align: left;
+    min-width: 20px;
+    white-space: nowrap;        /* 不换行 */
+    overflow: hidden;           /* 超出部分隐藏 */
+    text-overflow: ellipsis;    /* 超长部分显示... */
+    width: auto;           /* 推荐指定最大宽度，根据实际情况设置 */
+}
+
+th {
+    background: #fafafa;
+}
+
+caption {
+    text-align:left;
+    padding:5px 0;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
 

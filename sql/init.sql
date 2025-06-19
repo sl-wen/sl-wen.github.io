@@ -106,10 +106,10 @@ CREATE TABLE tasks (
 );
 -- 日常任务
  INSERT INTO tasks (task_name, task_description, type_id, action_type, required_count, coins_reward, exp_reward, reset_frequency) VALUES 
- ('每日登录', '今天登录游戏', (SELECT id FROM task_types WHERE name = 'daily'), 'login', 1, 20, 10, 'daily'), 
- ('点赞达人', '今天给5个帖子点赞', (SELECT id FROM task_types WHERE name = 'daily'), 'like', 5, 30, 15, 'daily'), 
- ('评论先锋', '今天发表3条评论', (SELECT id FROM task_types WHERE name = 'daily'), 'comment', 3, 40, 20, 'daily'), 
- ('分享精神', '今天发布1个帖子', (SELECT id FROM task_types WHERE name = 'daily'), 'post', 1, 50, 25, 'daily');
+ ('每日登录', '今天登录游戏', (SELECT tasktype_id FROM task_types WHERE name = 'daily'), 'login', 1, 20, 10, 'daily'), 
+ ('点赞达人', '今天给5个帖子点赞', (SELECT tasktype_id FROM task_types WHERE name = 'daily'), 'like', 5, 30, 15, 'daily'), 
+ ('评论先锋', '今天发表3条评论', (SELECT tasktype_id FROM task_types WHERE name = 'daily'), 'comment', 3, 40, 20, 'daily'), 
+ ('分享精神', '今天发布1个帖子', (SELECT tasktype_id FROM task_types WHERE name = 'daily'), 'post', 1, 50, 25, 'daily');
 
  -- 周常任务 
  INSERT INTO tasks (task_name, task_description, type_id, action_type, required_count, coins_reward, exp_reward, reset_frequency) VALUES 
@@ -145,11 +145,8 @@ CREATE TABLE user_tasks (
     user_id UUID REFERENCES auth.users(id),
     task_id INT NOT NULL,
     current_count INTEGER DEFAULT 0,
-    is_completed BOOLEAN DEFAULT false,
     is_claimed BOOLEAN DEFAULT false, -- 是否已领取奖励
-    completed_at TIMESTAMP WITH TIME ZONE,
     claimed_at TIMESTAMP WITH TIME ZONE,
-    last_progress_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
     UNIQUE(user_id, task_id)

@@ -28,6 +28,7 @@ export default {
     post: './static/js/post.js',
     login: './static/js/login.js',
     reset: './static/js/reset.js',
+    profile: './static/js/profile.js',
     categories: './static/js/categories.js',
     search: './static/js/search.js',
     about: './static/js/about.js'

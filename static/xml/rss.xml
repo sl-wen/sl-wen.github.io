@@ -6,19 +6,21 @@
                             <description>鱼鱼的博客</description>
                             <language>zh-cn</language>
                             <generator>Node+Supabase RSS自生成</generator>
-                            <lastBuildDate>Mon, 23 Jun 2025 07:50:03 GMT</lastBuildDate>
+                            <lastBuildDate>Mon, 23 Jun 2025 09:10:03 GMT</lastBuildDate>
                                 
         <item>
             <title><![CDATA[table]]></title>
             <link>http://121.40.215.235/pages/article.html?post_id=5f1c3a97-c629-4a5f-b031-35df31292d13</link>
-            <description><![CDATA[<pre><code>--任务奖励历史表 (task_reward_history)
-CREATE TABLE task_reward_history (
-  task_reward_history_id SERIAL PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id),
-  task_id INTEGER REFERENCES tasks(task_id) NOT NULL,
-  experience_gained INTEGER NOT NULL DEFAULT 0,
-  coins_gained INTEGER NOT NULL DEFAULT 0,
-  claimed_at TIMESTAMP WITH TIME ZONE DEFAULT timezone(&#39;utc&#39;::text, now())
+            <description><![CDATA[<pre><code>-- 用户任务进度表 (user_tasks)
+CREATE TABLE user_tasks (
+    usertask_id SERIAL PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id),
+    task_id UUID REFERENCES tasks(task_id),
+    current_count INTEGER DEFAULT 0,
+    is_claimed BOOLEAN DEFAULT false, -- 是否已领取奖励
+    claimed_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone(&#39;utc&#39;::text, now()),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone(&#39;utc&#39;::text, now())
 );
 </code></pre>
 ]]></description>
@@ -26,7 +28,7 @@ CREATE TABLE task_reward_history (
             <category>table</category>
             <pubDate>Mon, 09 Jun 2025 02:43:23 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=5f1c3a97-c629-4a5f-b031-35df31292d13</guid>
-            <lastBuildDate>Mon, 23 Jun 2025 03:09:29 GMT</lastBuildDate>
+            <lastBuildDate>Mon, 23 Jun 2025 09:08:34 GMT</lastBuildDate>
         </item>
 
         <item>
@@ -555,7 +557,7 @@ git push
             <category>ali</category>
             <pubDate>Wed, 04 Jun 2025 09:24:26 GMT</pubDate>
             <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</guid>
-            <lastBuildDate>Mon, 23 Jun 2025 07:36:43 GMT</lastBuildDate>
+            <lastBuildDate>Mon, 23 Jun 2025 09:09:59 GMT</lastBuildDate>
         </item>
 
         <item>

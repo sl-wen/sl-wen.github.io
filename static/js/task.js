@@ -246,7 +246,7 @@ async function handleLoginRewards(profile) {
 async function initusertasks(user_id) {
     try {
         console.log('初始化任务开始');
-        const usertasksdatas = await getusertasks(userProfile.user_id);
+        const usertasksdatas = await getusertasks(user_id);
         if (!usertasksdatas) {
             const tasksdatas = await gettasksALL();
             if (tasksdatas && tasksdatas.length > 0) {
@@ -254,7 +254,7 @@ async function initusertasks(user_id) {
                 tasksdatas.forEach(async (tasksdata) => {
                     try {
                         const newusertask = {
-                            user_id: userProfile.user_id,
+                            user_id: user_id,
                             task_id: tasksdata.task_id,
                             current_count: 0,
                             is_claimed: false,

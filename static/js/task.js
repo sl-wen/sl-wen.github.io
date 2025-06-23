@@ -65,9 +65,10 @@ async function updprofileslastlogin(user_id) {
                 updated_at: new Date()
             })
             .eq('user_id', user_id);
+        return ;
     } catch (error) {
         showMessage(error.message || '更新用户登录时间失败', 'error');
-        return null;
+        return ;
     }
 }
 
@@ -493,11 +494,11 @@ async function getusertasks(user_id) {
         const { data: usertasks, error } = await supabase
             .from('user_tasks')
             .select('*')
-            .eq('user_id', user_id)
-            .maybeSingle();
+            .eq('user_id', user_id);
         return usertasks;
     } catch (error) {
         console.log('getusertasks error', error);
+        return null;
     }
 
 }
@@ -542,6 +543,7 @@ async function gettasks(task_id) {
         return tasks;
     } catch (error) {
         console.log('gettasks error', error);
+        return null;
     }
 
 }
@@ -550,13 +552,12 @@ async function gettasksALL() {
     try {
         const { data: tasks, error } = await supabase
             .from('tasks')
-            .select('*')
-            .maybeSingle();
+            .select('*');
         return tasks;
     } catch (error) {
         console.log('gettasksALL error', error);
+        return null;
     }
-
 }
 
 async function gettasktypes(tasktype_id) {
@@ -569,6 +570,7 @@ async function gettasktypes(tasktype_id) {
         return tasktypes;
     } catch (error) {
         console.log('gettasktypes error', error);
+        return null;
     }
 
 }
@@ -579,11 +581,11 @@ async function gettaskrewardhistory(user_id) {
         const { data: taskrewardhistorys, error } = await supabase
             .from('task_reward_history')
             .select('*')
-            .eq('user_id', user_id)
-            .maybeSingle();
+            .eq('user_id', user_id);
         return taskrewardhistorys;
     } catch (error) {
         console.log('gettaskrewardhistory error', error);
+        return null;
     }
 
 }

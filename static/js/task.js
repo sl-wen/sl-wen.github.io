@@ -267,12 +267,12 @@ async function initusertasks(user_id) {
                 console.log('进度初始化开始');
                 try {
                     const taskdata = await gettasks(usertasksdata.task_id);
-                    const tasktypesdata = await gettasktypes(taskdata.type_id);
-                    if (tasktypesdata.name = 'daily' && isFirstLoginOfDay(usertasksdata.updated_at)) {
+                    const tasktypesdata = await gettasktypes(taskdata.tasktype_id);
+                    if (tasktypesdata.name === 'daily' && isFirstLoginOfDay(usertasksdata.updated_at)) {
                         await resetusertasks(usertasksdata.usertask_id);
                         console.log('daily任务进度初期化', usertasksdata.usertask_id);
                     }
-                    if (tasktypesdata.name = 'weekly' && isFirstLoginOfWeek(usertasksdata.updated_at)) {
+                    if (tasktypesdata.name === 'weekly' && isFirstLoginOfWeek(usertasksdata.updated_at)) {
                         await resetusertasks(usertasksdata.usertask_id);
                     }
                 } catch (error) {

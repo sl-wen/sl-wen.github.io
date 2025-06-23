@@ -35,7 +35,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             usertasksdatas.forEach(async (usertasksdata) => {
                 try {
                     const taskdata = await gettasks(usertasksdata.task_id);
-                    const tasktypesdata = await gettasktypes(taskdata.type_id);
+                    console.log('taskdata', taskdata);
+                    const tasktypesdata = await gettasktypes(taskdata.tasktype_id);
+                    console.log('tasktypesdata', tasktypesdata);
                     const usertasksth = document.createElement('th');
                     usertasksth.className = 'usertasksdetail';
                     usertasksth.innerHTML = `

@@ -105,7 +105,7 @@ CREATE TABLE tasks (
     reset_frequency TEXT -- daily, weekly, none
 );
 -- 日常任务
- INSERT INTO tasks (task_name, task_description, type_id, action_type, required_count, coins_reward, exp_reward, reset_frequency) VALUES 
+ INSERT INTO tasks (task_name, task_description, tasktype_id, action_type, required_count, coins_reward, exp_reward, reset_frequency) VALUES 
  ('每日登录', '今天登录游戏', (SELECT tasktype_id FROM task_types WHERE name = 'daily'), 'login', 1, 20, 10, 'daily'), 
  ('点赞达人', '今天给5个帖子点赞', (SELECT tasktype_id FROM task_types WHERE name = 'daily'), 'like', 5, 30, 15, 'daily'), 
  ('评论先锋', '今天发表3条评论', (SELECT tasktype_id FROM task_types WHERE name = 'daily'), 'comment', 3, 40, 20, 'daily'), 

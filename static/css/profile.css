@@ -1,16 +1,55 @@
 .profile-container {
     flex: 1;
-    width: 60%;
+    width: 80%;
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 0;
+    background-color: var(--background-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-container h1 {
+    margin-bottom: 0;
+    color: var(--text-color-primary);
+    font-size: 2rem;
+    text-align: center;
+}
+
+.user-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: var(--background-color-secondary);
+    border-radius: var(--border-radius);
 }
 
 .level,
 .coins,
 .experience,
-.adress
-{
+.adress {
     display: flex;
-    margin: 10px;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+    background-color: var(--background-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.stat-value {
+    margin-top: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color-primary);
+}
+
+label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
 }
 
 .level label {
@@ -136,19 +175,74 @@ th {
     border-bottom: 2px solid var(--primary-border-color);
 }
 
+th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--primary-border-color);
+}
+
+th {
+    font-weight: 600;
+    color: var(--text-color-primary);
+    background-color: var(--background-color);
+}
+
 tr:nth-child(even) {
     background-color: var(--background-color-secondary);
 }
 
 tr:hover {
     background-color: var(--background-color-hover);
+    transition: background-color 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    .profile-container {
+        width: 95%;
+        padding: 1rem;
+    }
+
+    .user-stats {
+        grid-template-columns: 1fr;
+    }
+
+    th, td {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .stat-value {
+        font-size: 1.2rem;
+    }
+}
+
+.tasks-section {
+    margin-top: 2rem;
+}
+
+.task-progress,
+.task-history {
+    margin-bottom: 2rem;
+    background-color: var(--background-color);
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--background-color);
 }
 
 caption {
     text-align: left;
-    padding: 12px;
+    padding: 1rem 1.5rem;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 1.2rem;
+    color: var(--text-color-primary);
+    background-color: var(--background-color-secondary);
+    border-bottom: 2px solid var(--primary-border-color);
     color: var(--text-color);
     border-bottom: 2px solid var(--primary-border-color);
     background-color: var(--background-color);

@@ -120,7 +120,7 @@ async function loadArticle(post_id) {
             .maybeSingle();
 
         if (error || !article) {
-            showmessage('文章不存在', 'error');
+            showMessage('文章不存在', 'error');
             return;
         }
         console.log('获取到文章数据:', article);
@@ -136,7 +136,7 @@ async function loadArticle(post_id) {
 
     } catch (error) {
         console.error('加载文章失败:', error);
-        showmessage(`加载文章失败: ${error.message}`, 'error');
+        showMessage(`加载文章失败: ${error.message}`, 'error');
     }
 }
 
@@ -152,7 +152,7 @@ async function updateArticle(post_id) {
         const content = document.getElementById('editor').value.trim();
 
         if (!title || !content) {
-            showmessage('标题和内容不能为空', 'error');
+            showMessage('标题和内容不能为空', 'error');
             return;
         }
 
@@ -168,14 +168,14 @@ async function updateArticle(post_id) {
             })
             .eq('post_id', post_id);
 
-        showmessage('文章更新成功！', 'success');
+        showMessage('文章更新成功！', 'success');
         setTimeout(() => {
             window.location.href = `/pages/article.html?post_id=${post_id}`;
         }, 1500);
 
     } catch (error) {
         console.error('更新文章失败:', error);
-        showmessage(`更新文章失败: ${error.message}`, 'error');
+        showMessage(`更新文章失败: ${error.message}`, 'error');
     }
 }
 
@@ -190,13 +190,13 @@ async function handleDeleteArticle(post_id) {
             .from('posts')
             .delete()
             .eq('post_id', post_id);
-        showmessage('文章删除成功！', 'success');
+        showMessage('文章删除成功！', 'success');
         setTimeout(() => {
             window.location.href = '/';
         }, 1500);
     } catch (error) {
         console.error('删除文章失败:', error);
-        showmessage(`删除文章失败: ${error.message}`, 'error');
+        showMessage(`删除文章失败: ${error.message}`, 'error');
     }
 }
 
@@ -210,7 +210,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const post_id = urlParams.get('post_id');
 
         if (!post_id) {
-            showmessage('错误：未指定文章ID', 'error');
+            showMessage('错误：未指定文章ID', 'error');
             return;
         }
 
@@ -274,6 +274,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     } catch (error) {
         console.error('初始化失败:', error);
-        showmessage(`初始化失败: ${error.message}`, 'error');
+        showMessage(`初始化失败: ${error.message}`, 'error');
     }
 });

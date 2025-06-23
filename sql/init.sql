@@ -143,13 +143,12 @@ CREATE TABLE tasks (
 CREATE TABLE user_tasks (
     usertask_id SERIAL PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id),
-    task_id INT NOT NULL,
+    task_id UUID REFERENCES tasks(task_id),
     current_count INTEGER DEFAULT 0,
     is_claimed BOOLEAN DEFAULT false, -- 是否已领取奖励
     claimed_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
-    UNIQUE(user_id, task_id)
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 -- 用户行为记录表 (user_activities)
 CREATE TABLE user_activities (

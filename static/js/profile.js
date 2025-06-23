@@ -31,58 +31,54 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // 添加任务进度
         if (usertasksdatas && usertasksdatas.length > 0) {
-            const usertaskscontainer = document.querySelector('.user_tasks-container tbody tr');
+            const usertaskscontainer = document.querySelector('.user_tasks-container tbody');
+            usertaskscontainer.innerHTML = ''; // 清空默认内容
             usertasksdatas.forEach(async (usertasksdata) => {
                 try {
                     const taskdata = await gettasks(usertasksdata.task_id);
-                    console.log('taskdata', taskdata);
                     const tasktypesdata = await gettasktypes(taskdata.tasktype_id);
-                    console.log('tasktypesdata', tasktypesdata);
-                    const usertasksth = document.createElement('th');
-                    usertasksth.className = 'usertasksdetail';
-                    usertasksth.innerHTML = `
-                    <th>${tasktypesdata.description}</th>
-                    <th>${taskdata.task_name}</th>
-                    <th>${taskdata.task_description}</th>
-                    <th>${taskdata.action_type}</th>
-                    <th>${usertasksdata.current_count}</th>
-                    <th>${taskdata.required_count}</th>
-                    <th>${taskdata.coins_reward}</th>
-                    <th>${taskdata.exp_reward}</th>
-                    `
-                    usertaskscontainer.appendChild(usertasksth);
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${tasktypesdata.description}</td>
+                        <td>${taskdata.task_name}</td>
+                        <td>${taskdata.task_description}</td>
+                        <td>${taskdata.action_type}</td>
+                        <td>${usertasksdata.current_count}</td>
+                        <td>${taskdata.required_count}</td>
+                        <td>${taskdata.coins_reward}</td>
+                        <td>${taskdata.exp_reward}</td>
+                    `;
+                    usertaskscontainer.appendChild(tr);
                 } catch (error) {
                     console.log('添加任务进度失败', error);
                 }
-
             });
         }
-        const taskrewardhistorydatas = await gettaskrewardhistory(userProfile.user_id);
 
+        const taskrewardhistorydatas = await gettaskrewardhistory(userProfile.user_id);
         // 添加任务历史
         if (taskrewardhistorydatas && taskrewardhistorydatas.length > 0) {
-            const historycontainer = document.querySelector('.history-container tbody tr');
+            const historycontainer = document.querySelector('.history-container tbody');
+            historycontainer.innerHTML = ''; // 清空默认内容
             taskrewardhistorydatas.forEach(async (taskrewardhistorydata) => {
                 try {
                     const taskdata = await gettasks(taskrewardhistorydata.task_id);
                     const tasktypesdata = await gettasktypes(taskdata.type_id);
-                    const userhistoryssth = document.createElement('th');
-                    userhistoryssth.className = 'userhistorysdetail';
+                    const tr = document.createElement('tr');
                     const formattedDate = formatDateALL(taskrewardhistorydata.claimed_at);
-                    userhistoryssth.innerHTML = `
-                    <th>${formattedDate}</th>
-                    <th>${tasktypesdata.description}</th>
-                    <th>${taskdata.task_name}</th>
-                    <th>${taskdata.task_description}</th>
-                    <th>${taskdata.action_type}</th>
-                    <th>${taskrewardhistorydata.coins_gained}</th>
-                    <th>${taskrewardhistorydata.experience_gained}</th>
-                    `
-                    historycontainer.appendChild(userhistoryssth);
+                    tr.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td>${tasktypesdata.description}</td>
+                        <td>${taskdata.task_name}</td>
+                        <td>${taskdata.task_description}</td>
+                        <td>${taskdata.action_type}</td>
+                        <td>${taskrewardhistorydata.coins_gained}</td>
+                        <td>${taskrewardhistorydata.experience_gained}</td>
+                    `;
+                    historycontainer.appendChild(tr);
                 } catch (error) {
                     console.log('添加任务历史失败', error);
                 }
-
             });
         }
 

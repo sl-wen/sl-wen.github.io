@@ -487,7 +487,8 @@ async function getusertasks(user_id) {
         const { data: usertasks, error } = await supabase
             .from('user_tasks')
             .select('*')
-            .eq('user_id', user_id);
+            .eq('user_id', user_id)
+            .order('created_at', { ascending: false });
         return usertasks;
     } catch (error) {
         console.log('getusertasks error', error);

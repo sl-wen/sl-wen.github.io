@@ -105,31 +105,53 @@
 table {
     border-collapse: collapse;
     width: 95%;
-    margin-bottom: 20px;
+    margin: 20px auto;
+    border: 1px solid var(--primary-border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .active {
-    display: table; /* 显示当前table */
+    display: table;
 }
 
 th, td {
-    border: 1px solid #ccc;
-    padding: 8px 10px;
+    border: 1px solid var(--primary-border-color);
+    padding: 12px;
     text-align: left;
     min-width: 20px;
-    white-space: nowrap;        /* 不换行 */
-    overflow: hidden;           /* 超出部分隐藏 */
-    text-overflow: ellipsis;    /* 超长部分显示... */
-    width: auto;           /* 推荐指定最大宽度，根据实际情况设置 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: auto;
+    font-size: 14px;
+    line-height: 1.6;
 }
 
 th {
-    background: #fafafa;
+    background-color: var(--background-color);
+    font-weight: 600;
+    color: var(--text-color);
+    border-bottom: 2px solid var(--primary-border-color);
+}
+
+tr:nth-child(even) {
+    background-color: var(--background-color-secondary);
+}
+
+tr:hover {
+    background-color: var(--background-color-hover);
 }
 
 caption {
-    text-align:left;
-    padding:5px 0;
+    text-align: left;
+    padding: 12px;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text-color);
+    border-bottom: 2px solid var(--primary-border-color);
+    background-color: var(--background-color);
 }
 
 /* 响应式设计 */

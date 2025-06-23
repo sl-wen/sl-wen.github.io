@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .from('posts')
                 .select('likes_count, dislikes_count')
                 .eq('post_id', post_id)
-                .single();
+                .maybeSingle();
 
             if (postError) throw postError;
             console.log('likes_count:', postData.likes_count);
@@ -262,7 +262,7 @@ async function handleCommentReaction(comment_id, type, user_id, commentreactiont
             .from('comments')
             .select('likes_count, dislikes_count')
             .eq('comment_id', comment_id)
-            .single();
+            .maybeSingle();
 
         if (commentError) throw commentError;
 

@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .from('profiles')
                 .select('*')
                 .eq('user_id', session.user.id)
-                .single();
+                .maybeSingle();
 
             localStorage.setItem('userSession', JSON.stringify(session));
             localStorage.setItem('userProfile', JSON.stringify(profile));

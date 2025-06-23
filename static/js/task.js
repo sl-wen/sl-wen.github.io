@@ -8,7 +8,7 @@ async function getuserlevels(level) {
             .from('user_levels')
             .select('*')
             .eq('level', level)
-            .single();
+            .maybeSingle();
 
         console.log('user_levels:', user_levels);
         return user_levels;
@@ -227,7 +227,7 @@ async function handleLoginRewards(profile) {
                     .from('profiles')
                     .select('*')
                     .eq('user_id', profile.user.id)
-                    .single();
+                    .maybeSingle();
 
                 localStorage.setItem('userProfile', JSON.stringify(newprofile));
             } catch (error) {
@@ -314,7 +314,7 @@ async function initusertasks(user_id) {
 //             .from('profiles')
 //             .select('*')
 //             .eq('user_id', user_id)
-//             .single();
+//             .maybeSingle();
 
 //         if (profileError) throw profileError;
 
@@ -325,7 +325,7 @@ async function initusertasks(user_id) {
 //             .select('*')
 //             .eq('reset_frequency', 'daily')
 //             .eq('action_type', 'like')
-//             .single();
+//             .maybeSingle();
 
 //         // 点赞任务奖励：经验值+5，金币+10
 //         const expReward = tasksData.exp_reward;
@@ -403,7 +403,7 @@ async function initusertasks(user_id) {
 //             .from('profiles')
 //             .select('*')
 //             .eq('user_id', user_id)
-//             .single();
+//             .maybeSingle();
 
 //         if (profileError) throw profileError;
 
@@ -491,7 +491,7 @@ async function getusertasks(user_id) {
             .from('user_tasks')
             .select('*')
             .eq('user_id', user_id)
-            .single();
+            .maybeSingle();
         return usertasks;
     } catch (error) {
         console.log('getusertasks error', error);
@@ -505,7 +505,7 @@ async function insusertasks(newusertask) {
             .from('user_tasks')
             .insert([newusertask])
             .select()
-            .single();
+            .maybeSingle();
         return;
     } catch (error) {
         console.log('insusertasks error', error);
@@ -535,7 +535,7 @@ async function gettasks(task_id) {
             .from('tasks')
             .select('*')
             .eq('task_id', task_id)
-            .single();
+            .maybeSingle();
         return tasks;
     } catch (error) {
         console.log('gettasks error', error);
@@ -548,7 +548,7 @@ async function gettasksALL() {
         const { data: tasks, error } = await supabase
             .from('tasks')
             .select('*')
-            .single();
+            .maybeSingle();
         return tasks;
     } catch (error) {
         console.log('gettasksALL error', error);
@@ -562,7 +562,7 @@ async function gettasktypes(tasktype_id) {
             .from('task_types')
             .select('*')
             .eq('tasktype_id', tasktype_id)
-            .single();
+            .maybeSingle();
         return tasktypes;
     } catch (error) {
         console.log('gettasktypes error', error);
@@ -577,7 +577,7 @@ async function gettaskrewardhistory(user_id) {
             .from('task_reward_history')
             .select('*')
             .eq('user_id', user_id)
-            .single();
+            .maybeSingle();
         return taskrewardhistorys;
     } catch (error) {
         console.log('gettaskrewardhistory error', error);

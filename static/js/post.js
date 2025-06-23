@@ -169,7 +169,7 @@ async function initEditor() {
                 .from('posts')
                 .insert([post])
                 .select()
-                .single();
+                .maybeSingle();
 
             if (error) throw error;
 

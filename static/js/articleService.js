@@ -24,7 +24,7 @@ export async function getArticle(post_id) {
                 .from('posts')
                 .select('*')
                 .eq('post_id', post_id)
-                .single();
+                .maybeSingle();
                 
             if (error) throw error;
             if (!data) throw new Error('文章不存在');
@@ -96,7 +96,7 @@ export async function updateArticle(post_id, updates) {
             })
             .eq('post_id', post_id)
             .select()
-            .single();
+            .maybeSingle();
             
         if (error) throw error;
         return data;

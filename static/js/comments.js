@@ -528,7 +528,7 @@ async function updateCommentTask(user_id) {
             .from('tasks')
             .select('task_id, rewards_exp, rewards_coins')
             .eq('action_type', 'comment')
-            .single();
+            .maybeSingle();
 
         if (taskError) return;
 
@@ -537,7 +537,7 @@ async function updateCommentTask(user_id) {
             .from('profiles')
             .select('experience, coins, level')
             .eq('user_id', user_id)
-            .single();
+            .maybeSingle();
 
         if (profileError) return;
 
@@ -546,7 +546,7 @@ async function updateCommentTask(user_id) {
             .from('user_levels')
             .select('required_exp, level_up_reward_coins')
             .eq('level', profile.level)
-            .single();
+            .maybeSingle();
 
         if (levelError) return;
 
@@ -614,7 +614,7 @@ async function updateLikeTask(user_id) {
                 .from('tasks')
                 .select('task_id, rewards_exp, rewards_coins')
                 .eq('action_type', 'like')
-                .single();
+                .maybeSingle();
 
             if (taskError) return;
 
@@ -640,7 +640,7 @@ async function updateLikeTask(user_id) {
                 .from('profiles')
                 .select('experience, coins, level')
                 .eq('user_id', user_id)
-                .single();
+                .maybeSingle();
 
             if (profileError) return;
 
@@ -649,7 +649,7 @@ async function updateLikeTask(user_id) {
                 .from('user_levels')
                 .select('required_exp, level_up_reward_coins')
                 .eq('level', profile.level)
-                .single();
+                .maybeSingle();
 
             if (levelError) return;
 

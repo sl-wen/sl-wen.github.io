@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     .from('profiles')
                     .select('*')
                     .eq('username', newusername)
-                    .single();
+                    .maybeSingle();
 
                 if (profile) {
                     showMessage('用户名已存在', 'error');
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .from('profiles')
                 .select('*')
                 .eq('user_id', user_id)
-                .single();
+                .maybeSingle();
 
             localStorage.setItem('userProfile', JSON.stringify(newprofile));
             showMessage('变更用户资料成功！', 'success');

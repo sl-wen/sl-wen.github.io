@@ -117,7 +117,7 @@ async function loadArticle(post_id) {
             .from('posts')
             .select('*')
             .eq('post_id', post_id)
-            .single();
+            .maybeSingle();
 
         if (error || !article) {
             showmessage('文章不存在', 'error');

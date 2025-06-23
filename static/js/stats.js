@@ -19,7 +19,7 @@ async function updateTotalViews() {
                     returning: 'representation'
                 })
                 .select()
-                .single();
+                .maybeSingle();
                 
             if (insertError) throw insertError;
             return newStats.total_views;
@@ -33,7 +33,7 @@ async function updateTotalViews() {
             })
             .eq('status_id', 'views')
             .select()
-            .single();
+            .maybeSingle();
             
         if (updateError) throw updateError;
         return updatedStats.total_views;

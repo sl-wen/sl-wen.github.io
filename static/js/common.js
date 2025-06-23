@@ -1,5 +1,5 @@
 // 显示消息
-function showMessage(message, type = 'info') {
+export function showMessage(message, type = 'info') {
     const container = document.getElementById('message-container');
     if (!container) return;
 
@@ -15,12 +15,12 @@ function showMessage(message, type = 'info') {
 }
 
 // 验证邮箱格式
-function isValidEmail(email) {
+export function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
 
-function isPasswordComplex(password) {
+export function isPasswordComplex(password) {
     // 至少8位，含大写、小写、数字、特殊字符
     const lengthOk = password.length >= 8;
     const lower = /[a-z]/.test(password);
@@ -35,7 +35,7 @@ function isPasswordComplex(password) {
 
 
 // 评估密码强度
-function evaluatePasswordStrength(password) {
+export function evaluatePasswordStrength(password) {
     if (!password) return { score: 0, feedback: '' };
 
     let score = 0;
@@ -78,7 +78,7 @@ function evaluatePasswordStrength(password) {
 }
 
 // 更新密码强度指示器
-function updatePasswordStrength(password) {
+export function updatePasswordStrength(password) {
     const strengthBar = document.getElementById('password-strength');
     const feedbackElement = document.getElementById('password-feedback');
 
@@ -118,7 +118,7 @@ function updatePasswordStrength(password) {
 
 
 // 格式化日期
-function formatDate(timestamp) {
+export function formatDate(timestamp) {
     const date = new Date(timestamp);
     return date.toLocaleDateString('zh-CN', {
         year: 'numeric',
@@ -128,7 +128,7 @@ function formatDate(timestamp) {
 }
 
 // 格式化日期
-function formatDateALL(timestamp) {
+export function formatDateALL(timestamp) {
     const date = new Date(timestamp);
     return date.toLocaleDateString('zh-CN', {
         year: 'numeric',
@@ -143,7 +143,7 @@ function formatDateALL(timestamp) {
 
 
 
-function getCursorLine(textarea) {
+export function getCursorLine(textarea) {
     const value = textarea.value;
     const selectionStart = textarea.selectionStart;
 
@@ -151,7 +151,7 @@ function getCursorLine(textarea) {
     return value.substring(0, selectionStart).split('\n').length - 1;
 }
 
-function scrollPreviewToLine(lineNumber) {
+export function scrollPreviewToLine(lineNumber) {
     const anchor = document.querySelector(`#line-anchor-${lineNumber}`);
     if (anchor) {
         anchor.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -159,7 +159,7 @@ function scrollPreviewToLine(lineNumber) {
 }
 
 // 添加滚动结束检测
-function onScrollEnd(element, callback) {
+export function onScrollEnd(element, callback) {
     let timer;
     element.addEventListener('scroll', function () {
         // 清除之前的定时器
@@ -176,7 +176,7 @@ function onScrollEnd(element, callback) {
  * @param {HTMLTextAreaElement} textarea - 文本区域元素
  * @return {number} 可见的第一行行号（从0开始）
  */
-function getVisibleFirstLine(textarea) {
+export function getVisibleFirstLine(textarea) {
     // 获取文本框的滚动位置
     const scrollTop = textarea.scrollTop;
     

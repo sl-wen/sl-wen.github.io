@@ -217,20 +217,13 @@ async function handleLoginRewards(profile) {
             }
             console.log('updatedProfile:', updatedProfile);
             try {
-                const { data, error } = await supabase
+                const { data:updatedProfiles, error } = await supabase
                     .from('profiles')
                     .update(updatedProfile)
                     .eq('user_id', profile.user_id)
                     .select();
-
-                // 获取用户详细信息
-                const { data: newprofile, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('user_id', profile.user.id)
-                    .maybeSingle();
-
-                localStorage.setItem('userProfile', JSON.stringify(newprofile));
+                    
+                localStorage.setItem('userProfile', JSON.stringify(updatedProfiles));
             } catch (error) {
                 console.log(error.message || '更新用户资料失败');
             }
@@ -249,7 +242,7 @@ async function initusertasks(user_id) {
         console.log('初始化任务开始');
         const usertasksdatas = await getusertasks(user_id);
         console.log('usertasksdatas:',usertasksdatas);
-        if (!usertasksdatas) {
+        if (!usertasksdatas  || usertasksdatas.length === 0 ) {
             const tasksdatas = await gettasksALL();
             console.log('tasksdatas:',tasksdatas);
             if (tasksdatas && tasksdatas.length > 0) {

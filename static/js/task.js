@@ -197,13 +197,13 @@ async function handleLoginRewards(profile) {
             console.log('连续登录:', consecutiveLoginsrewards);
 
             if (consecutiveLogins > 1) {
-                showMessage(`连续登录 ${consecutiveLogins} 天,获得 ${consecutiveLoginsrewards.exp_reward} 经验和 ${consecutiveLoginsrewards.coins_reward} 币`, 'success')
+                console.log(`连续登录 ${consecutiveLogins} 天,获得 ${consecutiveLoginsrewards.exp_reward} 经验和 ${consecutiveLoginsrewards.coins_reward} 币`)
             }
 
             if ((profile.experience + rewards_experience) > userlevel.required_exp) {
                 updlevel = updlevel + 1;
                 rewards_coins += userlevel.level_up_reward_coins;
-                showMessage(`恭喜升级！到达 ${updlevel} 级,获得${userlevel.level_up_reward_coins} 币`, 'info')
+                console.log(`恭喜升级！到达 ${updlevel} 级,获得${userlevel.level_up_reward_coins} 币`)
             }
             // 更新用户资料
             const updatedProfile = {
@@ -231,24 +231,26 @@ async function handleLoginRewards(profile) {
 
                 localStorage.setItem('userProfile', JSON.stringify(newprofile));
             } catch (error) {
-                showMessage(error.message || '更新用户资料失败', 'error');
+                console.log(error.message || '更新用户资料失败');
             }
 
             // 返回结果
             showMessage(`获得 ${rewards_experience} 经验和 ${rewards_experience} 币`, 'info')
         }
     } catch (error) {
-        showMessage(`error:${error} `, 'error')
+        console.log(`error:${error} `, 'error')
     }
 }
 
 // 初始化任务处理函数
 async function initusertasks(user_id) {
     try {
+        console.log('初始化任务开始');
         const usertasksdatas = await getusertasks(userProfile.user_id);
         if (!usertasksdatas) {
             const tasksdatas = await gettasksALL();
             if (tasksdatas && tasksdatas.length > 0) {
+                console.log('首次初始化开始');
                 tasksdatas.forEach(async (tasksdata) => {
                     try {
                         const newusertask = {
@@ -266,6 +268,7 @@ async function initusertasks(user_id) {
             }
         } else {
             usertasksdatas.forEach(async (usertasksdata) => {
+                console.log('进度初始化开始');
                 try {
                     const taskdata = await gettasks(usertasksdata.task_id);
                     const tasktypesdata = await gettasktypes(taskdata.type_id);
@@ -286,24 +289,6 @@ async function initusertasks(user_id) {
     }
 }
 
-// 更新任务进度处理函数
-async function updusertasks(user_id) {
-    try {
-        const usertasksdatas = await getusertasks(userProfile.user_id);
-        usertasksdatas.forEach(async (usertasksdata) => {
-            try {
-                const taskdata = await gettasks(usertasksdata.task_id);
-                const tasktypesdata = await gettasktypes(taskdata.type_id);
-
-            } catch (error) {
-                console.log('更新任务进度失败', error);
-            }
-        });
-
-    } catch (error) {
-        console.log('更新任务进度失败', error);
-    }
-}
 
 // // 点赞任务处理函数
 // async function handleLikeTask(user_id) {

@@ -164,7 +164,7 @@ CREATE TABLE user_activities (
 CREATE TABLE task_reward_history (
   task_reward_history_id SERIAL PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id),
-  task_id INTEGER REFERENCES tasks(task_id) NOT NULL,
+  task_id UUID REFERENCES tasks(task_id) NOT NULL,
   experience_gained INTEGER NOT NULL DEFAULT 0,
   coins_gained INTEGER NOT NULL DEFAULT 0,
   claimed_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())

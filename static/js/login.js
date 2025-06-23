@@ -129,9 +129,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             await handleLoginRewards(profile);
             showMessage('登录成功！1秒后跳转到首页', 'success');
             //跳转到首页
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 1000);
+            // setTimeout(() => {
+            //     window.location.href = '/';
+            // }, 1000);
 
             return profile;
         } catch (error) {

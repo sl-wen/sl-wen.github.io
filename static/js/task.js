@@ -266,13 +266,11 @@ async function initusertasks(user_id) {
             usertasksdatas.forEach(async (usertasksdata) => {
                 console.log('进度初始化开始');
                 try {
-                    const taskdata = await gettasks(usertasksdata.task_id);
-                    const tasktypesdata = await gettasktypes(taskdata.tasktype_id);
-                    if (tasktypesdata.name === 'daily' && isFirstLoginOfDay(usertasksdata.updated_at)) {
+                    if (usertasksdata.name === 'daily' && isFirstLoginOfDay(usertasksdata.updated_at)) {
                         await resetusertasks(usertasksdata.usertask_id);
                         console.log('daily任务进度初期化', usertasksdata.usertask_id);
                     }
-                    if (tasktypesdata.name === 'weekly' && isFirstLoginOfWeek(usertasksdata.updated_at)) {
+                    if (usertasksdata.name === 'weekly' && isFirstLoginOfWeek(usertasksdata.updated_at)) {
                         await resetusertasks(usertasksdata.usertask_id);
                     }
                 } catch (error) {
@@ -296,10 +294,11 @@ function calculateNewLevel(experience, rewards_experience, required_exp) {
 async function getusertasks(user_id) {
     try {
         const { data: usertasks, error } = await supabase
-            .from('user_tasks')
+            .from('user_tasks_view')
             .select('*')
             .eq('user_id', user_id)
-            .order('created_at', { ascending: false });
+            .order('name', { ascending: true })
+            .order('action_type', { ascending: false });
         return usertasks;
     } catch (error) {
         console.log('getusertasks error', error);
@@ -334,6 +333,7 @@ async function resetusertasks(usertask_id) {
         return;
     } catch (error) {
         console.log('resetusertasks error', error);
+        return;
     }
 
 }

@@ -1,6 +1,6 @@
 // 导入 Supabase 客户端
 import { formatDateALL } from './common.js';
-import { getusertasks, gettasks, gettasktypes, gettaskrewardhistory, } from './task.js';
+import { getusertasks, gettaskrewardhistory, } from './task.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -35,18 +35,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             usertaskscontainer.innerHTML = ''; // 清空默认内容
             usertasksdatas.forEach(async (usertasksdata) => {
                 try {
-                    const taskdata = await gettasks(usertasksdata.task_id);
-                    const tasktypesdata = await gettasktypes(taskdata.tasktype_id);
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${tasktypesdata.description}</td>
-                        <td>${taskdata.task_name}</td>
-                        <td>${taskdata.task_description}</td>
-                        <td>${taskdata.action_type}</td>
-                        <td>${usertasksdata.current_count}</td>
-                        <td>${taskdata.required_count}</td>
-                        <td>${taskdata.coins_reward}</td>
-                        <td>${taskdata.exp_reward}</td>
+                        <td title="${usertasksdata.description}">${usertasksdata.description}</td>
+                        <td title="${usertasksdata.task_name}">${usertasksdata.task_name}</td>
+                        <td title="${usertasksdata.task_description}">${usertasksdata.task_description}</td>
+                        <td title="${usertasksdata.action_type}">${usertasksdata.action_type}</td>
+                        <td title="${usertasksdata.current_count}">${usertasksdata.current_count}</td>
+                        <td title="${usertasksdata.required_count}">${usertasksdata.required_count}</td>
+                        <td title="${usertasksdata.coins_reward}">${usertasksdata.coins_reward}</td>
+                        <td title="${usertasksdata.exp_reward}">${usertasksdata.exp_reward}</td>
                     `;
                     usertaskscontainer.appendChild(tr);
                 } catch (error) {
@@ -62,16 +60,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             historycontainer.innerHTML = ''; // 清空默认内容
             taskrewardhistorydatas.forEach(async (taskrewardhistorydata) => {
                 try {
-                    const taskdata = await gettasks(taskrewardhistorydata.task_id);
-                    const tasktypesdata = await gettasktypes(taskdata.type_id);
                     const tr = document.createElement('tr');
                     const formattedDate = formatDateALL(taskrewardhistorydata.claimed_at);
                     tr.innerHTML = `
                         <td>${formattedDate}</td>
-                        <td>${tasktypesdata.description}</td>
-                        <td>${taskdata.task_name}</td>
-                        <td>${taskdata.task_description}</td>
-                        <td>${taskdata.action_type}</td>
+                        <td>${taskrewardhistorydata.description}</td>
+                        <td>${taskrewardhistorydata.task_name}</td>
+                        <td>${taskrewardhistorydata.task_description}</td>
+                        <td>${taskrewardhistorydata.action_type}</td>
                         <td>${taskrewardhistorydata.coins_gained}</td>
                         <td>${taskrewardhistorydata.experience_gained}</td>
                     `;

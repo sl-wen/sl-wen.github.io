@@ -94,7 +94,7 @@ CREATE TABLE tasks (
     task_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     task_name VARCHAR(100) NOT NULL,
     task_description TEXT,
-    type_id UUID REFERENCES task_types(tasktype_id) NOT NULL,
+    tasktype_id UUID REFERENCES task_types(tasktype_id) NOT NULL,
     action_type TEXT NOT NULL, -- login, like, comment, post, etc.
     required_count INT NOT NULL, --任务次数
     coins_reward INT NOT NULL,
@@ -112,13 +112,13 @@ CREATE TABLE tasks (
  ('分享精神', '今天发布1个帖子', (SELECT tasktype_id FROM task_types WHERE name = 'daily'), 'post', 1, 50, 25, 'daily');
 
  -- 周常任务 
- INSERT INTO tasks (task_name, task_description, type_id, action_type, required_count, coins_reward, exp_reward, reset_frequency) VALUES 
+ INSERT INTO tasks (task_name, task_description, tasktype_id, action_type, required_count, coins_reward, exp_reward, reset_frequency) VALUES 
  ('周活跃', '本周登录5天', (SELECT id FROM task_types WHERE name = 'weekly'), 'login', 5, 100, 50, 'weekly'), 
  ('周点赞', '本周给20个帖子点赞', (SELECT id FROM task_types WHERE name = 'weekly'), 'like', 20, 120, 60, 'weekly'), 
  ('周评论', '本周发表10条评论', (SELECT id FROM task_types WHERE name = 'weekly'), 'comment', 10, 150, 75, 'weekly'), 
  ('周分享', '本周发布3个帖子', (SELECT id FROM task_types WHERE name = 'weekly'), 'post', 3, 200, 100, 'weekly');
 -- 成就任务 
- INSERT INTO tasks (task_name, task_description, type_id, action_type, required_count, coins_reward, exp_reward, reset_frequency) VALUES 
+ INSERT INTO tasks (task_name, task_description, tasktype_id, action_type, required_count, coins_reward, exp_reward, reset_frequency) VALUES 
 ('初来乍到', '首次登录', (SELECT id FROM task_types WHERE name = 'achievement'), 'login', 1, 50, 25, 'none'), 
 ('点赞新手', '累计点赞10次', (SELECT id FROM task_types WHERE name = 'achievement'), 'like', 10, 100, 50, 'none'), 
 ('点赞专家', '累计点赞100次', (SELECT id FROM task_types WHERE name = 'achievement'), 'like', 100, 200, 100, 'none'), 
@@ -131,7 +131,7 @@ CREATE TABLE tasks (
 ('受欢迎的创作者', '累计获得100个点赞', (SELECT id FROM task_types WHERE name = 'achievement'), 'be_liked', 100, 300, 150, 'none'), 
 ('人气创作者', '累计获得1000个点赞', (SELECT id FROM task_types WHERE name = 'achievement'), 'be_liked', 1000, 800, 400, 'none');
 -- 行为任务（连续登录） 
- INSERT INTO tasks (task_name, task_description, type_id, action_type, required_count, coins_reward, exp_reward, reset_frequency) VALUES
+ INSERT INTO tasks (task_name, task_description, tasktype_id, action_type, required_count, coins_reward, exp_reward, reset_frequency) VALUES
 ('连续登录3天', '连续登录3天', (SELECT id FROM task_types WHERE name = 'behavior'), 'consecutive_login', 3, 60, 30, 'none'), 
 ('连续登录7天', '连续登录7天', (SELECT id FROM task_types WHERE name = 'behavior'), 'consecutive_login', 7, 120, 60, 'none'), 
 ('连续登录15天', '连续登录15天', (SELECT id FROM task_types WHERE name = 'behavior'), 'consecutive_login', 15, 250, 125, 'none'), 
@@ -150,6 +150,33 @@ CREATE TABLE user_tasks (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
+
+-- 用户任务进度视图 (user_tasks，tasks，task_types)
+CREATE VIEW user_tasks_view AS
+SELECT
+  u.*,
+  t.task_name,
+  t.task_description,
+  t.tasktype_id,
+  t.action_type,
+  t.required_count,
+  t.coins_reward,
+  t.exp_reward,
+  t.reset_frequency,
+  p.name,
+  p.description
+  
+FROM
+  user_tasks u
+LEFT JOIN
+  tasks t
+ON
+  u.task_id = t.task_id
+LEFT JOIN
+  task_types p
+ON
+  t.tasktype_id = p.tasktype_id;
+
 -- 用户行为记录表 (user_activities)
 CREATE TABLE user_activities (
     activity_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

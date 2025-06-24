@@ -1,7 +1,9 @@
 <!DOCTYPE html> <!-- HTML5文档类型声明 -->
-<html lang="zh-CN"> <!-- HTML根元素，设置语言为中文 -->
+<html lang="zh-CN">
+<!-- HTML根元素，设置语言为中文 -->
 
-<head> <!-- 文档头部，包含元数据 -->
+<head>
+    <!-- 文档头部，包含元数据 -->
     <title>个人 - 我的博客</title> <!-- 页面标题 -->
     <meta charset="utf-8" /> <!-- 设置文档字符编码为UTF-8 -->
     <link rel="manifest" href="/manifest.json">
@@ -21,35 +23,43 @@
     <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
 </head>
 
-<body> <!-- 文档主体 -->
-    <div class="page"> <!-- 页面主容器 -->
+<body>
+    <!-- 文档主体 -->
+    <div class="page">
+        <!-- 页面主容器 -->
         <div id="common-header"></div> <!-- 公共页头容器 -->
 
-        <div class="container"> <!-- 主要内容容器 -->
+        <div class="container">
+            <!-- 主要内容容器 -->
             <div class="profile-container">
                 <h1>个人中心</h1> <!-- 页面主标题 -->
                 <div class="user-stats">
-                    <div class="level"> <!-- 等级区域 -->
+                    <div class="level">
+                        <!-- 等级区域 -->
                         <label for="level">等级</label>
                         <span id="level-detail" class="stat-value"></span>
                     </div>
-                    <div class="coins"> <!-- 币区域 -->
+                    <div class="coins">
+                        <!-- 币区域 -->
                         <label for="coins">金币</label>
                         <span id="coins-detail" class="stat-value"></span>
                     </div>
-                    <div class="experience"> <!-- 经验区域 -->
+                    <div class="experience">
+                        <!-- 经验区域 -->
                         <label for="experience">经验值</label>
                         <span id="experience-detail" class="stat-value"></span>
                     </div>
+                    <div class="adress">
+                        <!-- 地址区域 -->
+                        <label for="adress">地址</label>
+                        <span id="adress-detail" class="stat-value"></span>
+                    </div>
                 </div>
-                <div class="adress"> <!-- 地址区域 -->
-                    <label for="adress">地址</label>
-                    <span id="adress-detail"></span>
-                </div>
+
                 <!-- 在此处添加页面内容 -->
             </div>
-            <div class="user_tasks-container">
-                <table id="user_tasks" class="active">
+            <div class="user_tasks">
+                <table id="user_tasks_header">
                     <caption>任务进度</caption>
                     <thead>
                         <tr>
@@ -63,13 +73,17 @@
                             <th>奖励(经验)</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- 任务进度一览 -->
-                    </tbody>
                 </table>
+                <div class="user_tasks-container">
+                    <table id="user_tasks_body">
+                        <tbody>
+                            <!-- 任务进度一览 -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="task-history">
-                <table id="history" class="active">
+            <div class="task_history">
+                <table id="task_history_header">
                     <caption>任务历史</caption>
                     <thead>
                         <tr>
@@ -82,10 +96,14 @@
                             <th>奖励(经验)</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- 任务历史一览 -->
-                    </tbody>
                 </table>
+                <div class="task_history-container">
+                    <table id="task_history_body">
+                        <tbody>
+                            <!-- 任务历史一览 -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 

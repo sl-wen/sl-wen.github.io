@@ -1,0 +1,75 @@
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../utils/supabase-config';
+
+interface UserProfile {
+  username?: string;
+  avatar_url?: string;
+  email: string;
+}
+
+const Header: React.FC = () => {
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const profile = localStorage.getItem('userProfile');
+    if (profile) {
+      setUserProfile(JSON.parse(profile));
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      localStorage.removeItem('userProfile');
+      localStorage.removeItem('userSession');
+      setUserProfile(null);
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  return (
+    <header className="header">
+      <div className="header-auth">
+        <Link to="/" className="logo">
+          <img 
+            src="/static/img/logo.jpg" 
+            alt="Logo" 
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/static/img/logo.png';
+            }} 
+          />
+        </Link>
+        <div className="auth" id="auth">
+          {userProfile ? (
+            <div className="user-menu">
+              <Link to="/profile">{userProfile.username || userProfile.email}</Link>
+              <button onClick={handleLogout} className="logout-btn">登出</button>
+            </div>
+          ) : (
+            <Link to="/login" className="primary-btn active">登录</Link>
+          )}
+        </div>
+      </div>
+      <nav className="nav">
+        <Link to="/">首页</Link>
+        <Link to="/categories">分类</Link>
+        <Link to="/search">搜索</Link>
+        {userProfile && (
+          <>
+            <Link to="/tools">工具</Link>
+            <Link to="/parenting">育儿</Link>
+            <Link to="/post">发布</Link>
+          </>
+        )}
+        <Link to="/about">关于</Link>
+      </nav>
+    </header>
+  );
+};
+
+export default Header;

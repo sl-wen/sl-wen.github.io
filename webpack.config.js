@@ -1,94 +1,76 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import webpack from 'webpack';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default {
-  mode: 'production',
-  entry: {
-    // PWA相关
-    'service-worker': './service-worker.js',
-    // 基础服务
-    supabase: './static/js/supabase-config.js',
-    articleService: './static/js/articleService.js',
-    stats: './static/js/stats.js',
-    marked: './node_modules/marked/lib/marked.esm.js',
-    auth: './static/js/auth.js',
-    reaction: './static/js/reaction.js',
-    task: './static/js/task.js',
-    comments: './static/js/comments.js',
-    
-    // 文章相关页面
-    index: './static/js/index.js',
-    article: './static/js/article.js',
-    settings: './static/js/settings.js',
-    edit: './static/js/edit.js',
-    post: './static/js/post.js',
-    login: './static/js/login.js',
-    reset: './static/js/reset.js',
-    profile: './static/js/profile.js',
-    categories: './static/js/categories.js',
-    search: './static/js/search.js',
-    about: './static/js/about.js'
-  },
+  mode: 'development',
+  entry: './src/index.tsx',
   output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'static/js/dist'),
-    publicPath: '/static/js/dist/',
-    library: {
-      type: 'umd',
-      name: '[name]'
-    }
+    filename: '[name].[contenthash].js',
+    path: path.resolve(__dirname, 'dist'),
+    publicPath: '/',
+    clean: true
   },
   module: {
     rules: [
       {
-        test: /\.(ts|js)$/,
+        test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
             presets: [
               '@babel/preset-env',
+              '@babel/preset-react',
               '@babel/preset-typescript'
             ]
           }
         }
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
       }
     ]
   },
   resolve: {
-    extensions: ['.ts', '.js', '.jsx'],
-    modules: [
-      'node_modules',
-      path.resolve(__dirname, 'node_modules')
-    ],
+    extensions: ['.tsx', '.ts', '.js'],
     alias: {
-      'marked': path.resolve(__dirname, 'node_modules/marked/lib/marked.esm.js'),
-      '@supabase/supabase-js': path.resolve(__dirname, 'node_modules/@supabase/supabase-js')
-    },
-    fallback: {
-      "path": false,
-      "fs": false,
-      "process": false
+      '@': path.resolve(__dirname, 'src'),
+      '@components': path.resolve(__dirname, 'src/components'),
+      '@pages': path.resolve(__dirname, 'src/pages'),
+      '@utils': path.resolve(__dirname, 'src/utils'),
+      '@styles': path.resolve(__dirname, 'src/styles')
     }
   },
-  optimization: {
-    minimize: true,
-    moduleIds: 'deterministic',
-    chunkIds: 'deterministic'
-  },
   plugins: [
-    new webpack.ProvidePlugin({
-      marked: ['marked', 'marked'],
-      global: 'global',
-      process: 'process/browser',
-      Buffer: ['buffer', 'Buffer']
+    new HtmlWebpackPlugin({
+      template: './public/index.html'
     }),
-    new webpack.IgnorePlugin({
-      resourceRegExp: /^ws$/
+    new webpack.ProvidePlugin({
+      React: 'react'
     })
-  ]
+  ],
+  devServer: {
+    historyApiFallback: true,
+    hot: true,
+    port: 3000
+  },
+  optimization: {
+    moduleIds: 'deterministic',
+    runtimeChunk: 'single',
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          test: /[\\]node_modules[\\]/,
+          name: 'vendors',
+          chunks: 'all'
+        }
+      }
+    }
+  }
 };

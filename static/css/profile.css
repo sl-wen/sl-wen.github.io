@@ -180,11 +180,6 @@ tr:hover {
         font-weight: 400;
     }
 
-    .user_tasks {
-        overflow-x: auto;
-        width: 100%;
-    }
-
     #user_tasks_header th,
     #user_tasks_body td,
     #task_history_header th,
@@ -198,7 +193,7 @@ tr:hover {
     .user_tasks,
     .task_history
     {
-        overflow-x: auto;
+        overflow: auto;
         width: 100%;
       }
 
@@ -209,7 +204,7 @@ tr:hover {
     .user_tasks-container,
     .task_history-container
     {
-        overflow-y: auto;
+        overflow: hidden;
         max-height: 500px;
         width: 100%;
     }

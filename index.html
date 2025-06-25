@@ -1,50 +1,21 @@
-<!DOCTYPE html> <!-- HTML5文档类型声明 -->
-<html lang="zh-CN"> <!-- HTML根元素，设置语言为中文 -->
-
-<head> <!-- 文档头部，包含元数据 -->
-    <meta charset="UTF-8"> <!-- 设置文档字符编码为UTF-8 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#24292e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="鱼鱼的博客">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"> <!-- 设置移动设备的视口属性 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="apple-touch-icon" href="/static/img/ios-pwa-icon-180x180.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/static/img/ios-pwa-icon-180x180.png">
     <link rel="apple-touch-startup-image" href="/static/img/ios-pwa-icon-180x180.png">
-    <title>我的博客</title> <!-- 网页标题 -->
-    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon"> <!-- 设置网站图标 -->
-    <link rel="stylesheet" href="/static/css/common.css"> <!-- 引入通用CSS样式 -->
-    <link rel="stylesheet" href="/static/css/index.css"> <!-- 引入首页特定的CSS样式 -->
-     
-    <script src="/static/js/common-components.js"></script> <!-- 加载公共组件的JavaScript -->
-    <script src="/static/js/dist/auth.bundle.js"></script>
-    <script src="/static/js/dist/index.bundle.js"></script> <!-- 加载Supabase客户端 -->
-    <script src="/static/js/dist/stats.bundle.js"></script> <!-- 加载统计相关功能 -->
-    <script src="/static/js/click-effect.js"></script> <!-- 加载点击特效脚本 -->
+    <title>我的博客</title>
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
 </head>
-
-<body> <!-- 文档主体 -->
-    <div class="page home-page"> <!-- 页面主容器，使用home-page类标识首页 -->
-        <div id="common-header"></div> <!-- 公共页头容器 -->
-
-        <div class="container"> <!-- 主要内容容器 -->
-            <div id="status-messages" class="status-messages"></div> <!-- 状态消息显示区域 -->
-            <div id="posts-container">
-                <div class="loading">
-                    <div class="octocat-container">
-                        <svg class="octocat" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="32" height="32">
-                          <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
-                        </svg>
-                        <div class="octocat-arm"></div>
-                    </div>
-                    <p class="loading-text">加载中...</p>
-                </div> <!-- 加载提示 -->
-            </div> <!-- 博客文章列表容器 -->
-        </div>
-
-        <div id="common-footer"></div> <!-- 公共页脚容器 -->
-    </div>
+<body>
+    <div id="root"></div>
 </body>
 </html>

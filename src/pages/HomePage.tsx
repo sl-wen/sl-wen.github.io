@@ -1,12 +1,12 @@
 import React from 'react';
-import CommonHeader from '../components/CommonHeader';
-import CommonFooter from '../components/CommonFooter';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import Loading from '../components/Loading';
 
 const HomePage: React.FC = () => (
   <div className="page home-page">
     <div id="common-header">
-      <CommonHeader />
+      <Header />
     </div>
     <div className="container">
       <div id="status-messages" className="status-messages"></div>
@@ -15,7 +15,7 @@ const HomePage: React.FC = () => (
       </div>
     </div>
     <div id="common-footer">
-      <CommonFooter />
+      <Footer />
     </div>
   </div>
 );

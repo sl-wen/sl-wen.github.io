@@ -1,7 +1,7 @@
-import path from 'path';
 import { fileURLToPath } from 'url';
+import path from 'path';
 import webpack from 'webpack';
-import HtmlWebpackPlugin from 'html-webpack-plugin';
+import ESLintPlugin from 'eslint-webpack-plugin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,19 +40,47 @@ export default {
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
     alias: {
-      '@': path.resolve(__dirname, 'src'),
-      '@components': path.resolve(__dirname, 'src/components'),
-      '@pages': path.resolve(__dirname, 'src/pages'),
+      ...BASE_ALIASES,
       '@utils': path.resolve(__dirname, 'src/utils'),
       '@styles': path.resolve(__dirname, 'src/styles')
     }
   },
+  /**
+ * ESLint configuration for TypeScript files
+ * @type {import('esl =nt-webpack-plugin').Options}
+ */
+const eslintOptions = {
+  extensions: ['ts', 'tsx'],
+  overrideConfigFile: path.resolve(__dirname, '.eslintrc.cjs'),
+  failOnError: process.env.NODE_ENV === 'production'
+};
+
+// Shared path aliases
+const BASE_ALIASES = {
+  '@': path.resolve(__dirname, 'src'),
+  '@components': path.resolve(__dirname, 'src/components'),
+  '@pages': path.resolve(__dirname, 'src/pages')
+},
+
   plugins: [
+    new ESLintPlugin(eslintOptions),
     new HtmlWebpackPlugin({
-      template: './public/index.html'
+      template: './index.html'
     }),
     new webpack.ProvidePlugin({
       React: 'react'
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'static',
+          to: 'static'
+        }
+      ]
+    }),
+    new ESLintPlugin({
+      extensions: ['js', 'jsx', 'ts', 'tsx'],
+      exclude: 'node_modules'
     })
   ],
   devServer: {

@@ -2,9 +2,26 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import webpack from 'webpack';
 import ESLintPlugin from 'eslint-webpack-plugin';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Shared path aliases
+const BASE_ALIASES = {
+  '@': path.resolve(__dirname, 'src'),
+  '@components': path.resolve(__dirname, 'src/components'),
+  '@pages': path.resolve(__dirname, 'src/pages'),
+};
+
+// ESLint configuration for TypeScript files
+const eslintOptions = {
+  extensions: ['js', 'jsx', 'ts', 'tsx'],
+  exclude: 'node_modules',
+  overrideConfigFile: path.resolve(__dirname, '.eslintrc.cjs'),
+  failOnError: process.env.NODE_ENV === 'production',
+};
 
 export default {
   mode: 'development',
@@ -43,25 +60,8 @@ export default {
       ...BASE_ALIASES,
       '@utils': path.resolve(__dirname, 'src/utils'),
       '@styles': path.resolve(__dirname, 'src/styles')
-    }
+    },
   },
-  /**
- * ESLint configuration for TypeScript files
- * @type {import('esl =nt-webpack-plugin').Options}
- */
-const eslintOptions = {
-  extensions: ['ts', 'tsx'],
-  overrideConfigFile: path.resolve(__dirname, '.eslintrc.cjs'),
-  failOnError: process.env.NODE_ENV === 'production'
-};
-
-// Shared path aliases
-const BASE_ALIASES = {
-  '@': path.resolve(__dirname, 'src'),
-  '@components': path.resolve(__dirname, 'src/components'),
-  '@pages': path.resolve(__dirname, 'src/pages')
-},
-
   plugins: [
     new ESLintPlugin(eslintOptions),
     new HtmlWebpackPlugin({
@@ -77,10 +77,6 @@ const BASE_ALIASES = {
           to: 'static'
         }
       ]
-    }),
-    new ESLintPlugin({
-      extensions: ['js', 'jsx', 'ts', 'tsx'],
-      exclude: 'node_modules'
     })
   ],
   devServer: {
@@ -94,7 +90,7 @@ const BASE_ALIASES = {
     splitChunks: {
       cacheGroups: {
         vendor: {
-          test: /[\\]node_modules[\\]/,
+          test: /[\\/]node_modules[\\/]/,
           name: 'vendors',
           chunks: 'all'
         }

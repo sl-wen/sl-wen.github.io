@@ -2,7 +2,7 @@ import { supabase } from './supabase-config';
 import { marked } from 'marked';
 
 export interface Article {
-  post_id: number;
+  post_id: string;
   title: string;
   content: string;
   author: string;

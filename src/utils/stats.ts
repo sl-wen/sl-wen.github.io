@@ -4,11 +4,11 @@ export const getVisitCount = async (): Promise<number> => {
   try {
     const { data, error } = await supabase
       .from('stats')
-      .select('visit_count')
+      .select('total_views')
       .single();
 
     if (error) throw error;
-    return data?.visit_count || 0;
+    return data?.total_views || 0;
   } catch (error) {
     console.error('获取访问量失败:', error.message || error);
     return 0;
@@ -20,7 +20,7 @@ export const incrementVisitCount = async (): Promise<void> => {
     const currentCount = await getVisitCount();
     const { error } = await supabase
       .from('stats')
-      .update({ visit_count: currentCount + 1 })
+      .update({ total_views: currentCount + 1 })
       .eq('id', 1);
 
     if (error) throw error;

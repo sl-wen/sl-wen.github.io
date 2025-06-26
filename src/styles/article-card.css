@@ -1,0 +1,83 @@
+.article-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.article-card:hover {
+  transform: translateY(-2px);
+}
+
+.article-title {
+  margin: 0 0 15px 0;
+}
+
+.article-title a {
+  color: #24292e;
+  text-decoration: none;
+  font-size: 1.5em;
+  line-height: 1.4;
+}
+
+.article-title a:hover {
+  color: #0366d6;
+}
+
+.article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  color: #666;
+  font-size: 0.9em;
+  margin-bottom: 15px;
+}
+
+.article-date,
+.article-category,
+.article-author {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.article-tags {
+  margin-top: 10px;
+}
+
+.tag {
+  display: inline-block;
+  background: #f1f1f1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.article-stats {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+  color: #666;
+  font-size: 0.9em;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .article-card {
+    padding: 15px;
+  }
+
+  .article-title a {
+    font-size: 1.2em;
+  }
+
+  .article-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

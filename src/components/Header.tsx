@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase-config';
+import '../styles/header.css';
 
 interface UserProfile {
   username?: string;
@@ -10,6 +11,7 @@ interface UserProfile {
 
 const Header: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -55,18 +57,23 @@ const Header: React.FC = () => {
           )}
         </div>
       </div>
-      <nav className="nav">
-        <Link to="/">首页</Link>
-        <Link to="/categories">分类</Link>
-        <Link to="/search">搜索</Link>
+      <button
+        className="menu-button"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        aria-label="Toggle menu"
+      >
+      </button>
+      <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
+        <Link to="/" onClick={() => setIsMenuOpen(false)}>首页</Link>
+        <Link to="/category" onClick={() => setIsMenuOpen(false)}>分类</Link>
+        <Link to="/search" onClick={() => setIsMenuOpen(false)}>搜索</Link>
         {userProfile && (
           <>
-            <Link to="/tools">工具</Link>
-            <Link to="/parenting">育儿</Link>
-            <Link to="/post">发布</Link>
+            <Link to="/tools" onClick={() => setIsMenuOpen(false)}>工具</Link>
+            <Link to="/post" onClick={() => setIsMenuOpen(false)}>发布文章</Link>
           </>
         )}
-        <Link to="/about">关于</Link>
+        <Link to="/about" onClick={() => setIsMenuOpen(false)}>关于</Link>
       </nav>
     </header>
   );

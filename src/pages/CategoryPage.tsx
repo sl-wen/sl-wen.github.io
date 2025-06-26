@@ -67,7 +67,7 @@ const ArchivePage: React.FC = () => {
         textAlign: 'center',
         color: 'var(--text-color)'
       }}>
-        文章归档
+        文章分类
       </h1>
 
       {years.map(year => (
@@ -88,7 +88,7 @@ const ArchivePage: React.FC = () => {
               .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
               .map(article => (
                 <div
-                  key={article.id}
+                  key={article.post_id}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -109,7 +109,7 @@ const ArchivePage: React.FC = () => {
                   </span>
 
                   <Link
-                    to={`/article/${article.id}`}
+                    to={`/article/${article.post_id}`}
                     style={{
                       flex: 1,
                       color: 'var(--text-color)',
@@ -128,7 +128,7 @@ const ArchivePage: React.FC = () => {
                     color: 'var(--text-secondary)',
                     whiteSpace: 'nowrap'
                   }}>
-                    {article.category}
+                    {article.tags.join(' / ')}
                   </span>
                 </div>
               ))}

@@ -1,3 +1,9 @@
+@import './header.css';
+@import './post.css';
+@import './article.css';
+@import './article-card.css';
+@import './article-list.css';
+
 /* 全局样式 */
 :root {
   --primary-color: #24292e;
@@ -81,6 +87,10 @@ body {
   color: white;
   padding: 1.5rem 2rem;
   text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 }
 
 .footer a {

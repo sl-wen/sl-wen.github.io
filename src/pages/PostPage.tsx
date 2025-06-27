@@ -74,21 +74,9 @@ const PostPage: React.FC = () => {
         throw new Error('请先登录');
       }
 
-      const article = await createArticle({
-        title: formData.title,
-        author: (await user).data.user?.email || 'unknown',
-        views: 0,
-        dislikes_count: 0,
-        content: formData.content,
-        tags: formData.tags,
-        user_id: (await user).data.user?.id || ''
-      });
+      const article = await createArticle(formData);
 
-      if (article) {
-        navigate(`/article/${article.post_id}`);
-      } else {
-        throw new Error('创建文章失败');
-      }
+      navigate(`/article/${article?.post_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : '发布文章时出错');
     } finally {

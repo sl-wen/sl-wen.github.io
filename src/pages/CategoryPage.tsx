@@ -3,14 +3,9 @@ import { Link } from 'react-router-dom';
 import { getArticles } from '../utils/articleService';
 import Loading from '../components/Loading';
 import StatusMessage from '../components/StatusMessage';
-
 import type { Article } from '../utils/articleService';
 
-interface GroupedArticles {
-  [key: string]: Article[];
-}
-
-const ArchivePage: React.FC = () => {
+const CategoryPage: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,13 +27,18 @@ const ArchivePage: React.FC = () => {
     fetchArticles();
   }, []);
 
-  const groupArticlesByYear = (articles: Article[]): GroupedArticles => {
-    return articles.reduce((groups: GroupedArticles, article) => {
-      const year = new Date(article.created_at).getFullYear().toString();
-      if (!groups[year]) {
-        groups[year] = [];
+  const groupArticlesByTag = (articles: Article[]): Record<string, Article[]> => {
+    return articles.reduce((groups: Record<string, Article[]>, article) => {
+      if (!article.tags || article.tags.length === 0) {
+        // 没有标签的文章可以统一归类到 "未分类"
+        if (!groups['未分类']) groups['未分类'] = [];
+        groups['未分类'].push(article);
+      } else {
+        article.tags.forEach(tag => {
+          if (!groups[tag]) groups[tag] = [];
+          groups[tag].push(article);
+        });
       }
-      groups[year].push(article);
       return groups;
     }, {});
   };
@@ -51,30 +51,25 @@ const ArchivePage: React.FC = () => {
     return <StatusMessage message={error} />;
   }
 
-  const groupedArticles = groupArticlesByYear(articles);
-  const years = Object.keys(groupedArticles).sort((a, b) => parseInt(b) - parseInt(a));
+  const groupedArticles = groupArticlesByTag(articles);
+  const tags = Object.keys(groupedArticles).sort((a, b) => a.localeCompare(b, 'zh-Hans-CN'));
 
   return (
     <div>
       <h1>文章分类</h1>
 
-      {years.map(year => (
-        <div key={year}>
-          <h2>{year}</h2>
-
+      {tags.map(tag => (
+        <div key={tag}>
+          <h2>{tag}</h2>
           <div>
-            {groupedArticles[year]
+            {groupedArticles[tag]
               .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
               .map(article => (
                 <div key={article.post_id}>
-                  <span>
-                    {new Date(article.created_at).toLocaleDateString('zh-CN')}
-                  </span>
-
+                  <span>{new Date(article.created_at).toLocaleDateString('zh-CN')}</span>
                   <Link to={`/article/${article.post_id}`}>{article.title}</Link>
-
-                  {article.tags.map((tag, index) => (
-                    <span key={index} className="tag">{tag}</span>
+                  {article.tags.map((tagLabel, index) => (
+                    <span key={index} className="tag">{tagLabel}</span>
                   ))}
                   <span className="article-author">{article.author}</span>
                   <span>💬 {article.comments_count}</span>
@@ -94,4 +89,4 @@ const ArchivePage: React.FC = () => {
   );
 };
 
-export default ArchivePage;
+export default CategoryPage;

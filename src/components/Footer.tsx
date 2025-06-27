@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getVisitCount } from '../utils/stats';
+import { getVisitCount, incrementVisitCount } from '../utils/stats';
 
 const Footer: React.FC = () => {
   const [visitCount, setVisitCount] = useState<number>(0);
@@ -10,6 +10,7 @@ const Footer: React.FC = () => {
       try {
         const count = await getVisitCount();
         setVisitCount(count);
+        incrementVisitCount();
       } catch (error) {
         console.error('获取访问量失败:', error);
       }

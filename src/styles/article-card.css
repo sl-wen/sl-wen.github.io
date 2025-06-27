@@ -1,11 +1,11 @@
 .article-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
+    margin-bottom: 5px;
+    padding: 3px 10px;
+    display: flex;
+    align-items: baseline;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
 
 .article-card:hover {
   transform: translateY(-2px);

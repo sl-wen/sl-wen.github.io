@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getArticleById, getAdjacentArticles, Article, renderMarkdown } from '../utils/articleService';
+import DOMPurify from 'dompurify';
 import Loading from '../components/Loading';
 import StatusMessage from '../components/StatusMessage';
 import { recordPostsView } from '../utils/stats';
@@ -119,13 +120,10 @@ const ArticlePage: React.FC = () => {
         )}
         <div
           className="article-content markdown-body"
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(article.content) }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderMarkdown(article.content)) }}
         />
         <div className="article-stats">
-          <span
-            className={`like-button ${liked ? 'active' : ''}`}
-            onClick={handleLike}
-          >
+          <span>
             👍 {article.likes_count}
           </span>
           <span>💬 {article.comments_count}</span>

@@ -28,7 +28,7 @@ const LoginPage: React.FC = () => {
           const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
-            .eq('id', data.user.id)
+            .eq('user_id', data.user.id)
             .single();
 
           localStorage.setItem('userProfile', JSON.stringify(profileData));

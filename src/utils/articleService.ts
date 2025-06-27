@@ -130,6 +130,6 @@ export const deleteArticle = async (id: number): Promise<boolean> => {
   }
 };
 
-export const renderMarkdown = async (content: string): Promise<string> => {
-  return await marked.parse(content);
+export const renderMarkdown = (content: string) => {
+  return marked.parse(content);
 };

@@ -51,7 +51,7 @@ const Header: React.FC = () => {
             <div className="user-menu">
               <div className="user-menu">
                 <div className="user-profile" id="userProfileButton">
-                  <span id="welcome">欢迎，${userProfile?.username}</span>
+                  <span id="welcome">欢迎 {userProfile?.username}</span>
                   <i className="dropdown-icon">▼</i>
                 </div>
                 <div className="dropdown-menu" id="userDropdownMenu">

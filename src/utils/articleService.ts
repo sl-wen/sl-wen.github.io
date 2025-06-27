@@ -48,13 +48,13 @@ export const getArticleById = async (post_id: string): Promise<Article | null> =
   }
 };
 
-export const getAdjacentArticles = async (currentId: string): Promise<{ prev: Article | null; next: Article | null }> => {
+export const getAdjacentArticles = async (post_id: string): Promise<{ prev: Article | null; next: Article | null }> => {
   try {
     // 获取上一篇文章（创建时间较早的最近一篇）
     const { data: prevData, error: prevError } = await supabase
       .from('posts')
       .select('post_id, title')
-      .lt('post_id', currentId)
+      .lt('post_id', post_id)
       .order('post_id', { ascending: false })
       .limit(1)
       .single();
@@ -65,7 +65,7 @@ export const getAdjacentArticles = async (currentId: string): Promise<{ prev: Ar
     const { data: nextData, error: nextError } = await supabase
       .from('posts')
       .select('post_id, title')
-      .gt('post_id', currentId)
+      .gt('post_id', post_id)
       .order('post_id', { ascending: true })
       .limit(1)
       .single();
@@ -98,12 +98,12 @@ export const createArticle = async (article: Omit<Article, 'post_id' | 'created_
   }
 };
 
-export const updateArticle = async (id: number, updates: Partial<Article>): Promise<Article | null> => {
+export const updateArticle = async (post_id: string, updates: Partial<Article>): Promise<Article | null> => {
   try {
     const { data, error } = await supabase
       .from('posts')
       .update(updates)
-      .eq('id', id)
+      .eq('post_id', post_id)
       .select()
       .single();
 
@@ -112,56 +112,6 @@ export const updateArticle = async (id: number, updates: Partial<Article>): Prom
   } catch (error) {
     console.error('更新文章失败:', error);
     return null;
-  }
-};
-
-export const likeArticle = async (post_id: string): Promise<boolean> => {
-  try {
-    // 先获取当前点赞数
-    const { data: article, error: getError } = await supabase
-      .from('posts')
-      .select('likes_count')
-      .eq('post_id', post_id)
-      .single();
-
-    if (getError) throw getError;
-
-    // 更新点赞数
-    const { error: updateError } = await supabase
-      .from('posts')
-      .update({ likes_count: (article?.likes_count || 0) + 1 })
-      .eq('post_id', post_id);
-
-    if (updateError) throw updateError;
-    return true;
-  } catch (error) {
-    console.error('点赞失败:', error);
-    return false;
-  }
-};
-
-export const unlikeArticle = async (post_id: string): Promise<boolean> => {
-  try {
-    // 先获取当前点赞数
-    const { data: article, error: getError } = await supabase
-      .from('posts')
-      .select('likes_count')
-      .eq('post_id', post_id)
-      .single();
-
-    if (getError) throw getError;
-
-    // 更新点赞数，确保不会小于0
-    const { error: updateError } = await supabase
-      .from('posts')
-      .update({ likes_count: Math.max((article?.likes_count || 0) - 1, 0) })
-      .eq('post_id', post_id);
-
-    if (updateError) throw updateError;
-    return true;
-  } catch (error) {
-    console.error('取消点赞失败:', error);
-    return false;
   }
 };
 

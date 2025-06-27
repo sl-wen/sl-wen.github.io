@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { getArticles, Article } from '../utils/articleService';
 import ArticleCard from './ArticleCard';
 import Loading from './Loading';
-import ErrorMessage from './ErrorMessage';
+import StatusMessage from './StatusMessage';
 
 const ArticleList: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -39,7 +39,7 @@ const ArticleList: React.FC = () => {
   };
 
   if (error) {
-    return <ErrorMessage message={error} />;
+    return <StatusMessage message={error} />;
   }
 
   return (

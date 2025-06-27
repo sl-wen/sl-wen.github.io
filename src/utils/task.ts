@@ -1,25 +1,39 @@
 import { supabase } from './supabase-config';
 
 export interface Task {
-  id: string;
-  title: string;
-  description: string;
-  reward_coins: number;
-  reward_exp: number;
-  required_level: number;
-  status: 'available' | 'in_progress' | 'completed';
-  created_at: string;
-  completed_at?: string;
+  task_id: string;
+  task_name: string;
+  task_description: string;
+  tasktype_id: string;
+  action_type: string;
+  required_count: number;
+  coins_reward: number;
+  exp_reward: number;
+  min_level: number;
+  max_level: number;
+  is_active: boolean;
+  reset_frequency: string;
 }
 
 export interface TaskProgress {
-  id: string;
+  usertask_id: string;
   user_id: string;
   task_id: string;
-  status: 'in_progress' | 'completed';
-  started_at: string;
-  completed_at?: string;
-  task?: Task;
+  current_count: number;
+  is_claimed: boolean;
+  claimed_at: string;
+  created_at: string;
+  updated_at: string;
+  task_name: string;
+  task_description: string;
+  tasktype_id: string;
+  action_type: string;
+  required_count: number;
+  coins_reward: number;
+  exp_reward: number;
+  reset_frequency: string;
+  name: string;
+  description: string;
 }
 
 export const getAvailableTasks = async (userLevel: number) => {
@@ -27,8 +41,8 @@ export const getAvailableTasks = async (userLevel: number) => {
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
-      .lte('required_level', userLevel)
-      .eq('status', 'available');
+      .lte('min_level', userLevel)
+      .eq('is_active', 'ture');
 
     if (error) throw error;
     return data;
@@ -37,16 +51,13 @@ export const getAvailableTasks = async (userLevel: number) => {
   }
 };
 
-export const getTaskProgress = async (userId: string) => {
+export const getTaskProgress = async (user_id: string) => {
   try {
     const { data, error } = await supabase
-      .from('task_progress')
-      .select(`
-        *,
-        task:tasks(*)
-      `)
-      .eq('user_id', userId)
-      .order('started_at', { ascending: false });
+      .from('user_tasks_view')
+      .select('*')
+      .eq('user_id', user_id)
+      .order('task_name', { ascending: false });
 
     if (error) throw error;
     return data;

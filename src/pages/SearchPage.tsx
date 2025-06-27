@@ -10,7 +10,7 @@ interface GroupedArticles {
   [key: string]: Article[];
 }
 
-const ArchivePage: React.FC = () => {
+const SearchPage: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,12 +73,9 @@ const ArchivePage: React.FC = () => {
 
                   <Link to={`/article/${article.post_id}`}>{article.title}</Link>
 
-                  {article.tags.map((tag, index) => (
-                    <span key={index} className="tag">{tag}</span>
-                  ))}
-                  <span className="article-author">{article.author}</span>
-                  <span>💬 {article.comments_count}</span>
-                  <span>👁️ {article.views}</span>
+                  <span>
+                    {article.tags.join(' / ')}
+                  </span>
                 </div>
               ))}
           </div>
@@ -94,4 +91,4 @@ const ArchivePage: React.FC = () => {
   );
 };
 
-export default ArchivePage;
+export default SearchPage;

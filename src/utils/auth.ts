@@ -1,10 +1,13 @@
 import { supabase } from './supabase-config';
 
 export interface UserProfile {
-  id: string;
+  user_id: string;
   username: string;
-  avatar_url: string;
+  email: string;
   level: number;
+  avatar_url: string;
+  adress: string;
+  last_login: string;
   coins: number;
   experience: number;
 }
@@ -57,12 +60,12 @@ export const signOut = async () => {
   }
 };
 
-export const updateProfile = async (userId: string, updates: Partial<UserProfile>) => {
+export const updateProfile = async (user_id: string, updates: Partial<UserProfile>) => {
   try {
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)
-      .eq('id', userId)
+      .eq('user_id', user_id)
       .select()
       .single();
 

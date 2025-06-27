@@ -37,20 +37,31 @@ const Header: React.FC = () => {
     <header className="header">
       <div className="header-auth">
         <Link to="/" className="logo">
-          <img 
-            src="/static/img/logo.jpg" 
-            alt="Logo" 
+          <img
+            src="/static/img/logo.jpg"
+            alt="Logo"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = '/static/img/logo.png';
-            }} 
+            }}
           />
         </Link>
         <div className="auth" id="auth">
           {userProfile ? (
             <div className="user-menu">
-              <Link to="/profile">{userProfile.username || userProfile.email}</Link>
-              <button onClick={handleLogout} className="logout-btn">登出</button>
+              <div className="user-menu">
+                <div className="user-profile" id="userProfileButton">
+                  <span id="welcome">欢迎，${userProfile?.username}</span>
+                  <i className="dropdown-icon">▼</i>
+                </div>
+                <div className="dropdown-menu" id="userDropdownMenu">
+                  <ul className="dropdown-list">
+                    <Link to="/profile" onClick={() => setIsMenuOpen(false)}>个人</Link>
+                    <Link to="/settings" onClick={() => setIsMenuOpen(false)}>设置</Link>
+                    <li onClick={handleLogout} className="logout-btn"> 登出</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           ) : (
             <Link to="/login" className="primary-btn active">登录</Link>

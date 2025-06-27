@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createArticle,renderMarkdown} from '../utils/articleService';
 import { supabase } from '../utils/supabase-config';
-import ErrorMessage from '../components/ErrorMessage';
+import StatusMessage from '../components/StatusMessage';
 import '../styles/post.css';
 
 interface PostFormData {
@@ -101,7 +101,7 @@ const PostPage: React.FC = () => {
       <div className="container">
         <div className="editor-container">
           <h2>发布文章</h2>
-          {error && <ErrorMessage message={error} />}
+          {error && <StatusMessage message={error} />}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="title">标题</label>

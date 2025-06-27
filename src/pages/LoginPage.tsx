@@ -7,13 +7,13 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setMessage('');
 
     try {
       if (isLogin) {
@@ -54,12 +54,12 @@ const LoginPage: React.FC = () => {
             },
           ]);
 
-          setError('注册成功！请查收验证邮件。');
+          setMessage('注册成功！');
           setIsLogin(true);
         }
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : '操作失败');
+      setMessage(error instanceof Error ? error.message : '操作失败');
     } finally {
       setLoading(false);
     }
@@ -125,7 +125,7 @@ const LoginPage: React.FC = () => {
             </div>
           )}
 
-          {error && <div className="error-message">{error}</div>}
+          {message && <div className="show-message">{message}</div>}
 
           <button
             type="submit"

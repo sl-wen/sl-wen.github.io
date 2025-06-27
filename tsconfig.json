@@ -1,18 +1,26 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "outDir": "./static/js/dist",
-    "rootDir": "./",
+    /* 基本选项 */
+    "target": "ES2020",                // 生成代码的 JavaScript 版本，推荐 ES2020 及以上
+    "module": "ESNext",                // 指定采用的模块系统（Node18+/前端均支持 ESNext）
+    "moduleResolution": "Node",        // 按 Node.js 模块解析规则
+    "outDir": "./dist",                // 编译输出目录
+    "rootDir": "./src",                // 源码目录
+    "jsx": "react-jsx",
+    /* 开发辅助 */
+    "strict": true,                    // 启用所有严格类型检查
+    "noImplicitAny": true,             // 不允许隐式 any
+    "strictNullChecks": true,          // 严格检查 null/undefined
+    "esModuleInterop": true,           // 允许默认导入非ES模块
+    "allowSyntheticDefaultImports": true,     // 允许从没有默认导出的模块默认导入
+    "resolveJsonModule": true,                // 支持导入 json 文件
+    "skipLibCheck": true,                     // 跳过库文件的类型检查，加快编译速度
+    "forceConsistentCasingInFileNames": true, // 文件名大小写一致
     "sourceMap": true,
     "declaration": true,
     "allowJs": true,
     "checkJs": false
   },
-  "include": ["static/js/**/*"],
-  "exclude": ["node_modules", "static/js/dist"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

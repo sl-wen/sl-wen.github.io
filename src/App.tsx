@@ -5,6 +5,10 @@ import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import CategoryPage from './pages/CategoryPage';
+import SearchPage from './pages/SearchPage';
+import EditPage from './pages/EditPage';
+import SettingsPage from './pages/SettingsPage';
+import ToolsPage from './pages/ToolsPage';
 import AboutPage from './pages/AboutPage';
 import PostPage from './pages/PostPage';
 import ArticlePage from './pages/ArticlePage';
@@ -18,6 +22,10 @@ const App: React.FC = () => {
         <Route path="profile" element={<ProfilePage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="category" element={<CategoryPage />} />
+        <Route path="search" element={<SearchPage />} />
+        <Route path="edit" element={<EditPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="tools" element={<ToolsPage />} />
         <Route path="about" element={<AboutPage />} />
         <Route path="post" element={<PostPage />} />
         <Route path="article/:post_id" element={<ArticlePage />} />

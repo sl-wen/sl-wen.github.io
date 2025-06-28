@@ -46,7 +46,7 @@ function renderPreviewByLine(text: string) {
 
 // 自定义图片渲染器与 marked 配置同原版
 const renderer = new marked.Renderer();
-renderer.image = function ({ href, title, text }: marked.Tokens.Image) {
+renderer.image = function ({ href, title, text }: { href: string | null; title: string | null; text: string }) {
     // 若 href 为对象等异常情况
     if (!href || typeof href === 'object') {
         href = '';

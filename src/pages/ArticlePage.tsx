@@ -127,7 +127,7 @@ const ArticlePage: React.FC = () => {
         )}
         <div
           className="articleContent markdownBody"
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(article.content)) }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(article.content).toString()) }}
         />
         <div className="article-stats">
           <span>

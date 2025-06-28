@@ -16,7 +16,7 @@ const ArticleList: React.FC = () => {
     try {
       setLoading(true);
       const data = await getArticles(page);
-      if (data.length < 10) {
+      if (data.length < 20) {
         setHasMore(false);
       }
       setArticles(prev => page === 1 ? data : [...prev, ...data]);

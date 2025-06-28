@@ -5,7 +5,7 @@
     padding: 0 var(--spacing-medium);
     display: flex;
     flex-direction: column;
-    background-color: var(--background-white);
+    background-color: var(--background-gray);
 }
 
 .mainContent {
@@ -14,7 +14,6 @@
     max-width: 1100px;
     margin: 0 auto;
     padding: var(--spacing-medium);
-    background-color: var(--background-white);
     box-sizing: border-box; /* 确保padding不会增加元素总宽度 */
 }
 

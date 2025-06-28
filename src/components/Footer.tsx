@@ -28,7 +28,6 @@ const Footer: React.FC = () => {
       <div className="footerStats">
         总访问量：<span>{visitCount}</span>
       </div>
-      <Link to="/static/xml/rss.xml">RSS</Link>
     </footer>
   );
 };

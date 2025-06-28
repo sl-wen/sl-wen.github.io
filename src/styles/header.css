@@ -8,7 +8,7 @@
 
 .headerAuth {
     width: 100%;
-    height: auto;
+    min-height: 60px;
     display: flex;
     position: relative;
     flex-direction: row;
@@ -99,60 +99,81 @@
     align-items: center;
     gap: var(--spacing-xs);
     cursor: pointer;
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-small);
     border-radius: var(--border-radius);
     transition: background-color var(--transition-fast);
 }
 
 .userProfile:hover {
-    background-color: var(--neutral-light);
+    background-color: var(--gh-btn-hover-bg);
 }
 
 .welcome {
-    color: var(--text-primary);
+    color: var(--gh-text);
     font-size: 14px;
 }
 
 .dropdownIcon {
     font-size: 12px;
-    color: var(--text-secondary);
+    color: var(--gh-text);
+    transition: transform 0.2s ease-out;
+    display: inline-block;
 }
 
 .dropdownMenu {
     position: absolute;
-    top: 100%;
-    right: 0;
-    background-color: var(--background-white);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--border-color);
-    min-width: 150px;
-    margin-top: var(--spacing-xs);
+    right: 10px;
+    top: 25px;
+    background-color: white;
+    border: 1px ;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(140,149,159,0.2);
+    z-index: 1000;
+    animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .dropdownList {
     list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 4px 0;
 }
 
 .dropdownList a,
 .dropdownList .logoutBtn {
     display: block;
-    padding: var(--spacing-sm);
-    color: var(--text-primary);
+    padding: 2px 8px;
+    color: var(--gh-text);
     text-decoration: none;
-    transition: background-color var(--transition-fast);
+    font-size: 14px;
     cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 .dropdownList a:hover,
 .dropdownList .logoutBtn:hover {
-    background-color: var(--neutral-light);
+    background-color: var(--gh-btn-hover-bg);
 }
 
 .logoutBtn {
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--gh-btn-border);
+    color: var(--gh-text);
+    width: 100%;
+    text-align: left;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
 }
 
 .primaryBtn {

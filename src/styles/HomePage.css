@@ -1,6 +1,5 @@
 .homePage {
   min-height: 10vh;
-  background-color: var(--background-light);
   padding: var(--spacing-lg) 0;
 }
 

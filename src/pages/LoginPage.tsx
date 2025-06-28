@@ -35,6 +35,8 @@ const LoginPage: React.FC = () => {
           localStorage.setItem('userProfile', JSON.stringify(profileData));
           localStorage.setItem('userSession', JSON.stringify(data));
           navigate('/');
+          // 登录成功后刷新页面
+          window.location.reload();
         }
       } else {
         const { data, error } = await supabase.auth.signUp({

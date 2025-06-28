@@ -12,8 +12,6 @@ interface UserProfile {
   level: number;
   coins: number;
   experience: number;
-  tasks: UserTask[];
-  task_history: TaskHistory[];
 }
 
 interface UserTask {
@@ -98,13 +96,6 @@ const ProfilePage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {profile.tasks.map(task => (
-                <tr key={task.id}>
-                  <td>{task.task_name}</td>
-                  <td>{task.progress}/{task.total}</td>
-                  <td>{task.status}</td>
-                </tr>
-              ))}
             </tbody>
           </table>
         </div>
@@ -120,13 +111,6 @@ const ProfilePage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {profile.task_history.map(history => (
-                <tr key={history.id}>
-                  <td>{history.task_name}</td>
-                  <td>{history.reward}</td>
-                  <td>{new Date(history.completed_at).toLocaleString('zh-CN')}</td>
-                </tr>
-              ))}
             </tbody>
           </table>
         </div>

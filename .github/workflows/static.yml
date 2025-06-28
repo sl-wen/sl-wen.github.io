@@ -4,7 +4,7 @@ name: Deploy to ALI
 on:
   # 在master分支有推送时触发
   push:
-    branches: ["master"]
+    branches: ["react"]
   # 允许手动触发部署
   workflow_dispatch:
 
@@ -38,9 +38,9 @@ jobs:
           username: 'root'
           password: ${{ secrets.HOST_ALI }}
           port: 22
-          source: "."
+          source: "dist/*"
           target: "/usr/share/nginx/html/"
-          strip_components: 0
+          strip_components: 1
           rm: true
 
       # 部署后通知

@@ -29,7 +29,7 @@ export default {
   output: {
     filename: '[name].[contenthash].js',
     path: path.resolve(__dirname, 'dist'),
-    publicPath: '/',
+    publicPath: '',
     clean: true
   },
   module: {
@@ -81,8 +81,8 @@ export default {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: 'static',
-          to: 'static'
+          from: path.resolve(__dirname, 'src/static'),
+          to: path.resolve(__dirname, 'dist/static')
         }
       ]
     })

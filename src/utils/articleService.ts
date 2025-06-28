@@ -16,7 +16,7 @@ export interface Article {
   updated_at: string;
 }
 
-export const getArticles = async (page: number = 1, limit: number = 10): Promise<Article[]> => {
+export const getArticles = async (page: number = 1, limit: number = 20): Promise<Article[]> => {
   try {
     const { data, error } = await supabase
       .from('posts')

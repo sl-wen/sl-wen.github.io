@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase-config';
-import  '../styles/LoginPage.css';
+import '../styles/LoginPage.css';
 
 const LoginPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -20,7 +20,7 @@ const LoginPage: React.FC = () => {
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
-          password,
+          password
         });
 
         if (error) throw error;
@@ -41,7 +41,7 @@ const LoginPage: React.FC = () => {
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
-          password,
+          password
         });
 
         if (error) throw error;
@@ -53,8 +53,8 @@ const LoginPage: React.FC = () => {
               username: email.split('@')[0],
               level: 1,
               coins: 0,
-              experience: 0,
-            },
+              experience: 0
+            }
           ]);
 
           setMessage('注册成功！');
@@ -81,10 +81,7 @@ const LoginPage: React.FC = () => {
     <div className="login-container">
       <div className="login-box">
         <div className="login-header">
-          <button
-            className={`tag-btn ${isLogin ? 'active' : ''}`}
-            onClick={() => setIsLogin(true)}
-          >
+          <button className={`tag-btn ${isLogin ? 'active' : ''}`} onClick={() => setIsLogin(true)}>
             登录
           </button>
           <button

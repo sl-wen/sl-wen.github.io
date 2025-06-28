@@ -74,7 +74,7 @@ export const startTask = async (userId: string, taskId: string) => {
         user_id: userId,
         task_id: taskId,
         status: 'in_progress',
-        started_at: new Date().toISOString(),
+        started_at: new Date().toISOString()
       })
       .select()
       .single();
@@ -100,7 +100,7 @@ export const completeTask = async (userId: string, taskId: string) => {
       .from('task_progress')
       .update({
         status: 'completed',
-        completed_at: new Date().toISOString(),
+        completed_at: new Date().toISOString()
       })
       .eq('user_id', userId)
       .eq('task_id', taskId)
@@ -113,7 +113,7 @@ export const completeTask = async (userId: string, taskId: string) => {
     const { error: updateError } = await supabase.rpc('update_user_rewards', {
       user_id: userId,
       coins: task.reward_coins,
-      exp: task.reward_exp,
+      exp: task.reward_exp
     });
 
     if (updateError) throw updateError;

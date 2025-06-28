@@ -24,7 +24,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
           <h3 className="taskTitle">{task.task_name}</h3>
           <p className="taskDescription">{task.task_description}</p>
         </div>
-        <div className={`taskStatus ${isCompleted ? 'statusCompleted' : isInProgress ? 'statusInProgress' : 'statusAvailable'}`}>
+        <div
+          className={`taskStatus ${isCompleted ? 'statusCompleted' : isInProgress ? 'statusInProgress' : 'statusAvailable'}`}
+        >
           {isCompleted ? '已完成' : isInProgress ? '进行中' : '可接取'}
         </div>
       </div>
@@ -47,18 +49,12 @@ const TaskCard: React.FC<TaskCardProps> = ({
       {!isCompleted && (
         <div className="taskActions">
           {!isInProgress && onStart && (
-            <button
-              className="taskButton startButton"
-              onClick={onStart}
-            >
+            <button className="taskButton startButton" onClick={onStart}>
               接取任务
             </button>
           )}
           {isInProgress && onComplete && (
-            <button
-              className="taskButton completeButton"
-              onClick={onComplete}
-            >
+            <button className="taskButton completeButton" onClick={onComplete}>
               完成任务
             </button>
           )}

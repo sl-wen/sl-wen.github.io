@@ -28,97 +28,99 @@
 }
 
 .yearTitle {
-    font-size: 24px;
-    margin: 30px 0 15px 0;
-    font-weight: 500;
-    color: var(--text-primary);
+  font-size: 24px;
+  margin: 30px 0 15px 0;
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
 .postList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .postItem {
-    margin-bottom: 5px;
-    padding: 3px 10px;
-    display: flex;
-    align-items: baseline;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  margin-bottom: 5px;
+  padding: 3px 10px;
+  display: flex;
+  align-items: baseline;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .postItem:hover {
-    transform: translateY(-5px);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
+  transform: translateY(-5px);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
 }
 
 .postDate {
-    color: var(--text-secondary);
-    font-size: 14px;
-    margin-right: var(--spacing-md);
-    white-space: nowrap;
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-right: var(--spacing-md);
+  white-space: nowrap;
 }
 
 .postViews {
-    color: var(--text-secondary);
-    font-size: 14px;
-    margin-left: auto;
-    text-align: right;
-    white-space: nowrap;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    box-sizing: border-box;
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-left: auto;
+  text-align: right;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
 }
 
 .postLink {
-    color: var(--text-primary);
-    text-decoration: none;
-    font-size: 16px;
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
-    max-width: 100%;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 16px;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .postLink:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-    .yearTitle {
-        font-size: 18px;
-        margin: 5px 0;
-    }
+  .yearTitle {
+    font-size: 18px;
+    margin: 5px 0;
+  }
 
-    .postList,
-    .postItem {
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        overflow-x: hidden;
-    }
+  .postList,
+  .postItem {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
 
-    .postItem {
-        padding: var(--spacing-xs) var(--spacing-xs);
-        word-break: break-all;
-        min-width: 0;
-        flex-wrap: wrap;
-    }
+  .postItem {
+    padding: var(--spacing-xs) var(--spacing-xs);
+    word-break: break-all;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
 
-    .postDate,
-    .postViews {
-        font-size: 12px;
-    }
+  .postDate,
+  .postViews {
+    font-size: 12px;
+  }
 
-    .postLink {
-        font-size: 14px;
-        flex: 1 1 100%;
-        margin: var(--spacing-xs) 0;
-    }
+  .postLink {
+    font-size: 14px;
+    flex: 1 1 100%;
+    margin: var(--spacing-xs) 0;
+  }
 }

@@ -40,7 +40,9 @@ const ProfilePage: React.FC = () => {
 
   const loadProfile = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
       if (!user) {
         navigate('/login');
         return;
@@ -95,8 +97,7 @@ const ProfilePage: React.FC = () => {
                 <th>状态</th>
               </tr>
             </thead>
-            <tbody>
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
 
@@ -110,8 +111,7 @@ const ProfilePage: React.FC = () => {
                 <th>完成时间</th>
               </tr>
             </thead>
-            <tbody>
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
       </div>

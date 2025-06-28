@@ -9,7 +9,8 @@
     "dev": "webpack serve --mode development",
     "start": "webpack serve --mode development --open",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "validate:css": "node ./scripts/css-path-validator.js"
   },
   "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
   "dependencies": {

@@ -35,7 +35,7 @@ const CategoryPage: React.FC = () => {
         if (!groups['未分类']) groups['未分类'] = [];
         groups['未分类'].push(article);
       } else {
-        article.tags.forEach(tag => {
+        article.tags.forEach((tag) => {
           if (!groups[tag]) groups[tag] = [];
           groups[tag].push(article);
         });
@@ -59,18 +59,20 @@ const CategoryPage: React.FC = () => {
     <div>
       <h1>文章分类</h1>
 
-      {tags.map(tag => (
+      {tags.map((tag) => (
         <div key={tag}>
           <h2>{tag}</h2>
           <div>
             {groupedArticles[tag]
               .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-              .map(article => (
+              .map((article) => (
                 <div key={article.post_id}>
                   <span>{new Date(article.created_at).toLocaleDateString('zh-CN')}</span>
                   <Link to={`/article/${article.post_id}`}>{article.title}</Link>
                   {article.tags.map((tagLabel, index) => (
-                    <span key={index} className="tag">{tagLabel}</span>
+                    <span key={index} className="tag">
+                      {tagLabel}
+                    </span>
                   ))}
                   <span className="article-author">{article.author}</span>
                   <span>💬 {article.comments_count}</span>
@@ -81,11 +83,7 @@ const CategoryPage: React.FC = () => {
         </div>
       ))}
 
-      {articles.length === 0 && (
-        <p>
-          暂无文章
-        </p>
-      )}
+      {articles.length === 0 && <p>暂无文章</p>}
     </div>
   );
 };

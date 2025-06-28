@@ -15,9 +15,7 @@ const AboutPage: React.FC = () => {
         </section>
 
         <section>
-          <h2>
-            技术栈
-          </h2>
+          <h2>技术栈</h2>
           <ul>
             {[
               'JavaScript/TypeScript',
@@ -29,11 +27,7 @@ const AboutPage: React.FC = () => {
               'HTML5/CSS3',
               'Git'
             ].map((tech, index) => (
-              <li
-                key={index}
-              >
-                {tech}
-              </li>
+              <li key={index}>{tech}</li>
             ))}
           </ul>
         </section>
@@ -41,9 +35,9 @@ const AboutPage: React.FC = () => {
         <section>
           <h2>博客介绍</h2>
           <p>
-            这个博客使用 React + TypeScript 构建，采用 Supabase 作为后端服务。
-            博客支持 Markdown 文章编写，实时预览，文章分类，以及响应式设计。
-            如果你对本博客感兴趣，欢迎访问 GitHub 仓库了解更多信息。
+            这个博客使用 React + TypeScript 构建，采用 Supabase 作为后端服务。 博客支持 Markdown
+            文章编写，实时预览，文章分类，以及响应式设计。 如果你对本博客感兴趣，欢迎访问 GitHub
+            仓库了解更多信息。
           </p>
         </section>
       </div>

@@ -1,93 +1,95 @@
 .categoriesTitle {
-    font-size: 24px;
-    margin-bottom: var(--spacing-lg);
-    margin-left: var(--spacing-sm);
-    font-weight: 500;
-    text-align: left;
-    color: var(--text-primary);
+  font-size: 24px;
+  margin-bottom: var(--spacing-lg);
+  margin-left: var(--spacing-sm);
+  font-weight: 500;
+  text-align: left;
+  color: var(--text-primary);
 }
 
 .categoryName {
-    font-size: 15px;
-    margin-left: var(--spacing-sm);
-    margin-bottom: var(--spacing-xs);
-    font-weight: 500;
-    color: var(--text-primary);
+  font-size: 15px;
+  margin-left: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+  color: var(--text-primary);
 }
 
 .postList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .postItem {
-    margin-bottom: var(--spacing-xs);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    display: flex;
-    align-items: baseline;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  margin-bottom: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  display: flex;
+  align-items: baseline;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .postItem:hover {
-    transform: translateY(-5px);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
+  transform: translateY(-5px);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
 }
 
 .postDate {
-    color: var(--text-secondary);
-    font-size: 14px;
-    margin-right: var(--spacing-sm);
-    white-space: nowrap;
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-right: var(--spacing-sm);
+  white-space: nowrap;
 }
 
 .postLink {
-    color: var(--text-primary);
-    text-decoration: none;
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    transition: color var(--transition-fast);
+  color: var(--text-primary);
+  text-decoration: none;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
 }
 
 .postLink:hover {
-    color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .postViews {
-    color: var(--text-secondary);
-    font-size: 14px;
-    margin-left: auto;
-    text-align: right;
-    white-space: nowrap;
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-left: auto;
+  text-align: right;
+  white-space: nowrap;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-    .categoriesTitle {
-        font-size: 15px;
-        margin-bottom: 0;
-    }
+  .categoriesTitle {
+    font-size: 15px;
+    margin-bottom: 0;
+  }
 
-    .categoryName {
-        font-size: 14px;
-    }
+  .categoryName {
+    font-size: 14px;
+  }
 
-    .postDate,
-    .postViews {
-        font-size: 12px;
-    }
+  .postDate,
+  .postViews {
+    font-size: 12px;
+  }
 
-    .postItem {
-        padding: var(--spacing-xs) var(--spacing-xs);
-        flex-wrap: wrap;
-    }
+  .postItem {
+    padding: var(--spacing-xs) var(--spacing-xs);
+    flex-wrap: wrap;
+  }
 
-    .postLink {
-        font-size: 14px;
-        flex: 1 1 100%;
-        margin: var(--spacing-xs) 0;
-    }
+  .postLink {
+    font-size: 14px;
+    flex: 1 1 100%;
+    margin: var(--spacing-xs) 0;
+  }
 }

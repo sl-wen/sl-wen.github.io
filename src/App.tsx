@@ -1,5 +1,9 @@
-import React from 'react';
-import { Route,createBrowserRouter,RouterProvider,createRoutesFromElements } from 'react-router-dom';
+import {
+  Route,
+  createBrowserRouter,
+  RouterProvider,
+  createRoutesFromElements
+} from 'react-router-dom';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
@@ -15,18 +19,18 @@ import ArticlePage from './pages/ArticlePage';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-      <Route path="/" element={<Layout />}>
-        <Route index element={<HomePage />} />
-        <Route path="profile" element={<ProfilePage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="category" element={<CategoryPage />} />
-        <Route path="search" element={<SearchPage />} />
-        <Route path="edit/:post_id" element={<EditArticlePage />} />
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="tools" element={<ToolsPage />} />
-        <Route path="about" element={<AboutPage />} />
-        <Route path="post" element={<PostPage />} />
-        <Route path="article/:post_id" element={<ArticlePage />} />
+    <Route path="/" element={<Layout />}>
+      <Route index element={<HomePage />} />
+      <Route path="profile" element={<ProfilePage />} />
+      <Route path="login" element={<LoginPage />} />
+      <Route path="category" element={<CategoryPage />} />
+      <Route path="search" element={<SearchPage />} />
+      <Route path="edit/:post_id" element={<EditArticlePage />} />
+      <Route path="settings" element={<SettingsPage />} />
+      <Route path="tools" element={<ToolsPage />} />
+      <Route path="about" element={<AboutPage />} />
+      <Route path="post" element={<PostPage />} />
+      <Route path="article/:post_id" element={<ArticlePage />} />
     </Route>
   ),
   {

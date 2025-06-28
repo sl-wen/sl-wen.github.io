@@ -19,7 +19,7 @@ const ArticleList: React.FC = () => {
       if (data.length < 20) {
         setHasMore(false);
       }
-      setArticles(prev => page === 1 ? data : [...prev, ...data]);
+      setArticles((prev) => (page === 1 ? data : [...prev, ...data]));
       setError(null);
     } catch (err) {
       setError('加载文章列表失败');
@@ -34,7 +34,7 @@ const ArticleList: React.FC = () => {
 
   const handleLoadMore = () => {
     if (!loading && hasMore) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   };
 
@@ -44,17 +44,13 @@ const ArticleList: React.FC = () => {
 
   return (
     <div className="articleList">
-      {articles.map(article => (
+      {articles.map((article) => (
         <ArticleCard key={article.post_id} article={article} />
       ))}
 
       {hasMore && (
         <div className="loadMoreContainer">
-          <button
-            className="loadMoreButton"
-            onClick={handleLoadMore}
-            disabled={loading}
-          >
+          <button className="loadMoreButton" onClick={handleLoadMore} disabled={loading}>
             {loading ? '加载中...' : '加载更多'}
           </button>
         </div>
@@ -62,9 +58,7 @@ const ArticleList: React.FC = () => {
       {!loading && !hasMore && articles.length > 0 && (
         <div className="noMoreArticles">没有更多文章了</div>
       )}
-      {!loading && articles.length === 0 && (
-        <div className="noArticles">暂无文章</div>
-      )}
+      {!loading && articles.length === 0 && <div className="noArticles">暂无文章</div>}
     </div>
   );
 };

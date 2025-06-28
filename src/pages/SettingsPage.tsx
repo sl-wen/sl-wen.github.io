@@ -1,7 +1,7 @@
 import React from 'react';
 
 const SettingsPage: React.FC = () => {
-    return null;
+  return null;
 };
 
 export default SettingsPage;

@@ -13,7 +13,6 @@ marked.setOptions({
   async: false
 });
 
-
 interface ShareButtonProps {
   platform: string;
   icon: string;
@@ -60,7 +59,6 @@ const ArticlePage: React.FC = () => {
       setShowShareTip(true);
     }
   };
-
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -121,18 +119,20 @@ const ArticlePage: React.FC = () => {
           <div className="article-tags">
             标签：
             {article.tags.map((tag, index) => (
-              <span key={index} className="tag">{tag}</span>
+              <span key={index} className="tag">
+                {tag}
+              </span>
             ))}
           </div>
         )}
         <div
           className="articleContent markdownBody"
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(article.content).toString()) }}
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(marked.parse(article.content).toString())
+          }}
         />
         <div className="article-stats">
-          <span>
-            👍 {article.likes_count}
-          </span>
+          <span>👍 {article.likes_count}</span>
           <span>💬 {article.comments_count}</span>
           <span>👁️ {article.views}</span>
         </div>
@@ -164,9 +164,7 @@ const ArticlePage: React.FC = () => {
           </div>
         )}
       </div>
-      {showShareTip && (
-        <div className="share-tip">{shareTipText}</div>
-      )}
+      {showShareTip && <div className="share-tip">{shareTipText}</div>}
     </div>
   );
 };

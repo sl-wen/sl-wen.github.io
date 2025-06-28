@@ -48,7 +48,9 @@ export const getArticleById = async (post_id: string): Promise<Article | null> =
   }
 };
 
-export const getAdjacentArticles = async (post_id: string): Promise<{ prev: Article | null; next: Article | null }> => {
+export const getAdjacentArticles = async (
+  post_id: string
+): Promise<{ prev: Article | null; next: Article | null }> => {
   try {
     // 获取上一篇文章（创建时间较早的最近一篇）
     const { data: prevData, error: prevError } = await supabase
@@ -82,13 +84,11 @@ export const getAdjacentArticles = async (post_id: string): Promise<{ prev: Arti
   }
 };
 
-export const createArticle = async (article: Omit<Article, 'post_id' | 'created_at' | 'updated_at' | 'likes_count' | 'comments_count'>): Promise<Article | null> => {
+export const createArticle = async (
+  article: Omit<Article, 'post_id' | 'created_at' | 'updated_at' | 'likes_count' | 'comments_count'>
+): Promise<Article | null> => {
   try {
-    const { data, error } = await supabase
-      .from('posts')
-      .insert([article])
-      .select()
-      .single();
+    const { data, error } = await supabase.from('posts').insert([article]).select().single();
 
     if (error) throw error;
     return data;
@@ -98,7 +98,10 @@ export const createArticle = async (article: Omit<Article, 'post_id' | 'created_
   }
 };
 
-export const updateArticle = async (post_id: string, updates: Partial<Article>): Promise<Article | null> => {
+export const updateArticle = async (
+  post_id: string,
+  updates: Partial<Article>
+): Promise<Article | null> => {
   try {
     const { data, error } = await supabase
       .from('posts')
@@ -117,10 +120,7 @@ export const updateArticle = async (post_id: string, updates: Partial<Article>):
 
 export const deleteArticle = async (post_id: string): Promise<boolean> => {
   try {
-    const { error } = await supabase
-      .from('posts')
-      .delete()
-      .eq('post_id', post_id);
+    const { error } = await supabase.from('posts').delete().eq('post_id', post_id);
 
     if (error) throw error;
     return true;

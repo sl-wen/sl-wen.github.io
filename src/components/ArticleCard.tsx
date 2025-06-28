@@ -10,28 +10,19 @@ interface ArticleCardProps {
 const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   return (
     <article className="articleCard">
-      <div className="articleDate">
-        {new Date(article.created_at).toLocaleDateString()}
-      </div>
+      <div className="articleDate">{new Date(article.created_at).toLocaleDateString()}</div>
       <h2 className="articleTitle">
         <Link to={`/article/${article.post_id}`}>{article.title}</Link>
       </h2>
 
       <div className="articleMeta">
-        <div className="articleAuthor">
-          {article.author || '匿名'}
-        </div>
+        <div className="articleAuthor">{article.author || '匿名'}</div>
       </div>
 
       <div className="articleFooter">
-
         <div className="articleStats">
-          <span>
-            💬{article.comments_count}
-          </span>
-          <span>
-            👁️{article.views}
-          </span>
+          <span>💬{article.comments_count}</span>
+          <span>👁️{article.views}</span>
         </div>
       </div>
     </article>

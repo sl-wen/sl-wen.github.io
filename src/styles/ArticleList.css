@@ -1,25 +1,25 @@
 .articleList {
-    display: block;
-    width: 100%;
-    margin-bottom: var(--spacing-xl);
+  display: block;
+  width: 100%;
+  margin-bottom: var(--spacing-xl);
 }
 
 .yearTitle {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 20px 0;
-    color: var(--text-primary);
+  font-size: 24px;
+  font-weight: bold;
+  margin: 20px 0;
+  color: var(--text-primary);
 }
 
 .loadMore {
-    text-align: center;
-    margin: 20px 0;
-    color: var(--text-secondary);
+  text-align: center;
+  margin: 20px 0;
+  color: var(--text-secondary);
 }
 
 .noMoreArticles,
 .noArticles {
-    text-align: center;
-    margin: 20px 0;
-    color: var(--text-secondary);
+  text-align: center;
+  margin: 20px 0;
+  color: var(--text-secondary);
 }

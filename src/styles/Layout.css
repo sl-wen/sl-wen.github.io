@@ -1,42 +1,42 @@
 .appContainer {
-    min-height: 100vh;
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 var(--spacing-medium);
-    display: flex;
-    flex-direction: column;
-    background-color: var(--background-gray);
+  min-height: 100vh;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-medium);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-gray);
 }
 
 .mainContent {
-    flex: 1;
-    width: 100%;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: var(--spacing-medium);
-    box-sizing: border-box; /* 确保padding不会增加元素总宽度 */
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--spacing-medium);
+  box-sizing: border-box; /* 确保padding不会增加元素总宽度 */
 }
 
 .statusMessages {
-    position: fixed;
-    top: var(--spacing-md);
-    right: var(--spacing-md);
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    max-width: 300px;
+  position: fixed;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-width: 300px;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-    .mainContent {
-        padding: var(--spacing-sm);
-    }
+  .mainContent {
+    padding: var(--spacing-sm);
+  }
 
-    .statusMessages {
-        top: var(--spacing-sm);
-        right: var(--spacing-sm);
-        max-width: calc(100% - var(--spacing-md));
-    }
+  .statusMessages {
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    max-width: calc(100% - var(--spacing-md));
+  }
 }

@@ -43,21 +43,26 @@ const PostPage: React.FC = () => {
 
     const editorElement = editorRef.current;
     const previewElement = previewRef.current;
-    const percentage = editorElement.scrollTop / (editorElement.scrollHeight - editorElement.clientHeight);
-    previewElement.scrollTop = percentage * (previewElement.scrollHeight - previewElement.clientHeight);
+    const percentage =
+      editorElement.scrollTop / (editorElement.scrollHeight - editorElement.clientHeight);
+    previewElement.scrollTop =
+      percentage * (previewElement.scrollHeight - previewElement.clientHeight);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value
     }));
   };
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const tags = e.target.value.split(',').map(tag => tag.trim()).filter(Boolean);
-    setFormData(prev => ({
+    const tags = e.target.value
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+    setFormData((prev) => ({
       ...prev,
       tags
     }));
@@ -152,11 +157,7 @@ const PostPage: React.FC = () => {
               </div>
             </div>
             <div className="buttonGroup">
-              <button
-                type="submit"
-                className="primary-button"
-                disabled={loading}
-              >
+              <button type="submit" className="primary-button" disabled={loading}>
                 {loading ? '发布中...' : '发布文章'}
               </button>
             </div>

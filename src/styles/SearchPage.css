@@ -1,153 +1,162 @@
 .searchInput {
-    width: 100%;
-    padding: var(--spacing-sm);
-    font-size: 16px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    margin-bottom: var(--spacing-md);
-    transition: border-color var(--transition-fast);
+  width: 100%;
+  padding: var(--spacing-sm);
+  font-size: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-md);
+  transition: border-color var(--transition-fast);
 }
 
 .searchInput:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow-sm);
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .resultsTitle {
-    font-size: 18px;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-md);
+  font-size: 18px;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
 }
 
 .searchList {
-    list-style: none;
-    padding: 0;
+  list-style: none;
+  padding: 0;
 }
 
 .searchItem {
-    padding: var(--spacing-md);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    margin-bottom: var(--spacing-sm);
-    background-color: var(--background-white);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-sm);
+  background-color: var(--background-white);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .searchItem:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-md);
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
 }
 
 .itemTitle {
-    margin: 0 0 var(--spacing-sm) 0;
+  margin: 0 0 var(--spacing-sm) 0;
 }
 
 .itemTitle a {
-    color: var(--text-primary);
-    text-decoration: none;
-    font-size: 18px;
-    transition: color var(--transition-fast);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 18px;
+  transition: color var(--transition-fast);
 }
 
 .itemTitle a:hover {
-    color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .itemDescription {
-    color: var(--text-secondary);
-    margin: 0 0 var(--spacing-sm) 0;
-    font-size: 14px;
-    line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .itemDescription a {
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: color var(--transition-fast);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
 }
 
 .itemDescription a:hover {
-    color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .tags {
-    display: flex;
-    gap: var(--spacing-sm);
-    flex-wrap: wrap;
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
 }
 
 .author {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background-color: var(--neutral-light);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin: var(--spacing-sm) 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--neutral-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: var(--spacing-sm) 0;
 }
 
 .tag {
-    margin: var(--spacing-xs) 0;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background-color: var(--neutral-light);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    font-size: 12px;
-    color: var(--text-secondary);
+  margin: var(--spacing-xs) 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--neutral-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 .noResults {
-    text-align: center;
-    padding: var(--spacing-md);
-    color: var(--text-secondary);
-    font-size: 16px;
+  text-align: center;
+  padding: var(--spacing-md);
+  color: var(--text-secondary);
+  font-size: 16px;
 }
 
 .highlight {
-    background-color: var(--primary-light);
-    color: var(--text-primary);
-    padding: 0 2px;
-    border-radius: 2px;
+  background-color: var(--primary-light);
+  color: var(--text-primary);
+  padding: 0 2px;
+  border-radius: 2px;
 }
 
 /* 代码块样式 */
 .codeBlock {
-    background-color: var(--code-background);
-    border-radius: var(--border-radius);
-    padding: var(--spacing-md);
-    overflow: hidden;
-    font-size: 85%;
-    line-height: 1.45;
-    margin-bottom: var(--spacing-md);
+  background-color: var(--code-background);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  overflow: hidden;
+  font-size: 85%;
+  line-height: 1.45;
+  margin-bottom: var(--spacing-md);
 }
 
 .codeBlock code {
-    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
-    font-size: 85%;
-    background-color: transparent;
-    border: 0;
-    line-height: inherit;
-    margin: 0;
-    max-width: 100%;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    SF Mono,
+    Menlo,
+    Consolas,
+    Liberation Mono,
+    monospace;
+  font-size: 85%;
+  background-color: transparent;
+  border: 0;
+  line-height: inherit;
+  margin: 0;
+  max-width: 100%;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-    .resultsTitle {
-        font-size: 15px;
-    }
+  .resultsTitle {
+    font-size: 15px;
+  }
 
-    .itemTitle a {
-        font-size: 14px;
-    }
+  .itemTitle a {
+    font-size: 14px;
+  }
 
-    .searchInput {
-        width: 90%;
-        font-size: 14px;
-    }
+  .searchInput {
+    width: 90%;
+    font-size: 14px;
+  }
 
-    .itemDescription {
-        font-size: 12px;
-    }
+  .itemDescription {
+    font-size: 12px;
+  }
 }

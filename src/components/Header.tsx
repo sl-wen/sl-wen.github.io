@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase-config';
-import '../styles/Header.css' // 确认实际文件名是否与引用一致（注意大小写）;
+import '../styles/Header.css';
 
 interface UserProfile {
   username?: string;

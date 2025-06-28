@@ -25,6 +25,10 @@ const eslintOptions = {
 };
 
 export default {
+  // 确保在Linux环境中正确处理文件路径大小写
+  infrastructureLogging: {
+    level: 'warn',
+  },
   mode: 'development',
   entry: './src/index.tsx',
   output: {
@@ -64,12 +68,14 @@ export default {
     ]
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.tsx', '.ts', '.js', '.css'],
     alias: {
       ...BASE_ALIASES,
       '@utils': path.resolve(__dirname, 'src/utils'),
       '@styles': path.resolve(__dirname, 'src/styles')
     },
+    // 确保在Linux环境中正确处理文件路径大小写
+    symlinks: false
   },
   plugins: [
     new ESLintPlugin(eslintOptions),

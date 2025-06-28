@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase-config';
-import '../styles/Header.css';
 
 interface UserProfile {
   username?: string;

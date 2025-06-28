@@ -4,13 +4,13 @@
   "type": "module",
   "scripts": {
     "tsc": "tsc --noEmit",
-    "build": "tsc --noEmit && webpack",
+    "build": "tsc --noEmit && webpack --config webpack.config.js",
     "watch": "webpack --watch",
     "dev": "webpack serve --mode development",
+    "validate:css": "node --experimental-modules scripts/css-path-validator.js",
     "start": "webpack serve --mode development --open",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
-    "validate:css": "node ./scripts/css-path-validator.js"
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
   },
   "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
   "dependencies": {

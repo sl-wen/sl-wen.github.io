@@ -1,11 +1,11 @@
 import React from 'react';
 import ArticleList from '../components/ArticleList';
-import '../styles/article-list.css';
+import '../styles/HomePage.css';
 
 const HomePage: React.FC = () => (
-  <div className="page home-page">
+  <div className="homePage">
     <div className="container">
-      <div id="posts-container">
+      <div className="postsContainer">
         <ArticleList />
       </div>
     </div>

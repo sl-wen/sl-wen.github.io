@@ -1,0 +1,120 @@
+.loginContainer {
+    flex: 1;
+    width: 40%;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--spacing-md);
+    width: 100%;
+    margin: 0 auto;
+}
+
+.tabButton {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--neutral-light);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 16px;
+    transition: all var(--transition-fast);
+    margin-right: var(--spacing-sm);
+}
+
+.tabButton:hover {
+    background-color: var(--primary-hover);
+    color: var(--background-white);
+}
+
+.tabButton.active {
+    background-color: var(--primary-color);
+    color: var(--background-white);
+}
+
+.primaryButton {
+    background-color: var(--primary-color);
+    color: var(--background-white);
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.primaryButton:hover {
+    background-color: var(--primary-hover);
+}
+
+.formGroup {
+    margin: var(--spacing-md) auto;
+}
+
+.formPanel {
+    display: none;
+}
+
+.formPanel.active {
+    display: block;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    min-width: 0;
+    z-index: 100;
+    position: relative;
+    transition: border-color var(--transition-fast);
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.passwordStrength {
+    height: 5px;
+    margin-top: var(--spacing-xs);
+    border-radius: 2px;
+    transition: all var(--transition-fast);
+}
+
+.passwordFeedback {
+    font-size: 0.8rem;
+    margin-top: var(--spacing-xs);
+    color: var(--text-secondary);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .loginContainer {
+        width: 100%;
+        padding: var(--spacing-md);
+    }
+
+    .tabButton {
+        font-size: 14px;
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+
+    .input {
+        font-size: 14px;
+    }
+}

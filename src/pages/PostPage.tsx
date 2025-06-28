@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createArticle,renderMarkdown} from '../utils/articleService';
-import { supabase } from '../utils/supabase-config';
+import { createArticle, renderMarkdown } from '../utils/articleService';
+import { getCurrentSession } from '../utils/auth';
 import StatusMessage from '../components/StatusMessage';
-import '../styles/post.css';
+import '../styles/PostPage.css';
 
 interface PostFormData {
   title: string;
@@ -40,7 +40,7 @@ const PostPage: React.FC = () => {
   // 同步滚动功能
   const handleEditorScroll = () => {
     if (!editorRef.current || !previewRef.current) return;
-    
+
     const editorElement = editorRef.current;
     const previewElement = previewRef.current;
     const percentage = editorElement.scrollTop / (editorElement.scrollHeight - editorElement.clientHeight);
@@ -69,12 +69,19 @@ const PostPage: React.FC = () => {
     setError(null);
 
     try {
-      const user = supabase.auth.getUser();
+      const session = await getCurrentSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('请先登录');
       }
 
-      const article = await createArticle(formData);
+      const article = await createArticle({
+        ...formData,
+        author: user?.email || '',
+        user_id: user?.id || '',
+        views: 0,
+        dislikes_count: 0
+      });
 
       navigate(`/article/${article?.post_id}`);
     } catch (err) {
@@ -102,7 +109,7 @@ const PostPage: React.FC = () => {
                 required
               />
             </div>
-            <div className="form-group">
+            <div className="formGroup">
               <label htmlFor="category">分类</label>
               <input
                 type="text"
@@ -113,7 +120,7 @@ const PostPage: React.FC = () => {
                 required
               />
             </div>
-            <div className="form-group">
+            <div className="formGroup">
               <label htmlFor="tags">标签（用逗号分隔）</label>
               <input
                 type="text"
@@ -123,8 +130,8 @@ const PostPage: React.FC = () => {
                 onChange={handleTagsChange}
               />
             </div>
-            <div className="editor-preview-container">
-              <div className="editor-section">
+            <div className="editorPreviewContainer">
+              <div className="editorSection">
                 <label htmlFor="content">内容（支持 Markdown）</label>
                 <textarea
                   id="content"
@@ -136,15 +143,15 @@ const PostPage: React.FC = () => {
                   required
                 />
               </div>
-              <div className="preview-section">
+              <div className="previewSection">
                 <div
                   ref={previewRef}
-                  className="preview-content"
+                  className="previewContent markdownBody"
                   dangerouslySetInnerHTML={{ __html: preview }}
                 />
               </div>
             </div>
-            <div className="button-group">
+            <div className="buttonGroup">
               <button
                 type="submit"
                 className="primary-button"

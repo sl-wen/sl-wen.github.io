@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getVisitCount, incrementVisitCount } from '../utils/stats';
+import '../styles/Footer.css';
 
 const Footer: React.FC = () => {
   const [visitCount, setVisitCount] = useState<number>(0);
@@ -22,9 +23,9 @@ const Footer: React.FC = () => {
   return (
     <footer className="footer">
       <div className="copyright">
-        © {new Date().getFullYear()} 鱼鱼的博客. All rights reserved.
+        © {new Date().getFullYear()} . All rights reserved.
       </div>
-      <div className="footer-stats">
+      <div className="footerStats">
         总访问量：<span>{visitCount}</span>
       </div>
       <Link to="/static/xml/rss.xml">RSS</Link>

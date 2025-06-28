@@ -4,6 +4,7 @@ import { getArticles } from '../utils/articleService';
 import Loading from '../components/Loading';
 import StatusMessage from '../components/StatusMessage';
 import type { Article } from '../utils/articleService';
+import '../styles/CategoryPage.css';
 
 const CategoryPage: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);

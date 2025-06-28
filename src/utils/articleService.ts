@@ -115,12 +115,12 @@ export const updateArticle = async (post_id: string, updates: Partial<Article>):
   }
 };
 
-export const deleteArticle = async (id: number): Promise<boolean> => {
+export const deleteArticle = async (post_id: string): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('posts')
       .delete()
-      .eq('id', id);
+      .eq('post_id', post_id);
 
     if (error) throw error;
     return true;
@@ -130,6 +130,6 @@ export const deleteArticle = async (id: number): Promise<boolean> => {
   }
 };
 
-export const renderMarkdown = (content: string) => {
-  return marked.parse(content);
+export const renderMarkdown = (content: string): string => {
+  return marked.parse(content, { async: false }) as string;
 };

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase-config';
 import { getUserProfile } from '../utils/supabase-config';
 import Loading from '../components/Loading';
+import '../styles/ProfilePage.css';
 
 interface UserProfile {
   id: string;
@@ -69,7 +70,7 @@ const ProfilePage: React.FC = () => {
   return (
     <div className="profile-container">
       <h1>个人中心</h1>
-      
+
       <div className="user-stats">
         <div className="level">
           <label>等级</label>

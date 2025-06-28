@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { getArticles } from '../utils/articleService';
+import '../styles/SearchPage.css';
 
 interface Post {
     post_id: string;
@@ -74,20 +75,20 @@ const SearchPage: React.FC = () => {
     // 初始获取所有文章
     useEffect(() => {
         const fetchArticles = async () => {
-          try {
-            setLoading(true);
-            setError(null);
-            const data = await getArticles(1, 1000); // 获取所有文章
-            setPosts(data);
-          } catch (err) {
-            setError('加载文章失败，请稍后重试');
-          } finally {
-            setLoading(false);
-          }
+            try {
+                setLoading(true);
+                setError(null);
+                const data = await getArticles(1, 1000); // 获取所有文章
+                setPosts(data);
+            } catch (err) {
+                setError('加载文章失败，请稍后重试');
+            } finally {
+                setLoading(false);
+            }
         };
-    
+
         fetchArticles();
-      }, []);
+    }, []);
 
     // 用 useMemo 优化过滤
     const results = useMemo(() => {
@@ -110,24 +111,24 @@ const SearchPage: React.FC = () => {
     const handleInput = (e: ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value);
 
     return (
-        <div className="search-component">
+        <div className="searchComponent">
             <input
                 id="search-input"
                 type="text"
                 value={keyword}
                 onChange={handleInput}
                 placeholder="请输入搜索关键词"
-                className="search-input"
+                className="searchInput"
                 autoComplete="off"
             />
-            <ul className="search-list">
-                {loading && <li className="no-results">加载中…</li>}
-                {error && <li className="no-results">加载失败：{error}</li>}
+            <ul className="searchList">
+                {loading && <li className="noResults">加载中…</li>}
+                {error && <li className="noResults">加载失败：{error}</li>}
                 {!loading && !error && !keyword && (
-                    <li className="no-results">请输入搜索关键词</li>
+                    <li className="noResults">请输入搜索关键词</li>
                 )}
                 {!loading && !error && keyword && results.length === 0 && (
-                    <li className="no-results">没有找到相关文章</li>
+                    <li className="noResults">没有找到相关文章</li>
                 )}
                 {!loading && !error && results.length > 0 && results.map(post => {
                     // 预处理文案和代码高亮
@@ -138,15 +139,15 @@ const SearchPage: React.FC = () => {
                     );
 
                     return (
-                        <li key={post.post_id} className="search-item">
+                        <li key={post.post_id} className="searchItem">
                             {/* 标题 */}
-                            <h2 className="search-title">
+                            <h2 className="searchTitle">
                                 <Link to={`/article/${post.post_id}`}>{post.title}</Link>
                             </h2>
                             {/* 预览 */}
-                            <div className="search-preview">
+                            <div className="searchPreview">
                                 {matchingCodeBlock ? (
-                                    <pre className="markdown-body">
+                                    <pre className="markdownBody">
                                         <code
                                             className={matchingCodeBlock.language !== 'inline'
                                                 ? `language-${matchingCodeBlock.language}`
@@ -160,18 +161,19 @@ const SearchPage: React.FC = () => {
                                         />
                                     </pre>
                                 ) : (
-                                        <a
-                                            href={`/pages/article.html?post_id=${post.post_id}`}
-                                            dangerouslySetInnerHTML={{
-                                                __html: highlightKeyword(
-                                                    DOMPurify.sanitize(marked.parse(post.content.substring(0, 500) +
-                                                        (post.content.length > 500 ? '...' : '')
-                                                    )),
-                                                    keyword
-                                                )
-                                            }}
-                                        />
-                                    )}
+                                    <a
+                                        href={`/pages/article.html?post_id=${post.post_id}`}
+                                        dangerouslySetInnerHTML={{
+                                            __html: highlightKeyword(
+                                                DOMPurify.sanitize(marked.parse(post.content.substring(0, 500) +
+                                                    (post.content.length > 500 ? '...' : ''),
+                                                    { async: false }
+                                                ) as string),
+                                                keyword
+                                            )
+                                        }}
+                                    />
+                                )}
                             </div>
                             {/* 作者 */}
                             <span

@@ -1,0 +1,52 @@
+.about-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.about-content {
+  background: var(--bg-color);
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.about-title {
+  font-size: 2rem;
+  color: var(--text-color);
+  margin-bottom: 1.5rem;
+}
+
+.about-description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--text-color-secondary);
+}
+
+.skills-section {
+  margin-top: 2rem;
+}
+
+.skills-title {
+  font-size: 1.5rem;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+}
+
+.skills-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.skill-item {
+  background: var(--bg-color-secondary);
+  padding: 1rem;
+  border-radius: 6px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.skill-item:hover {
+  transform: translateY(-3px);
+}

@@ -1,0 +1,182 @@
+.formGroup {
+    margin-bottom: var(--spacing-md);
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.input,
+.textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    min-width: 0;
+    transition: border-color var(--transition-fast);
+}
+
+.input:focus,
+.textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.textarea {
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+    line-height: 1.6;
+    resize: none;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.editorContainer {
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.editorTitle {
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+.editorPreviewContainer {
+    display: flex;
+    margin-bottom: var(--spacing-md);
+    flex: 1;
+    min-height: 600px;
+    gap: var(--spacing-md);
+}
+
+.editorSection,
+.previewSection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 50%;
+    min-height: 600px;
+    overflow: auto;
+}
+
+.previewSection {
+    border-radius: var(--border-radius);
+    background-color: var(--background-light);
+    padding: var(--spacing-md);
+}
+
+.lineAnchor {
+    position: absolute;
+    height: 0;
+    width: 0;
+    margin: 0;
+    padding: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.editor,
+.preview {
+    flex: 1;
+    padding: var(--spacing-sm);
+    background-color: var(--background-white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow-y: auto;
+    color: var(--text-primary);
+    height: 500px;
+    position: relative;
+}
+
+/* Markdown 预览样式 */
+.preview :global(h1),
+.preview :global(h2),
+.preview :global(h3),
+.preview :global(h4),
+.preview :global(h5),
+.preview :global(h6) {
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    font-weight: 500;
+    line-height: 1.25;
+    color: var(--text-primary);
+}
+
+.preview :global(h1) {
+    font-size: 2em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.preview :global(h2) {
+    font-size: 1.5em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.preview :global(h3) {
+    font-size: 1.25em;
+}
+
+.preview :global(p) {
+    margin: var(--spacing-xs) 0;
+}
+
+.preview :global(ul),
+.preview :global(ol) {
+    padding-left: 2em;
+    margin: var(--spacing-xs) 0;
+}
+
+.preview :global(li) {
+    margin: 0.25em 0;
+}
+
+.preview :global(blockquote) {
+    padding: 0 1em;
+    color: var(--text-secondary);
+    border-left: 0.25em solid var(--border-color);
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.preview :global(pre) {
+    background-color: var(--code-background);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius);
+    overflow-x: auto;
+}
+
+.preview :global(code) {
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+    font-size: 85%;
+    background-color: var(--neutral-light);
+    border-radius: var(--border-radius);
+    padding: 0.2em 0.4em;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .editorPreviewContainer {
+        flex-direction: column;
+    }
+
+    .editorSection,
+    .previewSection {
+        max-width: 100%;
+        min-height: 300px;
+    }
+
+    .editor,
+    .preview {
+        height: 300px;
+    }
+}

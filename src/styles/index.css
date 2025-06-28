@@ -1,21 +1,62 @@
-@import './header.css';
-@import './post.css';
-@import './article.css';
-@import './article-card.css';
-@import './article-list.css';
+@import './Header.css';
+@import './Footer.css';
+@import './PostPage.css';
+@import './ArticlePage.css';
+@import './ArticleCard.css';
+@import './ArticleList.css';
 
 /* 全局样式 */
 :root {
-  --primary-color: #24292e;
-  --secondary-color: #586069;
-  --accent-color: #0366d6;
-  --background-color: #ffffff;
-  --border-color: #e1e4e8;
-  --text-color: #24292e;
-  --text-secondary: #586069;
-  --success-color: #28a745;
-  --error-color: #d73a49;
-  --warning-color: #f1c40f;
+    /* 基本色调 */
+    --primary-color: #2da44e;
+    --primary-hover-color: #2c974b;
+    --primary-light-color: #e6f3eb;
+    --primary-border-color: #ddd;;
+    /* 危险色调 */
+    --danger-color: #cf222e;
+    --danger-hover-color: #a40e26;
+    --danger-light-color: #ffeaec;
+    --danger-border-color: rgba(27, 31, 36, 0.15);
+    /* 中性色调 */
+    --neutral-color: #6e7781;
+    --neutral-hover-color: #57606a;
+    --neutral-light-color: #f6f8fa;
+    /* 按钮样式 */
+    --button-bg: #f6f8fa;
+    --button-hover-bg: #f3f4f6;
+    --button-border-color: rgba(27, 31, 36, 0.15);
+    --button-shadow: 0 1px 0 rgba(27, 31, 36, 0.04);
+    /* 文本颜色 */
+    --text-color: #24292f;
+    --text-light-color: #57606a;
+    --text-muted-color: #6e7781;
+    /* 背景颜色 */
+    --background-light: #ffffff;
+    --background-white: #fff;
+    --background-gray: #f6f8fa;
+    /* 代码样式 */
+    --code-background: #282c34;
+    --code-text-color: #e7eaef;
+    /* 布局变量 */
+    --border-radius: 6px;
+    --border-radius-large: 12px;
+    --spacing-xs: 4px;
+    --spacing-small: 8px;
+    --spacing-medium: 16px;
+    --spacing-large: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 48px;
+    --spacing-xxxl: 100px;
+    /* 阴影 */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    /* 动画 */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    /* 字体 */
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 * {
@@ -44,59 +85,6 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-}
-
-/* 头部导航 */
-.header {
-  background-color: var(--primary-color);
-  padding: 1rem 2rem;
-  color: white;
-}
-
-.header-auth {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.logo img {
-  height: 40px;
-  width: 40px;
-  border-radius: 50%;
-}
-
-.nav {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.nav a {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.nav a:hover {
-  color: var(--warning-color);
-}
-
-/* 页脚 */
-.footer {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 1.5rem 2rem;
-  text-align: center;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-}
-
-.footer a {
-  color: white;
-  text-decoration: none;
-  margin: 0 0.5rem;
 }
 
 /* 按钮样式 */

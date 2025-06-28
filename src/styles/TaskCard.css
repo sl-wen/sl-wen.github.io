@@ -1,0 +1,145 @@
+.taskCard {
+    background-color: var(--background-white);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.taskCard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.taskHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-md);
+}
+
+.taskInfo {
+    flex: 1;
+}
+
+.taskTitle {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: var(--spacing-xs);
+}
+
+.taskDescription {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.taskStatus {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.statusCompleted {
+    background-color: var(--success-light);
+    color: var(--success-color);
+}
+
+.statusInProgress {
+    background-color: var(--warning-light);
+    color: var(--warning-color);
+}
+
+.statusAvailable {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.taskRewards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background-color: var(--neutral-light);
+    border-radius: var(--border-radius);
+}
+
+.rewardItem {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.rewardLabel {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.rewardValue {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.taskActions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.taskButton {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.startButton {
+    background-color: var(--primary-color);
+    color: var(--background-white);
+}
+
+.startButton:hover {
+    background-color: var(--primary-hover);
+}
+
+.completeButton {
+    background-color: var(--success-color);
+    color: var(--background-white);
+}
+
+.completeButton:hover {
+    background-color: var(--success-hover);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .taskCard {
+        padding: var(--spacing-sm);
+    }
+
+    .taskRewards {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-sm);
+    }
+
+    .taskTitle {
+        font-size: 1rem;
+    }
+
+    .taskDescription {
+        font-size: 12px;
+    }
+
+    .taskButton {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 14px;
+    }
+}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase-config';
+import  '../styles/LoginPage.css';
 
 const LoginPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);

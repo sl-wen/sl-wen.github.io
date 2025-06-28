@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getArticleById, getAdjacentArticles, Article, renderMarkdown } from '../utils/articleService';
+import { getArticleById, getAdjacentArticles, Article } from '../utils/articleService';
 import DOMPurify from 'dompurify';
 import Loading from '../components/Loading';
 import StatusMessage from '../components/StatusMessage';
 import { recordPostsView } from '../utils/stats';
-import '../styles/article.css';
+import { marked } from 'marked';
+import '../styles/ArticlePage.css';
+
+// 配置 marked 为同步模式
+marked.setOptions({
+  async: false
+});
+
 
 interface ShareButtonProps {
   platform: string;
@@ -119,8 +126,8 @@ const ArticlePage: React.FC = () => {
           </div>
         )}
         <div
-          className="article-content markdown-body"
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderMarkdown(article.content)) }}
+          className="articleContent markdownBody"
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(article.content)) }}
         />
         <div className="article-stats">
           <span>

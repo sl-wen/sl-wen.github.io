@@ -1,4 +1,5 @@
 import React from 'react';
+import '../styles/StatusMessage.css';
 
 interface StatusMessageProps {
   message: string;
@@ -7,10 +8,10 @@ interface StatusMessageProps {
 
 const StatusMessage: React.FC<StatusMessageProps> = ({ message, onRetry }) => {
   return (
-    <div className="message-container">
+    <div className="messageContainer">
       <p>{message}</p>
       {onRetry && (
-        <button>重试</button>
+        <button onClick={onRetry}>重试</button>
       )}
     </div>
   );

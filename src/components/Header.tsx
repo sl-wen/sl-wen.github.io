@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase-config';
-import '../styles/header.css';
+import '../styles/Header.css';
 
 interface UserProfile {
   username?: string;
@@ -35,7 +35,7 @@ const Header: React.FC = () => {
 
   return (
     <header className="header">
-      <div className="header-auth">
+      <div className="headerAuth">
         <Link to="/" className="logo">
           <img
             src="/static/img/logo.jpg"
@@ -46,34 +46,26 @@ const Header: React.FC = () => {
             }}
           />
         </Link>
-        <div className="auth" id="auth">
+        <div className="auth">
           {userProfile ? (
-            <div className="user-menu">
-              <div className="user-menu">
-                <div className="user-profile" id="userProfileButton">
-                  <span id="welcome">欢迎 {userProfile?.username}</span>
-                  <i className="dropdown-icon">▼</i>
-                </div>
-                <div className="dropdown-menu" id="userDropdownMenu">
-                  <ul className="dropdown-list">
-                    <Link to="/profile" onClick={() => setIsMenuOpen(false)}>个人</Link>
-                    <Link to="/settings" onClick={() => setIsMenuOpen(false)}>设置</Link>
-                    <li onClick={handleLogout} className="logout-btn"> 登出</li>
-                  </ul>
-                </div>
+            <div className="userMenu">
+              <div className="userProfile">
+                <span className="welcome">欢迎 {userProfile?.username}</span>
+                <i className="dropdownIcon">▼</i>
+              </div>
+              <div className="dropdownMenu">
+                <ul className="dropdownList">
+                  <Link to="/profile" onClick={() => setIsMenuOpen(false)}>个人</Link>
+                  <Link to="/settings" onClick={() => setIsMenuOpen(false)}>设置</Link>
+                  <li onClick={handleLogout} className="logoutBtn">登出</li>
+                </ul>
               </div>
             </div>
           ) : (
-            <Link to="/login" className="primary-btn active">登录</Link>
+            <Link to="/login" className="primaryBtn">登录</Link>
           )}
         </div>
       </div>
-      <button
-        className="menu-button"
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        aria-label="Toggle menu"
-      >
-      </button>
       <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
         <Link to="/" onClick={() => setIsMenuOpen(false)}>首页</Link>
         <Link to="/category" onClick={() => setIsMenuOpen(false)}>分类</Link>

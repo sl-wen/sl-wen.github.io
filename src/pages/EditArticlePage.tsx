@@ -3,6 +3,7 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { getArticleById, updateArticle, deleteArticle } from '../utils/articleService';
+import '../styles/EditArticlePage.css';
 
 interface Post {
     post_id: string;
@@ -18,7 +19,7 @@ interface Post {
 function safeMarked(content: string): string {
     if (!content || typeof content !== 'string') return '';
     try {
-        return marked.parse(content);
+        return marked.parse(content, { async: false }) as string;
     } catch (e) {
         console.error('Markdown 解析错误:', e);
         return '内容解析错误';
@@ -45,7 +46,7 @@ function renderPreviewByLine(text: string) {
 
 // 自定义图片渲染器与 marked 配置同原版
 const renderer = new marked.Renderer();
-renderer.image = function (href, title, text) {
+renderer.image = function ({ href, title, text }: marked.Tokens.Image) {
     // 若 href 为对象等异常情况
     if (!href || typeof href === 'object') {
         href = '';
@@ -61,9 +62,8 @@ renderer.image = function (href, title, text) {
 marked.setOptions({
     breaks: true,
     gfm: true,
-    headerIds: true,
-    mangle: false,
     renderer,
+    async: false
 });
 
 const EditArticlePage: React.FC = () => {
@@ -87,7 +87,7 @@ const EditArticlePage: React.FC = () => {
             try {
                 setLoading(true);
                 setError(null);
-                const data = await getArticleById(post_id); // 获取文章
+                const data = await getArticleById(post?.post_id || ''); // 获取文章
                 setPost(data);
             } catch (err) {
                 setError('加载文章失败，请稍后重试');
@@ -97,7 +97,7 @@ const EditArticlePage: React.FC = () => {
         };
 
         fetchArticle();
-    }, [post_id]);
+    }, [post?.post_id]);
 
     // 标签字符串处理
     const onTagStringChange = (s: string) => {
@@ -150,8 +150,8 @@ const EditArticlePage: React.FC = () => {
                 <form
                     onSubmit={e => {
                         e.preventDefault();
-                        updateArticle(post_id, post);
-                        navigate(`/article/${post_id}`);
+                        updateArticle(post?.post_id, post);
+                        navigate(`/article/${post?.post_id}`);
                     }}
                 >
                     <label>
@@ -182,20 +182,20 @@ const EditArticlePage: React.FC = () => {
                     </label>
                     <div className="button-group">
                         <button type="submit" disabled={loading}>变更</button>
-                        <button type="button" onClick={deleteArticle(post_id)} disabled={loading}>
+                        <button type="button" onClick={() => deleteArticle(post?.post_id)} disabled={loading}>
                             删除
                         </button>
-                        <Link to={`/article/${post_id}`}>
+                        <Link to={`/article/${post?.post_id}`}>
                             <button type="button" disabled={loading}>取消</button>
                         </Link>
                     </div>
                 </form>
             )}
-            <div className="preview-container">
+            <div className="previewContainer">
                 <div
                     ref={previewRef}
                     id="preview"
-                    className="markdown-body"
+                    className="markdownBody"
                     dangerouslySetInnerHTML={{
                         __html: DOMPurify.sanitize(renderPreviewByLine(content)),
                     }}

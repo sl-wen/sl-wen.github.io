@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Route,createBrowserRouter,RouterProvider,createRoutesFromElements } from 'react-router-dom';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
@@ -12,11 +12,9 @@ import ToolsPage from './pages/ToolsPage';
 import AboutPage from './pages/AboutPage';
 import PostPage from './pages/PostPage';
 import ArticlePage from './pages/ArticlePage';
-import './styles/index.css';
 
-const App: React.FC = () => {
-  return (
-    <Routes>
+const router = createBrowserRouter(
+  createRoutesFromElements(
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="profile" element={<ProfilePage />} />
@@ -29,9 +27,19 @@ const App: React.FC = () => {
         <Route path="about" element={<AboutPage />} />
         <Route path="post" element={<PostPage />} />
         <Route path="article/:post_id" element={<ArticlePage />} />
-      </Route>
-    </Routes>
-  );
-};
+    </Route>
+  ),
+  {
+    future: {
+      // 移除了不支持的 v7_startTransition 配置项
+      v7_relativeSplatPath: true
+    }
+  }
+);
+
+// 在根组件中使用
+function App() {
+  return <RouterProvider router={router} />;
+}
 
 export default App;

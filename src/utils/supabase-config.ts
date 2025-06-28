@@ -23,12 +23,12 @@ export const getCurrentUser = async () => {
   }
 };
 
-export const getUserProfile = async (userId: string) => {
+export const getUserProfile = async (user_id: string) => {
   try {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', userId)
+      .eq('user_id', user_id)
       .single();
 
     if (error) throw error;

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { getArticles, Article } from '../utils/articleService';
 import ArticleCard from './ArticleCard';
-import Loading from './Loading';
 import StatusMessage from './StatusMessage';
+// 导入样式模块
+import '../styles/ArticleList.css';
 
 const ArticleList: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -42,24 +43,27 @@ const ArticleList: React.FC = () => {
   }
 
   return (
-    <div className="article-list">
+    <div className="articleList">
       {articles.map(article => (
         <ArticleCard key={article.post_id} article={article} />
       ))}
-      {loading && <Loading />}
-      {!loading && hasMore && (
-        <button 
-          className="load-more-btn" 
-          onClick={handleLoadMore}
-        >
-          加载更多
-        </button>
+
+      {hasMore && (
+        <div className="loadMoreContainer">
+          <button
+            className="loadMoreButton"
+            onClick={handleLoadMore}
+            disabled={loading}
+          >
+            {loading ? '加载中...' : '加载更多'}
+          </button>
+        </div>
       )}
       {!loading && !hasMore && articles.length > 0 && (
-        <div className="no-more-articles">没有更多文章了</div>
+        <div className="noMoreArticles">没有更多文章了</div>
       )}
       {!loading && articles.length === 0 && (
-        <div className="no-articles">暂无文章</div>
+        <div className="noArticles">暂无文章</div>
       )}
     </div>
   );

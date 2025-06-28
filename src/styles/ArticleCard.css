@@ -1,0 +1,67 @@
+.articleCard {
+    padding: 4px 0;
+    background: transparent;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 5px;
+    display: block;
+    line-height: 1.6;
+}
+
+
+
+.articleDate {
+    color: var(--text-secondary);
+    font-size: 14px;
+    display: inline;
+    margin-right: 8px;
+}
+
+.articleTitle {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.4;
+    font-weight: normal;
+    display: inline;
+}
+
+.articleTitle a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.articleTitle a:hover {
+    color: var(--primary-color);
+}
+
+.articleMeta {
+    display: inline;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.articleAuthor {
+    display: inline;
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-left: 8px;
+}
+
+.articleStats {
+    display: inline;
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-left: 8px;
+}
+
+.articleStats span {
+    margin-left: 8px;
+}
+
+.articleTag {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-left: 8px;
+}

@@ -1,0 +1,156 @@
+.profileContainer {
+    flex: 1;
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--spacing-sm);
+    background-color: var(--background-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+}
+
+.profileTitle {
+    margin-bottom: 0;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.userStats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-xs);
+    background-color: var(--neutral-light);
+    border-radius: var(--border-radius);
+}
+
+.statRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+    background-color: var(--background-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.statLabel {
+    display: block;
+    padding: var(--spacing-sm);
+    font-weight: 500;
+    font-size: 18px;
+    text-decoration: none;
+    white-space: nowrap;
+    width: 12%;
+    color: var(--text-primary);
+}
+
+.statValue {
+    margin-top: var(--spacing-xs);
+    font-weight: 600;
+    color: var(--text-primary);
+    width: 100%;
+    min-width: 200px;
+    box-sizing: border-box;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    line-height: 1.2;
+}
+
+.tableCaption {
+    text-align: left;
+    padding: var(--spacing-md);
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    background-color: var(--background-white);
+}
+
+.tasksContainer {
+    margin-bottom: var(--spacing-lg);
+    background-color: var(--background-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    overflow: auto;
+    max-height: 500px;
+    width: 100%;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--background-white);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    table-layout: fixed;
+}
+
+.tableHeader {
+    background-color: var(--background-white);
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.tableCell {
+    width: 12.5%;
+    min-width: 150px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-align: left;
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-md);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.tableRow:nth-child(even) {
+    background-color: var(--neutral-light);
+}
+
+.tableRow:hover {
+    background-color: var(--primary-light);
+    transition: background-color var(--transition-fast);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .profileContainer {
+        width: 95%;
+        padding: var(--spacing-xs);
+    }
+
+    .statLabel {
+        font-size: 15px;
+        min-width: 60px;
+    }
+
+    .userStats {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .tableCell {
+        padding: var(--spacing-xs);
+        font-size: 0.9rem;
+    }
+
+    .statValue {
+        font-size: 1rem;
+        font-weight: 400;
+        min-width: 120px;
+    }
+
+    .tasksContainer {
+        overflow-x: auto;
+    }
+
+    .table {
+        min-width: 800px;
+    }
+}

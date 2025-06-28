@@ -1,0 +1,123 @@
+.articleTitle {
+    font-size: 24px;
+    margin-bottom: var(--spacing-sm);
+    font-weight: normal;
+}
+
+.articleMeta {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.articleMeta span {
+    margin-right: var(--spacing-md);
+}
+
+.buttonArea {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+}
+
+.reactionButton {
+    padding: 5px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    background-color: var(--background-white);
+    transition: all var(--transition-fast);
+}
+
+.reactionButton.active {
+    background-color: var(--neutral-light);
+    border-color: var(--primary-color);
+}
+
+.reactionButton.loading {
+    pointer-events: none;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.editButton {
+    padding: 5px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: var(--danger-color);
+    background-color: var(--background-white);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.editButton:hover {
+    color: var(--background-white);
+    background-color: var(--danger-color);
+}
+
+/* Markdown 内容样式 */
+.markdownBody {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.markdownBody table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: var(--spacing-md) 0;
+    display: block;
+    overflow-x: auto;
+}
+
+.markdownBody th,
+.markdownBody td {
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.markdownBody th {
+    background-color: var(--neutral-light);
+    font-weight: 600;
+}
+
+.markdownBody tr:nth-child(2n) {
+    background-color: var(--neutral-light);
+}
+
+.markdownBody pre {
+    position: relative;
+    background-color: var(--code-background);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    overflow: hidden;
+    font-size: 85%;
+    line-height: 1.45;
+    margin-bottom: var(--spacing-md);
+}
+
+.markdownBody code {
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+    font-size: 85%;
+    background-color: var(--neutral-light);
+    border-radius: var(--border-radius);
+    padding: 0.2em 0.4em;
+    margin: 0;
+}
+
+.markdownBody pre code {
+    background-color: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    line-height: inherit;
+}

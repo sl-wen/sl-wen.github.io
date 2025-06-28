@@ -162,3 +162,318 @@ body {
     gap: 1rem;
   }
 }
+.header {
+  padding: var(--spacing-medium) 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.headerAuth {
+  width: 100%;
+  min-height: 60px;
+  display: flex;
+  position: relative;
+  flex-direction: row;
+  flex-wrap: wrap;
+  min-width: 0; /* Flex布局下防止被挤时溢出 */
+  max-width: 100%; /* 防止超宽 */
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  margin-left: auto;
+  margin-right: auto; /* 自动水平居中 */
+  position: absolute;
+  left: 50%;
+  /* transform: translateX(-50%); */
+  margin-bottom: var(--spacing-medium);
+  transition: transform var(--transition-normal);
+}
+
+.logo img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: var(--shadow-md);
+  object-fit: cover;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between; /* 改为 space-between 使链接分散对齐 */
+  width: 100%;
+  padding: var(--spacing-medium) 0;
+  position: relative;
+}
+
+.nav a {
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap; /* 防止文本换行 */
+  padding: var(--spacing-small) var(--spacing-medium);
+  border-radius: var(--border-radius);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav a:hover {
+  background-color: var(--neutral-light);
+}
+
+.nav::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, transparent);
+}
+
+.auth {
+  margin-left: auto;
+  margin-right: 0;
+  float: right;
+  display: flex;
+  min-width: 0; /* Flex布局下防止被挤时溢出 */
+  max-width: 100%; /* 防止超宽 */
+  gap: var(--spacing-small);
+}
+
+.userMenu {
+  position: relative;
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  padding: var(--spacing-xs) var(--spacing-small);
+  border-radius: var(--border-radius);
+  transition: background-color var(--transition-fast);
+}
+
+.userProfile:hover {
+  background-color: var(--gh-btn-hover-bg);
+}
+
+.welcome {
+  color: var(--gh-text);
+  font-size: 14px;
+}
+
+.dropdownIcon {
+  font-size: 12px;
+  color: var(--gh-text);
+  transition: transform 0.2s ease-out;
+  display: inline-block;
+}
+
+.dropdownMenu {
+  position: absolute;
+  right: 10px;
+  top: 25px;
+  background-color: white;
+  border: 1px;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+  z-index: 1000;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownList {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.dropdownList a,
+.dropdownList .logoutBtn {
+  display: block;
+  padding: 2px 8px;
+  color: var(--gh-text);
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdownList a:hover,
+.dropdownList .logoutBtn:hover {
+  background-color: var(--gh-btn-hover-bg);
+}
+
+.logoutBtn {
+  border-top: 1px solid var(--gh-btn-border);
+  color: var(--gh-text);
+  width: 100%;
+  text-align: left;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+}
+
+.primaryBtn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: none;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color var(--transition-fast);
+}
+
+.primaryBtn:hover {
+  background-color: var(--primary-hover);
+}
+
+.menuButton {
+  display: none;
+  background: none;
+  border: none;
+  padding: var(--spacing-xs);
+  cursor: pointer;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .header {
+    padding: var(--spacing-xs);
+  }
+
+  .menuButton {
+    display: block;
+    position: absolute;
+    right: var(--spacing-sm);
+    top: var(--spacing-sm);
+  }
+
+  .nav {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--background-white);
+    padding: var(--spacing-sm);
+    box-shadow: var(--shadow-md);
+  }
+
+  .nav.open {
+    display: flex;
+  }
+
+  .nav a {
+    width: 100%;
+    padding: var(--spacing-sm);
+    text-align: center;
+  }
+
+  .logo img {
+    height: 32px;
+    width: 32px;
+  }
+
+  .welcome {
+    font-size: 12px;
+  }
+}
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+}
+
+.loadingText {
+  color: var(--text-secondary);
+  margin-top: var(--spacing-sm);
+  font-size: 14px;
+}
+
+.octocatContainer {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  animation: bounce 1s infinite;
+}
+
+.octocatContainer::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23333' d='M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z'/%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.octocatArm {
+  position: absolute;
+  right: 8px;
+  top: 18px;
+  width: 12px;
+  height: 3px;
+  background: #333;
+  transform-origin: right;
+  animation: wave 0.6s infinite;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-15deg);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .octocatContainer {
+    width: 32px;
+    height: 32px;
+  }
+
+  .loadingText {
+    font-size: 12px;
+  }
+}

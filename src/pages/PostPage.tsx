@@ -7,6 +7,7 @@ import '../styles/PostPage.css';
 
 interface PostFormData {
   title: string;
+  author: string;
   content: string;
   tags: string[];
 }
@@ -14,6 +15,7 @@ interface PostFormData {
 const PostPage: React.FC = () => {
   const [formData, setFormData] = useState<PostFormData>({
     title: '',
+    author: '',
     content: '',
     tags: []
   });
@@ -115,12 +117,12 @@ const PostPage: React.FC = () => {
               />
             </div>
             <div className="formGroup">
-              <label htmlFor="category">分类</label>
+              <label htmlFor="author">作成者</label>
               <input
                 type="text"
-                id="category"
-                name="category"
-                value={formData.tags}
+                id="author"
+                name="author"
+                value={formData.author}
                 onChange={handleInputChange}
                 required
               />

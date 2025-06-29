@@ -43,9 +43,26 @@ const ArticlePage: React.FC = () => {
     try {
       switch (platform) {
         case '复制链接':
-          await navigator.clipboard.writeText(url);
-          setShareTipText('链接已复制到剪贴板');
-          setShowShareTip(true);
+          try {
+            if (navigator.clipboard) {
+              await navigator.clipboard.writeText(url);
+              setShareTipText('链接已复制到剪贴板');
+            } else {
+              // 兼容旧版浏览器
+              const textArea = document.createElement('textarea');
+              textArea.value = url;
+              document.body.appendChild(textArea);
+              textArea.select();
+              document.execCommand('copy');
+              document.body.removeChild(textArea);
+              setShareTipText('链接已复制');
+            }
+            setShowShareTip(true);
+          } catch (error) {
+            console.error('复制失败:', error);
+            setShareTipText('复制失败，请手动复制链接');
+            setShowShareTip(true);
+          }
           break;
       }
 
@@ -108,6 +125,19 @@ const ArticlePage: React.FC = () => {
   return (
     <div className="page">
       <div className="article-container">
+        <div className="button-area">
+          <Link to={`/edit/${article.post_id}`} className="editButton">
+            <span>编辑</span>
+          </Link>
+          <div className="reactionButton">
+            <button id="likeButton">
+              👍<span role="img" className="likes-count" aria-label="like">{article.likes_count}</span>
+            </button>
+            <button id="dislikeButton">
+              👎<span role="img" className="dislikes-count" aria-label="dislike">{article.dislikes_count}</span>
+            </button>
+          </div>
+        </div>
         <h1 className="article-title">{article.title}</h1>
         <div className="article-meta">
           <span className="article-author">作者：{article.author}</span>
@@ -131,11 +161,6 @@ const ArticlePage: React.FC = () => {
             __html: DOMPurify.sanitize(marked.parse(article.content).toString())
           }}
         />
-        <div className="article-stats">
-          <span>👍 {article.likes_count}</span>
-          <span>💬 {article.comments_count}</span>
-          <span>👁️ {article.views}</span>
-        </div>
 
         <div className="article-actions">
           <div className="article-share">
@@ -150,16 +175,16 @@ const ArticlePage: React.FC = () => {
         {(prevArticle || nextArticle) && (
           <div className="article-navigation">
             {prevArticle && (
-              <Link to={`/article/${prevArticle.post_id}`} className="nav-link prev-article">
-                <span>上一篇</span>
-                <p>{prevArticle.title}</p>
-              </Link>
+                <Link to={`/article/${prevArticle.post_id}`} className="nav-link prev-article">
+                  <span>上一篇</span>
+                  <span>{prevArticle.title}</span>
+                </Link>
             )}
             {nextArticle && (
-              <Link to={`/article/${nextArticle.post_id}`} className="nav-link next-article">
-                <span>下一篇</span>
-                <p>{nextArticle.title}</p>
-              </Link>
+                <Link to={`/article/${nextArticle.post_id}`} className="nav-link next-article">
+                  <span>下一篇</span>
+                  <span>{nextArticle.title}</span>
+                </Link>
             )}
           </div>
         )}

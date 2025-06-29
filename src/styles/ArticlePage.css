@@ -9,24 +9,53 @@
     font-size: 14px;
     padding: 16px 0;
     display: flex;
-    border-bottom: 1px solid #d0d7de;
 }
 
 .article-meta span {
-    margin-right: 16px;
+  margin-right: 16px;
 }
 
-.markdownBody {
-    border-bottom: 1px solid #d0d7de;
+.articleContent {
+  margin: 10px 0;
+  padding: auto;
+  border-bottom: 1px solid #d0d7de;             /* 防止超宽 */
+  border-top: 1px solid #d0d7de;  
 }
 
 .article-navigation {
-    display: flex;
-    justify-content: space-between;
-    color: var(--text-light-color);
+  margin: 16px 0;
+  display: flex;
+  justify-content: space-between;
 }
 
-.buttonArea {
+.nav-link {
+  display: flex;
+  flex-direction: column;
+}
+
+.article-navigation a,
+.share-button {
+  color: var(--text-light-color);
+  text-decoration: none;
+  padding: 5px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+.article-share {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.article-navigation a:hover,
+.share-button:hover {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.button-area {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -34,6 +63,12 @@
 }
 
 .reactionButton {
+  display: flex;
+  gap: 3px;
+}
+
+#likeButton,
+#dislikeButton{
   padding: 5px 8px;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
@@ -41,38 +76,43 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  background-color: var(--background-white);
   transition: all var(--transition-fast);
 }
 
-.reactionButton.active {
+#likeButton.active,
+#dislikeButton.active {
   background-color: var(--neutral-light);
   border-color: var(--primary-color);
 }
 
-.reactionButton.loading {
+#likeButton.loading,
+#dislikeButton.loading {
   pointer-events: none;
   cursor: not-allowed;
   opacity: 0.7;
 }
 
 .editButton {
-  padding: 5px 16px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  color: var(--danger-color);
-  background-color: var(--background-white);
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-fast);
+    padding: 5px 16px;
+    border: 1px solid var(--button-border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color:var(--danger-color);
+    background-color: #f6f8fa;
+    white-space: nowrap;
+    vertical-align: middle;
+    box-shadow: var(--button-shadow);
+    transition: .2s cubic-bezier(0.3, 0, 0.5, 1);
+    transition-property: color,background-color,primary-border-color;
 }
 
 .editButton:hover {
-  color: var(--background-white);
-  background-color: var(--danger-color);
+    color: #ffffff;
+    background-color: var(--danger-color);
+    border-color: var(--danger-border-color);
 }
 
 
@@ -101,13 +141,14 @@
 }
 
 .markdownBody pre {
-  position: relative;
-  border-radius: var(--border-radius);
-  padding: var(--spacing-md);
-  overflow: hidden;
-  font-size: 85%;
-  line-height: 1.45;
-  margin-bottom: var(--spacing-md);
+    position: relative;
+    background-color: #e7eaef;
+    border-radius: 6px;
+    padding: 16px;
+    overflow: hidden;
+    font-size: 85%;
+    line-height: 1.45;
+    margin: 16px 0;
 }
 
 .markdownBody code {

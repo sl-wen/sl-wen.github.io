@@ -4,11 +4,8 @@
   margin-bottom: var(--spacing-xl);
 }
 
-.yearTitle {
-  font-size: 24px;
-  font-weight: bold;
-  margin: 20px 0;
-  color: var(--text-primary);
+.articleDate {
+    min-width: 80px;
 }
 
 .loadMore {

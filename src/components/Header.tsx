@@ -71,11 +71,11 @@ const Header: React.FC = () => {
       <div className="headerAuth">
         <Link to="/" className="logo">
           <img
-            src="static/img/logo.jpg"
+            src="https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg"
             alt="Logo"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = '/dist/static/img/logo.png';
+              target.src = 'https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg';
             }}
           />
         </Link>

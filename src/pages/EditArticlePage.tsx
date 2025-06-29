@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { marked } from 'marked';
-import DOMPurify from 'dompurify';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { getArticleById, updateArticle, deleteArticle } from '../utils/articleService';
+import { getArticleById, updateArticle, deleteArticle, renderMarkdown } from '../utils/articleService';
 import '../styles/EditArticlePage.css';
 
 interface Post {
@@ -13,6 +12,13 @@ interface Post {
   tags: string[];
   created_at: string;
   updated_at?: string;
+}
+
+interface PostFormData {
+  title: string;
+  author: string;
+  content: string;
+  tags: string[];
 }
 
 // 安全的 marked 解析
@@ -62,9 +68,8 @@ renderer.image = function ({
   href = String(href || '').trim();
   title = String(title || '').trim();
   text = String(text || '').trim();
-  if (!href) return `<img src="/static/img/logo.png" alt="${text}" title="${title}">`;
-  if (!href.startsWith('http') && !href.startsWith('data:')) href = '/static/img/' + href;
-  return `<img src="${href}" alt="${text}" title="${title}" onerror="this.src='/static/img/logo.png'">`;
+  if (!href) return `<img src="https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg" alt="${text}" title="${title}">`;
+  return `<img src="${href}" alt="${text}" title="${title}" onError="this.src='https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg'">`;
 };
 // 配置 marked
 marked.setOptions({
@@ -75,12 +80,16 @@ marked.setOptions({
 });
 
 const EditArticlePage: React.FC = () => {
+  const [formData, setFormData] = useState<PostFormData>({
+    title: '',
+    author: '',
+    content: '',
+    tags: []
+  });
   const { post_id } = useParams<{ post_id: string }>();
   const [post, setPost] = useState<Post | null>(null);
+  const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(false);
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
   const [content, setContent] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -95,7 +104,7 @@ const EditArticlePage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await getArticleById(post?.post_id || ''); // 获取文章
+        const data = await getArticleById(post_id || ''); // 获取文章
         setPost(data);
       } catch (err) {
         setError('加载文章失败，请稍后重试');
@@ -107,16 +116,50 @@ const EditArticlePage: React.FC = () => {
     fetchArticle();
   }, [post?.post_id]);
 
-  // 标签字符串处理
-  const onTagStringChange = (s: string) => {
-    setTags(
-      s
-        .split(',')
-        .map((x) => x.trim())
-        .filter(Boolean)
-    );
+  // 实时预览功能
+  useEffect(() => {
+    const updatePreview = async () => {
+      if (formData.content) {
+        const rendered = await renderMarkdown(formData.content);
+        setPreview(rendered);
+      } else {
+        setPreview('');
+      }
+    };
+    updatePreview();
+  }, [formData.content]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
+  const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const tags = e.target.value
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+    setFormData((prev) => ({
+      ...prev,
+      tags
+    }));
+  };
+
+    // 同步滚动功能
+  const handleEditorScroll = () => {
+    if (!editorRef.current || !previewRef.current) return;
+
+    const editorElement = editorRef.current;
+    const previewElement = previewRef.current;
+    const percentage =
+      editorElement.scrollTop / (editorElement.scrollHeight - editorElement.clientHeight);
+    previewElement.scrollTop =
+      percentage * (previewElement.scrollHeight - previewElement.clientHeight);
+  };
+  
   // 编辑器滚动同步（极简示例，详细功能需自定义ref和scroll滚动算法）
   const syncPreviewToCursor = () => {
     if (!editorRef.current || !previewRef.current) return;
@@ -167,43 +210,70 @@ const EditArticlePage: React.FC = () => {
 
   // 主渲染
   return (
-    <div className="page">
+    <div className="page editor-page">
       {loading && <div>加载中...</div>}
       {message && <div className={`message ${message.type}`}>{message.text}</div>}
       {post && (
-        <form
+        <form className="editor-form"
           onSubmit={(e) => {
             e.preventDefault();
             updateArticle(post?.post_id, post);
             navigate(`/article/${post?.post_id}`);
           }}
         >
-          <label>
-            标题：
-            <input value={title} onChange={(e) => setTitle(e.target.value)} disabled={loading} />
-          </label>
-          <label>
-            作者：
-            <input value={author} onChange={(e) => setAuthor(e.target.value)} disabled={loading} />
-          </label>
-          <label>
-            标签（逗号分隔）：
+          <div className="form-group">
+            <label htmlFor="title">标题</label>
             <input
-              value={tags.join(', ')}
-              onChange={(e) => onTagStringChange(e.target.value)}
-              disabled={loading}
+              type="text"
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              required
             />
-          </label>
-          <label>
-            内容：
-            <textarea
-              ref={editorRef}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={18}
-              disabled={loading}
+          </div>
+          <div className="formGroup">
+            <label htmlFor="author">作成者</label>
+            <input
+              type="text"
+              id="author"
+              name="author"
+              value={formData.author}
+              onChange={handleInputChange}
+              required
             />
-          </label>
+          </div>
+          <div className="formGroup">
+            <label htmlFor="tags">标签（用逗号分隔）</label>
+            <input
+              type="text"
+              id="tags"
+              name="tags"
+              value={formData.tags.join(', ')}
+              onChange={handleTagsChange}
+            />
+          </div>
+          <label htmlFor="content">内容（支持 Markdown）</label>
+          <div className="editorPreviewContainer">
+            <div className="editorSection">
+                <textarea
+                  id="content"
+                  name="content"
+                  ref={editorRef}
+                  value={formData.content}
+                  onChange={handleInputChange}
+                  onScroll={handleEditorScroll}
+                  required
+                />
+            </div>
+            <div className="previewSection">
+              <div
+                ref={previewRef}
+                className="previewContent markdownBody"
+                dangerouslySetInnerHTML={{ __html: preview }}
+              />
+            </div>
+          </div>
           <div className="button-group">
             <button type="submit" disabled={loading}>
               变更
@@ -219,16 +289,6 @@ const EditArticlePage: React.FC = () => {
           </div>
         </form>
       )}
-      <div className="previewContainer">
-        <div
-          ref={previewRef}
-          id="preview"
-          className="markdownBody"
-          dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(renderPreviewByLine(content))
-          }}
-        />
-      </div>
     </div>
   );
 };

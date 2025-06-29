@@ -17,8 +17,8 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
 
       <div className="articleMeta">
         <div className="articleAuthor">{article.author || '匿名'}</div>
-        <span>💬{article.comments_count}</span>
-        <span>👁️{article.views}</span>
+        <span>💬 {article.comments_count}</span>
+        <span>👁️‍🗨️ {article.views}</span>
       </div>
     </article>
   );

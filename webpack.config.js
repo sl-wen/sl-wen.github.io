@@ -96,7 +96,12 @@ export default {
     })
   ],
   devServer: {
-    historyApiFallback: true,
+    historyApiFallback: {
+      rewrites: [
+        { from: /^\/article\/.*$/, to: '/index.html' },
+        { from: /./, to: '/index.html' }
+      ]
+    },
     hot: true,
     port: 3000,
     static: {

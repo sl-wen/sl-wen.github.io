@@ -15,55 +15,33 @@
   color: var(--text-primary);
 }
 
-.postList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+
+.category-item {
+    margin-bottom: 5px;
+    padding: 3px 10px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.category-item a{
+    color: var(--text-color);
+    text-decoration: none;
 }
 
-.postItem {
-  margin-bottom: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  display: flex;
-  align-items: baseline;
-  transition:
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+.category-item:hover {
+    transform: translateY(-5px);
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 
-.postItem:hover {
-  transform: translateY(-5px);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
-}
-
-.postDate {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin-right: var(--spacing-sm);
-  white-space: nowrap;
-}
-
-.postLink {
-  color: var(--text-primary);
-  text-decoration: none;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: color var(--transition-fast);
-}
-
-.postLink:hover {
-  color: var(--primary-color);
-}
-
-.postViews {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin-left: auto;
-  text-align: right;
-  white-space: nowrap;
+.category-meta {
+    margin-left: auto;
+    text-align: right;
+    white-space: nowrap;
+    display: flex;
+    gap: 10px;
 }
 
 /* 响应式设计 */

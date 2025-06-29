@@ -5,7 +5,6 @@
   padding: 0 var(--spacing-medium);
   display: flex;
   flex-direction: column;
-  background-color: var(--background-gray);
 }
 
 .mainContent {

@@ -61,22 +61,24 @@ const CategoryPage: React.FC = () => {
 
       {tags.map((tag) => (
         <div key={tag}>
-          <h2>{tag}</h2>
+          <h3>{tag}</h3>
           <div>
             {groupedArticles[tag]
               .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
               .map((article) => (
-                <div key={article.post_id}>
+                <div className="category-item" key={article.post_id}>
                   <span>{new Date(article.created_at).toLocaleDateString('zh-CN')}</span>
                   <Link to={`/article/${article.post_id}`}>{article.title}</Link>
-                  {article.tags.map((tagLabel, index) => (
-                    <span key={index} className="tag">
-                      {tagLabel}
-                    </span>
-                  ))}
-                  <span className="article-author">{article.author}</span>
-                  <span>💬 {article.comments_count}</span>
-                  <span>👁️ {article.views}</span>
+                  <div className="category-meta">
+                    {article.tags.map((tagLabel, index) => (
+                      <span key={index} className="tag">
+                        {tagLabel}
+                      </span>
+                    ))}
+                    <span className="category-author">{article.author}</span>
+                    <span>💬 {article.comments_count}</span>
+                    <span>👁️‍🗨️ {article.views}</span>
+                  </div>
                 </div>
               ))}
           </div>

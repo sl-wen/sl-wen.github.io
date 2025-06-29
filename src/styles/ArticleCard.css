@@ -1,27 +1,38 @@
 .articleCard {
-  padding: 4px 0;
+  margin-bottom: 5px;
+  padding: 3px 10px;
   background: transparent;
   border: none;
+  font-size: 18px;
   position: relative;
   overflow: hidden;
-  margin-bottom: 5px;
   display: flex;
   line-height: 1.6;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.articleCard:hover {
+    transform: translateY(-5px);
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 
 .articleDate {
   color: var(--text-secondary);
-  font-size: 14px;
   display: inline;
   margin-right: 8px;
 }
 
 .articleTitle {
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.4;
-  font-weight: normal;
-  display: inline;
+    font-size: 18px;
+    font-weight: 400;
+    text-decoration: none;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;                  /* Flex布局下防止被挤时溢出 */
+    max-width: 100%;               /* 防止超宽 */
 }
 
 .articleTitle a {
@@ -35,22 +46,24 @@
 }
 
 .articleMeta {
-  display: inline;
+  display: flex;
+  margin-left: auto;
+  text-align: right;
+  white-space: nowrap;
+  max-width: 100%;
+  gap: 8px;
   color: var(--text-secondary);
-  font-size: 14px;
 }
 
 .articleAuthor {
   display: inline;
   color: var(--text-secondary);
-  font-size: 14px;
   margin-left: 8px;
 }
 
 .articleStats {
   display: inline;
   color: var(--text-secondary);
-  font-size: 14px;
   margin-left: 8px;
 }
 
@@ -60,6 +73,5 @@
 
 .articleTag {
   color: var(--text-secondary);
-  font-size: 14px;
   margin-left: 8px;
 }

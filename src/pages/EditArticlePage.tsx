@@ -167,7 +167,7 @@ const EditArticlePage: React.FC = () => {
 
   // 主渲染
   return (
-    <div className="edit-article-page">
+    <div className="page">
       {loading && <div>加载中...</div>}
       {message && <div className={`message ${message.type}`}>{message.text}</div>}
       {post && (

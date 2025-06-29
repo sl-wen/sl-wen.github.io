@@ -1,21 +1,3 @@
-.articleTitle {
-  font-size: 24px;
-  margin-bottom: var(--spacing-sm);
-  font-weight: normal;
-}
-
-.articleMeta {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.articleMeta span {
-  margin-right: var(--spacing-md);
-}
-
 .buttonArea {
   display: flex;
   align-items: center;
@@ -65,10 +47,6 @@
   background-color: var(--danger-color);
 }
 
-/* Markdown 内容样式 */
-.markdownBody {
-  border-bottom: 1px solid var(--border-color);
-}
 
 .markdownBody table {
   border-collapse: collapse;
@@ -96,7 +74,6 @@
 
 .markdownBody pre {
   position: relative;
-  background-color: var(--code-background);
   border-radius: var(--border-radius);
   padding: var(--spacing-md);
   overflow: hidden;

@@ -160,8 +160,8 @@ const SearchPage: React.FC = () => {
                         dangerouslySetInnerHTML={{
                           __html: highlightKeyword(
                             DOMPurify.sanitize(
-                              matchingCodeBlock.code.substring(0, 500) +
-                                (matchingCodeBlock.code.length > 500 ? '...' : '')
+                              matchingCodeBlock.code.substring(0, 200) +
+                                (matchingCodeBlock.code.length > 200 ? '...' : '')
                             ),
                             keyword
                           )

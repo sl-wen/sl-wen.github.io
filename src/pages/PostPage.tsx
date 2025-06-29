@@ -102,7 +102,7 @@ const PostPage: React.FC = () => {
         <div className="editor-container">
           <h2>发布文章</h2>
           {error && <StatusMessage message={error} />}
-          <form onSubmit={handleSubmit}>
+          <form className="editor-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="title">标题</label>
               <input
@@ -135,9 +135,9 @@ const PostPage: React.FC = () => {
                 onChange={handleTagsChange}
               />
             </div>
+            <label htmlFor="content">内容（支持 Markdown）</label>
             <div className="editorPreviewContainer">
               <div className="editorSection">
-                <label htmlFor="content">内容（支持 Markdown）</label>
                 <textarea
                   id="content"
                   name="content"

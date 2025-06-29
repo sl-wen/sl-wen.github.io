@@ -106,7 +106,7 @@ const ArticlePage: React.FC = () => {
   }
 
   return (
-    <div className="article-page">
+    <div className="page">
       <div className="article-container">
         <h1 className="article-title">{article.title}</h1>
         <div className="article-meta">

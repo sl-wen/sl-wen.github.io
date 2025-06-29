@@ -1,17 +1,17 @@
+/* 搜索页面样式 */
 .searchInput {
-  width: 100%;
-  padding: var(--spacing-sm);
-  font-size: 16px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  margin-bottom: var(--spacing-md);
-  transition: border-color var(--transition-fast);
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid var(--primary-border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: var(--spacing-medium);
+    transition: primary-border-color 0.3s;
 }
 
 .searchInput:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: var(--shadow-sm);
+    outline: none;
+    border-color: var(--primary-color);
 }
 
 .resultsTitle {
@@ -21,6 +21,7 @@
 }
 
 .searchList {
+  min-height: 600px;
   list-style: none;
   padding: 0;
 }

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { getVisitCount, incrementVisitCount } from '../utils/stats';
-import '../styles/Footer.css';
 
 const Footer: React.FC = () => {
   const [visitCount, setVisitCount] = useState<number>(0);

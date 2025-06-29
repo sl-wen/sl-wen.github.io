@@ -121,20 +121,22 @@
 
 .button-group {
   display: flex;
-  gap: 1rem;
+  align-items: center;
   justify-content: flex-end;
 }
 
 .primary-button {
-  padding: 0.75rem 1.5rem;
-  background-color: var(--accent-color);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 600;
+  margin-left: auto;
+  margin-right: 0;
+  float: right;
+  padding: 5px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  transition: all var(--transition-fast);
 }
 
 .primary-button:hover {

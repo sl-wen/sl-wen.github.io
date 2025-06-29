@@ -11,9 +11,9 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   return (
     <article className="articleCard">
       <div className="articleDate">{new Date(article.created_at).toLocaleDateString()}</div>
-      <h2 className="articleTitle">
+      <div className="articleTitle">
         <Link to={`/article/${article.post_id}`}>{article.title}</Link>
-      </h2>
+      </div>
 
       <div className="articleMeta">
         <div className="articleAuthor">{article.author || '匿名'}</div>

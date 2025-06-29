@@ -10,8 +10,6 @@ interface Post {
   content: string;
   author: string;
   tags: string[];
-  created_at: string;
-  updated_at?: string;
 }
 
 interface PostFormData {
@@ -88,9 +86,9 @@ const EditArticlePage: React.FC = () => {
   });
   const { post_id } = useParams<{ post_id: string }>();
   const [post, setPost] = useState<Post | null>(null);
+  const [newpost, setnewPost] = useState<Post | null>(null);
   const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(false);
-  const [content, setContent] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const editorRef = useRef<HTMLTextAreaElement | null>(null);
@@ -105,9 +103,22 @@ const EditArticlePage: React.FC = () => {
         setLoading(true);
         setError(null);
         const data = await getArticleById(post_id || ''); // 获取文章
+        if (!data) {
+          setError('文章不存在');
+          setMessage({ type: 'error', text: '文章不存在' });
+          return;
+        }
         setPost(data);
+        setFormData({
+          title: data?.title || '',
+          author: data?.author || '',
+          content: data?.content || '',
+          tags: data?.tags || []
+        });
       } catch (err) {
         setError('加载文章失败，请稍后重试');
+        setMessage({ type: 'error', text: '加载文章失败，请稍后重试' });
+        return;
       } finally {
         setLoading(false);
       }
@@ -115,6 +126,7 @@ const EditArticlePage: React.FC = () => {
 
     fetchArticle();
   }, [post?.post_id]);
+
 
   // 实时预览功能
   useEffect(() => {
@@ -129,8 +141,19 @@ const EditArticlePage: React.FC = () => {
     updatePreview();
   }, [formData.content]);
 
+  useEffect(() => {
+    setnewPost({
+      post_id: post?.post_id || '',
+      title: formData?.title || '',
+      author: formData?.author || '',
+      content: formData?.content || '',
+      tags: formData?.tags || [],
+    });
+  }, [formData]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    console.log(name, value);
     setFormData((prev) => ({
       ...prev,
       [name]: value
@@ -148,7 +171,7 @@ const EditArticlePage: React.FC = () => {
     }));
   };
 
-    // 同步滚动功能
+  // 同步滚动功能
   const handleEditorScroll = () => {
     if (!editorRef.current || !previewRef.current) return;
 
@@ -159,7 +182,7 @@ const EditArticlePage: React.FC = () => {
     previewElement.scrollTop =
       percentage * (previewElement.scrollHeight - previewElement.clientHeight);
   };
-  
+
   // 编辑器滚动同步（极简示例，详细功能需自定义ref和scroll滚动算法）
   const syncPreviewToCursor = () => {
     if (!editorRef.current || !previewRef.current) return;
@@ -217,7 +240,9 @@ const EditArticlePage: React.FC = () => {
         <form className="editor-form"
           onSubmit={(e) => {
             e.preventDefault();
-            updateArticle(post?.post_id, post);
+            if (post?.post_id && newpost) {
+              updateArticle(post.post_id, newpost);
+            }
             navigate(`/article/${post?.post_id}`);
           }}
         >
@@ -256,15 +281,15 @@ const EditArticlePage: React.FC = () => {
           <label htmlFor="content">内容（支持 Markdown）</label>
           <div className="editorPreviewContainer">
             <div className="editorSection">
-                <textarea
-                  id="content"
-                  name="content"
-                  ref={editorRef}
-                  value={formData.content}
-                  onChange={handleInputChange}
-                  onScroll={handleEditorScroll}
-                  required
-                />
+              <textarea
+                id="content"
+                name="content"
+                ref={editorRef}
+                value={formData.content}
+                onChange={handleInputChange}
+                onScroll={handleEditorScroll}
+                required
+              />
             </div>
             <div className="previewSection">
               <div
@@ -278,8 +303,12 @@ const EditArticlePage: React.FC = () => {
             <button type="submit" disabled={loading}>
               变更
             </button>
-            <button type="button" onClick={() => deleteArticle(post?.post_id)} disabled={loading}>
-              删除
+            <button type="button" onClick={async () => {
+              await deleteArticle(post?.post_id);
+              navigate('/');
+              window.location.reload();
+            }} disabled={loading}>
+                删除
             </button>
             <Link to={`/article/${post?.post_id}`}>
               <button type="button" disabled={loading}>
@@ -288,8 +317,9 @@ const EditArticlePage: React.FC = () => {
             </Link>
           </div>
         </form>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 

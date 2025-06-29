@@ -38,12 +38,11 @@ export const getArticleById = async (post_id: string): Promise<Article | null> =
       .from('posts')
       .select('*')
       .eq('post_id', post_id)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('获取文章详情失败:', error);
     return null;
   }
 };

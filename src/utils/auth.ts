@@ -33,6 +33,17 @@ export const signIn = async (email: string, password: string) => {
       password
     });
     if (error) throw error;
+    const { data: sessiondata, error: sessionerror } = await supabase.auth.getSession();
+    const session = sessiondata?.session;
+    // 获取用户详细信息
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', session?.user?.id)
+      .maybeSingle();
+
+    localStorage.setItem('userSession', JSON.stringify(session));
+    localStorage.setItem('userProfile', JSON.stringify(profile));
     return data;
   } catch (error) {
     throw error;
@@ -46,6 +57,22 @@ export const signUp = async (email: string, password: string) => {
       password
     });
     if (error) throw error;
+    // 创建用户资料
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([{
+          user_id: data.user.id,
+          username: email.split('@')[0],
+          level: 0,
+          amount: 0,
+          adress: '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }]);
+
+      if (profileError) console.error('创建用户资料失败:', profileError);
+    }
     return data;
   } catch (error) {
     throw error;
@@ -58,6 +85,21 @@ export const signOut = async () => {
     if (error) throw error;
     localStorage.removeItem('userProfile');
     localStorage.removeItem('userSession');
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const setUserProfile = async (updates: Partial<UserProfile>) => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert(updates)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   } catch (error) {
     throw error;
   }

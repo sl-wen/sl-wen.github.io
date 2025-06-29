@@ -1,3 +1,31 @@
+.article-title {
+    font-size: 24px;
+    margin-bottom: var(--spacing-small);
+    font-weight: normal;
+}
+
+.article-meta {
+    color: var(--text-light-color);
+    font-size: 14px;
+    padding: 16px 0;
+    display: flex;
+    border-bottom: 1px solid #d0d7de;
+}
+
+.article-meta span {
+    margin-right: 16px;
+}
+
+.markdownBody {
+    border-bottom: 1px solid #d0d7de;
+}
+
+.article-navigation {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-light-color);
+}
+
 .buttonArea {
   display: flex;
   align-items: center;

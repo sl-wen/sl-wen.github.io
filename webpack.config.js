@@ -34,7 +34,7 @@ export default {
   output: {
     filename: '[name].[contenthash].js',
     path: path.resolve(__dirname, 'dist'),
-    publicPath: '',
+    publicPath: '/',
     clean: true
   },
   module: {
@@ -89,7 +89,8 @@ export default {
       patterns: [
         {
           from: path.resolve(__dirname, 'src/static'),
-          to: path.resolve(__dirname, 'dist/static')
+          to: 'static',
+          noErrorOnMissing: true
         }
       ]
     })
@@ -97,7 +98,11 @@ export default {
   devServer: {
     historyApiFallback: true,
     hot: true,
-    port: 3000
+    port: 3000,
+    static: {
+      directory: path.join(__dirname, 'dist'),
+      publicPath: '/'
+    }
   },
   optimization: {
     moduleIds: 'deterministic',

@@ -111,20 +111,20 @@ const ArticlePage: React.FC = () => {
         <h1 className="article-title">{article.title}</h1>
         <div className="article-meta">
           <span className="article-author">作者：{article.author}</span>
+          {article.tags && article.tags.length > 0 && (
+            <div className="article-tags">
+              标签：
+              {article.tags.map((tag, index) => (
+                <span key={index} className="tag">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
           <span className="article-date">
             发布于：{new Date(article.created_at).toLocaleDateString()}
           </span>
         </div>
-        {article.tags && article.tags.length > 0 && (
-          <div className="article-tags">
-            标签：
-            {article.tags.map((tag, index) => (
-              <span key={index} className="tag">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
         <div
           className="articleContent markdownBody"
           dangerouslySetInnerHTML={{

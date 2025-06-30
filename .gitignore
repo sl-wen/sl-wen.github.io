@@ -9,7 +9,7 @@ pages/_site/dist/
 dist/
 
 # 依赖目录
-node_modules/
+# node_modules/
 
 # 开发时的临时文件
 *.tmp

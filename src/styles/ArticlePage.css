@@ -67,8 +67,7 @@
   gap: 3px;
 }
 
-#likeButton,
-#dislikeButton{
+.reaction-button {
   padding: 5px 8px;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
@@ -77,16 +76,33 @@
   font-weight: 500;
   line-height: 20px;
   transition: all var(--transition-fast);
+  background-color: transparent;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-#likeButton.active,
-#dislikeButton.active {
+.reaction-button i {
+  font-size: 16px;
+}
+
+.reaction-button.active {
   background-color: var(--neutral-light);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.reaction-button:hover {
+  background-color: var(--neutral-light);
+  border-color: var(--text-color);
+}
+
+.reaction-button.active:hover {
   border-color: var(--primary-color);
 }
 
-#likeButton.loading,
-#dislikeButton.loading {
+.reaction-button:disabled {
   pointer-events: none;
   cursor: not-allowed;
   opacity: 0.7;
@@ -145,10 +161,33 @@
     background-color: #e7eaef;
     border-radius: 6px;
     padding: 16px;
+    padding-right: 40px;
     overflow: hidden;
     font-size: 85%;
     line-height: 1.45;
     margin: 16px 0;
+}
+
+.copy-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 4px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: #57606a;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.copy-button:hover {
+    color: #1f2328;
+    background-color: #d0d7de;
+}
+
+.copy-button.copied {
+    color: #1a7f37;
 }
 
 .markdownBody code {

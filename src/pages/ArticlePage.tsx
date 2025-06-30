@@ -6,7 +6,56 @@ import Loading from '../components/Loading';
 import StatusMessage from '../components/StatusMessage';
 import { recordPostsView } from '../utils/stats';
 import { marked } from 'marked';
+import { addReaction, getUserReaction } from '../utils/reactionService';
+import CommentSection from '../components/CommentSection';
 import '../styles/ArticlePage.css';
+
+const addCopyButtons = () => {
+  const codeBlocks = document.querySelectorAll('.markdownBody pre');
+  codeBlocks.forEach((block) => {
+    const copyButton = document.createElement('button');
+    copyButton.className = 'copy-button';
+    copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+    copyButton.title = '复制代码';
+    
+    copyButton.addEventListener('click', async () => {
+      const code = block.querySelector('code');
+      if (code) {
+        try {
+          const text = code.textContent || '';
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+              document.execCommand('copy');
+            } catch (err) {
+              console.error('复制失败:', err);
+            }
+            textArea.remove();
+          }
+          copyButton.innerHTML = '<i class="fas fa-check"></i>';
+          copyButton.classList.add('copied');
+          setTimeout(() => {
+            copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+            copyButton.classList.remove('copied');
+          }, 2000);
+        } catch (err) {
+          console.error('复制失败:', err);
+        }
+      }
+    });
+    
+    block.appendChild(copyButton);
+  });
+};
 
 // 配置 marked 为同步模式
 marked.setOptions({
@@ -36,6 +85,8 @@ const ArticlePage: React.FC = () => {
 
   const [showShareTip, setShowShareTip] = useState(false);
   const [shareTipText, setShareTipText] = useState('');
+  const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(null);
+  const [userProfile, setUserProfile] = useState<{user_id: string, username: string, email: string} | null>(null);
 
   const handleShare = async (platform: string) => {
     const url = window.location.href;
@@ -78,6 +129,13 @@ const ArticlePage: React.FC = () => {
   };
 
   useEffect(() => {
+    const data = localStorage.getItem('userProfile');
+    setUserProfile(JSON.parse(data || '{}'));
+  }, []);
+
+
+
+  useEffect(() => {
     const fetchArticle = async () => {
       if (!post_id) {
         setError('文章ID无效');
@@ -110,6 +168,13 @@ const ArticlePage: React.FC = () => {
     fetchArticle();
   }, [post_id]);
 
+    useEffect(() => {
+    addCopyButtons();
+    if (article && userProfile?.user_id) {
+      getUserReaction(article.post_id, userProfile.user_id).then(setUserReaction);
+    }
+  }, [article]);
+
   if (loading) {
     return <Loading />;
   }
@@ -130,11 +195,45 @@ const ArticlePage: React.FC = () => {
             <span>编辑</span>
           </Link>
           <div className="reactionButton">
-            <button id="likeButton">
-              👍<span role="img" className="likes-count" aria-label="like">{article.likes_count}</span>
+            <button
+              className={`reaction-button ${userReaction === 'like' ? 'active' : ''}`}
+              onClick={async () => {
+                if (!userProfile) {
+                  alert('请先登录');
+                  return;
+                }
+                await addReaction(article.post_id, userProfile.user_id, 'like', article.likes_count, article.dislikes_count);
+                const newReaction = userReaction === 'like' ? null : 'like';
+                setUserReaction(newReaction);
+                setArticle(prev => prev ? {
+                  ...prev,
+                  likes_count: prev.likes_count + (newReaction === 'like' ? 1 : -1),
+                  dislikes_count: prev.dislikes_count - (userReaction === 'dislike' ? 1 : 0)
+                } : null);
+              }}
+            >
+              <i className="fas fa-thumbs-up"></i>
+              <span className="likes-count">{article.likes_count}</span>
             </button>
-            <button id="dislikeButton">
-              👎<span role="img" className="dislikes-count" aria-label="dislike">{article.dislikes_count}</span>
+            <button
+              className={`reaction-button ${userReaction === 'dislike' ? 'active' : ''}`}
+              onClick={async () => {
+                if (!userProfile) {
+                  alert('请先登录');
+                  return;
+                }
+                await addReaction(article.post_id, userProfile.user_id, 'dislike', article.likes_count, article.dislikes_count);
+                const newReaction = userReaction === 'dislike' ? null : 'dislike';
+                setUserReaction(newReaction);
+                setArticle(prev => prev ? {
+                  ...prev,
+                  dislikes_count: prev.dislikes_count + (newReaction === 'dislike' ? 1 : -1),
+                  likes_count: prev.likes_count - (userReaction === 'like' ? 1 : 0)
+                } : null);
+              }}
+            >
+              <i className="fas fa-thumbs-down"></i>
+              <span className="dislikes-count">{article.dislikes_count}</span>
             </button>
           </div>
         </div>
@@ -190,6 +289,8 @@ const ArticlePage: React.FC = () => {
         )}
       </div>
       {showShareTip && <div className="share-tip">{shareTipText}</div>}
+      
+      <CommentSection post_id={article.post_id} />
     </div>
   );
 };

@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "^2.49.4",
 
     "buffer": "^6.0.3",
+    "lodash": "^4.17.21",
     "dompurify": "^3.2.6",
     "glob": "^10.3.10",
     "global": "^4.4.0",
@@ -36,6 +37,7 @@
     "@babel/preset-react": "^7.23.3",
     "@babel/preset-typescript": "^7.27.1",
     "@types/node": "^22.15.29",
+    "@types/lodash": "^4.14.202",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^8.35.0",

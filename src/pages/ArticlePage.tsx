@@ -6,7 +6,7 @@ import Loading from '../components/Loading';
 import StatusMessage from '../components/StatusMessage';
 import { recordPostsView } from '../utils/stats';
 import { marked } from 'marked';
-import { addReaction, getUserReaction } from '../utils/reactionService';
+import { addPostReaction, getPostReaction } from '../utils/reactionService';
 import CommentSection from '../components/CommentSection';
 import '../styles/ArticlePage.css';
 
@@ -85,7 +85,7 @@ const ArticlePage: React.FC = () => {
 
   const [showShareTip, setShowShareTip] = useState(false);
   const [shareTipText, setShareTipText] = useState('');
-  const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(null);
+  const [PostReaction, setPostReaction] = useState<'like' | 'dislike' | null>(null);
   const [userProfile, setUserProfile] = useState<{user_id: string, username: string, email: string} | null>(null);
 
   const handleShare = async (platform: string) => {
@@ -171,7 +171,7 @@ const ArticlePage: React.FC = () => {
     useEffect(() => {
     addCopyButtons();
     if (article && userProfile?.user_id) {
-      getUserReaction(article.post_id, userProfile.user_id).then(setUserReaction);
+      getPostReaction(article.post_id, userProfile.user_id).then(setPostReaction);
     }
   }, [article]);
 
@@ -196,19 +196,19 @@ const ArticlePage: React.FC = () => {
           </Link>
           <div className="reactionButton">
             <button
-              className={`reaction-button ${userReaction === 'like' ? 'active' : ''}`}
+              className={`reaction-button ${PostReaction === 'like' ? 'active' : ''}`}
               onClick={async () => {
                 if (!userProfile) {
                   alert('请先登录');
                   return;
                 }
-                await addReaction(article.post_id, userProfile.user_id, 'like', article.likes_count, article.dislikes_count);
-                const newReaction = userReaction === 'like' ? null : 'like';
-                setUserReaction(newReaction);
+                await addPostReaction(article.post_id, userProfile.user_id, 'like', article.likes_count, article.dislikes_count);
+                const newReaction = PostReaction === 'like' ? null : 'like';
+                setPostReaction(newReaction);
                 setArticle(prev => prev ? {
                   ...prev,
                   likes_count: prev.likes_count + (newReaction === 'like' ? 1 : -1),
-                  dislikes_count: prev.dislikes_count - (userReaction === 'dislike' ? 1 : 0)
+                  dislikes_count: prev.dislikes_count - (PostReaction === 'dislike' ? 1 : 0)
                 } : null);
               }}
             >
@@ -216,19 +216,19 @@ const ArticlePage: React.FC = () => {
               <span className="likes-count">{article.likes_count}</span>
             </button>
             <button
-              className={`reaction-button ${userReaction === 'dislike' ? 'active' : ''}`}
+              className={`reaction-button ${PostReaction === 'dislike' ? 'active' : ''}`}
               onClick={async () => {
                 if (!userProfile) {
                   alert('请先登录');
                   return;
                 }
-                await addReaction(article.post_id, userProfile.user_id, 'dislike', article.likes_count, article.dislikes_count);
-                const newReaction = userReaction === 'dislike' ? null : 'dislike';
-                setUserReaction(newReaction);
+                await addPostReaction(article.post_id, userProfile.user_id, 'dislike', article.likes_count, article.dislikes_count);
+                const newReaction = PostReaction === 'dislike' ? null : 'dislike';
+                setPostReaction(newReaction);
                 setArticle(prev => prev ? {
                   ...prev,
                   dislikes_count: prev.dislikes_count + (newReaction === 'dislike' ? 1 : -1),
-                  likes_count: prev.likes_count - (userReaction === 'like' ? 1 : 0)
+                  likes_count: prev.likes_count - (PostReaction === 'like' ? 1 : 0)
                 } : null);
               }}
             >

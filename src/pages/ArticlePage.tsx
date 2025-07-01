@@ -78,6 +78,8 @@ const ShareButton: React.FC<ShareButtonProps> = ({ platform, icon, onClick }) =>
 const ArticlePage: React.FC = () => {
   const { post_id } = useParams<{ post_id: string }>();
   const [article, setArticle] = useState<Article | null>(null);
+  const [dislikeCount, setDislikeCount] = useState<number>(0);
+  const [likeCount, setLikeCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [prevArticle, setPrevArticle] = useState<Article | null>(null);
@@ -155,6 +157,8 @@ const ArticlePage: React.FC = () => {
         }
 
         setArticle(articleData);
+        setDislikeCount(articleData.dislikes_count);
+        setLikeCount(articleData.likes_count);
         setPrevArticle(adjacentArticles.prev);
         setNextArticle(adjacentArticles.next);
         recordPostsView(post_id);
@@ -202,18 +206,16 @@ const ArticlePage: React.FC = () => {
                   alert('请先登录');
                   return;
                 }
-                await addPostReaction(article.post_id, userProfile.user_id, 'like', article.likes_count, article.dislikes_count);
+                await addPostReaction(article.post_id, userProfile.user_id, 'like', likeCount, dislikeCount);
                 const newReaction = PostReaction === 'like' ? null : 'like';
                 setPostReaction(newReaction);
-                setArticle(prev => prev ? {
-                  ...prev,
-                  likes_count: prev.likes_count + (newReaction === 'like' ? 1 : -1),
-                  dislikes_count: prev.dislikes_count - (PostReaction === 'dislike' ? 1 : 0)
-                } : null);
+     
+                setLikeCount(prev => prev + (PostReaction === 'like' ? 1 : -1));
+                setDislikeCount(prev => prev - (PostReaction === 'dislike' ? 1 : 1));
               }}
             >
               <i className="fas fa-thumbs-up"></i>
-              <span className="likes-count">{article.likes_count}</span>
+              <span className="likes-count">{likeCount || 0}</span>
             </button>
             <button
               className={`reaction-button ${PostReaction === 'dislike' ? 'active' : ''}`}
@@ -222,18 +224,15 @@ const ArticlePage: React.FC = () => {
                   alert('请先登录');
                   return;
                 }
-                await addPostReaction(article.post_id, userProfile.user_id, 'dislike', article.likes_count, article.dislikes_count);
+                await addPostReaction(article.post_id, userProfile.user_id, 'dislike', likeCount, dislikeCount);
                 const newReaction = PostReaction === 'dislike' ? null : 'dislike';
                 setPostReaction(newReaction);
-                setArticle(prev => prev ? {
-                  ...prev,
-                  dislikes_count: prev.dislikes_count + (newReaction === 'dislike' ? 1 : -1),
-                  likes_count: prev.likes_count - (PostReaction === 'like' ? 1 : 0)
-                } : null);
+                setLikeCount(prev => prev - (PostReaction === 'like' ? 1 : 1));
+                setDislikeCount(prev => prev + (PostReaction === 'dislike' ? -1 : 1));
               }}
             >
               <i className="fas fa-thumbs-down"></i>
-              <span className="dislikes-count">{article.dislikes_count}</span>
+              <span className="dislikes-count">{dislikeCount || 0}</span>
             </button>
           </div>
         </div>

@@ -27,46 +27,48 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
   const [replyContent, setReplyContent] = useState('');
 
   useEffect(() => {
-    const data = localStorage.getItem('userProfile');
-    setUserProfile(JSON.parse(data || '{}'));
-    loadComments();
+    const loadInitialData = async () => {
+      const data = localStorage.getItem('userProfile');
+      setUserProfile(JSON.parse(data || '{}'));
+      const commentsData = await getComments(post_id);
+      setComments(commentsData);
+    };
+    loadInitialData();
   }, [post_id]);
 
   useEffect(() => {
     const loadUserProfiles = async () => {
       const profiles: { [key: string]: UserProfile | null } = {};
-      for (const comment of comments) {
-        if (!commentUserProfiles[comment.user_id]) {
-          const profile = await getUserProfile(comment.user_id);
-          profiles[comment.user_id] = profile;
+      const newUserIds = comments
+        .filter(comment => !commentUserProfiles[comment.user_id])
+        .map(comment => comment.user_id);
+
+      if (newUserIds.length > 0) {
+        for (const userId of newUserIds) {
+          const profile = await getUserProfile(userId);
+          profiles[userId] = profile;
         }
+        setCommentUserProfiles(prev => ({ ...prev, ...profiles }));
       }
-      setCommentUserProfiles(prev => ({ ...prev, ...profiles }));
     };
     loadUserProfiles();
-  }, [comments, commentUserProfiles]);
+  }, [comments]);
 
   useEffect(() => {
     if (userProfile?.user_id && comments.length > 0) {
-      loadCommentReactions();
+      const loadReactions = async () => {
+        const reactions: { [key: string]: 'like' | 'dislike' | null } = {};
+        for (const comment of comments) {
+          const reaction = await getCommentReaction(comment.comment_id, userProfile.user_id);
+          reactions[comment.comment_id] = reaction;
+        }
+        setCommentReactions(reactions);
+      };
+      loadReactions();
     }
-  }, [userProfile?.user_id, comments]);
+  }, [userProfile?.user_id, comments.length]);
 
-  const loadCommentReactions = async () => {
-    const reactions: { [key: string]: 'like' | 'dislike' | null } = {};
-    for (const comment of comments) {
-      if (userProfile?.user_id) {
-        const reaction = await getCommentReaction(comment.comment_id, userProfile.user_id);
-        reactions[comment.comment_id] = reaction;
-      }
-    }
-    setCommentReactions(reactions);
-  };
-
-  const loadComments = async () => {
-    const commentsData = await getComments(post_id);
-    setComments(commentsData);
-  };
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,27 +183,35 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
     }
   };
 
+  const [isReacting, setIsReacting] = useState<{ [key: string]: boolean }>({});
+
   const handleReaction = async (comment_id: string, type: 'like' | 'dislike') => {
     if (!userProfile?.user_id) {
       setError('请先登录后再操作');
       return;
     }
 
+    // 检查是否正在处理该评论的反应
+    if (isReacting[comment_id]) {
+      return;
+    }
+
     const comment = comments.find(c => c.comment_id === comment_id);
     if (!comment) return;
 
-    const success = await addCommentReaction(
-      comment_id,
-      userProfile.user_id,
-      type,
-      comment.likes_count || 0,
-      comment.dislikes_count || 0
-    );
+    try {
+      // 标记正在处理
+      setIsReacting(prev => ({ ...prev, [comment_id]: true }));
 
-    if (success) {
-      // 更新本地状态
-      const newReaction = commentReactions[comment_id] === type ? null : type;
-      setCommentReactions({ ...commentReactions, [comment_id]: newReaction });
+      // 保存当前状态以便回滚
+      const previousReaction = commentReactions[comment_id];
+      const previousComments = [...comments];
+
+      // 计算新的反应状态
+      const newReaction = previousReaction === type ? null : type;
+
+      // 立即更新本地状态，提供即时反馈
+      setCommentReactions(prev => ({ ...prev, [comment_id]: newReaction }));
 
       // 更新评论列表中的点赞数
       setComments(comments.map(c => {
@@ -216,7 +226,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
               likes_count: type === 'like' ? likesCount - 1 : likesCount,
               dislikes_count: type === 'dislike' ? dislikesCount - 1 : dislikesCount
             };
-          } else if (commentReactions[comment_id] && commentReactions[comment_id] !== newReaction) {
+          } else if (previousReaction && previousReaction !== newReaction) {
             // 切换反应
             return {
               ...c,
@@ -234,8 +244,28 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
         }
         return c;
       }));
-    } else {
+
+      // 发送请求到服务器
+      const success = await addCommentReaction(
+        comment_id,
+        userProfile.user_id,
+        type,
+        comment.likes_count || 0,
+        comment.dislikes_count || 0
+      );
+
+      if (!success) {
+        // 如果服务器请求失败，回滚本地状态
+        setCommentReactions(prev => ({ ...prev, [comment_id]: previousReaction }));
+        setComments(previousComments);
+        setError('操作失败，请稍后重试');
+      }
+    } catch (error) {
+      console.error('处理评论反应失败:', error);
       setError('操作失败，请稍后重试');
+    } finally {
+      // 取消标记
+      setIsReacting(prev => ({ ...prev, [comment_id]: false }));
     }
   };
 

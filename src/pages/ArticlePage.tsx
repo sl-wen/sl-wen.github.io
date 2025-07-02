@@ -87,6 +87,9 @@ const ArticlePage: React.FC = () => {
   const [shareTipText, setShareTipText] = useState('');
   const [PostReaction, setPostReaction] = useState<'like' | 'dislike' | null>(null);
   const [userProfile, setUserProfile] = useState<{user_id: string, username: string, email: string} | null>(null);
+  
+  // 添加防止重复点击的状态
+  const [isReactionLoading, setIsReactionLoading] = useState(false);
 
   const handleShare = async (platform: string) => {
     const url = window.location.href;
@@ -128,12 +131,88 @@ const ArticlePage: React.FC = () => {
     }
   };
 
+  // 处理点赞/点踩的函数
+  const handleReaction = async (reactionType: 'like' | 'dislike') => {
+    // 防止重复点击
+    if (isReactionLoading) {
+      return;
+    }
+
+    if (!userProfile) {
+      alert('请先登录');
+      return;
+    }
+
+    if (!article) {
+      return;
+    }
+
+    try {
+      setIsReactionLoading(true);
+      
+      await addPostReaction(
+        article.post_id, 
+        userProfile.user_id, 
+        reactionType, 
+        article.likes_count, 
+        article.dislikes_count
+      );
+      
+      const newReaction = PostReaction === reactionType ? null : reactionType;
+      setPostReaction(newReaction);
+      
+      // 更新文章的点赞/点踩数量
+      setArticle(prev => {
+        if (!prev) return null;
+        
+        let newLikesCount = prev.likes_count;
+        let newDislikesCount = prev.dislikes_count;
+        
+        if (reactionType === 'like') {
+          // 处理点赞
+          if (newReaction === 'like') {
+            newLikesCount += 1;
+            // 如果之前是点踩，需要减少点踩数
+            if (PostReaction === 'dislike') {
+              newDislikesCount -= 1;
+            }
+          } else {
+            // 取消点赞
+            newLikesCount -= 1;
+          }
+        } else {
+          // 处理点踩
+          if (newReaction === 'dislike') {
+            newDislikesCount += 1;
+            // 如果之前是点赞，需要减少点赞数
+            if (PostReaction === 'like') {
+              newLikesCount -= 1;
+            }
+          } else {
+            // 取消点踩
+            newDislikesCount -= 1;
+          }
+        }
+        
+        return {
+          ...prev,
+          likes_count: newLikesCount,
+          dislikes_count: newDislikesCount
+        };
+      });
+    } catch (error) {
+      console.error('操作失败:', error);
+      // 可以添加错误提示
+      alert('操作失败，请重试');
+    } finally {
+      setIsReactionLoading(false);
+    }
+  };
+
   useEffect(() => {
     const data = localStorage.getItem('userProfile');
     setUserProfile(JSON.parse(data || '{}'));
   }, []);
-
-
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -168,7 +247,7 @@ const ArticlePage: React.FC = () => {
     fetchArticle();
   }, [post_id]);
 
-    useEffect(() => {
+  useEffect(() => {
     addCopyButtons();
     if (article && userProfile?.user_id) {
       getPostReaction(article.post_id, userProfile.user_id).then(setPostReaction);
@@ -196,41 +275,17 @@ const ArticlePage: React.FC = () => {
           </Link>
           <div className="reactionButton">
             <button
-              className={`reaction-button ${PostReaction === 'like' ? 'active' : ''}`}
-              onClick={async () => {
-                if (!userProfile) {
-                  alert('请先登录');
-                  return;
-                }
-                await addPostReaction(article.post_id, userProfile.user_id, 'like', article.likes_count, article.dislikes_count);
-                const newReaction = PostReaction === 'like' ? null : 'like';
-                setPostReaction(newReaction);
-                setArticle(prev => prev ? {
-                  ...prev,
-                  likes_count: prev.likes_count + (newReaction === 'like' ? 1 : -1),
-                  dislikes_count: prev.dislikes_count - (PostReaction === 'dislike' ? 1 : 0)
-                } : null);
-              }}
+              className={`reaction-button ${PostReaction === 'like' ? 'active' : ''} ${isReactionLoading ? 'loading' : ''}`}
+              onClick={() => handleReaction('like')}
+              disabled={isReactionLoading}
             >
               <i className="fas fa-thumbs-up"></i>
               <span className="likes-count">{article.likes_count}</span>
             </button>
             <button
-              className={`reaction-button ${PostReaction === 'dislike' ? 'active' : ''}`}
-              onClick={async () => {
-                if (!userProfile) {
-                  alert('请先登录');
-                  return;
-                }
-                await addPostReaction(article.post_id, userProfile.user_id, 'dislike', article.likes_count, article.dislikes_count);
-                const newReaction = PostReaction === 'dislike' ? null : 'dislike';
-                setPostReaction(newReaction);
-                setArticle(prev => prev ? {
-                  ...prev,
-                  dislikes_count: prev.dislikes_count + (newReaction === 'dislike' ? 1 : -1),
-                  likes_count: prev.likes_count - (PostReaction === 'like' ? 1 : 0)
-                } : null);
-              }}
+              className={`reaction-button ${PostReaction === 'dislike' ? 'active' : ''} ${isReactionLoading ? 'loading' : ''}`}
+              onClick={() => handleReaction('dislike')}
+              disabled={isReactionLoading}
             >
               <i className="fas fa-thumbs-down"></i>
               <span className="dislikes-count">{article.dislikes_count}</span>

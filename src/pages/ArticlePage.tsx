@@ -17,7 +17,7 @@ const addCopyButtons = () => {
     copyButton.className = 'copy-button';
     copyButton.innerHTML = '<i class="fas fa-copy"></i>';
     copyButton.title = '复制代码';
-    
+
     copyButton.addEventListener('click', async () => {
       const code = block.querySelector('code');
       if (code) {
@@ -52,7 +52,7 @@ const addCopyButtons = () => {
         }
       }
     });
-    
+
     block.appendChild(copyButton);
   });
 };
@@ -88,8 +88,8 @@ const ArticlePage: React.FC = () => {
   const [showShareTip, setShowShareTip] = useState(false);
   const [shareTipText, setShareTipText] = useState('');
   const [PostReaction, setPostReaction] = useState<'like' | 'dislike' | null>(null);
-  const [userProfile, setUserProfile] = useState<{user_id: string, username: string, email: string} | null>(null);
-  
+  const [userProfile, setUserProfile] = useState<{ user_id: string, username: string, email: string } | null>(null);
+
   // 添加防止重复点击的状态
   const [isReactionLoading, setIsReactionLoading] = useState(false);
 
@@ -151,25 +151,25 @@ const ArticlePage: React.FC = () => {
 
     try {
       setIsReactionLoading(true);
-      
+
       await addPostReaction(
-        article.post_id, 
-        userProfile.user_id, 
-        reactionType, 
-        article.likes_count, 
+        article.post_id,
+        userProfile.user_id,
+        reactionType,
+        article.likes_count,
         article.dislikes_count
       );
-      
+
       const newReaction = PostReaction === reactionType ? null : reactionType;
       setPostReaction(newReaction);
-      
+
       // 更新文章的点赞/点踩数量
       setArticle(prev => {
         if (!prev) return null;
-        
+
         let newLikesCount = prev.likes_count;
         let newDislikesCount = prev.dislikes_count;
-        
+
         if (reactionType === 'like') {
           // 处理点赞
           if (newReaction === 'like') {
@@ -195,7 +195,7 @@ const ArticlePage: React.FC = () => {
             newDislikesCount -= 1;
           }
         }
-        
+
         return {
           ...prev,
           likes_count: newLikesCount,
@@ -333,22 +333,22 @@ const ArticlePage: React.FC = () => {
         {(prevArticle || nextArticle) && (
           <div className="article-navigation">
             {prevArticle && (
-                <Link to={`/article/${prevArticle.post_id}`} className="nav-link prev-article">
-                  <span>上一篇</span>
-                  <span>{prevArticle.title}</span>
-                </Link>
+              <Link to={`/article/${prevArticle.post_id}`} className="nav-link prev-article">
+                <span>上一篇</span>
+                <span>{prevArticle.title}</span>
+              </Link>
             )}
             {nextArticle && (
-                <Link to={`/article/${nextArticle.post_id}`} className="nav-link next-article">
-                  <span>下一篇</span>
-                  <span>{nextArticle.title}</span>
-                </Link>
+              <Link to={`/article/${nextArticle.post_id}`} className="nav-link next-article">
+                <span>下一篇</span>
+                <span>{nextArticle.title}</span>
+              </Link>
             )}
           </div>
         )}
       </div>
       {showShareTip && <div className="share-tip">{shareTipText}</div>}
-      
+
       <CommentSection post_id={article.post_id} />
     </div>
   );

@@ -10,10 +10,8 @@
 .mainContent {
   flex: 1;
   width: 100%;
-  max-width: 1100px;
-  min-height: 700px;
+  min-height: 400px;
   margin: 0 auto;
-  padding: var(--spacing-medium);
   box-sizing: border-box; /* 确保padding不会增加元素总宽度 */
 }
 

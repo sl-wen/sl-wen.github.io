@@ -41,9 +41,9 @@ const PostPage: React.FC = () => {
 
   useEffect(() => {
     try {
-      const userProfile = localStorage.getItem('userProfile');
-      setUserProfile(userProfile);
-      if (!userProfile) {
+      const userProfileStr = localStorage.getItem('userProfile');
+      const userProfileData = JSON.parse(userProfileStr || '{}');
+      if (!userProfileData.user_id) {
         throw new Error('请先登录');
       }
       setFormData({

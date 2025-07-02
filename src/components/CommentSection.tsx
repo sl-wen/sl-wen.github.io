@@ -84,7 +84,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userProfile) {
+    if (!userProfile?.user_id) {
       setError('请先登录后再评论');
       return;
     }
@@ -148,7 +148,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
   };
 
   const handleReply = (comment_id: string) => {
-    if (!userProfile) {
+    if (!userProfile?.user_id) {
       setError('请先登录后再回复评论');
       return;
     }
@@ -163,7 +163,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
 
   const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userProfile) {
+    if (!userProfile?.user_id) {
       setError('请先登录后再回复评论');
       return;
     }

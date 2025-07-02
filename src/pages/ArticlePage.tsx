@@ -145,7 +145,7 @@ const ArticlePage: React.FC = () => {
       return;
     }
 
-    if (!userProfile) {
+    if (!userProfile?.user_id) {
       alert('请先登录');
       return;
     }

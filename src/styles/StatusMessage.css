@@ -6,9 +6,9 @@
   padding: var(--spacing-md);
   margin: var(--spacing-md) 0;
   background-color: var(--background-white);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-primary);
 }
 
 .messageContainer p {
@@ -23,7 +23,7 @@
   background-color: var(--primary-color);
   color: var(--background-white);
   border: none;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
   font-weight: 500;
   transition: background-color var(--transition-fast);

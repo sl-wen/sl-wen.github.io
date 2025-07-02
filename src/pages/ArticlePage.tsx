@@ -11,10 +11,11 @@ import CommentSection from '../components/CommentSection';
 import '../styles/ArticlePage.css';
 
 const addCopyButtons = () => {
-  const codeBlocks = document.querySelectorAll('.markdownBody pre');
+  const codeBlocks = document.querySelectorAll('.markdownBody pre code');
   codeBlocks.forEach((block) => {
     const copyButton = document.createElement('button');
     copyButton.className = 'copy-button';
+    copyButton.innerHTML = '';
     copyButton.innerHTML = '<i class="fas fa-copy"></i>';
     copyButton.title = '复制代码';
 

@@ -4,7 +4,7 @@
   margin: 0 auto;
   padding: var(--spacing-sm);
   background-color: var(--background-white);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   box-shadow: var(--shadow-md);
 }
 
@@ -22,7 +22,7 @@
   margin-bottom: var(--spacing-md);
   padding: var(--spacing-xs);
   background-color: var(--neutral-light);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
 }
 
 .statRow {
@@ -31,7 +31,7 @@
   align-items: center;
   padding: 0;
   background-color: var(--background-white);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   box-shadow: var(--shadow-sm);
 }
 
@@ -54,8 +54,7 @@
   min-width: 200px;
   box-sizing: border-box;
   padding: var(--spacing-sm);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   font-size: 16px;
   line-height: 1.2;
 }
@@ -72,7 +71,7 @@
 .tasksContainer {
   margin-bottom: var(--spacing-lg);
   background-color: var(--background-white);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   box-shadow: var(--shadow-sm);
   overflow: auto;
   max-height: 500px;
@@ -83,7 +82,7 @@
   width: 100%;
   border-collapse: collapse;
   background-color: var(--background-white);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   overflow: hidden;
   table-layout: fixed;
 }
@@ -92,7 +91,7 @@
   background-color: var(--background-white);
   font-weight: 600;
   color: var(--text-primary);
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--border-primary);
 }
 
 .tableCell {
@@ -101,7 +100,7 @@
   box-sizing: border-box;
   white-space: nowrap;
   text-align: left;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-primary);
   padding: var(--spacing-md);
   overflow: hidden;
   text-overflow: ellipsis;

@@ -14,8 +14,8 @@
   width: 100%;
   box-sizing: border-box;
   padding: var(--spacing-sm);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
   font-size: 14px;
   min-width: 0;
   transition: border-color var(--transition-fast);
@@ -62,7 +62,6 @@
   margin-bottom: var(--spacing-md);
   flex: 1;
   min-height: 600px;
-  gap: var(--spacing-md);
 }
 
 
@@ -82,8 +81,8 @@
   flex: 1;
   padding: var(--spacing-sm);
   background-color: var(--background-white);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
   overflow-y: auto;
   color: var(--text-primary);
   height: 500px;
@@ -107,13 +106,13 @@
 .preview :global(h1) {
   font-size: 2em;
   padding-bottom: 0.3em;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .preview :global(h2) {
   font-size: 1.5em;
   padding-bottom: 0.3em;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .preview :global(h3) {
@@ -137,14 +136,14 @@
 .preview :global(blockquote) {
   padding: 0 1em;
   color: var(--text-secondary);
-  border-left: 0.25em solid var(--border-color);
+  border-left: 0.25em solid var(--border-primary);
   margin: 0 0 var(--spacing-xs) 0;
 }
 
 .preview :global(pre) {
   background-color: var(--code-background);
   padding: var(--spacing-sm);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   overflow-x: auto;
 }
 
@@ -159,7 +158,7 @@
     monospace;
   font-size: 85%;
   background-color: var(--neutral-light);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   padding: 0.2em 0.4em;
 }
 

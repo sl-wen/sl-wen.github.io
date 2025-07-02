@@ -1,9 +1,9 @@
 .taskCard {
   background-color: var(--background-white);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   padding: var(--spacing-md);
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-primary);
   transition:
     transform var(--transition-fast),
     box-shadow var(--transition-fast);
@@ -42,7 +42,7 @@
 
 .taskStatus {
   padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   font-size: 12px;
   font-weight: 500;
 }
@@ -69,7 +69,7 @@
   margin-bottom: var(--spacing-md);
   padding: var(--spacing-sm);
   background-color: var(--neutral-light);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
 }
 
 .rewardItem {
@@ -97,7 +97,7 @@
 .taskButton {
   padding: var(--spacing-sm) var(--spacing-md);
   border: none;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm);
   font-weight: 500;
   cursor: pointer;
   transition: background-color var(--transition-fast);

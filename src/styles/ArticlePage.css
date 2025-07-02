@@ -355,8 +355,8 @@
 /* 按钮区域 */
 .button-area {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-end;
+  justify-content: flex-end;
   gap: var(--spacing-4);
   margin: var(--spacing-8) 0;
   flex-wrap: wrap;

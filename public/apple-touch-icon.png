@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="180" height="180" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" fill="url(#grad3)" rx="30"/>
+  <circle cx="90" cy="70" r="25" fill="white" opacity="0.9"/>
+  <text x="90" y="125" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="20" font-weight="bold">鱼鱼博客</text>
+</svg> 

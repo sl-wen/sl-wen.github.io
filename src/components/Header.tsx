@@ -134,26 +134,26 @@ const Header: React.FC = () => {
         </div>
       </div>
       <nav className={`nav ${isMenuOpen ? 'open' : ''}`}>
-        <Link to="/" onClick={() => setIsMenuOpen(false)}>
+        <Link to="/" onClick={() => setIsMenuOpen(false)} data-icon="🏠">
           首页
         </Link>
-        <Link to="/category" onClick={() => setIsMenuOpen(false)}>
+        <Link to="/category" onClick={() => setIsMenuOpen(false)} data-icon="📁">
           分类
         </Link>
-        <Link to="/search" onClick={() => setIsMenuOpen(false)}>
+        <Link to="/search" onClick={() => setIsMenuOpen(false)} data-icon="🔍">
           搜索
         </Link>
         {userProfile && (
           <>
-            <Link to="/tools" onClick={() => setIsMenuOpen(false)}>
+            <Link to="/tools" onClick={() => setIsMenuOpen(false)} data-icon="🛠️">
               工具
             </Link>
-            <Link to="/post" onClick={() => setIsMenuOpen(false)}>
-              发布文章
+            <Link to="/post" onClick={() => setIsMenuOpen(false)} data-icon="✏️">
+              发布
             </Link>
           </>
         )}
-        <Link to="/about" onClick={() => setIsMenuOpen(false)}>
+        <Link to="/about" onClick={() => setIsMenuOpen(false)} data-icon="ℹ️">
           关于
         </Link>
       </nav>

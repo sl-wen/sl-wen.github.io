@@ -4,6 +4,7 @@ import Header from './Header';
 import Footer from './Footer';
 import '../styles/Common.css';
 import '../styles/Layout.css';
+import '../styles/MobileOptimization.css';
 
 const Layout: React.FC = () => {
   return (

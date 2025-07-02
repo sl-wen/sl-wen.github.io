@@ -50,7 +50,7 @@ const HomePage: React.FC = () => (
           </div>
         </div>
       </div>
-      
+
       {/* 装饰性元素 */}
       <div className="heroDecoration">
         <div className="decorationCircle circle1"></div>
@@ -100,7 +100,6 @@ const HomePage: React.FC = () => (
         </div>
       </div>
     </section>
-
   </div>
 );
 

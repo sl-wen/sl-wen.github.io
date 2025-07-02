@@ -302,7 +302,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
@@ -318,41 +319,41 @@
     padding: var(--spacing-4);
     margin-bottom: var(--spacing-4);
   }
-  
+
   .articleMeta {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-2);
   }
-  
+
   .metaRight {
     align-self: flex-end;
   }
-  
+
   .authorAvatar {
     width: 32px;
     height: 32px;
   }
-  
+
   .articleTitle {
     font-size: var(--text-lg);
   }
-  
+
   .cardFooter {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-3);
   }
-  
+
   .articleStats {
     width: 100%;
     justify-content: space-around;
   }
-  
+
   .cardActions {
     width: 100%;
   }
-  
+
   .readMoreBtn {
     width: 100%;
     justify-content: center;
@@ -363,23 +364,23 @@
   .articleCard {
     padding: var(--spacing-3);
   }
-  
+
   .authorInfo {
     gap: var(--spacing-2);
   }
-  
+
   .articleTitle {
     font-size: var(--text-base);
   }
-  
+
   .articleExcerpt {
     font-size: var(--text-sm);
   }
-  
+
   .articleStats {
     gap: var(--spacing-2);
   }
-  
+
   .statItem {
     flex-direction: column;
     text-align: center;

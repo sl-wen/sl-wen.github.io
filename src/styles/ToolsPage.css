@@ -88,8 +88,12 @@
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .toolIcon {
@@ -241,18 +245,25 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: var(--shadow-lg);
   }
   50% {
-    box-shadow: var(--shadow-xl), 0 0 20px rgba(59, 130, 246, 0.3);
+    box-shadow:
+      var(--shadow-xl),
+      0 0 20px rgba(59, 130, 246, 0.3);
   }
 }
 
 /* 工具页面容器 */
 .toolsPage {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-primary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--background-secondary) 0%,
+    var(--background-primary) 100%
+  );
   padding: var(--spacing-8) var(--spacing-4);
   position: relative;
 }
@@ -264,9 +275,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 40% 80%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
+  background:
+    radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
   pointer-events: none;
 }
 

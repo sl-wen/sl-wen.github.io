@@ -39,22 +39,22 @@
 }
 
 .editorPreviewContainer {
-    display: flex;
-    margin-bottom: var(--spacing-medium);
-    flex: 1;
-    min-height: 600px; /* 设置固定高度 */
+  display: flex;
+  margin-bottom: var(--spacing-medium);
+  flex: 1;
+  min-height: 600px; /* 设置固定高度 */
 }
 
 .editorSection,
 .previewSection {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    max-width: 50%; 
-    min-height: 600px; /* 设置高度 */
-    overflow: auto;
-    border-radius: var(--border-radius-sm);
-} 
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 50%;
+  min-height: 600px; /* 设置高度 */
+  overflow: auto;
+  border-radius: var(--border-radius-sm);
+}
 
 .editorSection textarea,
 .previewSection .previewContent {
@@ -73,10 +73,9 @@
 }
 
 .editorSection textarea:focus {
-    outline: none;
-    border: 1px solid var(--primary-color);
+  outline: none;
+  border: 1px solid var(--primary-color);
 }
-
 
 .previewContent {
   color: var(--text-color);

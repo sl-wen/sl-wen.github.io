@@ -41,10 +41,18 @@ const Footer: React.FC = () => {
           <div className="footerSection">
             <h4 className="sectionTitle">快速导航</h4>
             <ul className="linkList">
-              <li><a href="/">首页</a></li>
-              <li><a href="/category">分类</a></li>
-              <li><a href="/search">搜索</a></li>
-              <li><a href="/about">关于</a></li>
+              <li>
+                <a href="/">首页</a>
+              </li>
+              <li>
+                <a href="/category">分类</a>
+              </li>
+              <li>
+                <a href="/search">搜索</a>
+              </li>
+              <li>
+                <a href="/about">关于</a>
+              </li>
             </ul>
           </div>
 
@@ -52,10 +60,18 @@ const Footer: React.FC = () => {
           <div className="footerSection">
             <h4 className="sectionTitle">热门话题</h4>
             <ul className="linkList">
-              <li><a href="/category?tag=tech">技术</a></li>
-              <li><a href="/category?tag=frontend">前端开发</a></li>
-              <li><a href="/category?tag=design">设计</a></li>
-              <li><a href="/category?tag=life">生活感悟</a></li>
+              <li>
+                <a href="/category?tag=tech">技术</a>
+              </li>
+              <li>
+                <a href="/category?tag=frontend">前端开发</a>
+              </li>
+              <li>
+                <a href="/category?tag=design">设计</a>
+              </li>
+              <li>
+                <a href="/category?tag=life">生活感悟</a>
+              </li>
             </ul>
           </div>
 
@@ -72,7 +88,7 @@ const Footer: React.FC = () => {
                 <span className="contactText">关注我的动态</span>
               </div>
             </div>
-            
+
             {/* 社交媒体链接 */}
             <div className="socialLinks">
               <a href="https://github.com" className="socialLink" title="GitHub">
@@ -105,11 +121,9 @@ const Footer: React.FC = () => {
         <div className="footerBottom">
           <div className="copyright">
             <p>© {currentYear} 个人博客. All rights reserved.</p>
-            <p className="poweredBy">
-              Powered by React & TypeScript with ❤️
-            </p>
+            <p className="poweredBy">Powered by React & TypeScript with ❤️</p>
           </div>
-          
+
           {/* 备案信息等 */}
           <div className="legalLinks">
             <a href="/privacy">隐私政策</a>

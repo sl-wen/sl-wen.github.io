@@ -109,7 +109,7 @@ const ToolsPage: React.FC = () => {
     if (tool.isComingSoon) {
       return;
     }
-    
+
     // 这里可以添加路由跳转或打开工具的逻辑
     console.log(`Opening tool: ${tool.title}`);
   };
@@ -126,11 +126,11 @@ const ToolsPage: React.FC = () => {
     <div className="toolsPage">
       <div className="toolsContainer">
         <h1 className="pageTitle">实用工具集</h1>
-        
+
         <div className="toolsGrid">
           {tools.map((tool) => (
-            <div 
-              key={tool.id} 
+            <div
+              key={tool.id}
               className={getCardClasses(tool)}
               onClick={() => handleToolClick(tool)}
             >
@@ -139,7 +139,7 @@ const ToolsPage: React.FC = () => {
               </div>
               <h3 className="toolTitle">{tool.title}</h3>
               <p className="toolDescription">{tool.description}</p>
-              <a 
+              <a
                 href={tool.link}
                 className="toolLink"
                 onClick={(e) => {

@@ -44,7 +44,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           <div className="metaLeft">
             <div className="authorInfo">
               <div className="authorAvatar">
-                <img 
+                <img
                   src={`https://ui-avatars.com/api/?name=${encodeURIComponent(article.author || '匿名')}&background=0ea5e9&color=fff&size=32`}
                   alt={article.author || '匿名'}
                 />
@@ -67,11 +67,9 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
       <div className="cardBody">
         <div className="articleContent">
           <h2 className="articleTitle">
-            <Link to={`/article/${article.post_id}`}>
-              {article.title}
-            </Link>
+            <Link to={`/article/${article.post_id}`}>{article.title}</Link>
           </h2>
-          
+
           {article.content && (
             <p className="articleExcerpt">
               {article.content.substring(0, 120)}
@@ -107,7 +105,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
             <span className="statLabel">点赞</span>
           </div>
         </div>
-        
+
         <div className="cardActions">
           <Link to={`/article/${article.post_id}`} className="readMoreBtn">
             阅读更多

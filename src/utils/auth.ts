@@ -59,17 +59,17 @@ export const signUp = async (email: string, password: string) => {
     if (error) throw error;
     // 创建用户资料
     if (data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([{
+      const { error: profileError } = await supabase.from('profiles').insert([
+        {
           user_id: data.user.id,
           username: email.split('@')[0],
           level: 0,
           amount: 0,
           adress: '',
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }]);
+          updated_at: new Date().toISOString()
+        }
+      ]);
 
       if (profileError) console.error('创建用户资料失败:', profileError);
     }
@@ -92,11 +92,7 @@ export const signOut = async () => {
 
 export const setUserProfile = async (updates: Partial<UserProfile>) => {
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .insert(updates)
-      .select()
-      .single();
+    const { data, error } = await supabase.from('profiles').insert(updates).select().single();
 
     if (error) throw error;
     return data;

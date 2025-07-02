@@ -17,7 +17,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
+  background:
     radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.3), transparent 50%),
     radial-gradient(circle at 75% 75%, rgba(255, 119, 198, 0.3), transparent 50%),
     radial-gradient(circle at 50% 50%, rgba(120, 219, 255, 0.2), transparent 50%);
@@ -47,7 +47,8 @@
 }
 
 @keyframes floatShape {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(0deg);
   }
   50% {
@@ -308,7 +309,8 @@
 }
 
 @keyframes decorationPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.3;
   }
@@ -323,23 +325,23 @@
   .login-container {
     padding: var(--spacing-2);
   }
-  
+
   .login-box {
     padding: var(--spacing-8);
     max-width: 100%;
     margin: var(--spacing-4);
   }
-  
+
   .tag-btn {
     padding: var(--spacing-2) var(--spacing-4);
     font-size: var(--text-sm);
   }
-  
+
   .form-group input {
     padding: var(--spacing-3);
     font-size: var(--text-base);
   }
-  
+
   .submit-btn {
     padding: var(--spacing-3) var(--spacing-5);
     font-size: var(--text-base);
@@ -351,19 +353,19 @@
     padding: var(--spacing-6);
     border-radius: var(--border-radius-2xl);
   }
-  
+
   .login-header {
     margin-bottom: var(--spacing-6);
   }
-  
+
   .form-group {
     margin-bottom: var(--spacing-4);
   }
-  
+
   .password-requirements {
     font-size: var(--text-sm);
   }
-  
+
   .login-container::after {
     width: 120px;
     height: 120px;
@@ -378,26 +380,26 @@
     background: rgba(15, 23, 42, 0.95);
     border-color: rgba(255, 255, 255, 0.1);
   }
-  
+
   .login-header {
     background: var(--gray-800);
   }
-  
+
   .tag-btn {
     color: var(--gray-400);
   }
-  
+
   .tag-btn:not(.active):hover {
     background: rgba(59, 130, 246, 0.2);
     color: var(--primary-400);
   }
-  
+
   .form-group input {
     background: var(--gray-800);
     border-color: var(--gray-600);
     color: var(--gray-100);
   }
-  
+
   .form-group input::placeholder {
     color: var(--gray-500);
   }

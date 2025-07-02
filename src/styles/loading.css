@@ -42,7 +42,9 @@
 }
 
 @keyframes dotBlink {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     opacity: 0;
   }
   40% {
@@ -160,7 +162,9 @@
 }
 
 @keyframes dotBounce {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     transform: scale(0);
     opacity: 0.5;
   }
@@ -368,7 +372,8 @@
 }
 
 @keyframes particleFloat {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) scale(1);
     opacity: 0.6;
   }
@@ -384,28 +389,28 @@
     min-height: 150px;
     padding: var(--spacing-6);
   }
-  
+
   .loading.loading-large {
     min-height: 200px;
     padding: var(--spacing-8);
   }
-  
+
   .loading-text {
     font-size: var(--text-sm);
   }
-  
+
   .spinner-ring {
     width: 48px;
     height: 48px;
   }
-  
+
   .spinner-ring div {
     width: 38px;
     height: 38px;
     margin: 5px;
     border-width: 5px;
   }
-  
+
   .loading-skeleton {
     max-width: 250px;
   }
@@ -416,43 +421,43 @@
     min-height: 120px;
     padding: var(--spacing-4);
   }
-  
+
   .loading-text {
     font-size: var(--text-xs);
   }
-  
+
   .spinner-ring {
     width: 40px;
     height: 40px;
   }
-  
+
   .spinner-ring div {
     width: 32px;
     height: 32px;
     margin: 4px;
     border-width: 4px;
   }
-  
+
   .dot {
     width: 8px;
     height: 8px;
   }
-  
+
   .pulse-1 {
     width: 30px;
     height: 30px;
   }
-  
+
   .pulse-2 {
     width: 45px;
     height: 45px;
   }
-  
+
   .pulse-3 {
     width: 60px;
     height: 60px;
   }
-  
+
   .loading-skeleton {
     max-width: 200px;
   }
@@ -463,11 +468,16 @@
   .loading {
     background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
   }
-  
+
   .skeleton-line {
-    background: linear-gradient(90deg, var(--gray-700) 25%, var(--gray-600) 50%, var(--gray-700) 75%);
+    background: linear-gradient(
+      90deg,
+      var(--gray-700) 25%,
+      var(--gray-600) 50%,
+      var(--gray-700) 75%
+    );
   }
-  
+
   .decoration-particle {
     background: var(--primary-300);
   }
@@ -503,7 +513,8 @@
 }
 
 @keyframes bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -512,7 +523,8 @@
 }
 
 @keyframes wave {
-  0%, 100% {
+  0%,
+  100% {
     transform: rotate(0deg);
   }
   50% {

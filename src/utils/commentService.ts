@@ -31,7 +31,9 @@ export const getComments = async (post_id: string): Promise<Comment[]> => {
   }
 };
 
-export const addComment = async (comment: Omit<Comment, 'comment_id' | 'created_at' | 'updated_at'>): Promise<Comment | null> => {
+export const addComment = async (
+  comment: Omit<Comment, 'comment_id' | 'created_at' | 'updated_at'>
+): Promise<Comment | null> => {
   try {
     const { data, error } = await supabase
       .from('comments')
@@ -51,7 +53,10 @@ export const addComment = async (comment: Omit<Comment, 'comment_id' | 'created_
   }
 };
 
-export const updateComment = async (comment_id: string, content: string): Promise<Comment | null> => {
+export const updateComment = async (
+  comment_id: string,
+  content: string
+): Promise<Comment | null> => {
   try {
     const { data, error } = await supabase
       .from('comments')
@@ -70,10 +75,7 @@ export const updateComment = async (comment_id: string, content: string): Promis
 
 export const deleteComment = async (comment_id: string, post_id: string): Promise<boolean> => {
   try {
-    const { error } = await supabase
-      .from('comments')
-      .delete()
-      .eq('comment_id', comment_id);
+    const { error } = await supabase.from('comments').delete().eq('comment_id', comment_id);
 
     if (error) throw error;
 

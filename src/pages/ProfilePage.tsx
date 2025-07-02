@@ -14,7 +14,6 @@ interface UserProfile {
   experience: number;
 }
 
-
 const ProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);

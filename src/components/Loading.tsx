@@ -7,8 +7,8 @@ interface LoadingProps {
   variant?: 'spinner' | 'dots' | 'pulse' | 'skeleton';
 }
 
-const Loading: React.FC<LoadingProps> = ({ 
-  text = '加载中...', 
+const Loading: React.FC<LoadingProps> = ({
+  text = '加载中...',
   size = 'medium',
   variant = 'spinner'
 }) => {
@@ -73,7 +73,7 @@ const Loading: React.FC<LoadingProps> = ({
           </span>
         </p>
       )}
-      
+
       {/* 装饰性背景 */}
       <div className="loading-decoration">
         <div className="decoration-particle particle-1"></div>

@@ -89,7 +89,11 @@ const ArticlePage: React.FC = () => {
   const [showShareTip, setShowShareTip] = useState(false);
   const [shareTipText, setShareTipText] = useState('');
   const [PostReaction, setPostReaction] = useState<'like' | 'dislike' | null>(null);
-  const [userProfile, setUserProfile] = useState<{ user_id: string, username: string, email: string } | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    user_id: string;
+    username: string;
+    email: string;
+  } | null>(null);
 
   // 添加防止重复点击的状态
   const [isReactionLoading, setIsReactionLoading] = useState(false);
@@ -165,7 +169,7 @@ const ArticlePage: React.FC = () => {
       setPostReaction(newReaction);
 
       // 更新文章的点赞/点踩数量
-      setArticle(prev => {
+      setArticle((prev) => {
         if (!prev) return null;
 
         let newLikesCount = prev.likes_count;

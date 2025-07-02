@@ -22,7 +22,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
+  background:
     radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3), transparent 50%),
     radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3), transparent 50%);
@@ -86,7 +86,8 @@
 }
 
 @keyframes gradientShift {
-  0%, 100% {
+  0%,
+  100% {
     filter: hue-rotate(0deg);
   }
   50% {
@@ -159,7 +160,8 @@
 }
 
 @keyframes floatCard {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(0deg);
   }
   50% {
@@ -231,7 +233,8 @@
 }
 
 @keyframes floatCircle {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) scale(1);
     opacity: 0.3;
   }
@@ -315,7 +318,11 @@
 /* 文章区域 */
 .articlesSection {
   padding: var(--spacing-4) var(--spacing-4);
-  background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-primary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--background-secondary) 0%,
+    var(--background-primary) 100%
+  );
 }
 
 .sectionHeader {
@@ -396,11 +403,11 @@
     gap: var(--spacing-12);
     text-align: center;
   }
-  
+
   .heroVisual {
     height: 300px;
   }
-  
+
   .featuresGrid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: var(--spacing-6);
@@ -412,51 +419,51 @@
     min-height: 60vh;
     padding: var(--spacing-12) var(--spacing-4);
   }
-  
+
   .heroTitle {
     font-size: var(--text-3xl);
   }
-  
+
   .heroDescription {
     font-size: var(--text-lg);
   }
-  
+
   .heroActions {
     justify-content: center;
   }
-  
+
   .heroVisual {
     height: 250px;
   }
-  
+
   .floatingCard {
     padding: var(--spacing-4);
     gap: var(--spacing-3);
   }
-  
+
   .cardIcon {
     font-size: var(--text-2xl);
   }
-  
+
   .featuresSection,
   .articlesSection {
     padding: var(--spacing-4) var(--spacing-4);
   }
-  
+
   .sectionTitle {
     font-size: var(--text-3xl);
   }
-  
+
   .featuresGrid {
     grid-template-columns: 1fr;
     gap: var(--spacing-6);
   }
-  
+
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-6);
   }
-  
+
   .statNumber {
     font-size: var(--text-3xl);
   }
@@ -467,11 +474,11 @@
     flex-direction: column;
     align-items: center;
   }
-  
+
   .heroActions .btn {
     width: 200px;
   }
-  
+
   .statsGrid {
     grid-template-columns: 1fr;
     gap: var(--spacing-4);

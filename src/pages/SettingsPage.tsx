@@ -147,12 +147,14 @@ const SettingsPage: React.FC = () => {
             onChange={handleInputChange}
           />
         </div>
-        <div className="avatar_preview" style={{margin: '10px 0'}}>
+        <div className="avatar_preview" style={{ margin: '10px 0' }}>
           {formData.avatar_url && (
-            <img src={formData.avatar_url} alt="Avatar" style={{height:50,borderRadius:8}} />
+            <img src={formData.avatar_url} alt="Avatar" style={{ height: 50, borderRadius: 8 }} />
           )}
         </div>
-        <button type="submit" disabled={loading}>保存</button>
+        <button type="submit" disabled={loading}>
+          保存
+        </button>
       </form>
     </div>
   );

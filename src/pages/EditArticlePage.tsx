@@ -1,7 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { marked } from 'marked';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { getArticleById, updateArticle, deleteArticle, renderMarkdown } from '../utils/articleService';
+import {
+  getArticleById,
+  updateArticle,
+  deleteArticle,
+  renderMarkdown
+} from '../utils/articleService';
 import '../styles/EditArticlePage.css';
 
 interface Post {
@@ -66,7 +71,8 @@ renderer.image = function ({
   href = String(href || '').trim();
   title = String(title || '').trim();
   text = String(text || '').trim();
-  if (!href) return `<img src="https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg" alt="${text}" title="${title}">`;
+  if (!href)
+    return `<img src="https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg" alt="${text}" title="${title}">`;
   return `<img src="${href}" alt="${text}" title="${title}" onError="this.src='https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg'">`;
 };
 // 配置 marked
@@ -127,7 +133,6 @@ const EditArticlePage: React.FC = () => {
     fetchArticle();
   }, [post?.post_id]);
 
-
   // 实时预览功能
   useEffect(() => {
     const updatePreview = async () => {
@@ -147,7 +152,7 @@ const EditArticlePage: React.FC = () => {
       title: formData?.title || '',
       author: formData?.author || '',
       content: formData?.content || '',
-      tags: formData?.tags || [],
+      tags: formData?.tags || []
     });
   }, [formData]);
 
@@ -237,7 +242,8 @@ const EditArticlePage: React.FC = () => {
       {loading && <div>加载中...</div>}
       {message && <div className={`message ${message.type}`}>{message.text}</div>}
       {post && (
-        <form className="editor-form"
+        <form
+          className="editor-form"
           onSubmit={(e) => {
             e.preventDefault();
             if (post?.post_id && newpost) {
@@ -303,12 +309,16 @@ const EditArticlePage: React.FC = () => {
             <button type="submit" disabled={loading}>
               变更
             </button>
-            <button type="button" onClick={async () => {
-              await deleteArticle(post?.post_id);
-              navigate('/');
-              window.location.reload();
-            }} disabled={loading}>
-                删除
+            <button
+              type="button"
+              onClick={async () => {
+                await deleteArticle(post?.post_id);
+                navigate('/');
+                window.location.reload();
+              }}
+              disabled={loading}
+            >
+              删除
             </button>
             <Link to={`/article/${post?.post_id}`}>
               <button type="button" disabled={loading}>
@@ -317,9 +327,8 @@ const EditArticlePage: React.FC = () => {
             </Link>
           </div>
         </form>
-      )
-      }
-    </div >
+      )}
+    </div>
   );
 };
 

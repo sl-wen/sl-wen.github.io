@@ -78,6 +78,8 @@ const ShareButton: React.FC<ShareButtonProps> = ({ platform, icon, onClick }) =>
 const ArticlePage: React.FC = () => {
   const { post_id } = useParams<{ post_id: string }>();
   const [article, setArticle] = useState<Article | null>(null);
+  const [dislikeCount, setDislikeCount] = useState<number>(0);
+  const [likeCount, setLikeCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [prevArticle, setPrevArticle] = useState<Article | null>(null);
@@ -234,6 +236,8 @@ const ArticlePage: React.FC = () => {
         }
 
         setArticle(articleData);
+        setDislikeCount(articleData.dislikes_count);
+        setLikeCount(articleData.likes_count);
         setPrevArticle(adjacentArticles.prev);
         setNextArticle(adjacentArticles.next);
         recordPostsView(post_id);
@@ -280,7 +284,7 @@ const ArticlePage: React.FC = () => {
               disabled={isReactionLoading}
             >
               <i className="fas fa-thumbs-up"></i>
-              <span className="likes-count">{article.likes_count}</span>
+              <span className="likes-count">{likeCount || 0}</span>
             </button>
             <button
               className={`reaction-button ${PostReaction === 'dislike' ? 'active' : ''} ${isReactionLoading ? 'loading' : ''}`}
@@ -288,7 +292,7 @@ const ArticlePage: React.FC = () => {
               disabled={isReactionLoading}
             >
               <i className="fas fa-thumbs-down"></i>
-              <span className="dislikes-count">{article.dislikes_count}</span>
+              <span className="dislikes-count">{dislikeCount || 0}</span>
             </button>
           </div>
         </div>

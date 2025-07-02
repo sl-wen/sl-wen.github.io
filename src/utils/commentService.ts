@@ -20,6 +20,7 @@ export const getComments = async (post_id: string): Promise<Comment[]> => {
       .select('*')
       .eq('post_id', post_id)
       .eq('is_approved', true)
+      .order('parent_id', { ascending: true, nullsFirst: true })
       .order('created_at', { ascending: true });
 
     if (error) throw error;

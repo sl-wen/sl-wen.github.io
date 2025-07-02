@@ -594,7 +594,7 @@
   }
 
   .article-navigation {
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--spacing-4);
     padding: var(--spacing-4);
   }

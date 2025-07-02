@@ -100,7 +100,7 @@ const Footer: React.FC = () => {
               <a href="https://linkedin.com" className="socialLink" title="LinkedIn">
                 <span className="socialIcon">💼</span>
               </a>
-              <a href="/rss" className="socialLink" title="RSS">
+              <a href="/static/xml/rss.xml" className="socialLink" title="RSS">
                 <span className="socialIcon">📡</span>
               </a>
             </div>

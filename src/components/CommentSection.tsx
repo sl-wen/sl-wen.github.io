@@ -296,7 +296,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
         <button type="submit">发表评论</button>
       </form>
 
-      <ul className="comments-list">
+      <div className="comments-list">
         {comments
           .filter((comment) => !comment.parent_id)
           .map((comment) => (
@@ -304,7 +304,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
               <div className="comment-header">
                 <div className="comment-user-info">
                   <img
-                    src={commentUserProfiles[comment.user_id]?.avatar_url || 'default-avatar.png'}
+                    src={commentUserProfiles[comment.user_id]?.avatar_url || ''}
                     alt="用户头像"
                     className="user-avatar"
                   />
@@ -405,7 +405,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                               <img
                                 src={
                                   commentUserProfiles[reply.user_id]?.avatar_url ||
-                                  'default-avatar.png'
+                                  ''
                                 }
                                 alt="用户头像"
                                 className="user-avatar"
@@ -449,7 +449,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
               )}
             </div>
           ))}
-      </ul>
+      </div>
     </div>
   );
 };

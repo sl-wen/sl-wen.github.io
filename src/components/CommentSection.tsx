@@ -68,7 +68,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
     }
   }, [userProfile?.user_id, comments.length]);
 
-  
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -273,7 +273,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
     <div className="comment-section">
       <h3>评论</h3>
       {error && <div className="error-message">{error}</div>}
-      
+
       <form onSubmit={handleSubmit} className="comment-form">
         <textarea
           value={newComment}
@@ -286,7 +286,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
 
       <ul className="comments-list">
         {comments.filter(comment => !comment.parent_id).map(comment => (
-          <li key={comment.comment_id} className="comment">
+          <div key={comment.comment_id} className="comment">
             <div className="comment-header">
               <div className="comment-user-info">
                 <img
@@ -299,7 +299,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
               </div>
               <time>{new Date(comment.created_at).toLocaleString()}</time>
             </div>
-            
+
             {editingCommentId === comment.comment_id ? (
               <form onSubmit={(e) => {
                 e.preventDefault();
@@ -324,13 +324,15 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                       className={`like-button ${commentReactions[comment.comment_id] === 'like' ? 'active' : ''}`}
                       onClick={() => handleReaction(comment.comment_id, 'like')}
                     >
-                      👍 {comment.likes_count || 0}
+                      <i className="fas fa-thumbs-up"></i>
+                      {comment.likes_count || 0}
                     </button>
                     <button
                       className={`dislike-button ${commentReactions[comment.comment_id] === 'dislike' ? 'active' : ''}`}
                       onClick={() => handleReaction(comment.comment_id, 'dislike')}
                     >
-                      👎 {comment.dislikes_count || 0}
+                      <i className="fas fa-thumbs-down"></i>
+                      {comment.dislikes_count || 0}
                     </button>
                     <button
                       className="reply-button"
@@ -407,7 +409,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                 </div>
               </>
             )}
-          </li>
+          </div>
         ))}
       </ul>
     </div>

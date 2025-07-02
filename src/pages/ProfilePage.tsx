@@ -14,20 +14,6 @@ interface UserProfile {
   experience: number;
 }
 
-interface UserTask {
-  id: number;
-  task_name: string;
-  progress: number;
-  total: number;
-  status: string;
-}
-
-interface TaskHistory {
-  id: number;
-  task_name: string;
-  reward: number;
-  completed_at: string;
-}
 
 const ProfilePage: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);

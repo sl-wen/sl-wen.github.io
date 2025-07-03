@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase-config';
 import Loading from '../components/Loading';
 import '../styles/ProfilePage.css';

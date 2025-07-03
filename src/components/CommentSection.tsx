@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import {
   Comment,
@@ -8,7 +10,6 @@ import {
 } from '../utils/commentService';
 import { addCommentReaction, getCommentReaction } from '../utils/reactionService';
 import { getUserProfile } from '../utils/supabase-config';
-import '../styles/CommentSection.css';
 
 interface UserProfile {
   username: string;

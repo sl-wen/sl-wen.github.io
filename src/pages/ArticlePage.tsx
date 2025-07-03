@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { getArticleById, getAdjacentArticles, Article } from '../utils/articleService';
 import DOMPurify from 'dompurify';
 import Loading from '../components/Loading';
@@ -8,7 +11,6 @@ import { recordPostsView } from '../utils/stats';
 import { marked } from 'marked';
 import { addPostReaction, getPostReaction } from '../utils/reactionService';
 import CommentSection from '../components/CommentSection';
-import '../styles/ArticlePage.css';
 
 const addCopyButtons = () => {
   const codeBlocks = document.querySelectorAll('.markdownBody pre code');
@@ -70,14 +72,18 @@ interface ShareButtonProps {
 }
 
 const ShareButton: React.FC<ShareButtonProps> = ({ platform, icon, onClick }) => (
-  <button className="share-button" onClick={onClick}>
+  <button 
+    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+    onClick={onClick}
+  >
     <i className={icon}></i>
     {platform}
   </button>
 );
 
 const ArticlePage: React.FC = () => {
-  const { post_id } = useParams<{ post_id: string }>();
+  const params = useParams();
+  const post_id = params?.id as string;
   const [article, setArticle] = useState<Article | null>(null);
   const [dislikeCount, setDislikeCount] = useState<number>(0);
   const [likeCount, setLikeCount] = useState<number>(0);
@@ -276,85 +282,144 @@ const ArticlePage: React.FC = () => {
   }
 
   return (
-    <div className="page">
-      <div className="article-container">
-        <div className="button-area">
-          <Link to={`/edit/${article.post_id}`} className="editButton">
-            <span>编辑</span>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* 操作按钮区域 */}
+        <div className="flex justify-between items-center mb-8">
+          <Link 
+            href={`/article/${article.post_id}/edit`} 
+            className="btn-primary px-4 py-2 text-sm"
+          >
+            编辑文章
           </Link>
-          <div className="reactionButton">
+          
+          <div className="flex items-center gap-2">
             <button
-              className={`reaction-button ${PostReaction === 'like' ? 'active' : ''} ${isReactionLoading ? 'loading' : ''}`}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                PostReaction === 'like' 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              } ${isReactionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => handleReaction('like')}
               disabled={isReactionLoading}
             >
-              <i className="fas fa-thumbs-up"></i>
-              <span className="likes-count">{likeCount || 0}</span>
+              <span>👍</span>
+              <span>{likeCount || 0}</span>
             </button>
+            
             <button
-              className={`reaction-button ${PostReaction === 'dislike' ? 'active' : ''} ${isReactionLoading ? 'loading' : ''}`}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                PostReaction === 'dislike' 
+                  ? 'bg-red-500 text-white' 
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              } ${isReactionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => handleReaction('dislike')}
               disabled={isReactionLoading}
             >
-              <i className="fas fa-thumbs-down"></i>
-              <span className="dislikes-count">{dislikeCount || 0}</span>
+              <span>👎</span>
+              <span>{dislikeCount || 0}</span>
             </button>
           </div>
         </div>
-        <h1 className="article-title">{article.title}</h1>
-        <div className="article-meta">
-          <span className="article-author">作者：{article.author}</span>
-          {article.tags && article.tags.length > 0 && (
-            <div className="article-tags">
-              标签：
-              {article.tags.map((tag, index) => (
-                <span key={index} className="tag">
-                  {tag}
-                </span>
-              ))}
+
+        {/* 文章主体 */}
+        <article className="card">
+          {/* 文章标题 */}
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+            {article.title}
+          </h1>
+          
+          {/* 文章元信息 */}
+          <div className="flex flex-wrap items-center gap-4 mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <span>✍️</span>
+              <span>作者：{article.author}</span>
             </div>
-          )}
-          <span className="article-date">
-            发布于：{new Date(article.created_at).toLocaleDateString()}
-          </span>
-        </div>
-        <div
-          className="articleContent markdownBody"
-          dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(marked.parse(article.content).toString())
-          }}
-        />
-
-        <div className="article-actions">
-          <div className="article-share">
-            <ShareButton
-              platform="复制链接"
-              icon="icon-link"
-              onClick={() => handleShare('复制链接')}
-            />
+            
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <span>📅</span>
+              <span>发布于：{new Date(article.created_at).toLocaleDateString()}</span>
+            </div>
+            
+            {article.tags && article.tags.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600 dark:text-gray-400">🏷️ 标签：</span>
+                <div className="flex flex-wrap gap-2">
+                  {article.tags.map((tag, index) => (
+                    <span 
+                      key={index} 
+                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+          
+          {/* 文章内容 */}
+          <div
+            className="prose prose-lg dark:prose-invert max-w-none markdownBody"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(marked.parse(article.content).toString())
+            }}
+          />
 
+          {/* 分享操作 */}
+          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-4">
+              <span className="text-gray-600 dark:text-gray-400">分享文章：</span>
+              <ShareButton
+                platform="复制链接"
+                icon="icon-link"
+                onClick={() => handleShare('复制链接')}
+              />
+            </div>
+          </div>
+        </article>
+
+        {/* 上下篇导航 */}
         {(prevArticle || nextArticle) && (
-          <div className="article-navigation">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
             {prevArticle && (
-              <Link to={`/article/${prevArticle.post_id}`} className="nav-link prev-article">
-                <span>上一篇</span>
-                <span>{prevArticle.title}</span>
+              <Link 
+                href={`/article/${prevArticle.post_id}`} 
+                className="card hover:shadow-lg transition-shadow duration-200 group"
+              >
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">上一篇</div>
+                <div className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
+                  {prevArticle.title}
+                </div>
               </Link>
             )}
+            
             {nextArticle && (
-              <Link to={`/article/${nextArticle.post_id}`} className="nav-link next-article">
-                <span>下一篇</span>
-                <span>{nextArticle.title}</span>
+              <Link 
+                href={`/article/${nextArticle.post_id}`} 
+                className="card hover:shadow-lg transition-shadow duration-200 group md:text-right"
+              >
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">下一篇</div>
+                <div className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
+                  {nextArticle.title}
+                </div>
               </Link>
             )}
           </div>
         )}
-      </div>
-      {showShareTip && <div className="share-tip">{shareTipText}</div>}
 
-      <CommentSection post_id={article.post_id} />
+        {/* 评论区域 */}
+        <div className="mt-8">
+          <CommentSection post_id={article.post_id} />
+        </div>
+      </div>
+
+      {/* 分享提示 */}
+      {showShareTip && (
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+          {shareTipText}
+        </div>
+      )}
     </div>
   );
 };

@@ -8,6 +8,7 @@ pages/dist/
 pages/_site/dist/
 dist/
 dev-dist/
+.next/
 
 # 依赖目录
 node_modules/

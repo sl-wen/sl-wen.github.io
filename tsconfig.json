@@ -1,26 +1,35 @@
 {
   "compilerOptions": {
-    /* 基本选项 */
-    "target": "ES2020",                // 生成代码的 JavaScript 版本，推荐 ES2020 及以上
-    "module": "ESNext",                // 指定采用的模块系统（Node18+/前端均支持 ESNext）
-    "moduleResolution": "Node",        // 按 Node.js 模块解析规则
-    "outDir": "./dist",                // 编译输出目录
-    "rootDir": "./src",                // 源码目录
-    "jsx": "react-jsx",
-    /* 开发辅助 */
-    "strict": true,                    // 启用所有严格类型检查
-    "noImplicitAny": true,             // 不允许隐式 any
-    "strictNullChecks": true,          // 严格检查 null/undefined
-    "esModuleInterop": true,           // 允许默认导入非ES模块
-    "allowSyntheticDefaultImports": true,     // 允许从没有默认导出的模块默认导入
-    "resolveJsonModule": true,                // 支持导入 json 文件
-    "skipLibCheck": true,                     // 跳过库文件的类型检查，加快编译速度
-    "forceConsistentCasingInFileNames": true, // 文件名大小写一致
-    "sourceMap": true,
-    "declaration": true,
+    "target": "es5",
+    "lib": ["dom", "dom.iterable", "es6"],
     "allowJs": true,
-    "checkJs": false
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/pages/*": ["./src/pages/*"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/styles/*": ["./src/styles/*"],
+      "@/types/*": ["./src/types/*"]
+    },
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src", "src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }

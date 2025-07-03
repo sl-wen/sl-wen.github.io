@@ -152,8 +152,10 @@
     grid-template-columns: 1fr;
   }
 
-  .editorSection,
-  .previewSection {
+  .editorSection{
     height: 300px;
+  }
+  .previewSection {
+    display: none;
   }
 }

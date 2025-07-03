@@ -416,8 +416,7 @@
 
 @media (max-width: 768px) {
   .heroSection {
-    min-height: 60vh;
-    padding: var(--spacing-12) var(--spacing-4);
+    display: none;
   }
 
   .heroTitle {
@@ -445,7 +444,9 @@
     font-size: var(--text-2xl);
   }
 
-  .featuresSection,
+  .featuresSection{
+    display: none;
+  }
   .articlesSection {
     padding: var(--spacing-4) var(--spacing-4);
   }

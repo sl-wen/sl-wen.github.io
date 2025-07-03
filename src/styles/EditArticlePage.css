@@ -166,14 +166,13 @@
     flex-direction: column;
   }
 
-  .editorSection,
-  .previewSection {
+  .editorSection {
     max-width: 100%;
     min-height: 300px;
   }
-
-  .editor,
-  .preview {
-    height: 300px;
+  
+  .previewSection{
+    display: none;
   }
+
 }

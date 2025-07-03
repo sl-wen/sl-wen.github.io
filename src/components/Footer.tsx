@@ -107,21 +107,16 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* 统计信息 */}
-        <div className="footerStats">
-          <div className="statsGrid">
-            <div className="statItem">
-              <span className="statLabel">总访问量</span>
-              <span className="statValue">{visitCount.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-
         {/* 版权信息 */}
         <div className="footerBottom">
           <div className="copyright">
             <p>© {currentYear} 个人博客. All rights reserved.</p>
             <p className="poweredBy">Powered by React & TypeScript with ❤️</p>
+          </div>
+
+          <div className="statItem">
+              <span className="statLabel">总访问量</span>
+              <span className="statValue">{visitCount.toLocaleString()}</span>
           </div>
 
           {/* 备案信息等 */}

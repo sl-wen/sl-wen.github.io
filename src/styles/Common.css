@@ -799,7 +799,6 @@ a:hover {
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
   padding: var(--spacing-3) var(--spacing-6);
   border-radius: var(--border-radius-full);
   font-weight: 600;
@@ -847,8 +846,8 @@ a:hover {
   }
 
   .auth {
-    position: relative;
-    right: auto;
+    position: absolute;
+    right: 0;
     top: auto;
     transform: none;
     margin-top: var(--spacing-4);
@@ -898,7 +897,7 @@ a:hover {
 .footer {
   background-color: var(--gray-900);
   color: var(--gray-300);
-  padding: var(--spacing-8) var(--spacing-4);
+  padding: var(--spacing-4) var(--spacing-4);
   text-align: center;
   margin-top: auto;
 }
@@ -943,8 +942,8 @@ a:hover {
   }
 
   .auth {
-    position: relative;
-    right: auto;
+    position: absolute;
+    right: 0;
     top: auto;
     transform: none;
     margin-top: var(--spacing-4);
@@ -955,7 +954,7 @@ a:hover {
   }
 
   .footer {
-    padding: var(--spacing-6) var(--spacing-4);
+    padding: var(--spacing-4) var(--spacing-4);
   }
 
   .status-messages {
@@ -1001,7 +1000,7 @@ a:hover {
 /* 主要内容区域 */
 .footerMain {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: var(--spacing-8);
   margin-bottom: var(--spacing-12);
 }
@@ -1254,9 +1253,7 @@ a:hover {
   }
 
   .footerMain {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-8);
-    margin-bottom: var(--spacing-8);
+    display: none;
   }
 
   .footerBrand {

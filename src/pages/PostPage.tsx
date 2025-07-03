@@ -19,7 +19,11 @@ const PostPage: React.FC = () => {
     tags: []
   });
   const [preview, setPreview] = useState('');
-  const [userProfile, setUserProfile] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<{
+    user_id: string;
+    username: string;
+    email: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -42,13 +46,15 @@ const PostPage: React.FC = () => {
   useEffect(() => {
     try {
       const userProfileStr = localStorage.getItem('userProfile');
-      const userProfileData = JSON.parse(userProfileStr || '{}');
-      if (!userProfileData.user_id) {
+      if(userProfileStr){
+        setUserProfile(JSON.parse(userProfileStr));
+      }
+      if (!userProfile?.user_id) {
         throw new Error('请先登录');
       }
       setFormData({
         title: '',
-        author: JSON.parse(userProfile).username || '',
+        author: userProfile.username || '',
         content: '',
         tags: []
       });
@@ -98,8 +104,8 @@ const PostPage: React.FC = () => {
     try {
       const article = await createArticle({
         ...formData,
-        author: userProfile ? JSON.parse(userProfile).username || '' : '',
-        user_id: userProfile ? JSON.parse(userProfile).user_id || '' : '',
+        author: userProfile ? userProfile.username || '' : '',
+        user_id: userProfile ? userProfile.user_id || '' : '',
         views: 0,
         dislikes_count: 0
       });

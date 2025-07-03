@@ -1,16 +1,21 @@
-# 用于部署静态内容到阿里云服务器的工作流
+# 用于部署Next.js应用到阿里云服务器的工作流
 name: Deploy to ALI
 
 on:
-  # 在master分支有推送时触发
+  # 在react分支有推送时触发
   push:
     branches: ["react"]
   # 允许手动触发部署
   workflow_dispatch:
 
+# 环境变量
+env:
+  NODE_ENV: production
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    
     steps:
       # 检出代码
       - name: Checkout Repository
@@ -18,37 +23,78 @@ jobs:
 
       # 设置Node.js环境
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
 
       # 安装依赖
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
+
+      # 创建环境变量文件（如果需要）
 
       # 构建项目
       - name: Build Project
         run: npm run build
 
-      # 部署到阿里云
-      - name: Deploy to Aliyun
+      # 创建启动脚本
+      - name: Create Start Script
+        run: |
+          cat > start.sh << 'EOF'
+          #!/bin/bash
+          cd /var/www/blog
+          npm start
+          EOF
+
+      # 部署应用文件到阿里云
+      - name: Deploy App to Aliyun
         uses: appleboy/scp-action@v0.1.4
         with:
           host: '121.40.215.235'
           username: 'root'
           password: ${{ secrets.HOST_ALI }}
           port: 22
-          source: "dist/*"
-          target: "/usr/share/nginx/html/"
-          strip_components: 1
+          source: ".next,package.json,package-lock.json,next.config.js,public,start.sh"
+          target: "/var/www/blog/"
           rm: true
+
+      # 安装依赖并重启应用
+      - name: Install Dependencies and Restart App
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: '121.40.215.235'
+          username: 'root'
+          password: ${{ secrets.HOST_ALI }}
+          port: 22
+          script: |
+            cd /var/www/blog
+            npm ci --production
+            chmod +x start.sh
+            
+            # 停止现有进程
+            pkill -f "next start" || true
+            
+            # 启动新进程
+            nohup npm start > /dev/null 2>&1 &
+            
+            # 等待应用启动
+            sleep 5
+            
+            # 检查应用是否正常运行
+            if curl -f http://localhost:3000 > /dev/null 2>&1; then
+              echo "应用启动成功"
+            else
+              echo "应用启动失败"
+              exit 1
+            fi
 
       # 部署后通知
       - name: Deployment Status
         if: always()
         run: |
           if [ ${{ job.status }} == 'success' ]; then
-            echo "✅ 部署成功！网站已更新。"
+            echo "✅ 部署成功！网站已更新到: http://121.40.215.235"
           else
             echo "❌ 部署失败，请检查日志获取详细信息。"
           fi

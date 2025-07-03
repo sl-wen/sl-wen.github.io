@@ -20,6 +20,11 @@ const withPWA = require('next-pwa')({
 });
 
 const nextConfig = {
+  // 暂时禁用静态导出，使用标准构建
+  // output: 'export',
+  trailingSlash: true,
+  
+  // 图片配置
   images: {
     remotePatterns: [
       {
@@ -36,6 +41,8 @@ const nextConfig = {
       },
     ],
   },
+  
+  // 其他配置
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
@@ -46,6 +53,8 @@ const nextConfig = {
   env: {
     CUSTOM_KEY: 'value',
   },
+  
+  // 安全头配置
   async headers() {
     return [
       {

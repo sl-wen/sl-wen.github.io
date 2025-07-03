@@ -630,7 +630,6 @@ a:hover {
 }
 
 .nav a {
-  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   font-weight: 600;
   font-size: var(--text-base);
@@ -1185,6 +1184,7 @@ a:hover {
 
 .legalLinks {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: var(--spacing-2);
   flex-wrap: wrap;
@@ -1318,7 +1318,7 @@ a:hover {
   }
 
   .legalLinks {
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--spacing-2);
   }
 

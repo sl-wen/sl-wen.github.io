@@ -96,7 +96,6 @@
     width: 100%;
     justify-content: space-around;
     padding: 8px 0;
-    background: rgba(255, 255, 255, 0.95);
     border-radius: 12px 12px 0 0;
     position: fixed;
     bottom: 0;
@@ -125,7 +124,6 @@
   .nav a:hover,
   .nav a.active {
     background: var(--primary-color);
-    color: white;
     transform: translateY(-2px);
   }
 

@@ -70,13 +70,6 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
             <Link to={`/article/${article.post_id}`}>{article.title}</Link>
           </h2>
 
-          {article.content && (
-            <p className="articleExcerpt">
-              {article.content.substring(0, 120)}
-              {article.content.length > 120 && '...'}
-            </p>
-          )}
-
           <div className="articleTags">
             {getTags().map((tag, index) => (
               <span key={index} className="tag">

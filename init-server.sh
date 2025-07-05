@@ -54,23 +54,75 @@ ufw allow https
 ufw allow 3000/tcp
 ufw status
 
-# 创建应用目录
-echo "📁 创建应用目录..."
-mkdir -p /var/www/blog
-cd /var/www/blog
-
-# 克隆代码仓库
-echo "📥 克隆代码仓库..."
-git clone https://github.com/sl-wen/sl-wen.github.io.git .
-git checkout react
+# 处理应用目录
+echo "📁 处理应用目录..."
+if [ -d "/var/www/blog" ]; then
+    echo "⚠️  目录 /var/www/blog 已存在"
+    
+    # 检查是否为Git仓库
+    if [ -d "/var/www/blog/.git" ]; then
+        echo "📋 发现现有Git仓库"
+        cd /var/www/blog
+        
+        # 检查远程仓库
+        CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
+        TARGET_REMOTE="https://github.com/sl-wen/sl-wen.github.io.git"
+        
+        if [ "$CURRENT_REMOTE" = "$TARGET_REMOTE" ]; then
+            echo "✅ 远程仓库匹配，更新现有仓库..."
+            git fetch origin
+            git checkout react 2>/dev/null || git checkout -b react origin/react
+            git pull origin react
+        else
+            echo "⚠️  远程仓库不匹配"
+            echo "当前: $CURRENT_REMOTE"
+            echo "目标: $TARGET_REMOTE"
+            echo "🔄 重新初始化仓库..."
+            cd /var/www
+            rm -rf blog
+            mkdir -p blog
+            cd blog
+            git clone https://github.com/sl-wen/sl-wen.github.io.git .
+            git checkout react
+        fi
+    else
+        echo "📋 目录存在但不是Git仓库"
+        
+        # 检查目录是否为空
+        if [ "$(ls -A /var/www/blog)" ]; then
+            echo "⚠️  目录不为空，备份现有内容..."
+            mv /var/www/blog /var/www/blog.backup.$(date +%Y%m%d_%H%M%S)
+            echo "✅ 已备份到 /var/www/blog.backup.$(date +%Y%m%d_%H%M%S)"
+        fi
+        
+        # 创建新目录并克隆
+        mkdir -p /var/www/blog
+        cd /var/www/blog
+        git clone https://github.com/sl-wen/sl-wen.github.io.git .
+        git checkout react
+    fi
+else
+    # 创建新目录
+    mkdir -p /var/www/blog
+    cd /var/www/blog
+    git clone https://github.com/sl-wen/sl-wen.github.io.git .
+    git checkout react
+fi
 
 # 设置权限
 echo "🔐 设置权限..."
 chown -R $(whoami):$(whoami) /var/www/blog
 chmod -R 755 /var/www/blog
 
+# 检查package.json是否存在
+if [ ! -f "/var/www/blog/package.json" ]; then
+    echo "❌ package.json 不存在，请检查仓库内容"
+    exit 1
+fi
+
 # 安装依赖
 echo "📦 安装项目依赖..."
+cd /var/www/blog
 npm ci
 
 # 构建应用
@@ -83,6 +135,7 @@ cat > .env.local << 'EOF'
 # 在此添加你的环境变量
 # NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 # NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
+NODE_ENV=production
 EOF
 
 # 创建systemd服务
@@ -100,6 +153,8 @@ ExecStart=/usr/bin/npm start
 Restart=on-failure
 RestartSec=10
 Environment=NODE_ENV=production
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
@@ -188,7 +243,10 @@ if systemctl is-active --quiet blog; then
     echo "✅ blog服务运行正常"
 else
     echo "❌ blog服务启动失败"
+    echo "📋 服务状态:"
     systemctl status blog --no-pager
+    echo "📋 服务日志:"
+    journalctl -u blog -n 20 --no-pager
 fi
 
 if systemctl is-active --quiet nginx; then
@@ -205,6 +263,8 @@ if curl -f http://localhost:3000 > /dev/null 2>&1; then
     echo "✅ 应用响应正常"
 else
     echo "⚠️  应用可能还在启动中"
+    echo "📋 端口状态:"
+    netstat -tlnp | grep :3000 || echo "端口3000未监听"
 fi
 
 # 测试Nginx代理
@@ -249,4 +309,9 @@ echo ""
 echo "🔧 配置文件位置:"
 echo "  - Nginx配置: /etc/nginx/sites-available/blog"
 echo "  - 服务配置: /etc/systemd/system/blog.service"
-echo "  - 应用目录: /var/www/blog" 
+echo "  - 应用目录: /var/www/blog"
+echo ""
+if [ -d "/var/www/blog.backup."* ] 2>/dev/null; then
+    echo "📋 备份信息:"
+    echo "  - 原有文件已备份到: $(ls -d /var/www/blog.backup.* 2>/dev/null | head -1)"
+fi 

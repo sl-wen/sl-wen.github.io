@@ -1,5 +1,5 @@
-# 服务器端Git拉取并构建部署工作流
-name: Deploy to ALI
+# Ubuntu 24.04 服务器部署工作流
+name: Deploy to Ubuntu Server
 
 on:
   # 在react分支有推送时触发
@@ -13,92 +13,134 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      # 通过SSH连接服务器，拉取代码并构建
-      - name: Deploy via Git Pull on Server
+      # 通过SSH连接Ubuntu服务器，拉取代码并构建
+      - name: Deploy via Git Pull on Ubuntu Server
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_KEY }}
           port: 22
-          timeout: 120s
-          command_timeout: 20m
+          timeout: 180s
+          command_timeout: 25m
           script: |
             set -e
             
             # 检查目录是否存在
             if [ ! -d "/var/www/blog" ]; then
-              echo "❌ 应用目录不存在，请先创建并克隆代码"
+              echo "❌ 应用目录不存在，请先运行初始化脚本"
+              echo "💡 运行: curl -sSL https://raw.githubusercontent.com/sl-wen/sl-wen.github.io/react/init-server.sh | bash"
               exit 1
             fi
             
             cd /var/www/blog
             
-            echo "=== 开始服务器端Git部署 ==="
+            echo "=== 开始Ubuntu服务器部署 ==="
+            echo "📋 系统信息: $(lsb_release -d | cut -f2)"
+            echo "⏰ 部署时间: $(date)"
             
-            # 检查Node.js版本
-            echo "📋 检查环境..."
+            # 检查系统环境
+            echo "📋 检查系统环境..."
             node --version || { echo "❌ Node.js未安装"; exit 1; }
             npm --version || { echo "❌ npm未安装"; exit 1; }
+            git --version || { echo "❌ Git未安装"; exit 1; }
+            
+            # 检查系统资源
+            echo "📊 系统资源状态:"
+            echo "  内存: $(free -h | grep Mem | awk '{print $3 "/" $2}')"
+            echo "  磁盘: $(df -h /var/www/blog | tail -1 | awk '{print $3 "/" $2 " (" $5 ")"}')"
             
             # 检查Git状态并清理
-            echo "📋 检查Git状态..."
-            git status || { echo "❌ 不是Git仓库"; exit 1; }
+            echo "📋 检查Git仓库状态..."
+            if ! git rev-parse --git-dir > /dev/null 2>&1; then
+                echo "❌ 不是Git仓库"
+                exit 1
+            fi
             
-            # 清理Git工作区（丢弃本地更改）
+            # 显示当前状态
+            echo "📋 当前分支: $(git branch --show-current)"
+            echo "📋 当前提交: $(git log --oneline -n 1)"
+            
+            # 清理Git工作区
             echo "🧹 清理Git工作区..."
+            if ! git diff --quiet || ! git diff --cached --quiet; then
+                echo "⚠️  发现未提交的更改，正在暂存..."
+                git stash push -u -m "Auto stash before deployment $(date)"
+            fi
             git reset --hard HEAD
             git clean -fd
             
             # 停止现有服务
             echo "🛑 停止现有服务..."
-            if sudo systemctl list-units --full -all | grep -Fq "blog.service"; then
-                sudo systemctl stop blog || echo "服务停止失败"
+            if systemctl list-unit-files | grep -q "blog.service"; then
+                if systemctl is-active --quiet blog; then
+                    sudo systemctl stop blog
+                    echo "✅ blog服务已停止"
+                else
+                    echo "📋 blog服务未运行"
+                fi
             else
-                echo "blog服务不存在，将稍后创建"
+                echo "📋 blog服务不存在，将稍后创建"
             fi
-            sudo pkill -f "next start" || echo "没有运行中的Next.js进程"
             
-            # 备份当前版本（如果需要回滚）
+            # 终止可能的残留进程
+            pkill -f "next start" || echo "📋 没有运行中的Next.js进程"
+            
+            # 备份当前版本
             echo "💾 备份当前版本..."
             if [ -d ".next" ]; then
                 rm -rf .next.backup
-                mv .next .next.backup
+                cp -r .next .next.backup
+                echo "✅ 构建文件已备份"
             fi
             
             # 拉取最新代码
             echo "📥 拉取最新代码..."
             git fetch origin || { echo "❌ Git fetch失败"; exit 1; }
+            BEFORE_COMMIT=$(git rev-parse HEAD)
             git reset --hard origin/react || { echo "❌ Git reset失败"; exit 1; }
             git clean -fd
+            AFTER_COMMIT=$(git rev-parse HEAD)
             
-            # 显示当前版本信息
-            echo "📋 当前版本信息:"
-            git log --oneline -n 3
+            # 显示更新信息
+            if [ "$BEFORE_COMMIT" != "$AFTER_COMMIT" ]; then
+                echo "📋 代码已更新:"
+                git log --oneline $BEFORE_COMMIT..$AFTER_COMMIT
+            else
+                echo "📋 代码无变化"
+            fi
+            
+            echo "📋 当前版本: $(git log --oneline -n 1)"
             
             # 创建环境变量文件
             echo "🔧 配置环境变量..."
             cat > .env.local << 'EOF'
             NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
             NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_KEY }}
+            NODE_ENV=production
             EOF
+            echo "✅ 环境变量配置完成"
             
-            # 清理旧的构建文件
+            # 清理旧的构建文件和缓存
             echo "🧹 清理旧文件..."
-            rm -rf node_modules
+            rm -rf node_modules/.cache
+            rm -rf .next
             npm cache clean --force
             
             # 安装依赖
             echo "📦 安装依赖..."
-            npm ci --production=false || { echo "❌ 依赖安装失败"; exit 1; }
+            npm ci || { echo "❌ 依赖安装失败"; exit 1; }
+            echo "✅ 依赖安装完成"
             
             # 构建应用
             echo "🔨 构建应用..."
-            npm run build || { echo "❌ 构建失败"; exit 1; }
-            
-            # 安装生产依赖
-            echo "📦 安装生产依赖..."
-            npm ci --production --ignore-scripts || { echo "❌ 生产依赖安装失败"; exit 1; }
+            npm run build || { 
+                echo "❌ 构建失败"
+                echo "📋 构建日志:"
+                npm run build 2>&1 | tail -20
+                exit 1
+            }
+            echo "✅ 应用构建完成"
             
             # 设置权限
             echo "🔐 设置权限..."
@@ -106,7 +148,7 @@ jobs:
             sudo chmod -R 755 /var/www/blog
             
             # 创建systemd服务（如果不存在）
-            if ! sudo systemctl list-units --full -all | grep -Fq "blog.service"; then
+            if ! systemctl list-unit-files | grep -q "blog.service"; then
                 echo "🔧 创建systemd服务..."
                 sudo tee /etc/systemd/system/blog.service > /dev/null <<EOF
             [Unit]
@@ -121,6 +163,8 @@ jobs:
             Restart=on-failure
             RestartSec=10
             Environment=NODE_ENV=production
+            StandardOutput=journal
+            StandardError=journal
             
             [Install]
             WantedBy=multi-user.target
@@ -136,19 +180,43 @@ jobs:
             
             # 等待服务启动
             echo "⏳ 等待服务启动..."
-            sleep 15
+            sleep 20
             
             # 检查服务状态
             echo "🔍 检查服务状态..."
-            if sudo systemctl is-active --quiet blog; then
-                echo "✅ 服务启动成功"
+            if systemctl is-active --quiet blog; then
+                echo "✅ blog服务启动成功"
                 
                 # 等待应用完全启动
-                sleep 10
+                echo "⏳ 等待应用完全启动..."
+                sleep 15
+                
+                # 检查应用端口
+                if netstat -tlnp | grep -q ":3000"; then
+                    echo "✅ 应用端口3000已监听"
+                else
+                    echo "⚠️  端口3000未监听"
+                fi
                 
                 # 检查应用是否响应
+                echo "🧪 测试应用响应..."
                 if curl -f http://localhost:3000 > /dev/null 2>&1; then
                     echo "✅ 应用响应正常"
+                    
+                    # 检查Nginx状态
+                    if systemctl is-active --quiet nginx; then
+                        echo "✅ Nginx服务正常"
+                        
+                        # 测试Nginx代理
+                        if curl -f http://localhost > /dev/null 2>&1; then
+                            echo "✅ Nginx代理正常"
+                        else
+                            echo "⚠️  Nginx代理可能有问题"
+                        fi
+                    else
+                        echo "⚠️  Nginx服务未运行"
+                        sudo systemctl start nginx || echo "❌ Nginx启动失败"
+                    fi
                     
                     # 清理备份文件
                     rm -rf .next.backup
@@ -164,7 +232,7 @@ jobs:
                         mv .next.backup .next
                         sudo systemctl start blog
                         echo "🔄 已回滚到上一个版本"
-                        sleep 10
+                        sleep 15
                         if curl -f http://localhost:3000 > /dev/null 2>&1; then
                             echo "✅ 回滚成功"
                         else
@@ -172,7 +240,10 @@ jobs:
                         fi
                     fi
                     
-                    sudo systemctl status blog --no-pager
+                    echo "📋 服务状态:"
+                    systemctl status blog --no-pager
+                    echo "📋 最近日志:"
+                    journalctl -u blog --no-pager -n 10
                     exit 1
                 fi
             else
@@ -186,23 +257,36 @@ jobs:
                     echo "🔄 已回滚到上一个版本"
                 fi
                 
-                sudo systemctl status blog --no-pager
-                sudo journalctl -u blog --no-pager -n 20
+                echo "📋 服务状态:"
+                systemctl status blog --no-pager
+                echo "📋 服务日志:"
+                journalctl -u blog --no-pager -n 20
                 exit 1
             fi
             
             echo "=== 部署完成 ==="
-            echo "📊 服务状态: $(sudo systemctl is-active blog)"
+            echo "📊 最终状态:"
+            echo "  blog服务: $(systemctl is-active blog)"
+            echo "  nginx服务: $(systemctl is-active nginx)"
+            echo "  应用端口: $(netstat -tlnp | grep :3000 | wc -l) 个监听"
             echo "🔗 访问地址: http://${{ secrets.SERVER_IP }}"
+            echo "📋 版本信息: $(git log --oneline -n 1)"
 
       # 部署后通知
       - name: Deployment Status
         if: always()
         run: |
           if [ ${{ job.status }} == 'success' ]; then
-            echo "✅ 部署成功！网站已更新到: http://${{ secrets.SERVER_IP }}"
+            echo "✅ Ubuntu服务器部署成功！"
             echo "🔗 访问地址: http://${{ secrets.SERVER_IP }}"
+            echo "📋 部署时间: $(date)"
+            echo "🎉 网站已更新并正在运行"
           else
-            echo "❌ 部署失败，请检查日志获取详细信息。"
-            echo "💡 提示: 如果部署失败，系统会自动尝试回滚到上一个版本"
+            echo "❌ Ubuntu服务器部署失败"
+            echo "💡 故障排除提示:"
+            echo "  1. 检查服务器SSH连接"
+            echo "  2. 确认服务器环境已正确配置"
+            echo "  3. 查看GitHub Actions日志获取详细错误信息"
+            echo "  4. 如果是首次部署，请先运行初始化脚本"
+            echo "  5. 系统已自动尝试回滚到上一个版本"
           fi

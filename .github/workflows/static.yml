@@ -24,6 +24,8 @@ jobs:
         timeout: 30s
         command_timeout: 10m
         script: |
+          set -e
+          
           echo "=== 开始部署 ==="
           echo "时间: $(date)"
           
@@ -37,23 +39,43 @@ jobs:
           
           # 停止服务
           echo "停止blog服务..."
-          sudo systemctl stop blog || true
+          sudo systemctl stop blog 2>/dev/null || true
+          echo "服务已停止"
           
-          # 清理进程
+          # 更强制的进程清理
           echo "清理进程..."
-          sudo pkill -f "npm" || true
-          sudo pkill -f "node" || true
-          sleep 2
+          sudo pkill -f "npm start" 2>/dev/null || true
+          sudo pkill -f "next start" 2>/dev/null || true
+          sudo pkill -f "node.*next" 2>/dev/null || true
+          
+          # 等待进程完全终止
+          sleep 3
+          
+          # 强制清理残留进程
+          sudo pkill -9 -f "npm start" 2>/dev/null || true
+          sudo pkill -9 -f "next start" 2>/dev/null || true
+          sudo pkill -9 -f "node.*next" 2>/dev/null || true
+          
+          echo "进程清理完成"
+          
+          # 检查端口占用
+          if netstat -tlnp | grep -q ":3000"; then
+            echo "端口3000仍被占用，强制释放..."
+            sudo lsof -ti:3000 | xargs sudo kill -9 2>/dev/null || true
+            sleep 2
+          fi
           
           # 拉取最新代码
           echo "拉取最新代码..."
           git fetch origin
           git reset --hard origin/react
+          echo "代码更新完成"
           
           # 检查依赖更新
           if git diff HEAD~1 --name-only | grep -q "package.json"; then
             echo "检测到package.json变化，更新依赖..."
-            npm install --production
+            npm install --production --no-audit --no-fund
+            echo "依赖更新完成"
           else
             echo "依赖无变化，跳过安装"
           fi
@@ -62,49 +84,76 @@ jobs:
           echo "构建应用..."
           export NODE_OPTIONS="--max-old-space-size=512"
           export NODE_ENV=production
-          npm run build
+          
+          # 清理旧构建
+          rm -rf .next
+          
+          # 构建应用（带超时）
+          timeout 600 npm run build
+          echo "构建完成"
           
           # 启动服务
           echo "启动blog服务..."
           sudo systemctl start blog
+          echo "服务启动命令已执行"
           
           # 等待服务启动
           echo "等待服务启动..."
-          sleep 10
+          sleep 15
           
           # 检查服务状态
+          echo "检查服务状态..."
           if sudo systemctl is-active --quiet blog; then
             echo "✅ blog服务启动成功"
+            sudo systemctl status blog --no-pager -l | head -10
           else
             echo "❌ blog服务启动失败"
             sudo systemctl status blog --no-pager -l
+            echo "查看服务日志:"
+            sudo journalctl -u blog --no-pager -n 20
             exit 1
           fi
           
-          # 检查端口
-          if netstat -tlnp | grep -q ":3000"; then
-            echo "✅ 端口3000已监听"
-          else
-            echo "❌ 端口3000未监听"
-            netstat -tlnp | grep LISTEN
-            exit 1
-          fi
+          # 检查端口监听
+          echo "检查端口监听..."
+          for i in {1..10}; do
+            if netstat -tlnp | grep -q ":3000"; then
+              echo "✅ 端口3000已监听"
+              break
+            else
+              if [ $i -eq 10 ]; then
+                echo "❌ 端口3000未监听"
+                netstat -tlnp | grep LISTEN
+                exit 1
+              fi
+              echo "等待端口监听... ($i/10)"
+              sleep 3
+            fi
+          done
           
           # 测试应用响应
           echo "测试应用响应..."
-          sleep 5
-          if curl -f --connect-timeout 10 http://localhost:3000 > /dev/null 2>&1; then
-            echo "✅ 应用响应正常"
-          else
-            echo "❌ 应用无响应"
-            sudo journalctl -u blog --no-pager -n 10
-            exit 1
-          fi
+          for i in {1..5}; do
+            if curl -f --connect-timeout 10 http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ 应用响应正常"
+              break
+            else
+              if [ $i -eq 5 ]; then
+                echo "❌ 应用无响应"
+                echo "查看应用日志:"
+                sudo journalctl -u blog --no-pager -n 10
+                exit 1
+              fi
+              echo "等待应用响应... ($i/5)"
+              sleep 10
+            fi
+          done
           
           # 重启nginx（如果存在）
-          if command -v nginx > /dev/null; then
+          if command -v nginx > /dev/null 2>&1; then
             echo "重启nginx..."
             sudo systemctl restart nginx || true
+            echo "nginx重启完成"
           fi
           
           echo "=== 部署完成 ==="
@@ -117,3 +166,5 @@ jobs:
           if [ "$EXTERNAL_IP" != "unknown" ]; then
             echo "🔗 访问地址: http://$EXTERNAL_IP"
           fi
+          
+          echo "🎉 部署成功完成！"

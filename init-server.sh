@@ -74,9 +74,10 @@ if [ -d "/var/www/blog" ]; then
         
         # 检查远程仓库
         CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
+        TARGET_REMOTE_HTTPS="https://github.com/sl-wen/sl-wen.github.io.git"
         TARGET_REMOTE_SSH="git@github.com:sl-wen/sl-wen.github.io.git"
         
-        if [ "$CURRENT_REMOTE" = "$TARGET_REMOTE_SSH" ]; then
+        if [ "$CURRENT_REMOTE" = "$TARGET_REMOTE_HTTPS" ] || [ "$CURRENT_REMOTE" = "$TARGET_REMOTE_SSH" ]; then
             echo "✅ 远程仓库匹配，更新现有仓库..."
             git fetch origin
             git checkout react 2>/dev/null || git checkout -b react origin/react
@@ -84,13 +85,13 @@ if [ -d "/var/www/blog" ]; then
         else
             echo "⚠️  远程仓库不匹配"
             echo "当前: $CURRENT_REMOTE"
-            echo "目标: $TARGET_REMOTE_SSH"
+            echo "目标: $TARGET_REMOTE_HTTPS"
             echo "🔄 重新初始化仓库..."
             cd /var/www
             rm -rf blog
             mkdir -p blog
             cd blog
-            git clone "$TARGET_REMOTE_SSH"
+            git clone git@github.com:sl-wen/sl-wen.github.io.git .
             git checkout react
         fi
     else
@@ -106,14 +107,14 @@ if [ -d "/var/www/blog" ]; then
         # 创建新目录并克隆
         mkdir -p /var/www/blog
         cd /var/www/blog
-        git clone "$TARGET_REMOTE_SSH" .
+        git clone git@github.com:sl-wen/sl-wen.github.io.git .
         git checkout react
     fi
 else
     # 创建新目录
     mkdir -p /var/www/blog
     cd /var/www/blog
-    git clone "$TARGET_REMOTE_SSH".
+    git clone git@github.com:sl-wen/sl-wen.github.io.git .
     git checkout react
 fi
 

@@ -90,7 +90,7 @@ if [ -d "/var/www/blog" ]; then
             rm -rf blog
             mkdir -p blog
             cd blog
-            git clone git@github.com:sl-wen/sl-wen.github.io.git
+            git clone "$TARGET_REMOTE_SSH"
             git checkout react
         fi
     else
@@ -106,14 +106,14 @@ if [ -d "/var/www/blog" ]; then
         # 创建新目录并克隆
         mkdir -p /var/www/blog
         cd /var/www/blog
-        git clone https://github.com/sl-wen/sl-wen.github.io.git .
+        git clone "$TARGET_REMOTE_SSH" .
         git checkout react
     fi
 else
     # 创建新目录
     mkdir -p /var/www/blog
     cd /var/www/blog
-    git clone https://github.com/sl-wen/sl-wen.github.io.git .
+    git clone "$TARGET_REMOTE_SSH".
     git checkout react
 fi
 

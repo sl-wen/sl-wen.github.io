@@ -51,7 +51,7 @@ jobs:
       - name: Deploy App to Aliyun
         uses: appleboy/scp-action@v0.1.4
         with:
-          host: '121.40.215.235'
+          host: '182.92.240.153'
           username: 'root'
           password: ${{ secrets.HOST_ALI }}
           port: 22

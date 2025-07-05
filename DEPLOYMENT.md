@@ -1,93 +1,87 @@
-# 部署指南
+# 部署文档 - Ubuntu 24.04
 
-## 🚀 自动部署到阿里云服务器（Git拉取 + 服务器端构建）
+本文档详细说明如何在Ubuntu 24.04服务器上部署博客系统，包括自动化部署配置。
 
-> 💡 **部署策略**：本配置采用Git拉取方式，服务器直接从GitHub拉取最新代码并在服务器上构建。这是最简单高效的部署方式，无需文件传输，支持版本控制和自动回滚。
+## 系统要求
 
-### 1. GitHub Secrets 配置
+- **操作系统**: Ubuntu 24.04 LTS
+- **Node.js**: 18.x 或更高版本
+- **内存**: 至少 1GB RAM
+- **存储**: 至少 10GB 可用空间
+- **网络**: 稳定的互联网连接
 
-在你的 GitHub 仓库中设置以下 Secrets：
+## 快速开始
 
-#### 必需的 Secrets：
-- `SERVER_IP`: 服务器IP地址
-- `SERVER_USER`: 服务器用户名（如 root）
-- `SERVER_KEY`: 服务器密码或SSH私钥
+### 1. 一键初始化服务器
 
-#### 可选的 Secrets（如果使用 Supabase）：
-- `SUPABASE_URL`: Supabase项目URL
-- `SUPABASE_KEY`: Supabase匿名密钥
-
-#### SSH认证配置
-如果遇到SSH认证问题，有两种解决方案：
-
-**方案1：使用SSH密钥（推荐）**
-1. 在服务器上生成SSH密钥对：
 ```bash
-ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+# 下载并运行初始化脚本
+curl -sSL https://raw.githubusercontent.com/sl-wen/sl-wen.github.io/react/init-server.sh | bash
+
+# 或者手动下载后运行
+wget https://raw.githubusercontent.com/sl-wen/sl-wen.github.io/react/init-server.sh
+chmod +x init-server.sh
+./init-server.sh
 ```
 
-2. 将公钥添加到authorized_keys：
-```bash
-cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
-```
+### 2. 配置SSH认证
 
-3. 将私钥内容复制到GitHub Secrets的 `SERVER_KEY` 中
-
-**方案2：启用密码认证**
-1. 编辑SSH配置：
-```bash
-sudo vim /etc/ssh/sshd_config
-```
-
-2. 确保以下配置：
-```
-PasswordAuthentication yes
-PermitRootLogin yes
-```
-
-3. 重启SSH服务：
-```bash
-sudo systemctl restart sshd
-```
-
-**方案3：使用配置脚本（最简单）**
-1. 在服务器上运行SSH配置脚本：
 ```bash
 # 下载并运行SSH配置脚本
-curl -o setup-ssh.sh https://raw.githubusercontent.com/sl-wen/sl-wen.github.io/react/setup-ssh.sh
+curl -sSL https://raw.githubusercontent.com/sl-wen/sl-wen.github.io/react/setup-ssh.sh | bash
+
+# 或者手动下载后运行
+wget https://raw.githubusercontent.com/sl-wen/sl-wen.github.io/react/setup-ssh.sh
 chmod +x setup-ssh.sh
 ./setup-ssh.sh
 ```
 
-2. 按照脚本提示复制私钥到GitHub Secrets
+### 3. 配置GitHub Secrets
 
-### 2. 服务器环境准备
+在GitHub仓库的Settings → Secrets and variables → Actions中添加以下secrets：
 
-#### 2.0 一键初始化（推荐）
+- `SERVER_IP`: 服务器IP地址
+- `SERVER_USER`: 服务器用户名
+- `SERVER_KEY`: SSH私钥或密码
+
+### 4. 触发部署
+
 ```bash
-# 使用一键初始化脚本（适用于全新服务器）
-curl -sSL https://raw.githubusercontent.com/sl-wen/sl-wen.github.io/react/init-server.sh | bash
-
-# 脚本会自动完成：
-# - 安装Git、Node.js、Nginx
-# - 克隆代码仓库
-# - 创建systemd服务
-# - 配置Nginx反向代理
-# - 启动所有服务
+git push origin react
 ```
 
-#### 2.1 手动安装（如果需要自定义配置）
+## 详细配置步骤
 
-#### 2.1.1 安装 Nginx
+### 服务器环境准备
+
+#### 1. 更新系统
+
 ```bash
-# 更新系统
-sudo yum update -y
+sudo apt update && sudo apt upgrade -y
+```
 
-# 安装 Nginx
-sudo yum install -y nginx
+#### 2. 安装基础依赖
 
-# 启动并设置开机自启
+```bash
+# 安装基础工具
+sudo apt install -y git curl wget vim htop build-essential
+
+# 安装Node.js 18
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# 验证安装
+node --version
+npm --version
+```
+
+#### 3. 安装和配置Nginx
+
+```bash
+# 安装Nginx
+sudo apt install -y nginx
+
+# 启动并启用Nginx
 sudo systemctl start nginx
 sudo systemctl enable nginx
 
@@ -95,21 +89,121 @@ sudo systemctl enable nginx
 sudo systemctl status nginx
 ```
 
-#### 2.1.2 配置 Nginx
-```bash
-# 备份原配置
-sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
+#### 4. 配置防火墙
 
-# 编辑配置文件
-sudo vim /etc/nginx/conf.d/blog.conf
+```bash
+# 启用防火墙
+sudo ufw enable
+
+# 允许必要端口
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw allow https
+sudo ufw allow 3000/tcp
+
+# 检查状态
+sudo ufw status
 ```
 
-将以下内容复制到 `/etc/nginx/conf.d/blog.conf`：
+### SSH认证配置
 
-```nginx
+#### 方法1: 密钥认证（推荐）
+
+```bash
+# 生成SSH密钥对
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/github_actions -N "" -C "github-actions@$(hostname)"
+
+# 添加公钥到authorized_keys
+cat ~/.ssh/github_actions.pub >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+
+# 显示私钥（复制到GitHub Secrets）
+cat ~/.ssh/github_actions
+```
+
+#### 方法2: 密码认证
+
+```bash
+# 编辑SSH配置
+sudo vim /etc/ssh/sshd_config
+
+# 确保以下配置
+PasswordAuthentication yes
+PubkeyAuthentication yes
+
+# 重启SSH服务
+sudo systemctl restart ssh
+```
+
+### 应用部署配置
+
+#### 1. 创建应用目录
+
+```bash
+sudo mkdir -p /var/www/blog
+sudo chown -R $(whoami):$(whoami) /var/www/blog
+cd /var/www/blog
+```
+
+#### 2. 克隆代码
+
+```bash
+git clone https://github.com/sl-wen/sl-wen.github.io.git .
+git checkout react
+```
+
+#### 3. 安装依赖并构建
+
+```bash
+npm ci
+npm run build
+```
+
+#### 4. 配置环境变量
+
+```bash
+# 创建环境变量文件
+cat > .env.local << 'EOF'
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
+EOF
+```
+
+#### 5. 创建systemd服务
+
+```bash
+sudo tee /etc/systemd/system/blog.service > /dev/null <<EOF
+[Unit]
+Description=Blog Next.js App
+After=network.target
+
+[Service]
+Type=simple
+User=$(whoami)
+WorkingDirectory=/var/www/blog
+ExecStart=/usr/bin/npm start
+Restart=on-failure
+RestartSec=10
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# 启用并启动服务
+sudo systemctl daemon-reload
+sudo systemctl enable blog
+sudo systemctl start blog
+```
+
+#### 6. 配置Nginx反向代理
+
+```bash
+sudo tee /etc/nginx/sites-available/blog > /dev/null <<'EOF'
 server {
-    listen 80;
-    server_name 182.92.240.153;  # 你的服务器IP，也可以改为域名
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
     
     # 启用gzip压缩
     gzip on;
@@ -135,15 +229,8 @@ server {
         proxy_read_timeout 60s;
     }
     
-    # 静态资源缓存（Next.js _next 静态文件）
+    # 静态资源缓存
     location /_next/static/ {
-        proxy_pass http://localhost:3000;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-    
-    # 图片和其他静态资源
-    location ~* \.(png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         proxy_pass http://localhost:3000;
         expires 1y;
         add_header Cache-Control "public, immutable";
@@ -156,369 +243,403 @@ server {
         add_header Cache-Control "no-cache, no-store, must-revalidate";
     }
     
-    # 健康检查
-    location /health {
-        access_log off;
-        return 200 "healthy\n";
-        add_header Content-Type text/plain;
-    }
-    
     # 安全头
     add_header X-Frame-Options "DENY" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header X-XSS-Protection "1; mode=block" always;
-    
-    # 错误页面
-    error_page 502 503 504 /50x.html;
-    location = /50x.html {
-        root /usr/share/nginx/html;
-        internal;
-    }
-    
-    # 限制请求大小
-    client_max_body_size 10M;
 }
-```
-
-#### 2.1.3 安装Git和Node.js，创建应用目录
-```bash
-# 安装Git
-sudo yum install -y git
-
-# 安装Node.js 18
-curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
-sudo yum install -y nodejs
-
-# 创建应用目录
-sudo mkdir -p /var/www/blog
-
-# 设置权限
-sudo chown -R $USER:$USER /var/www/blog
-sudo chmod -R 755 /var/www/blog
-
-# 进入应用目录并克隆代码
-cd /var/www/blog
-git clone https://github.com/sl-wen/sl-wen.github.io.git .
-git checkout react
-
-# 创建systemd服务文件
-sudo tee /etc/systemd/system/blog.service > /dev/null <<EOF
-[Unit]
-Description=Blog Next.js App
-After=network.target
-
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/var/www/blog
-ExecStart=/usr/bin/npm start
-Restart=on-failure
-RestartSec=10
-Environment=NODE_ENV=production
-
-[Install]
-WantedBy=multi-user.target
 EOF
 
-# 启用服务
-sudo systemctl enable blog.service
-```
+# 启用站点配置
+sudo ln -sf /etc/nginx/sites-available/blog /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
 
-#### 2.1.4 配置防火墙
-```bash
-# 开放HTTP端口
-sudo firewall-cmd --permanent --add-service=http
-sudo firewall-cmd --permanent --add-service=https
-sudo firewall-cmd --reload
-```
-
-### 3. 服务器端构建流程
-
-#### 3.1 本地测试构建（可选）
-在推送到生产环境之前，可以先在本地测试：
-
-```bash
-# 安装依赖
-npm install
-
-# 构建Next.js应用
-npm run build
-
-# 检查构建输出
-ls -la .next/
-```
-
-#### 3.2 Git拉取部署优势
-- ✅ **无文件传输**：直接从GitHub拉取，无需上传文件
-- ✅ **版本控制**：完整的Git历史记录，便于版本管理
-- ✅ **自动回滚**：部署失败时自动回滚到上一个版本
-- ✅ **环境一致性**：构建环境与运行环境完全一致
-- ✅ **简单高效**：一条命令完成拉取、构建、部署
-
-#### 3.3 部署过程说明
-GitHub Actions会执行以下步骤：
-1. SSH连接到服务器
-2. 拉取最新代码 (`git pull`)
-3. 停止现有服务并备份
-4. 清理旧的构建文件
-5. 安装开发依赖
-6. 执行构建 (`npm run build`)
-7. 安装生产依赖
-8. 启动新服务
-9. 健康检查（失败时自动回滚）
-
-### 4. 触发部署
-
-#### 自动部署
-推送代码到 `react` 分支即可自动触发部署：
-```bash
-git add .
-git commit -m "feat: 更新网站内容"
-git push origin react
-```
-
-#### 手动部署
-1. **GitHub Actions 手动触发**：在 GitHub 仓库的 Actions 页面可以手动触发 `Deploy to ALI` 工作流。
-
-2. **服务器端手动部署**：
-```bash
-# 在服务器上，进入应用目录
-cd /var/www/blog
-
-# 使用部署脚本（默认react分支）
-chmod +x deploy-server.sh
-./deploy-server.sh
-
-# 或指定分支
-./deploy-server.sh main
-```
-
-3. **快速手动部署**（适用于小更新）：
-```bash
-# 在服务器上快速部署（不重新构建）
-cd /var/www/blog
-chmod +x quick-deploy.sh
-./quick-deploy.sh
-
-# 或手动执行
-git pull origin react
-sudo systemctl restart blog
-```
-
-4. **传统方式部署**：
-```bash
-# 上传代码到服务器后
-cd /var/www/blog
-npm ci
-npm run build
-sudo systemctl restart blog
-```
-
-### 5. 验证部署
-
-1. 检查 GitHub Actions 日志确认部署成功
-2. 访问服务器IP确认网站正常运行：`http://182.92.240.153`
-3. 检查网站功能：
-   - 首页加载
-   - 文章页面
-   - 搜索功能
-   - 用户登录
-
-### 6. 常见问题排查
-
-#### 6.1 SSH认证失败
-```bash
-# 错误信息：ssh: handshake failed: ssh: unable to authenticate
-# 解决方案：
-
-# 1. 检查SSH服务状态
-sudo systemctl status sshd
-
-# 2. 检查SSH配置
-sudo cat /etc/ssh/sshd_config | grep -E "(PasswordAuthentication|PubkeyAuthentication|PermitRootLogin)"
-
-# 3. 查看SSH日志
-sudo tail -f /var/log/secure
-
-# 4. 测试SSH连接
-ssh -v username@server_ip
-
-# 5. 重新生成SSH密钥
-./setup-ssh.sh
-```
-
-#### 6.2 构建失败
-- 检查代码是否有语法错误
-- 确认所有依赖都在 package.json 中
-- 查看 Actions 日志了解具体错误
-
-#### 6.3 部署失败
-- 检查服务器连接是否正常
-- 确认 Nginx 配置正确
-- 检查目录权限
-
-#### 6.4 网站访问异常
-```bash
-# 检查 Nginx 状态
-sudo systemctl status nginx
-
-# 查看 Nginx 日志
-sudo tail -f /var/log/nginx/error.log
-
-# 重启 Nginx
+# 测试配置并重启
+sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-#### 6.5 Git状态问题
-```bash
-# 错误：Changes not staged for commit
-# 解决方案：清理Git工作区
+## GitHub Actions配置
 
+### Workflow文件
+
+`.github/workflows/static.yml` 文件已经配置好，支持：
+
+- SSH连接到服务器
+- 自动拉取最新代码
+- 构建和部署应用
+- 服务重启
+- 自动回滚机制
+
+### 必需的Secrets
+
+| Secret名称 | 描述 | 示例 |
+|------------|------|------|
+| `SERVER_IP` | 服务器IP地址 | `192.168.1.100` |
+| `SERVER_USER` | 服务器用户名 | `ubuntu` |
+| `SERVER_KEY` | SSH私钥或密码 | `-----BEGIN RSA PRIVATE KEY-----...` |
+| `SUPABASE_URL` | Supabase项目URL | `https://xxx.supabase.co` |
+| `SUPABASE_KEY` | Supabase匿名密钥 | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` |
+
+## 常用命令
+
+### 服务管理
+
+```bash
+# 查看服务状态
+sudo systemctl status blog
+
+# 启动/停止/重启服务
+sudo systemctl start blog
+sudo systemctl stop blog
+sudo systemctl restart blog
+
+# 查看服务日志
+sudo journalctl -u blog -f
+sudo journalctl -u blog -n 50
+```
+
+### Nginx管理
+
+```bash
+# 查看Nginx状态
+sudo systemctl status nginx
+
+# 重启Nginx
+sudo systemctl restart nginx
+
+# 测试配置
+sudo nginx -t
+
+# 查看Nginx日志
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+```
+
+### 应用管理
+
+```bash
+# 进入应用目录
 cd /var/www/blog
 
 # 查看Git状态
 git status
+git log --oneline -n 5
 
-# 丢弃本地更改
-git reset --hard HEAD
-git clean -fd
-
-# 强制拉取最新代码
-git fetch origin
-git reset --hard origin/react
-```
-
-#### 6.6 服务不存在问题
-```bash
-# 错误：Failed to stop blog.service: Unit blog.service not loaded
-# 解决方案：创建systemd服务
-
-# 使用自动脚本创建
-chmod +x create-service.sh
-./create-service.sh
-
-# 或手动创建
-sudo vim /etc/systemd/system/blog.service
-sudo systemctl daemon-reload
-sudo systemctl enable blog
-```
-
-#### 6.7 服务器端构建失败
-```bash
-# 检查应用服务状态
-sudo systemctl status blog
+# 手动部署
+./quick-deploy.sh
 
 # 查看应用日志
-sudo journalctl -u blog -f
-
-# 手动构建测试
-cd /var/www/blog
-npm run build
-
-# 检查磁盘空间
-df -h
-
-# 检查内存使用
-free -h
-
-# 清理npm缓存
-npm cache clean --force
+npm run logs
 ```
 
-#### 6.8 部署过程监控
+### 系统监控
+
 ```bash
-# 实时查看部署日志
-sudo journalctl -u blog -f
+# 查看系统资源
+htop
+df -h
+free -h
+
+# 查看网络连接
+netstat -tlnp
+ss -tlnp
+
+# 查看进程
+ps aux | grep -E "(node|nginx)"
+```
+
+## 故障排除
+
+### 常见问题
+
+#### 1. SSH连接失败
+
+```bash
+# 检查SSH服务状态
+sudo systemctl status ssh
+
+# 查看SSH日志
+sudo journalctl -u ssh -n 50
+
+# 检查SSH配置
+sudo sshd -t
+
+# 检查防火墙
+sudo ufw status
+```
+
+#### 2. 应用无法启动
+
+```bash
+# 查看服务状态
+sudo systemctl status blog
+
+# 查看详细日志
+sudo journalctl -u blog -n 100
 
 # 检查端口占用
 sudo netstat -tlnp | grep :3000
 
-# 测试应用响应
-curl -I http://localhost:3000
-
-# 查看进程信息
-ps aux | grep node
+# 手动启动应用
+cd /var/www/blog
+npm start
 ```
 
-### 7. SSL证书配置（可选）
-
-如果你有域名，建议配置SSL证书：
+#### 3. Nginx代理问题
 
 ```bash
-# 安装 Certbot
-sudo yum install -y certbot python3-certbot-nginx
+# 测试Nginx配置
+sudo nginx -t
 
-# 获取证书
-sudo certbot --nginx -d yourdomain.com
+# 查看Nginx错误日志
+sudo tail -f /var/log/nginx/error.log
 
-# 自动续期
-sudo crontab -e
-# 添加：0 12 * * * /usr/bin/certbot renew --quiet
+# 检查代理配置
+sudo cat /etc/nginx/sites-available/blog
 ```
 
-### 8. Git配置和权限
+#### 4. 构建失败
 
-#### 8.1 Git访问配置
 ```bash
-# 如果是私有仓库，需要配置SSH密钥或Personal Access Token
-# 使用SSH密钥（推荐）
-ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
-cat ~/.ssh/id_rsa.pub  # 将公钥添加到GitHub
+# 检查Node.js版本
+node --version
+npm --version
 
-# 或使用Personal Access Token
-git config --global credential.helper store
-git config --global user.name "Your Name"
-git config --global user.email "your_email@example.com"
+# 清理缓存
+rm -rf node_modules/.cache
+rm -rf .next
+
+# 重新安装依赖
+npm ci
+
+# 手动构建
+npm run build
 ```
 
-#### 8.2 仓库权限设置
+### 日志位置
+
+- **应用日志**: `sudo journalctl -u blog`
+- **Nginx访问日志**: `/var/log/nginx/access.log`
+- **Nginx错误日志**: `/var/log/nginx/error.log`
+- **SSH日志**: `sudo journalctl -u ssh`
+- **系统日志**: `/var/log/syslog`
+
+## 性能优化
+
+### 1. 启用HTTP/2
+
 ```bash
-# 确保仓库是公开的，或者配置了正确的访问权限
-# 测试Git访问
-git ls-remote https://github.com/sl-wen/sl-wen.github.io.git
+# 编辑Nginx配置
+sudo vim /etc/nginx/sites-available/blog
 
-# 如果需要更改远程仓库地址
-git remote set-url origin https://github.com/your-username/your-repo.git
-```
-
-### 9. 性能优化
-
-#### 9.1 启用HTTP/2
-在Nginx配置中添加：
-```nginx
+# 修改listen指令
 listen 443 ssl http2;
+listen [::]:443 ssl http2;
 ```
 
-#### 9.2 配置CDN
-可以考虑使用阿里云CDN加速静态资源访问。
+### 2. 配置SSL证书
 
-#### 9.3 监控设置
 ```bash
-# 安装htop监控资源
-sudo yum install -y htop
+# 安装Certbot
+sudo apt install -y certbot python3-certbot-nginx
 
-# 查看系统资源
-htop
+# 获取SSL证书
+sudo certbot --nginx -d your-domain.com
+
+# 设置自动续期
+sudo crontab -e
+# 添加: 0 12 * * * /usr/bin/certbot renew --quiet
 ```
 
-## 📝 注意事项
+### 3. 优化Nginx配置
 
-1. **安全性**：确保服务器安全组只开放必要端口
-2. **备份**：定期备份网站文件和Nginx配置
-3. **监控**：设置服务器监控，及时发现问题
-4. **更新**：定期更新系统和Nginx版本
+```bash
+# 编辑主配置文件
+sudo vim /etc/nginx/nginx.conf
 
-## 🔧 高级配置
+# 添加优化配置
+worker_processes auto;
+worker_connections 1024;
+sendfile on;
+tcp_nopush on;
+tcp_nodelay on;
+keepalive_timeout 65;
+```
 
-### 多环境部署
-可以创建不同的workflow文件支持开发、测试、生产环境：
-- `.github/workflows/deploy-dev.yml`
-- `.github/workflows/deploy-staging.yml` 
-- `.github/workflows/deploy-prod.yml`
+### 4. 配置缓存
 
-### 蓝绿部署
-配置两个部署目录，实现零停机部署。
+```bash
+# 在Nginx配置中添加缓存
+location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+}
+```
 
-### 自动回滚
-在部署失败时自动回滚到上一个版本。 
+## 安全建议
+
+### 1. SSH安全
+
+```bash
+# 更改SSH端口
+sudo vim /etc/ssh/sshd_config
+# Port 2222
+
+# 禁用root登录
+# PermitRootLogin no
+
+# 禁用密码认证（仅使用密钥）
+# PasswordAuthentication no
+
+# 重启SSH服务
+sudo systemctl restart ssh
+```
+
+### 2. 防火墙配置
+
+```bash
+# 限制SSH访问
+sudo ufw limit ssh
+
+# 允许特定IP访问
+sudo ufw allow from 192.168.1.0/24 to any port 22
+
+# 拒绝其他连接
+sudo ufw deny ssh
+```
+
+### 3. 自动更新
+
+```bash
+# 安装自动更新
+sudo apt install -y unattended-upgrades
+
+# 配置自动更新
+sudo dpkg-reconfigure unattended-upgrades
+```
+
+### 4. 监控和告警
+
+```bash
+# 安装fail2ban
+sudo apt install -y fail2ban
+
+# 配置fail2ban
+sudo vim /etc/fail2ban/jail.local
+```
+
+## 备份策略
+
+### 1. 数据库备份
+
+```bash
+# 如果使用本地数据库
+sudo crontab -e
+# 添加: 0 2 * * * /usr/bin/pg_dump dbname > /backup/db_$(date +\%Y\%m\%d).sql
+```
+
+### 2. 代码备份
+
+```bash
+# Git自动备份
+cd /var/www/blog
+git remote add backup https://github.com/username/backup-repo.git
+```
+
+### 3. 配置备份
+
+```bash
+# 备份重要配置文件
+sudo tar -czf /backup/config_$(date +%Y%m%d).tar.gz \
+    /etc/nginx/sites-available/blog \
+    /etc/systemd/system/blog.service \
+    /var/www/blog/.env.local
+```
+
+## 监控和维护
+
+### 1. 系统监控
+
+```bash
+# 安装监控工具
+sudo apt install -y htop iotop nethogs
+
+# 设置监控脚本
+cat > /home/ubuntu/monitor.sh << 'EOF'
+#!/bin/bash
+echo "=== System Status $(date) ===" >> /var/log/system-monitor.log
+df -h >> /var/log/system-monitor.log
+free -h >> /var/log/system-monitor.log
+systemctl is-active blog nginx >> /var/log/system-monitor.log
+echo "================================" >> /var/log/system-monitor.log
+EOF
+
+# 设置定时任务
+sudo crontab -e
+# 添加: */10 * * * * /home/ubuntu/monitor.sh
+```
+
+### 2. 日志轮转
+
+```bash
+# 配置日志轮转
+sudo vim /etc/logrotate.d/blog
+
+# 添加配置
+/var/log/blog/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 0644 ubuntu ubuntu
+    postrotate
+        systemctl reload blog
+    endscript
+}
+```
+
+### 3. 健康检查
+
+```bash
+# 创建健康检查脚本
+cat > /home/ubuntu/health-check.sh << 'EOF'
+#!/bin/bash
+if ! curl -f http://localhost:3000/health > /dev/null 2>&1; then
+    echo "Application health check failed" | mail -s "Blog App Down" admin@example.com
+    systemctl restart blog
+fi
+EOF
+
+# 设置定时检查
+sudo crontab -e
+# 添加: */5 * * * * /home/ubuntu/health-check.sh
+```
+
+## 总结
+
+本文档提供了在Ubuntu 24.04上部署博客系统的完整指南。主要包括：
+
+1. **一键初始化**: 使用脚本快速配置服务器环境
+2. **SSH认证**: 配置安全的SSH访问
+3. **自动部署**: 通过GitHub Actions实现CI/CD
+4. **监控维护**: 完善的监控和维护策略
+5. **故障排除**: 详细的故障排除指南
+
+遵循本文档的步骤，你可以快速搭建一个稳定、安全、高效的博客系统。
+
+## 联系支持
+
+如果遇到问题，请：
+
+1. 查看故障排除部分
+2. 检查系统日志
+3. 提交GitHub Issue
+4. 联系系统管理员
+
+---
+
+*最后更新: 2024年12月* 

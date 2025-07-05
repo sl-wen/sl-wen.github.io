@@ -17,10 +17,10 @@ jobs:
     - name: Deploy to Server
       uses: appleboy/ssh-action@v1.0.3
       with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}
-        port: ${{ secrets.PORT }}
+        host: ${{ secrets.SERVER_IP }} 
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_KEY }}
+        port: 22
         timeout: 30s
         command_timeout: 10m
         script: |

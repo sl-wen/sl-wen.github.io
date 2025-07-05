@@ -82,7 +82,7 @@ if [ -d "/var/www/blog" ]; then
             rm -rf blog
             mkdir -p blog
             cd blog
-            git clone https://github.com/sl-wen/sl-wen.github.io.git .
+            git clone git@github.com:sl-wen/sl-wen.github.io.git
             git checkout react
         fi
     else

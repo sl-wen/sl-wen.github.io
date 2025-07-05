@@ -1,4 +1,4 @@
-# 用于部署Next.js应用到阿里云服务器的工作流
+# 服务器端Git拉取并构建部署工作流
 name: Deploy to ALI
 
 on:
@@ -8,93 +8,144 @@ on:
   # 允许手动触发部署
   workflow_dispatch:
 
-# 环境变量
-env:
-  NODE_ENV: production
-
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     
     steps:
-      # 检出代码
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      # 设置Node.js环境
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      # 安装依赖
-      - name: Install Dependencies
-        run: npm ci
-
-      # 创建环境变量文件（如果需要）
-
-      # 构建项目
-      - name: Build Project
-        run: npm run build
-
-      # 创建启动脚本
-      - name: Create Start Script
-        run: |
-          cat > start.sh << 'EOF'
-          #!/bin/bash
-          cd /var/www/blog
-          npm start
-          EOF
-
-      # 部署应用文件到阿里云
-      - name: Deploy App to Aliyun
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: '182.92.240.153'
-          username: 'root'
-          password: ${{ secrets.HOST_ALI }}
-          port: 22
-          source: ".next,package.json,package-lock.json,next.config.js,public,start.sh"
-          target: "/var/www/blog/"
-          rm: true
-
-      # 安装依赖并重启应用
-      - name: Install Dependencies and Restart App
+      # 通过SSH连接服务器，拉取代码并构建
+      - name: Deploy via Git Pull on Server
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: '121.40.215.235'
-          username: 'root'
-          password: ${{ secrets.HOST_ALI }}
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_KEY }}
           port: 22
           script: |
             cd /var/www/blog
-            npm ci --production
-            chmod +x start.sh
             
-            # 停止现有进程
-            pkill -f "next start" || true
+            echo "=== 开始服务器端Git部署 ==="
             
-            # 启动新进程
-            nohup npm start > /dev/null 2>&1 &
+            # 检查Node.js版本
+            node --version
+            npm --version
             
-            # 等待应用启动
-            sleep 5
+            # 停止现有服务
+            echo "🛑 停止现有服务..."
+            systemctl stop blog || echo "服务未运行"
+            pkill -f "next start" || echo "没有运行中的Next.js进程"
             
-            # 检查应用是否正常运行
-            if curl -f http://localhost:3000 > /dev/null 2>&1; then
-              echo "应用启动成功"
-            else
-              echo "应用启动失败"
-              exit 1
+            # 备份当前版本（如果需要回滚）
+            echo "💾 备份当前版本..."
+            if [ -d ".next" ]; then
+                rm -rf .next.backup
+                mv .next .next.backup
             fi
+            
+            # 拉取最新代码
+            echo "📥 拉取最新代码..."
+            git fetch origin
+            git reset --hard origin/react
+            git clean -fd
+            
+            # 显示当前版本信息
+            echo "📋 当前版本信息:"
+            git log --oneline -n 3
+            
+            # 创建环境变量文件
+            echo "🔧 配置环境变量..."
+            cat > .env.local << EOF
+            NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_KEY }}
+            EOF
+            
+            # 清理旧的构建文件
+            echo "🧹 清理旧文件..."
+            rm -rf node_modules
+            npm cache clean --force
+            
+            # 安装依赖
+            echo "📦 安装依赖..."
+            npm ci --production=false
+            
+            # 构建应用
+            echo "🔨 构建应用..."
+            npm run build
+            
+            # 安装生产依赖
+            echo "📦 安装生产依赖..."
+            npm ci --production --ignore-scripts
+            
+            # 设置权限
+            echo "🔐 设置权限..."
+            chown -R root:root /var/www/blog
+            chmod -R 755 /var/www/blog
+            
+            # 启动服务
+            echo "🚀 启动服务..."
+            systemctl start blog
+            systemctl enable blog
+            
+            # 等待服务启动
+            echo "⏳ 等待服务启动..."
+            sleep 10
+            
+            # 检查服务状态
+            echo "🔍 检查服务状态..."
+            if systemctl is-active --quiet blog; then
+                echo "✅ 服务启动成功"
+                
+                # 检查应用是否响应
+                if curl -f http://localhost:3000 > /dev/null 2>&1; then
+                    echo "✅ 应用响应正常"
+                    
+                    # 清理备份文件
+                    rm -rf .next.backup
+                    
+                    echo "🎉 部署成功完成！"
+                else
+                    echo "❌ 应用无响应，尝试回滚..."
+                    systemctl stop blog
+                    
+                    # 回滚到备份版本
+                    if [ -d ".next.backup" ]; then
+                        rm -rf .next
+                        mv .next.backup .next
+                        systemctl start blog
+                        echo "🔄 已回滚到上一个版本"
+                    fi
+                    
+                    systemctl status blog
+                    exit 1
+                fi
+            else
+                echo "❌ 服务启动失败，尝试回滚..."
+                
+                # 回滚到备份版本
+                if [ -d ".next.backup" ]; then
+                    rm -rf .next
+                    mv .next.backup .next
+                    systemctl start blog
+                    echo "🔄 已回滚到上一个版本"
+                fi
+                
+                systemctl status blog
+                journalctl -u blog --no-pager -n 20
+                exit 1
+            fi
+            
+            echo "=== 部署完成 ==="
+            echo "📊 服务状态: $(systemctl is-active blog)"
+            echo "🔗 访问地址: http://182.92.240.153"
 
       # 部署后通知
       - name: Deployment Status
         if: always()
         run: |
           if [ ${{ job.status }} == 'success' ]; then
-            echo "✅ 部署成功！网站已更新到: http://121.40.215.235"
+            echo "✅ 部署成功！网站已更新到: http://182.92.240.153"
+            echo "🔗 访问地址: http://182.92.240.153"
           else
             echo "❌ 部署失败，请检查日志获取详细信息。"
+            echo "💡 提示: 如果部署失败，系统会自动尝试回滚到上一个版本"
           fi

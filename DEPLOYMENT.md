@@ -1,6 +1,8 @@
 # 部署指南
 
-## 🚀 自动部署到阿里云服务器
+## 🚀 自动部署到阿里云服务器（Git拉取 + 服务器端构建）
+
+> 💡 **部署策略**：本配置采用Git拉取方式，服务器直接从GitHub拉取最新代码并在服务器上构建。这是最简单高效的部署方式，无需文件传输，支持版本控制和自动回滚。
 
 ### 1. GitHub Secrets 配置
 
@@ -45,7 +47,7 @@ sudo vim /etc/nginx/conf.d/blog.conf
 ```nginx
 server {
     listen 80;
-    server_name 121.40.215.235;  # 你的服务器IP，也可以改为域名
+    server_name 182.92.240.153;  # 你的服务器IP，也可以改为域名
     
     # 启用gzip压缩
     gzip on;
@@ -117,8 +119,11 @@ server {
 }
 ```
 
-#### 2.3 创建应用目录和安装Node.js
+#### 2.3 安装Git和Node.js，创建应用目录
 ```bash
+# 安装Git
+sudo yum install -y git
+
 # 安装Node.js 18
 curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
 sudo yum install -y nodejs
@@ -129,6 +134,11 @@ sudo mkdir -p /var/www/blog
 # 设置权限
 sudo chown -R $USER:$USER /var/www/blog
 sudo chmod -R 755 /var/www/blog
+
+# 进入应用目录并克隆代码
+cd /var/www/blog
+git clone https://github.com/sl-wen/sl-wen.github.io.git .
+git checkout react
 
 # 创建systemd服务文件
 sudo tee /etc/systemd/system/blog.service > /dev/null <<EOF
@@ -161,9 +171,10 @@ sudo firewall-cmd --permanent --add-service=https
 sudo firewall-cmd --reload
 ```
 
-### 3. 本地测试构建
+### 3. 服务器端构建流程
 
-在推送到生产环境之前，先在本地测试：
+#### 3.1 本地测试构建（可选）
+在推送到生产环境之前，可以先在本地测试：
 
 ```bash
 # 安装依赖
@@ -176,6 +187,25 @@ npm run build
 ls -la .next/
 ```
 
+#### 3.2 Git拉取部署优势
+- ✅ **无文件传输**：直接从GitHub拉取，无需上传文件
+- ✅ **版本控制**：完整的Git历史记录，便于版本管理
+- ✅ **自动回滚**：部署失败时自动回滚到上一个版本
+- ✅ **环境一致性**：构建环境与运行环境完全一致
+- ✅ **简单高效**：一条命令完成拉取、构建、部署
+
+#### 3.3 部署过程说明
+GitHub Actions会执行以下步骤：
+1. SSH连接到服务器
+2. 拉取最新代码 (`git pull`)
+3. 停止现有服务并备份
+4. 清理旧的构建文件
+5. 安装开发依赖
+6. 执行构建 (`npm run build`)
+7. 安装生产依赖
+8. 启动新服务
+9. 健康检查（失败时自动回滚）
+
 ### 4. 触发部署
 
 #### 自动部署
@@ -187,12 +217,46 @@ git push origin react
 ```
 
 #### 手动部署
-在 GitHub 仓库的 Actions 页面可以手动触发 `Deploy to ALI` 工作流。
+1. **GitHub Actions 手动触发**：在 GitHub 仓库的 Actions 页面可以手动触发 `Deploy to ALI` 工作流。
+
+2. **服务器端手动部署**：
+```bash
+# 在服务器上，进入应用目录
+cd /var/www/blog
+
+# 使用部署脚本（默认react分支）
+chmod +x deploy-server.sh
+./deploy-server.sh
+
+# 或指定分支
+./deploy-server.sh main
+```
+
+3. **快速手动部署**（适用于小更新）：
+```bash
+# 在服务器上快速部署（不重新构建）
+cd /var/www/blog
+chmod +x quick-deploy.sh
+./quick-deploy.sh
+
+# 或手动执行
+git pull origin react
+sudo systemctl restart blog
+```
+
+4. **传统方式部署**：
+```bash
+# 上传代码到服务器后
+cd /var/www/blog
+npm ci
+npm run build
+sudo systemctl restart blog
+```
 
 ### 5. 验证部署
 
 1. 检查 GitHub Actions 日志确认部署成功
-2. 访问服务器IP确认网站正常运行：`http://121.40.215.235`
+2. 访问服务器IP确认网站正常运行：`http://182.92.240.153`
 3. 检查网站功能：
    - 首页加载
    - 文章页面
@@ -223,6 +287,43 @@ sudo tail -f /var/log/nginx/error.log
 sudo systemctl restart nginx
 ```
 
+#### 6.4 服务器端构建失败
+```bash
+# 检查应用服务状态
+sudo systemctl status blog
+
+# 查看应用日志
+sudo journalctl -u blog -f
+
+# 手动构建测试
+cd /var/www/blog
+npm run build
+
+# 检查磁盘空间
+df -h
+
+# 检查内存使用
+free -h
+
+# 清理npm缓存
+npm cache clean --force
+```
+
+#### 6.5 部署过程监控
+```bash
+# 实时查看部署日志
+sudo journalctl -u blog -f
+
+# 检查端口占用
+sudo netstat -tlnp | grep :3000
+
+# 测试应用响应
+curl -I http://localhost:3000
+
+# 查看进程信息
+ps aux | grep node
+```
+
 ### 7. SSL证书配置（可选）
 
 如果你有域名，建议配置SSL证书：
@@ -239,18 +340,43 @@ sudo crontab -e
 # 添加：0 12 * * * /usr/bin/certbot renew --quiet
 ```
 
-### 8. 性能优化
+### 8. Git配置和权限
 
-#### 8.1 启用HTTP/2
+#### 8.1 Git访问配置
+```bash
+# 如果是私有仓库，需要配置SSH密钥或Personal Access Token
+# 使用SSH密钥（推荐）
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+cat ~/.ssh/id_rsa.pub  # 将公钥添加到GitHub
+
+# 或使用Personal Access Token
+git config --global credential.helper store
+git config --global user.name "Your Name"
+git config --global user.email "your_email@example.com"
+```
+
+#### 8.2 仓库权限设置
+```bash
+# 确保仓库是公开的，或者配置了正确的访问权限
+# 测试Git访问
+git ls-remote https://github.com/sl-wen/sl-wen.github.io.git
+
+# 如果需要更改远程仓库地址
+git remote set-url origin https://github.com/your-username/your-repo.git
+```
+
+### 9. 性能优化
+
+#### 9.1 启用HTTP/2
 在Nginx配置中添加：
 ```nginx
 listen 443 ssl http2;
 ```
 
-#### 8.2 配置CDN
+#### 9.2 配置CDN
 可以考虑使用阿里云CDN加速静态资源访问。
 
-#### 8.3 监控设置
+#### 9.3 监控设置
 ```bash
 # 安装htop监控资源
 sudo yum install -y htop

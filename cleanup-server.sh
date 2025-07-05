@@ -22,7 +22,6 @@ echo "  - 清理相关日志"
 echo ""
 
 read -p "是否继续？(y/N): " -n 1 -r
-echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "❌ 已取消清理"
     exit 0

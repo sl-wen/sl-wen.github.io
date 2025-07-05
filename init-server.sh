@@ -8,6 +8,9 @@ set -e
 echo "🚀 博客服务器初始化脚本 (Ubuntu 24.04)"
 echo "=================================="
 
+# 确保在安全的目录中运行
+cd /tmp
+
 # 检查系统版本
 echo "📋 检查系统版本..."
 lsb_release -a
@@ -22,6 +25,10 @@ fi
 echo "📦 更新系统..."
 apt update && apt upgrade -y
 
+# 清理不需要的包
+echo "🧹 清理系统..."
+apt autoremove -y
+
 # 安装基础工具
 echo "🔧 安装基础工具..."
 apt install -y git curl wget vim htop build-essential
@@ -31,7 +38,8 @@ echo "📦 安装Node.js 18..."
 curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 apt install -y nodejs
 
-# 验证安装
+# 切换到安全目录验证安装
+cd /tmp
 echo "✅ 验证安装:"
 node --version
 npm --version
@@ -66,9 +74,9 @@ if [ -d "/var/www/blog" ]; then
         
         # 检查远程仓库
         CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
-        TARGET_REMOTE="https://github.com/sl-wen/sl-wen.github.io.git"
+        TARGET_REMOTE_SSH="git@github.com:sl-wen/sl-wen.github.io.git"
         
-        if [ "$CURRENT_REMOTE" = "$TARGET_REMOTE" ]; then
+        if [ "$CURRENT_REMOTE" = "$TARGET_REMOTE_SSH" ]; then
             echo "✅ 远程仓库匹配，更新现有仓库..."
             git fetch origin
             git checkout react 2>/dev/null || git checkout -b react origin/react
@@ -76,7 +84,7 @@ if [ -d "/var/www/blog" ]; then
         else
             echo "⚠️  远程仓库不匹配"
             echo "当前: $CURRENT_REMOTE"
-            echo "目标: $TARGET_REMOTE"
+            echo "目标: $TARGET_REMOTE_SSH"
             echo "🔄 重新初始化仓库..."
             cd /var/www
             rm -rf blog
@@ -109,6 +117,9 @@ else
     git checkout react
 fi
 
+# 确保在正确的目录中
+cd /var/www/blog
+
 # 设置权限
 echo "🔐 设置权限..."
 chown -R $(whoami):$(whoami) /var/www/blog
@@ -117,6 +128,7 @@ chmod -R 755 /var/www/blog
 # 检查package.json是否存在
 if [ ! -f "/var/www/blog/package.json" ]; then
     echo "❌ package.json 不存在，请检查仓库内容"
+    ls -la /var/www/blog/
     exit 1
 fi
 
@@ -131,7 +143,7 @@ npm run build
 
 # 创建环境变量文件
 echo "🔧 创建环境变量文件..."
-cat > .env.local << 'EOF'
+cat > /var/www/blog/.env.local << 'EOF'
 # 在此添加你的环境变量
 # NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 # NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
@@ -236,6 +248,9 @@ systemctl restart nginx
 # 等待服务启动
 echo "⏳ 等待服务启动..."
 sleep 15
+
+# 确保在正确的目录中检查状态
+cd /var/www/blog
 
 # 检查服务状态
 echo "🔍 检查服务状态..."

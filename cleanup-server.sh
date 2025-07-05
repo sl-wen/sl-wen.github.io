@@ -8,6 +8,9 @@ set -e
 echo "🧹 服务器清理脚本 (Ubuntu 24.04)"
 echo "============================="
 
+# 确保在安全的目录中运行
+cd /tmp
+
 # 检查是否为root用户
 if [ "$EUID" -ne 0 ]; then
     echo "⚠️  建议使用root用户运行此脚本"
@@ -22,6 +25,7 @@ echo "  - 清理相关日志"
 echo ""
 
 read -p "是否继续？(y/N): " -n 1 -r
+echo ""
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "❌ 已取消清理"
     exit 0
@@ -56,8 +60,9 @@ pkill -f "npm start" || echo "📋 没有运行中的npm进程"
 echo "📁 处理应用目录..."
 if [ -d "/var/www/blog" ]; then
     echo "💾 备份现有目录..."
-    mv /var/www/blog /var/www/blog.cleanup.$(date +%Y%m%d_%H%M%S)
-    echo "✅ 目录已备份到 /var/www/blog.cleanup.$(date +%Y%m%d_%H%M%S)"
+    BACKUP_DIR="/var/www/blog.cleanup.$(date +%Y%m%d_%H%M%S)"
+    mv /var/www/blog "$BACKUP_DIR"
+    echo "✅ 目录已备份到 $BACKUP_DIR"
 else
     echo "📋 应用目录不存在"
 fi
@@ -97,6 +102,8 @@ echo "✅ 系统日志已清理"
 # 清理npm缓存
 echo "🧹 清理npm缓存..."
 if command -v npm >/dev/null 2>&1; then
+    # 切换到安全目录执行npm命令
+    cd /tmp
     npm cache clean --force
     echo "✅ npm缓存已清理"
 fi

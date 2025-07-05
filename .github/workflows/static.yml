@@ -11,6 +11,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     
     steps:
       # 通过SSH连接Ubuntu服务器，拉取代码并构建
@@ -21,10 +22,28 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_KEY }}
           port: 22
-          timeout: 180s
-          command_timeout: 25m
+          timeout: 300s
+          command_timeout: 30m
           script: |
             set -e
+            
+            # 定义清理函数
+            cleanup() {
+                echo "🔄 执行清理操作..."
+                if [ -d "/var/www/blog" ]; then
+                    cd /var/www/blog
+                    # 如果有备份，尝试恢复
+                    if [ -d ".next.backup" ]; then
+                        echo "🔄 恢复备份..."
+                        rm -rf .next
+                        mv .next.backup .next
+                        sudo systemctl start blog || true
+                    fi
+                fi
+            }
+            
+            # 设置信号处理
+            trap cleanup EXIT TERM INT
             
             # 检查目录是否存在
             if [ ! -d "/var/www/blog" ]; then
@@ -70,11 +89,14 @@ jobs:
             git reset --hard HEAD
             git clean -fd
             
-            # 停止现有服务
+            # 停止现有服务（使用更温和的方式）
             echo "🛑 停止现有服务..."
             if systemctl list-unit-files | grep -q "blog.service"; then
                 if systemctl is-active --quiet blog; then
+                    echo "正在停止blog服务..."
                     sudo systemctl stop blog
+                    # 等待服务完全停止
+                    sleep 5
                     echo "✅ blog服务已停止"
                 else
                     echo "📋 blog服务未运行"
@@ -83,8 +105,21 @@ jobs:
                 echo "📋 blog服务不存在，将稍后创建"
             fi
             
-            # 终止可能的残留进程
-            pkill -f "next start" || echo "📋 没有运行中的Next.js进程"
+            # 终止可能的残留进程（更安全的方式）
+            echo "🔄 检查残留进程..."
+            if pgrep -f "next start" > /dev/null; then
+                echo "终止Next.js进程..."
+                pkill -TERM -f "next start" || true
+                sleep 3
+                pkill -KILL -f "next start" || true
+            fi
+            
+            if pgrep -f "npm start" > /dev/null; then
+                echo "终止npm进程..."
+                pkill -TERM -f "npm start" || true
+                sleep 3
+                pkill -KILL -f "npm start" || true
+            fi
             
             # 备份当前版本
             echo "💾 备份当前版本..."
@@ -105,7 +140,7 @@ jobs:
             # 显示更新信息
             if [ "$BEFORE_COMMIT" != "$AFTER_COMMIT" ]; then
                 echo "📋 代码已更新:"
-                git log --oneline $BEFORE_COMMIT..$AFTER_COMMIT
+                git log --oneline $BEFORE_COMMIT..$AFTER_COMMIT | head -5
             else
                 echo "📋 代码无变化"
             fi
@@ -125,7 +160,13 @@ jobs:
             echo "🧹 清理旧文件..."
             rm -rf node_modules/.cache
             rm -rf .next
-            npm cache clean --force
+            
+            # 清理npm缓存（如果磁盘空间不足）
+            DISK_USAGE=$(df /var/www/blog | tail -1 | awk '{print $5}' | sed 's/%//')
+            if [ "$DISK_USAGE" -gt 80 ]; then
+                echo "⚠️  磁盘使用率较高，清理缓存..."
+                npm cache clean --force
+            fi
             
             # 安装依赖
             echo "📦 安装依赖..."
@@ -134,6 +175,8 @@ jobs:
             
             # 构建应用
             echo "🔨 构建应用..."
+            # 设置Node.js内存限制
+            export NODE_OPTIONS="--max-old-space-size=1024"
             npm run build || { 
                 echo "❌ 构建失败"
                 echo "📋 构建日志:"
@@ -165,6 +208,8 @@ jobs:
             Environment=NODE_ENV=production
             StandardOutput=journal
             StandardError=journal
+            TimeoutStartSec=120
+            TimeoutStopSec=30
             
             [Install]
             WantedBy=multi-user.target
@@ -178,91 +223,97 @@ jobs:
             sudo systemctl enable blog
             sudo systemctl start blog
             
-            # 等待服务启动
+            # 等待服务启动（分阶段等待）
             echo "⏳ 等待服务启动..."
-            sleep 20
+            sleep 10
             
             # 检查服务状态
             echo "🔍 检查服务状态..."
-            if systemctl is-active --quiet blog; then
-                echo "✅ blog服务启动成功"
-                
-                # 等待应用完全启动
-                echo "⏳ 等待应用完全启动..."
-                sleep 15
-                
-                # 检查应用端口
-                if netstat -tlnp | grep -q ":3000"; then
-                    echo "✅ 应用端口3000已监听"
+            for i in {1..6}; do
+                if systemctl is-active --quiet blog; then
+                    echo "✅ blog服务启动成功 (尝试 $i/6)"
+                    break
                 else
-                    echo "⚠️  端口3000未监听"
+                    echo "⏳ 等待服务启动... (尝试 $i/6)"
+                    if [ $i -eq 6 ]; then
+                        echo "❌ blog服务启动失败"
+                        echo "📋 服务状态:"
+                        systemctl status blog --no-pager
+                        echo "📋 服务日志:"
+                        journalctl -u blog --no-pager -n 20
+                        exit 1
+                    fi
+                    sleep 10
                 fi
-                
-                # 检查应用是否响应
-                echo "🧪 测试应用响应..."
+            done
+            
+            # 等待应用完全启动
+            echo "⏳ 等待应用完全启动..."
+            sleep 15
+            
+            # 检查应用端口
+            if netstat -tlnp | grep -q ":3000"; then
+                echo "✅ 应用端口3000已监听"
+            else
+                echo "⚠️  端口3000未监听"
+                netstat -tlnp | grep LISTEN
+            fi
+            
+            # 检查应用是否响应
+            echo "🧪 测试应用响应..."
+            for i in {1..5}; do
                 if curl -f http://localhost:3000 > /dev/null 2>&1; then
-                    echo "✅ 应用响应正常"
-                    
-                    # 检查Nginx状态
-                    if systemctl is-active --quiet nginx; then
-                        echo "✅ Nginx服务正常"
-                        
-                        # 测试Nginx代理
-                        if curl -f http://localhost > /dev/null 2>&1; then
-                            echo "✅ Nginx代理正常"
-                        else
-                            echo "⚠️  Nginx代理可能有问题"
-                        fi
-                    else
-                        echo "⚠️  Nginx服务未运行"
-                        sudo systemctl start nginx || echo "❌ Nginx启动失败"
-                    fi
-                    
-                    # 清理备份文件
-                    rm -rf .next.backup
-                    
-                    echo "🎉 部署成功完成！"
+                    echo "✅ 应用响应正常 (尝试 $i/5)"
+                    break
                 else
-                    echo "❌ 应用无响应，尝试回滚..."
-                    sudo systemctl stop blog
-                    
-                    # 回滚到备份版本
-                    if [ -d ".next.backup" ]; then
-                        rm -rf .next
-                        mv .next.backup .next
-                        sudo systemctl start blog
-                        echo "🔄 已回滚到上一个版本"
-                        sleep 15
-                        if curl -f http://localhost:3000 > /dev/null 2>&1; then
-                            echo "✅ 回滚成功"
-                        else
-                            echo "❌ 回滚也失败了"
+                    echo "⏳ 等待应用响应... (尝试 $i/5)"
+                    if [ $i -eq 5 ]; then
+                        echo "❌ 应用无响应，尝试回滚..."
+                        sudo systemctl stop blog
+                        
+                        # 回滚到备份版本
+                        if [ -d ".next.backup" ]; then
+                            rm -rf .next
+                            mv .next.backup .next
+                            sudo systemctl start blog
+                            echo "🔄 已回滚到上一个版本"
+                            sleep 15
+                            if curl -f http://localhost:3000 > /dev/null 2>&1; then
+                                echo "✅ 回滚成功"
+                            else
+                                echo "❌ 回滚也失败了"
+                            fi
                         fi
+                        
+                        echo "📋 服务状态:"
+                        systemctl status blog --no-pager
+                        echo "📋 最近日志:"
+                        journalctl -u blog --no-pager -n 10
+                        exit 1
                     fi
-                    
-                    echo "📋 服务状态:"
-                    systemctl status blog --no-pager
-                    echo "📋 最近日志:"
-                    journalctl -u blog --no-pager -n 10
-                    exit 1
+                    sleep 10
+                fi
+            done
+            
+            # 检查Nginx状态
+            if systemctl is-active --quiet nginx; then
+                echo "✅ Nginx服务正常"
+                
+                # 测试Nginx代理
+                if curl -f http://localhost > /dev/null 2>&1; then
+                    echo "✅ Nginx代理正常"
+                else
+                    echo "⚠️  Nginx代理可能有问题"
                 fi
             else
-                echo "❌ 服务启动失败，尝试回滚..."
-                
-                # 回滚到备份版本
-                if [ -d ".next.backup" ]; then
-                    rm -rf .next
-                    mv .next.backup .next
-                    sudo systemctl start blog
-                    echo "🔄 已回滚到上一个版本"
-                fi
-                
-                echo "📋 服务状态:"
-                systemctl status blog --no-pager
-                echo "📋 服务日志:"
-                journalctl -u blog --no-pager -n 20
-                exit 1
+                echo "⚠️  Nginx服务未运行"
+                sudo systemctl start nginx || echo "❌ Nginx启动失败"
             fi
+            
+            # 清理备份文件
+            rm -rf .next.backup
+            
+            echo "🎉 部署成功完成！"
             
             echo "=== 部署完成 ==="
             echo "📊 最终状态:"

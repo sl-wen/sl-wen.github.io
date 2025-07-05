@@ -9,11 +9,58 @@
 在你的 GitHub 仓库中设置以下 Secrets：
 
 #### 必需的 Secrets：
-- `HOST_ALI`: 阿里云服务器的root密码
+- `SERVER_IP`: 服务器IP地址
+- `SERVER_USER`: 服务器用户名（如 root）
+- `SERVER_KEY`: 服务器密码或SSH私钥
 
 #### 可选的 Secrets（如果使用 Supabase）：
-- `NEXT_PUBLIC_SUPABASE_URL`: Supabase项目URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase匿名密钥
+- `SUPABASE_URL`: Supabase项目URL
+- `SUPABASE_KEY`: Supabase匿名密钥
+
+#### SSH认证配置
+如果遇到SSH认证问题，有两种解决方案：
+
+**方案1：使用SSH密钥（推荐）**
+1. 在服务器上生成SSH密钥对：
+```bash
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+```
+
+2. 将公钥添加到authorized_keys：
+```bash
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+```
+
+3. 将私钥内容复制到GitHub Secrets的 `SERVER_KEY` 中
+
+**方案2：启用密码认证**
+1. 编辑SSH配置：
+```bash
+sudo vim /etc/ssh/sshd_config
+```
+
+2. 确保以下配置：
+```
+PasswordAuthentication yes
+PermitRootLogin yes
+```
+
+3. 重启SSH服务：
+```bash
+sudo systemctl restart sshd
+```
+
+**方案3：使用配置脚本（最简单）**
+1. 在服务器上运行SSH配置脚本：
+```bash
+# 下载并运行SSH配置脚本
+curl -o setup-ssh.sh https://raw.githubusercontent.com/sl-wen/sl-wen.github.io/react/setup-ssh.sh
+chmod +x setup-ssh.sh
+./setup-ssh.sh
+```
+
+2. 按照脚本提示复制私钥到GitHub Secrets
 
 ### 2. 服务器环境准备
 
@@ -265,17 +312,38 @@ sudo systemctl restart blog
 
 ### 6. 常见问题排查
 
-#### 6.1 构建失败
+#### 6.1 SSH认证失败
+```bash
+# 错误信息：ssh: handshake failed: ssh: unable to authenticate
+# 解决方案：
+
+# 1. 检查SSH服务状态
+sudo systemctl status sshd
+
+# 2. 检查SSH配置
+sudo cat /etc/ssh/sshd_config | grep -E "(PasswordAuthentication|PubkeyAuthentication|PermitRootLogin)"
+
+# 3. 查看SSH日志
+sudo tail -f /var/log/secure
+
+# 4. 测试SSH连接
+ssh -v username@server_ip
+
+# 5. 重新生成SSH密钥
+./setup-ssh.sh
+```
+
+#### 6.2 构建失败
 - 检查代码是否有语法错误
 - 确认所有依赖都在 package.json 中
 - 查看 Actions 日志了解具体错误
 
-#### 6.2 部署失败
+#### 6.3 部署失败
 - 检查服务器连接是否正常
 - 确认 Nginx 配置正确
 - 检查目录权限
 
-#### 6.3 网站访问异常
+#### 6.4 网站访问异常
 ```bash
 # 检查 Nginx 状态
 sudo systemctl status nginx
@@ -287,7 +355,7 @@ sudo tail -f /var/log/nginx/error.log
 sudo systemctl restart nginx
 ```
 
-#### 6.4 服务器端构建失败
+#### 6.5 服务器端构建失败
 ```bash
 # 检查应用服务状态
 sudo systemctl status blog
@@ -309,7 +377,7 @@ free -h
 npm cache clean --force
 ```
 
-#### 6.5 部署过程监控
+#### 6.6 部署过程监控
 ```bash
 # 实时查看部署日志
 sudo journalctl -u blog -f

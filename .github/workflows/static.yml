@@ -21,19 +21,34 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_KEY }}
           port: 22
+          timeout: 60s
+          command_timeout: 15m
           script: |
+            set -e
+            
+            # 检查目录是否存在
+            if [ ! -d "/var/www/blog" ]; then
+              echo "❌ 应用目录不存在，请先创建并克隆代码"
+              exit 1
+            fi
+            
             cd /var/www/blog
             
             echo "=== 开始服务器端Git部署 ==="
             
             # 检查Node.js版本
-            node --version
-            npm --version
+            echo "📋 检查环境..."
+            node --version || { echo "❌ Node.js未安装"; exit 1; }
+            npm --version || { echo "❌ npm未安装"; exit 1; }
+            
+            # 检查Git状态
+            echo "📋 检查Git状态..."
+            git status || { echo "❌ 不是Git仓库"; exit 1; }
             
             # 停止现有服务
             echo "🛑 停止现有服务..."
-            systemctl stop blog || echo "服务未运行"
-            pkill -f "next start" || echo "没有运行中的Next.js进程"
+            sudo systemctl stop blog || echo "服务未运行"
+            sudo pkill -f "next start" || echo "没有运行中的Next.js进程"
             
             # 备份当前版本（如果需要回滚）
             echo "💾 备份当前版本..."
@@ -44,8 +59,8 @@ jobs:
             
             # 拉取最新代码
             echo "📥 拉取最新代码..."
-            git fetch origin
-            git reset --hard origin/react
+            git fetch origin || { echo "❌ Git fetch失败"; exit 1; }
+            git reset --hard origin/react || { echo "❌ Git reset失败"; exit 1; }
             git clean -fd
             
             # 显示当前版本信息
@@ -54,7 +69,7 @@ jobs:
             
             # 创建环境变量文件
             echo "🔧 配置环境变量..."
-            cat > .env.local << EOF
+            cat > .env.local << 'EOF'
             NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
             NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_KEY }}
             EOF
@@ -66,25 +81,25 @@ jobs:
             
             # 安装依赖
             echo "📦 安装依赖..."
-            npm ci --production=false
+            npm ci --production=false || { echo "❌ 依赖安装失败"; exit 1; }
             
             # 构建应用
             echo "🔨 构建应用..."
-            npm run build
+            npm run build || { echo "❌ 构建失败"; exit 1; }
             
             # 安装生产依赖
             echo "📦 安装生产依赖..."
-            npm ci --production --ignore-scripts
+            npm ci --production --ignore-scripts || { echo "❌ 生产依赖安装失败"; exit 1; }
             
             # 设置权限
             echo "🔐 设置权限..."
-            chown -R root:root /var/www/blog
-            chmod -R 755 /var/www/blog
+            sudo chown -R ${{ secrets.SERVER_USER }}:${{ secrets.SERVER_USER }} /var/www/blog
+            sudo chmod -R 755 /var/www/blog
             
             # 启动服务
             echo "🚀 启动服务..."
-            systemctl start blog
-            systemctl enable blog
+            sudo systemctl start blog
+            sudo systemctl enable blog
             
             # 等待服务启动
             echo "⏳ 等待服务启动..."
@@ -92,7 +107,7 @@ jobs:
             
             # 检查服务状态
             echo "🔍 检查服务状态..."
-            if systemctl is-active --quiet blog; then
+            if sudo systemctl is-active --quiet blog; then
                 echo "✅ 服务启动成功"
                 
                 # 检查应用是否响应
@@ -105,17 +120,17 @@ jobs:
                     echo "🎉 部署成功完成！"
                 else
                     echo "❌ 应用无响应，尝试回滚..."
-                    systemctl stop blog
+                    sudo systemctl stop blog
                     
                     # 回滚到备份版本
                     if [ -d ".next.backup" ]; then
                         rm -rf .next
                         mv .next.backup .next
-                        systemctl start blog
+                        sudo systemctl start blog
                         echo "🔄 已回滚到上一个版本"
                     fi
                     
-                    systemctl status blog
+                    sudo systemctl status blog
                     exit 1
                 fi
             else
@@ -125,26 +140,26 @@ jobs:
                 if [ -d ".next.backup" ]; then
                     rm -rf .next
                     mv .next.backup .next
-                    systemctl start blog
+                    sudo systemctl start blog
                     echo "🔄 已回滚到上一个版本"
                 fi
                 
-                systemctl status blog
-                journalctl -u blog --no-pager -n 20
+                sudo systemctl status blog
+                sudo journalctl -u blog --no-pager -n 20
                 exit 1
             fi
             
             echo "=== 部署完成 ==="
-            echo "📊 服务状态: $(systemctl is-active blog)"
-            echo "🔗 访问地址: http://182.92.240.153"
+            echo "📊 服务状态: $(sudo systemctl is-active blog)"
+            echo "🔗 访问地址: http://${{ secrets.SERVER_IP }}"
 
       # 部署后通知
       - name: Deployment Status
         if: always()
         run: |
           if [ ${{ job.status }} == 'success' ]; then
-            echo "✅ 部署成功！网站已更新到: http://182.92.240.153"
-            echo "🔗 访问地址: http://182.92.240.153"
+            echo "✅ 部署成功！网站已更新到: http://${{ secrets.SERVER_IP }}"
+            echo "🔗 访问地址: http://${{ secrets.SERVER_IP }}"
           else
             echo "❌ 部署失败，请检查日志获取详细信息。"
             echo "💡 提示: 如果部署失败，系统会自动尝试回滚到上一个版本"

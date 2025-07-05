@@ -1,5 +1,5 @@
-# Ubuntu 24.04 服务器部署工作流
-name: Deploy to Ubuntu Server
+# Ubuntu 24.04 服务器更新部署工作流
+name: Update Deployed Server
 
 on:
   # 在react分支有推送时触发
@@ -9,13 +9,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  update:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     
     steps:
-      # 通过SSH连接Ubuntu服务器，拉取代码并构建
-      - name: Deploy via Git Pull on Ubuntu Server
+      # 通过SSH连接Ubuntu服务器，更新代码并重新构建
+      - name: Update and Rebuild on Ubuntu Server
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_IP }}
@@ -23,215 +23,151 @@ jobs:
           password: ${{ secrets.SERVER_KEY }}
           port: 22
           timeout: 300s
-          command_timeout: 30m
+          command_timeout: 20m
           script: |
             set -e
             
-            # 定义清理函数
-            cleanup() {
-                echo "🔄 执行清理操作..."
-                if [ -d "/var/www/blog" ]; then
-                    cd /var/www/blog
-                    # 如果有备份，尝试恢复
-                    if [ -d ".next.backup" ]; then
-                        echo "🔄 恢复备份..."
-                        rm -rf .next
-                        mv .next.backup .next
-                        sudo systemctl start blog || true
-                    fi
-                fi
-            }
+            echo "=== 开始服务器更新 ==="
+            echo "📋 更新时间: $(date)"
+            echo "📋 服务器: $(hostname) - $(lsb_release -d | cut -f2)"
             
-            # 设置信号处理
-            trap cleanup EXIT TERM INT
-            
-            # 检查目录是否存在
+            # 检查应用目录
             if [ ! -d "/var/www/blog" ]; then
-              echo "❌ 应用目录不存在，请先运行初始化脚本"
-              echo "💡 运行: curl -sSL https://raw.githubusercontent.com/sl-wen/sl-wen.github.io/react/init-server.sh | bash"
+              echo "❌ 应用目录不存在: /var/www/blog"
               exit 1
             fi
             
             cd /var/www/blog
             
-            echo "=== 开始Ubuntu服务器部署 ==="
-            echo "📋 系统信息: $(lsb_release -d | cut -f2)"
-            echo "⏰ 部署时间: $(date)"
-            
-            # 检查系统环境
-            echo "📋 检查系统环境..."
-            node --version || { echo "❌ Node.js未安装"; exit 1; }
-            npm --version || { echo "❌ npm未安装"; exit 1; }
-            git --version || { echo "❌ Git未安装"; exit 1; }
-            
-            # 检查系统资源
-            echo "📊 系统资源状态:"
-            echo "  内存: $(free -h | grep Mem | awk '{print $3 "/" $2}')"
-            echo "  磁盘: $(df -h /var/www/blog | tail -1 | awk '{print $3 "/" $2 " (" $5 ")"}')"
-            
-            # 检查Git状态并清理
-            echo "📋 检查Git仓库状态..."
-            if ! git rev-parse --git-dir > /dev/null 2>&1; then
-                echo "❌ 不是Git仓库"
-                exit 1
-            fi
-            
             # 显示当前状态
-            echo "📋 当前分支: $(git branch --show-current)"
-            echo "📋 当前提交: $(git log --oneline -n 1)"
+            echo "📋 更新前状态:"
+            echo "  当前分支: $(git branch --show-current)"
+            echo "  当前提交: $(git log --oneline -n 1)"
+            echo "  内存状态: $(free -h | grep Mem | awk '{print $3 "/" $2 " (可用:" $7 ")"}')"
             
-            # 清理Git工作区
-            echo "🧹 清理Git工作区..."
-            if ! git diff --quiet || ! git diff --cached --quiet; then
-                echo "⚠️  发现未提交的更改，正在暂存..."
-                git stash push -u -m "Auto stash before deployment $(date)"
-            fi
-            git reset --hard HEAD
-            git clean -fd
-            
-            # 停止现有服务（使用更温和的方式）
-            echo "🛑 停止现有服务..."
-            if systemctl list-unit-files | grep -q "blog.service"; then
-                if systemctl is-active --quiet blog; then
-                    echo "正在停止blog服务..."
-                    sudo systemctl stop blog
-                    # 等待服务完全停止
-                    sleep 5
-                    echo "✅ blog服务已停止"
-                else
-                    echo "📋 blog服务未运行"
-                fi
-            else
-                echo "📋 blog服务不存在，将稍后创建"
-            fi
-            
-            # 终止可能的残留进程（更安全的方式）
-            echo "🔄 检查残留进程..."
-            if pgrep -f "next start" > /dev/null; then
-                echo "终止Next.js进程..."
-                pkill -TERM -f "next start" || true
-                sleep 3
-                pkill -KILL -f "next start" || true
-            fi
-            
-            if pgrep -f "npm start" > /dev/null; then
-                echo "终止npm进程..."
-                pkill -TERM -f "npm start" || true
-                sleep 3
-                pkill -KILL -f "npm start" || true
-            fi
-            
-            # 备份当前版本
-            echo "💾 备份当前版本..."
+            # 备份当前构建
+            echo "💾 备份当前构建..."
             if [ -d ".next" ]; then
                 rm -rf .next.backup
                 cp -r .next .next.backup
                 echo "✅ 构建文件已备份"
             fi
             
+            # 停止服务
+            echo "🛑 停止blog服务..."
+            if systemctl is-active --quiet blog; then
+                sudo systemctl stop blog
+                echo "✅ blog服务已停止"
+            else
+                echo "📋 blog服务未运行"
+            fi
+            
+            # 清理残留进程
+            echo "🧹 清理进程..."
+            pkill -TERM -f "next start" 2>/dev/null || true
+            pkill -TERM -f "npm start" 2>/dev/null || true
+            sleep 3
+            pkill -KILL -f "next start" 2>/dev/null || true
+            pkill -KILL -f "npm start" 2>/dev/null || true
+            
+            # 暂存本地更改
+            if ! git diff --quiet || ! git diff --cached --quiet; then
+                echo "📦 暂存本地更改..."
+                git stash push -u -m "Auto stash before update $(date)"
+            fi
+            
             # 拉取最新代码
             echo "📥 拉取最新代码..."
-            git fetch origin || { echo "❌ Git fetch失败"; exit 1; }
+            git fetch origin
             BEFORE_COMMIT=$(git rev-parse HEAD)
-            git reset --hard origin/react || { echo "❌ Git reset失败"; exit 1; }
+            git reset --hard origin/react
             git clean -fd
             AFTER_COMMIT=$(git rev-parse HEAD)
             
             # 显示更新信息
             if [ "$BEFORE_COMMIT" != "$AFTER_COMMIT" ]; then
-                echo "📋 代码已更新:"
+                echo "✅ 代码已更新:"
                 git log --oneline $BEFORE_COMMIT..$AFTER_COMMIT | head -5
             else
                 echo "📋 代码无变化"
             fi
-            
             echo "📋 当前版本: $(git log --oneline -n 1)"
             
-            # 创建环境变量文件
-            echo "🔧 配置环境变量..."
+            # 更新环境变量
+            echo "🔧 更新环境变量..."
             cat > .env.local << 'EOF'
             NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
             NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_KEY }}
             NODE_ENV=production
             EOF
-            echo "✅ 环境变量配置完成"
             
-            # 清理旧的构建文件和缓存
-            echo "🧹 清理旧文件..."
-            rm -rf node_modules/.cache
-            rm -rf .next
+            # 检查内存状态
+            MEM_AVAILABLE=$(free -m | grep Mem | awk '{print $7}')
+            echo "📊 可用内存: ${MEM_AVAILABLE}MB"
             
-            # 清理npm缓存（如果磁盘空间不足）
-            DISK_USAGE=$(df /var/www/blog | tail -1 | awk '{print $5}' | sed 's/%//')
-            if [ "$DISK_USAGE" -gt 80 ]; then
-                echo "⚠️  磁盘使用率较高，清理缓存..."
-                npm cache clean --force
+            # 如果内存不足，清理缓存
+            if [ $MEM_AVAILABLE -lt 300 ]; then
+                echo "⚠️  内存不足，清理缓存..."
+                sudo sync
+                sudo sh -c 'echo 1 > /proc/sys/vm/drop_caches'
+                npm cache clean --force || true
+                MEM_AVAILABLE=$(free -m | grep Mem | awk '{print $7}')
+                echo "📊 清理后可用内存: ${MEM_AVAILABLE}MB"
             fi
             
-            # 安装依赖
-            echo "📦 安装依赖..."
-            npm ci || { echo "❌ 依赖安装失败"; exit 1; }
-            echo "✅ 依赖安装完成"
-            
-            # 构建应用
-            echo "🔨 构建应用..."
             # 设置Node.js内存限制
-            export NODE_OPTIONS="--max-old-space-size=1024"
-            npm run build || { 
-                echo "❌ 构建失败"
-                echo "📋 构建日志:"
-                npm run build 2>&1 | tail -20
-                exit 1
-            }
-            echo "✅ 应用构建完成"
+            if [ $MEM_AVAILABLE -lt 400 ]; then
+                export NODE_OPTIONS="--max-old-space-size=256"
+                echo "🔧 设置低内存模式: 256MB"
+            else
+                export NODE_OPTIONS="--max-old-space-size=512"
+                echo "🔧 设置标准内存模式: 512MB"
+            fi
             
-            # 设置权限
-            echo "🔐 设置权限..."
-            sudo chown -R ${{ secrets.SERVER_USER }}:${{ secrets.SERVER_USER }} /var/www/blog
-            sudo chmod -R 755 /var/www/blog
+            # 更新依赖（如果package.json有变化）
+            if git diff --name-only $BEFORE_COMMIT $AFTER_COMMIT | grep -q "package.json"; then
+                echo "📦 package.json有变化，更新依赖..."
+                npm ci --production --no-audit --no-fund
+                echo "✅ 依赖更新完成"
+            else
+                echo "📋 依赖无需更新"
+            fi
             
-            # 创建systemd服务（如果不存在）
-            if ! systemctl list-unit-files | grep -q "blog.service"; then
-                echo "🔧 创建systemd服务..."
-                sudo tee /etc/systemd/system/blog.service > /dev/null <<EOF
-            [Unit]
-            Description=Blog Next.js App
-            After=network.target
+            # 重新构建
+            echo "🔨 重新构建应用..."
+            rm -rf .next
             
-            [Service]
-            Type=simple
-            User=${{ secrets.SERVER_USER }}
-            WorkingDirectory=/var/www/blog
-            ExecStart=/usr/bin/npm start
-            Restart=on-failure
-            RestartSec=10
-            Environment=NODE_ENV=production
-            StandardOutput=journal
-            StandardError=journal
-            TimeoutStartSec=120
-            TimeoutStopSec=30
-            
-            [Install]
-            WantedBy=multi-user.target
-            EOF
-                sudo systemctl daemon-reload
-                echo "✅ systemd服务创建完成"
+            # 使用timeout防止构建卡死
+            if timeout 900 npm run build; then
+                echo "✅ 构建成功"
+                BUILD_SIZE=$(du -sh .next | awk '{print $1}')
+                echo "📊 构建大小: $BUILD_SIZE"
+            else
+                echo "❌ 构建失败，恢复备份..."
+                if [ -d ".next.backup" ]; then
+                    rm -rf .next
+                    mv .next.backup .next
+                    echo "🔄 已恢复备份版本"
+                else
+                    echo "❌ 无备份可恢复"
+                    exit 1
+                fi
             fi
             
             # 启动服务
-            echo "🚀 启动服务..."
-            sudo systemctl enable blog
+            echo "🚀 启动blog服务..."
             sudo systemctl start blog
             
-            # 等待服务启动（分阶段等待）
+            # 等待服务启动
             echo "⏳ 等待服务启动..."
             sleep 10
             
             # 检查服务状态
-            echo "🔍 检查服务状态..."
+            SERVICE_STARTED=false
             for i in {1..6}; do
                 if systemctl is-active --quiet blog; then
                     echo "✅ blog服务启动成功 (尝试 $i/6)"
+                    SERVICE_STARTED=true
                     break
                 else
                     echo "⏳ 等待服务启动... (尝试 $i/6)"
@@ -240,10 +176,27 @@ jobs:
                         echo "📋 服务状态:"
                         systemctl status blog --no-pager
                         echo "📋 服务日志:"
-                        journalctl -u blog --no-pager -n 20
-                        exit 1
+                        journalctl -u blog --no-pager -n 10
+                        
+                        # 尝试恢复备份
+                        if [ -d ".next.backup" ]; then
+                            echo "🔄 尝试恢复备份..."
+                            sudo systemctl stop blog
+                            rm -rf .next
+                            mv .next.backup .next
+                            sudo systemctl start blog
+                            sleep 10
+                            if systemctl is-active --quiet blog; then
+                                echo "✅ 备份恢复成功"
+                                SERVICE_STARTED=true
+                            fi
+                        fi
+                        
+                        if [ "$SERVICE_STARTED" = "false" ]; then
+                            exit 1
+                        fi
                     fi
-                    sleep 10
+                    sleep 8
                 fi
             done
             
@@ -251,93 +204,89 @@ jobs:
             echo "⏳ 等待应用完全启动..."
             sleep 15
             
-            # 检查应用端口
-            if netstat -tlnp | grep -q ":3000"; then
-                echo "✅ 应用端口3000已监听"
-            else
-                echo "⚠️  端口3000未监听"
-                netstat -tlnp | grep LISTEN
-            fi
-            
-            # 检查应用是否响应
-            echo "🧪 测试应用响应..."
+            # 检查应用响应
+            APP_RESPONDING=false
             for i in {1..5}; do
-                if curl -f http://localhost:3000 > /dev/null 2>&1; then
+                if curl -f --connect-timeout 10 http://localhost:3000 > /dev/null 2>&1; then
                     echo "✅ 应用响应正常 (尝试 $i/5)"
+                    APP_RESPONDING=true
                     break
                 else
                     echo "⏳ 等待应用响应... (尝试 $i/5)"
                     if [ $i -eq 5 ]; then
-                        echo "❌ 应用无响应，尝试回滚..."
-                        sudo systemctl stop blog
+                        echo "❌ 应用无响应"
+                        echo "📋 最近日志:"
+                        journalctl -u blog --no-pager -n 10
                         
-                        # 回滚到备份版本
+                        # 最后尝试恢复备份
                         if [ -d ".next.backup" ]; then
+                            echo "🔄 最后尝试恢复备份..."
+                            sudo systemctl stop blog
                             rm -rf .next
                             mv .next.backup .next
                             sudo systemctl start blog
-                            echo "🔄 已回滚到上一个版本"
                             sleep 15
-                            if curl -f http://localhost:3000 > /dev/null 2>&1; then
-                                echo "✅ 回滚成功"
-                            else
-                                echo "❌ 回滚也失败了"
+                            if curl -f --connect-timeout 10 http://localhost:3000 > /dev/null 2>&1; then
+                                echo "✅ 备份恢复成功"
+                                APP_RESPONDING=true
                             fi
                         fi
                         
-                        echo "📋 服务状态:"
-                        systemctl status blog --no-pager
-                        echo "📋 最近日志:"
-                        journalctl -u blog --no-pager -n 10
-                        exit 1
+                        if [ "$APP_RESPONDING" = "false" ]; then
+                            exit 1
+                        fi
                     fi
                     sleep 10
                 fi
             done
             
-            # 检查Nginx状态
+            # 检查nginx状态
             if systemctl is-active --quiet nginx; then
-                echo "✅ Nginx服务正常"
-                
-                # 测试Nginx代理
-                if curl -f http://localhost > /dev/null 2>&1; then
-                    echo "✅ Nginx代理正常"
+                echo "✅ nginx服务正常"
+                if curl -f --connect-timeout 5 http://localhost > /dev/null 2>&1; then
+                    echo "✅ nginx代理正常"
                 else
-                    echo "⚠️  Nginx代理可能有问题"
+                    echo "⚠️  nginx代理异常，重启nginx..."
+                    sudo systemctl restart nginx
                 fi
             else
-                echo "⚠️  Nginx服务未运行"
-                sudo systemctl start nginx || echo "❌ Nginx启动失败"
+                echo "⚠️  nginx服务未运行，启动nginx..."
+                sudo systemctl start nginx
             fi
             
             # 清理备份文件
             rm -rf .next.backup
             
-            echo "🎉 部署成功完成！"
-            
-            echo "=== 部署完成 ==="
+            # 显示最终状态
+            echo ""
+            echo "🎉 更新部署完成！"
+            echo ""
             echo "📊 最终状态:"
             echo "  blog服务: $(systemctl is-active blog)"
             echo "  nginx服务: $(systemctl is-active nginx)"
             echo "  应用端口: $(netstat -tlnp | grep :3000 | wc -l) 个监听"
+            echo "  内存使用: $(free -h | grep Mem | awk '{print $3 "/" $2}')"
             echo "🔗 访问地址: http://${{ secrets.SERVER_IP }}"
             echo "📋 版本信息: $(git log --oneline -n 1)"
+            echo ""
+            echo "=== 更新完成 ==="
+            echo "📋 完成时间: $(date)"
 
       # 部署后通知
-      - name: Deployment Status
+      - name: Update Status
         if: always()
         run: |
           if [ ${{ job.status }} == 'success' ]; then
-            echo "✅ Ubuntu服务器部署成功！"
+            echo "✅ 服务器更新成功！"
             echo "🔗 访问地址: http://${{ secrets.SERVER_IP }}"
-            echo "📋 部署时间: $(date)"
+            echo "📋 更新时间: $(date)"
             echo "🎉 网站已更新并正在运行"
           else
-            echo "❌ Ubuntu服务器部署失败"
+            echo "❌ 服务器更新失败"
             echo "💡 故障排除提示:"
-            echo "  1. 检查服务器SSH连接"
-            echo "  2. 确认服务器环境已正确配置"
-            echo "  3. 查看GitHub Actions日志获取详细错误信息"
-            echo "  4. 如果是首次部署，请先运行初始化脚本"
-            echo "  5. 系统已自动尝试回滚到上一个版本"
+            echo "  1. 检查服务器内存是否充足"
+            echo "  2. 查看GitHub Actions日志获取详细错误信息"
+            echo "  3. 检查服务器SSH连接"
+            echo "  4. 系统已自动尝试回滚到备份版本"
+            echo "  5. 如需手动检查，运行: systemctl status blog"
           fi

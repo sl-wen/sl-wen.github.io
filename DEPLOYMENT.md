@@ -64,7 +64,22 @@ chmod +x setup-ssh.sh
 
 ### 2. 服务器环境准备
 
-#### 2.1 安装 Nginx
+#### 2.0 一键初始化（推荐）
+```bash
+# 使用一键初始化脚本（适用于全新服务器）
+curl -sSL https://raw.githubusercontent.com/sl-wen/sl-wen.github.io/react/init-server.sh | bash
+
+# 脚本会自动完成：
+# - 安装Git、Node.js、Nginx
+# - 克隆代码仓库
+# - 创建systemd服务
+# - 配置Nginx反向代理
+# - 启动所有服务
+```
+
+#### 2.1 手动安装（如果需要自定义配置）
+
+#### 2.1.1 安装 Nginx
 ```bash
 # 更新系统
 sudo yum update -y
@@ -80,7 +95,7 @@ sudo systemctl enable nginx
 sudo systemctl status nginx
 ```
 
-#### 2.2 配置 Nginx
+#### 2.1.2 配置 Nginx
 ```bash
 # 备份原配置
 sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
@@ -166,7 +181,7 @@ server {
 }
 ```
 
-#### 2.3 安装Git和Node.js，创建应用目录
+#### 2.1.3 安装Git和Node.js，创建应用目录
 ```bash
 # 安装Git
 sudo yum install -y git
@@ -210,7 +225,7 @@ EOF
 sudo systemctl enable blog.service
 ```
 
-#### 2.4 配置防火墙
+#### 2.1.4 配置防火墙
 ```bash
 # 开放HTTP端口
 sudo firewall-cmd --permanent --add-service=http
@@ -355,7 +370,41 @@ sudo tail -f /var/log/nginx/error.log
 sudo systemctl restart nginx
 ```
 
-#### 6.5 服务器端构建失败
+#### 6.5 Git状态问题
+```bash
+# 错误：Changes not staged for commit
+# 解决方案：清理Git工作区
+
+cd /var/www/blog
+
+# 查看Git状态
+git status
+
+# 丢弃本地更改
+git reset --hard HEAD
+git clean -fd
+
+# 强制拉取最新代码
+git fetch origin
+git reset --hard origin/react
+```
+
+#### 6.6 服务不存在问题
+```bash
+# 错误：Failed to stop blog.service: Unit blog.service not loaded
+# 解决方案：创建systemd服务
+
+# 使用自动脚本创建
+chmod +x create-service.sh
+./create-service.sh
+
+# 或手动创建
+sudo vim /etc/systemd/system/blog.service
+sudo systemctl daemon-reload
+sudo systemctl enable blog
+```
+
+#### 6.7 服务器端构建失败
 ```bash
 # 检查应用服务状态
 sudo systemctl status blog
@@ -377,7 +426,7 @@ free -h
 npm cache clean --force
 ```
 
-#### 6.6 部署过程监控
+#### 6.8 部署过程监控
 ```bash
 # 实时查看部署日志
 sudo journalctl -u blog -f

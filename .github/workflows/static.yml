@@ -21,8 +21,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_KEY }}
           port: 22
-          timeout: 60s
-          command_timeout: 15m
+          timeout: 120s
+          command_timeout: 20m
           script: |
             set -e
             
@@ -41,13 +41,22 @@ jobs:
             node --version || { echo "❌ Node.js未安装"; exit 1; }
             npm --version || { echo "❌ npm未安装"; exit 1; }
             
-            # 检查Git状态
+            # 检查Git状态并清理
             echo "📋 检查Git状态..."
             git status || { echo "❌ 不是Git仓库"; exit 1; }
             
+            # 清理Git工作区（丢弃本地更改）
+            echo "🧹 清理Git工作区..."
+            git reset --hard HEAD
+            git clean -fd
+            
             # 停止现有服务
             echo "🛑 停止现有服务..."
-            sudo systemctl stop blog || echo "服务未运行"
+            if sudo systemctl list-units --full -all | grep -Fq "blog.service"; then
+                sudo systemctl stop blog || echo "服务停止失败"
+            else
+                echo "blog服务不存在，将稍后创建"
+            fi
             sudo pkill -f "next start" || echo "没有运行中的Next.js进程"
             
             # 备份当前版本（如果需要回滚）
@@ -96,19 +105,46 @@ jobs:
             sudo chown -R ${{ secrets.SERVER_USER }}:${{ secrets.SERVER_USER }} /var/www/blog
             sudo chmod -R 755 /var/www/blog
             
+            # 创建systemd服务（如果不存在）
+            if ! sudo systemctl list-units --full -all | grep -Fq "blog.service"; then
+                echo "🔧 创建systemd服务..."
+                sudo tee /etc/systemd/system/blog.service > /dev/null <<EOF
+            [Unit]
+            Description=Blog Next.js App
+            After=network.target
+            
+            [Service]
+            Type=simple
+            User=${{ secrets.SERVER_USER }}
+            WorkingDirectory=/var/www/blog
+            ExecStart=/usr/bin/npm start
+            Restart=on-failure
+            RestartSec=10
+            Environment=NODE_ENV=production
+            
+            [Install]
+            WantedBy=multi-user.target
+            EOF
+                sudo systemctl daemon-reload
+                echo "✅ systemd服务创建完成"
+            fi
+            
             # 启动服务
             echo "🚀 启动服务..."
-            sudo systemctl start blog
             sudo systemctl enable blog
+            sudo systemctl start blog
             
             # 等待服务启动
             echo "⏳ 等待服务启动..."
-            sleep 10
+            sleep 15
             
             # 检查服务状态
             echo "🔍 检查服务状态..."
             if sudo systemctl is-active --quiet blog; then
                 echo "✅ 服务启动成功"
+                
+                # 等待应用完全启动
+                sleep 10
                 
                 # 检查应用是否响应
                 if curl -f http://localhost:3000 > /dev/null 2>&1; then
@@ -128,9 +164,15 @@ jobs:
                         mv .next.backup .next
                         sudo systemctl start blog
                         echo "🔄 已回滚到上一个版本"
+                        sleep 10
+                        if curl -f http://localhost:3000 > /dev/null 2>&1; then
+                            echo "✅ 回滚成功"
+                        else
+                            echo "❌ 回滚也失败了"
+                        fi
                     fi
                     
-                    sudo systemctl status blog
+                    sudo systemctl status blog --no-pager
                     exit 1
                 fi
             else
@@ -144,7 +186,7 @@ jobs:
                     echo "🔄 已回滚到上一个版本"
                 fi
                 
-                sudo systemctl status blog
+                sudo systemctl status blog --no-pager
                 sudo journalctl -u blog --no-pager -n 20
                 exit 1
             fi

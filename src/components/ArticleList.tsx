@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { getArticles, Article } from '../utils/articleService';
 import ArticleCard from './ArticleCard';
-import StatusMessage from './StatusMessage';
+import { Alert } from './ui';
+import '../styles/ArticleList.css';
 
 const ArticleList: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -39,7 +40,7 @@ const ArticleList: React.FC = () => {
   };
 
   if (error) {
-    return <StatusMessage message={error} />;
+    return <Alert variant="error">{error}</Alert>;
   }
 
   return (

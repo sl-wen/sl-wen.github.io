@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { getArticleById, getAdjacentArticles, Article } from '../utils/articleService';
 import DOMPurify from 'dompurify';
 import Loading from '../components/Loading';
-import StatusMessage from '../components/StatusMessage';
+import { Alert } from '../components/ui';
 import { recordPostsView } from '../utils/stats';
 import { marked } from 'marked';
 import { addPostReaction, getPostReaction } from '../utils/reactionService';
@@ -274,7 +274,7 @@ const ArticlePage: React.FC = () => {
   }
 
   if (error) {
-    return <StatusMessage message={error} />;
+    return <Alert variant="error">{error}</Alert>;
   }
 
   if (!article) {

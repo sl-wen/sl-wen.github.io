@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getArticles } from '../utils/articleService';
 import Loading from '../components/Loading';
-import StatusMessage from '../components/StatusMessage';
+import { Alert } from '../components/ui';
 import type { Article } from '../utils/articleService';
 
 const CategoryPage: React.FC = () => {
@@ -50,7 +50,7 @@ const CategoryPage: React.FC = () => {
   }
 
   if (error) {
-    return <StatusMessage message={error} />;
+    return <Alert variant="error">{error}</Alert>;
   }
 
   const groupedArticles = groupArticlesByTag(articles);

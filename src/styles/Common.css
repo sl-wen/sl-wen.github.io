@@ -319,38 +319,7 @@ a:hover {
   font-size: var(--text-lg);
 }
 
-/* 卡片组件 */
-.card {
-  background: var(--gradient-card);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: var(--transition-all);
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.card-header {
-  padding: var(--spacing-6);
-  border-bottom: 1px solid var(--border-primary);
-  background-color: var(--background-secondary);
-}
-
-.card-body {
-  padding: var(--spacing-6);
-}
-
-.card-footer {
-  padding: var(--spacing-6);
-  border-top: 1px solid var(--border-primary);
-  background-color: var(--background-secondary);
-}
-
-/* 输入组件 */
+/* 保留一些向后兼容的样式，但优先使用UI组件 */
 .form-input {
   width: 100%;
   padding: var(--spacing-3);

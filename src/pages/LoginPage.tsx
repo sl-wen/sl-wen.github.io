@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../utils/supabase-config';
+import { Button, Input, Card, Alert } from '../components/ui';
 
 const LoginPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,6 +11,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<'info' | 'success' | 'warning' | 'error'>('info');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,9 +37,14 @@ const LoginPage: React.FC = () => {
 
           localStorage.setItem('userProfile', JSON.stringify(profileData));
           localStorage.setItem('userSession', JSON.stringify(data));
-          router.push('/');
-          // 登录成功后刷新页面
-          window.location.reload();
+          
+          setMessage('登录成功！正在跳转...');
+          setMessageType('success');
+          
+          setTimeout(() => {
+            router.push('/');
+            window.location.reload();
+          }, 1000);
         }
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -59,11 +66,13 @@ const LoginPage: React.FC = () => {
           ]);
 
           setMessage('注册成功！请检查您的邮箱进行验证。');
+          setMessageType('success');
           setIsLogin(true);
         }
       }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : '操作失败');
+      setMessageType('error');
     } finally {
       setLoading(false);
     }
@@ -99,116 +108,120 @@ const LoginPage: React.FC = () => {
 
   const passwordStrength = getPasswordStrength(password);
 
+  // 图标组件
+  const EmailIcon = () => (
+    <svg viewBox="0 0 20 20" fill="currentColor">
+      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+    </svg>
+  );
+
+  const LockIcon = () => (
+    <svg viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+    </svg>
+  );
+
+  const isPasswordInvalid = !isLogin && password && !validatePassword(password);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-950 flex items-center justify-center py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-8 px-4">
       <div className="w-full max-w-md">
-        {/* 登录框主体 */}
-        <div className="card hover-lift p-8">
+        <Card size="lg" variant="elevated" className="shadow-2xl">
           {/* 头部 */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl text-white">🚀</span>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {isLogin ? '欢迎回来' : '创建账户'}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600">
               {isLogin ? '登录到你的账户继续创作' : '注册新账户开始你的创作之旅'}
             </p>
           </div>
 
           {/* 登录/注册切换 */}
-          <div className="flex mb-8 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-            <button
-              type="button"
-              className={`interactive flex-1 py-3 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
-                isLogin 
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
+          <div className="flex mb-8 p-1 bg-gray-100 rounded-lg">
+            <Button
+              variant={isLogin ? "primary" : "ghost"}
+              size="md"
               onClick={() => setIsLogin(true)}
+              className="flex-1"
             >
               登录
-            </button>
-            <button
-              type="button"
-              className={`interactive flex-1 py-3 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
-                !isLogin 
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
+            </Button>
+            <Button
+              variant={!isLogin ? "primary" : "ghost"}
+              size="md"
               onClick={() => setIsLogin(false)}
+              className="flex-1"
             >
               注册
-            </button>
+            </Button>
           </div>
 
           {/* 表单 */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* 邮箱输入 */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                邮箱地址
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <span className="text-gray-400 text-lg">📧</span>
-                </div>
-                <input
-                  id="email"
-                  type="email"
-                  placeholder="请输入您的邮箱"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="form-input pl-12"
-                  required
-                />
-              </div>
-            </div>
+            <Input
+              label="邮箱地址"
+              type="email"
+              placeholder="请输入您的邮箱"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              leftIcon={<EmailIcon />}
+              required
+              fullWidth
+            />
 
             {/* 密码输入 */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                密码
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <span className="text-gray-400 text-lg">🔒</span>
-                </div>
-                <input
-                  id="password"
-                  type="password"
-                  placeholder={isLogin ? "请输入您的密码" : "请设置强密码（至少8位，包含大小写字母、数字和特殊字符）"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="form-input pl-12"
-                  required
-                />
-              </div>
+            <Input
+              label="密码"
+              type="password"
+              placeholder={
+                isLogin 
+                  ? "请输入您的密码" 
+                  : "请设置强密码（至少8位，包含大小写字母、数字和特殊字符）"
+              }
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              leftIcon={<LockIcon />}
+              required
+              fullWidth
+              error={!!isPasswordInvalid}
+              errorMessage={
+                isPasswordInvalid 
+                  ? "密码强度不够，请按要求设置密码" 
+                  : undefined
+              }
+            />
 
-              {/* 密码强度指示器（仅注册时显示） */}
-              {!isLogin && password && (
-                <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">密码强度</span>
+            {/* 密码强度指示器（仅注册时显示） */}
+            {!isLogin && password && (
+              <Card variant="filled" size="sm">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">密码强度</span>
                     <span className={`text-sm font-medium ${
-                      passwordStrength.strength >= 4 ? 'text-green-600 dark:text-green-400' :
-                      passwordStrength.strength >= 3 ? 'text-blue-600 dark:text-blue-400' :
-                      passwordStrength.strength >= 2 ? 'text-yellow-600 dark:text-yellow-400' :
-                      'text-red-600 dark:text-red-400'
+                      passwordStrength.strength >= 4 ? 'text-green-600' :
+                      passwordStrength.strength >= 3 ? 'text-blue-600' :
+                      passwordStrength.strength >= 2 ? 'text-yellow-600' :
+                      'text-red-600'
                     }`}>
                       {passwordStrength.label}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-3">
+                  
+                  <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.color}`}
                       style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
-                    ></div>
+                    />
                   </div>
                   
                   {/* 密码要求检查 */}
-                  <div className="space-y-1 text-xs">
+                  <div className="space-y-1">
                     {[
                       { check: password.length >= 8, text: '至少8个字符' },
                       { check: /[a-z]/.test(password), text: '包含小写字母' },
@@ -216,78 +229,71 @@ const LoginPage: React.FC = () => {
                       { check: /\d/.test(password), text: '包含数字' },
                       { check: /[!@#$%^&*(),.?":{}|<>]/.test(password), text: '包含特殊字符' }
                     ].map((requirement, index) => (
-                      <div key={index} className={`flex items-center gap-2 ${
-                        requirement.check ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
+                      <div key={index} className={`flex items-center gap-2 text-xs ${
+                        requirement.check ? 'text-green-600' : 'text-gray-500'
                       }`}>
-                        <span>{requirement.check ? '✓' : '○'}</span>
+                        <span className="text-sm">{requirement.check ? '✓' : '○'}</span>
                         <span>{requirement.text}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
+              </Card>
+            )}
 
             {/* 错误/成功消息 */}
             {message && (
-              <div className={`p-4 rounded-lg border-l-4 ${
-                message.includes('成功') 
-                  ? 'bg-green-50 border-green-400 text-green-700 dark:bg-green-900/20 dark:text-green-300' 
-                  : 'bg-red-50 border-red-400 text-red-700 dark:bg-red-900/20 dark:text-red-300'
-              }`}>
-                <div className="flex items-center">
-                  <span className="mr-2">
-                    {message.includes('成功') ? '✅' : '❌'}
-                  </span>
-                  <span className="text-sm font-medium">{message}</span>
-                </div>
-              </div>
+              <Alert 
+                variant={messageType} 
+                onClose={() => setMessage('')}
+              >
+                <strong>{messageType === 'success' ? '成功：' : '错误：'}</strong>
+                {message}
+              </Alert>
             )}
 
             {/* 提交按钮 */}
-            <button
+            <Button
               type="submit"
-              disabled={loading || (!isLogin && !validatePassword(password))}
-              className="btn-primary w-full py-3 text-base font-medium touch-feedback disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              size="lg"
+              disabled={loading || !!isPasswordInvalid}
+              isLoading={loading}
+              fullWidth
+              leftIcon={<span>{isLogin ? '🎉' : '🚀'}</span>}
             >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="loading-spinner mr-2"></div>
-                  {isLogin ? '登录中...' : '注册中...'}
-                </div>
-              ) : (
-                <div className="flex items-center justify-center">
-                  <span className="mr-2">{isLogin ? '🎉' : '🚀'}</span>
-                  {isLogin ? '立即登录' : '创建账户'}
-                </div>
-              )}
-            </button>
+              {loading 
+                ? (isLogin ? '登录中...' : '注册中...') 
+                : (isLogin ? '立即登录' : '创建账户')
+              }
+            </Button>
           </form>
 
           {/* 底部链接 */}
-          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-8 pt-6 border-t border-gray-200">
             <div className="text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600">
                 {isLogin ? '还没有账户？' : '已有账户？'}
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setIsLogin(!isLogin)}
-                  className="ml-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors duration-200 interactive"
+                  className="ml-1 p-0 h-auto text-blue-600 hover:text-blue-800 font-medium"
                 >
                   {isLogin ? '立即注册' : '立即登录'}
-                </button>
+                </Button>
               </p>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* 装饰性元素 */}
         <div className="mt-8 text-center">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-gray-500">
             登录即表示您同意我们的
-            <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline mx-1">服务条款</a>
+            <a href="#" className="text-blue-600 hover:underline mx-1">服务条款</a>
             和
-            <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline ml-1">隐私政策</a>
+            <a href="#" className="text-blue-600 hover:underline ml-1">隐私政策</a>
           </p>
         </div>
       </div>
@@ -295,4 +301,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default LoginPage; 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createArticle, renderMarkdown } from '../utils/articleService';
-import StatusMessage from '../components/StatusMessage';
+import { Input, Textarea, Button, Card, Alert } from '../components/ui';
 
 interface PostFormData {
   title: string;
@@ -127,12 +127,16 @@ const PostPage: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400">支持 Markdown 语法，实时预览效果</p>
         </div>
 
-        {error && <StatusMessage message={error} />}
+        {error && (
+          <Alert variant="error" onClose={() => setError(null)} className="mb-6">
+            {error}
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 文章信息 */}
-          <div className="card hover-lift p-6">
-            <div className="mb-4">
+          <Card hoverable>
+            <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <span>📝</span>
                 文章信息
@@ -141,55 +145,61 @@ const PostPage: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  文章标题 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  placeholder="输入一个吸引人的标题..."
-                  required
-                />
-              </div>
+              <Input
+                label="文章标题"
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                placeholder="输入一个吸引人的标题..."
+                required
+                fullWidth
+                leftIcon={
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                }
+              />
 
-              <div>
-                <label htmlFor="author" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  作者 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="author"
-                  name="author"
-                  value={formData.author}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  placeholder="作者姓名"
-                  required
-                />
-              </div>
+              <Input
+                label="作者"
+                type="text"
+                id="author"
+                name="author"
+                value={formData.author}
+                onChange={handleInputChange}
+                placeholder="作者姓名"
+                required
+                fullWidth
+                leftIcon={
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                }
+              />
 
               <div className="md:col-span-2">
-                <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  标签 <span className="text-gray-500 text-xs">(用逗号分隔，例如：技术,前端,React)</span>
-                </label>
-                <input
+                <Input
+                  label="标签"
                   type="text"
                   id="tags"
                   name="tags"
                   value={formData.tags.join(', ')}
                   onChange={handleTagsChange}
-                  className="form-input"
                   placeholder="添加相关标签来帮助读者更好地发现你的文章"
+                  fullWidth
+                  leftIcon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                  }
+                  helperText="用逗号分隔，例如：技术,前端,React"
                 />
                 {formData.tags.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {formData.tags.map((tag, index) => (
-                      <span key={index} className="badge badge-primary">
+                      <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
                         {tag}
                       </span>
                     ))}
@@ -197,10 +207,10 @@ const PostPage: React.FC = () => {
                 )}
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* 编辑器和预览区域 */}
-          <div className="card hover-lift p-6">
+          <Card hoverable>
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-2">
                 <span>✍️</span>
@@ -225,14 +235,14 @@ const PostPage: React.FC = () => {
                     <span>实时同步</span>
                   </div>
                 </div>
-                <textarea
+                <Textarea
                   id="content"
                   name="content"
                   ref={editorRef}
                   value={formData.content}
                   onChange={handleInputChange}
                   onScroll={handleEditorScroll}
-                  className="form-textarea flex-1 rounded-t-none font-mono text-sm resize-none"
+                  className="flex-1 rounded-t-none font-mono text-sm resize-none border-t-0"
                   placeholder="# 开始你的创作吧！
 
 ## 这里是一些 Markdown 语法示例：
@@ -262,6 +272,7 @@ console.log('Hello World!');
 
 现在开始写你的精彩内容吧！✨"
                   required
+                  rows={15}
                 />
               </div>
 
@@ -286,10 +297,10 @@ console.log('Hello World!');
                 />
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* 提交按钮 */}
-          <div className="card p-6">
+          <Card>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">准备发布？</h3>
@@ -297,50 +308,51 @@ console.log('Hello World!');
               </div>
               
               <div className="flex gap-3 w-full sm:w-auto">
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="lg"
                   onClick={() => router.back()}
-                  className="btn-secondary px-6 py-3 text-base font-medium touch-feedback flex-1 sm:flex-none"
+                  leftIcon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                  }
+                  className="flex-1 sm:flex-none"
                 >
-                  <span className="mr-2">←</span>
                   取消
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
+                  variant="primary"
+                  size="lg"
                   disabled={loading || !formData.title.trim() || !formData.content.trim()}
-                  className="btn-primary px-8 py-3 text-base font-medium touch-feedback flex-1 sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  isLoading={loading}
+                  leftIcon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  }
+                  className="flex-1 sm:flex-none"
                 >
-                  {loading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="loading-spinner mr-2"></div>
-                      发布中...
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center">
-                      <span className="mr-2">🚀</span>
-                      发布文章
-                    </div>
-                  )}
-                </button>
+                  {loading ? '发布中...' : '发布文章'}
+                </Button>
               </div>
             </div>
             
             {/* 发布提示 */}
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <div className="flex items-start gap-2">
-                <span className="text-blue-500 mt-0.5">💡</span>
-                <div className="text-sm text-blue-700 dark:text-blue-300">
-                  <p className="font-medium mb-1">发布小贴士：</p>
-                  <ul className="space-y-1 text-xs">
-                    <li>• 确保标题简洁明了，能够吸引读者</li>
-                    <li>• 检查文章内容格式是否正确</li>
-                    <li>• 添加合适的标签有助于文章被发现</li>
-                    <li>• 发布后可以随时编辑修改</li>
-                  </ul>
-                </div>
+            <Alert variant="info" className="mt-4">
+              <div>
+                <p className="font-medium mb-1">发布小贴士：</p>
+                <ul className="space-y-1 text-xs">
+                  <li>• 确保标题简洁明了，能够吸引读者</li>
+                  <li>• 检查文章内容格式是否正确</li>
+                  <li>• 添加合适的标签有助于文章被发现</li>
+                  <li>• 发布后可以随时编辑修改</li>
+                </ul>
               </div>
-            </div>
-          </div>
+            </Alert>
+          </Card>
         </form>
       </div>
     </div>

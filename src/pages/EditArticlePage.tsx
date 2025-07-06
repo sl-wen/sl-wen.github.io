@@ -10,6 +10,7 @@ import {
   deleteArticle,
   renderMarkdown
 } from '../utils/articleService';
+import { Input, Textarea, Button, Card, Alert } from '../components/ui';
 
 
 interface Post {
@@ -289,63 +290,71 @@ const EditArticlePage: React.FC = () => {
               className="p-6 space-y-6"
             >
               {/* 基本信息 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    文章标题
-                  </label>
-                  <input
+              <Card variant="filled">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Input
+                    label="文章标题"
                     type="text"
                     id="title"
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
                     required
-                    className="form-input w-full"
+                    fullWidth
                     placeholder="请输入文章标题..."
+                    leftIcon={
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                    }
                   />
-                </div>
-                
-                <div>
-                  <label htmlFor="author" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    作者
-                  </label>
-                  <input
+                  
+                  <Input
+                    label="作者"
                     type="text"
                     id="author"
                     name="author"
                     value={formData.author}
                     onChange={handleInputChange}
                     required
-                    className="form-input w-full"
+                    fullWidth
                     placeholder="请输入作者名称..."
+                    leftIcon={
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    }
                   />
                 </div>
-              </div>
 
-              <div>
-                <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  标签
-                </label>
-                <input
-                  type="text"
-                  id="tags"
-                  name="tags"
-                  value={formData.tags.join(', ')}
-                  onChange={handleTagsChange}
-                  className="form-input w-full"
-                  placeholder="用逗号分隔多个标签，如：技术, React, JavaScript"
-                />
-                {formData.tags.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {formData.tags.map((tag, index) => (
-                      <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 text-xs rounded-md">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
+                <div className="mt-6">
+                  <Input
+                    label="标签"
+                    type="text"
+                    id="tags"
+                    name="tags"
+                    value={formData.tags.join(', ')}
+                    onChange={handleTagsChange}
+                    fullWidth
+                    placeholder="用逗号分隔多个标签，如：技术, React, JavaScript"
+                    leftIcon={
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                    }
+                    helperText="用逗号分隔多个标签"
+                  />
+                  {formData.tags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {formData.tags.map((tag, index) => (
+                        <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Card>
 
               {/* 编辑器区域 */}
               <div>
@@ -380,7 +389,7 @@ const EditArticlePage: React.FC = () => {
                   {/* 编辑器和预览区域 */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 h-96">
                     <div className="border-r border-gray-200 dark:border-gray-700">
-                      <textarea
+                      <Textarea
                         id="content"
                         name="content"
                         ref={editorRef}
@@ -388,9 +397,9 @@ const EditArticlePage: React.FC = () => {
                         onChange={handleInputChange}
                         onScroll={handleEditorScroll}
                         required
-                        className="w-full h-full p-4 border-0 resize-none focus:ring-0 focus:border-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm"
-                        style={{ resize: 'vertical' }}
+                        className="w-full h-full border-0 resize-none focus:ring-0 focus:border-0 font-mono text-sm rounded-none"
                         placeholder="开始编写你的文章内容..."
+                        rows={20}
                       />
                     </div>
                     <div className="bg-gray-50 dark:bg-gray-900">
@@ -406,19 +415,26 @@ const EditArticlePage: React.FC = () => {
 
               {/* 操作按钮 */}
               <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <button 
+                <Button
                   type="submit" 
+                  variant="primary"
+                  size="lg"
                   disabled={loading}
-                  className="btn-primary flex-1 sm:flex-none"
+                  isLoading={loading}
+                  leftIcon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  }
+                  className="flex-1 sm:flex-none"
                 >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
                   保存修改
-                </button>
+                </Button>
                 
-                <button
+                <Button
                   type="button"
+                  variant="danger"
+                  size="lg"
                   onClick={async () => {
                     if (confirm('确定要删除这篇文章吗？此操作不可撤销。')) {
                       await deleteArticle(post?.post_id);
@@ -427,44 +443,44 @@ const EditArticlePage: React.FC = () => {
                     }
                   }}
                   disabled={loading}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  leftIcon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  }
                 >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
                   删除文章
-                </button>
+                </Button>
                 
                 <Link href={`/article/${post?.post_id}`}>
-                  <button 
+                  <Button
                     type="button" 
+                    variant="ghost"
+                    size="lg"
                     disabled={loading}
-                    className="btn-secondary w-full sm:w-auto"
+                    leftIcon={
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    }
+                    className="w-full sm:w-auto"
                   >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
                     取消编辑
-                  </button>
+                  </Button>
                 </Link>
               </div>
 
               {/* 编辑提示 */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div className="text-sm text-blue-800 dark:text-blue-300">
-                    <p className="font-medium mb-1">编辑小贴士：</p>
-                    <ul className="space-y-1 text-blue-700 dark:text-blue-400">
-                      <li>• 支持完整的 Markdown 语法，包括代码块、表格、链接等</li>
-                      <li>• 左侧编辑区域会与右侧预览区域同步滚动</li>
-                      <li>• 修改后记得点击"保存修改"按钮</li>
-                    </ul>
-                  </div>
+              <Alert variant="info">
+                <div>
+                  <p className="font-medium mb-1">编辑小贴士：</p>
+                  <ul className="space-y-1 text-xs">
+                    <li>• 支持完整的 Markdown 语法，包括代码块、表格、链接等</li>
+                    <li>• 左侧编辑区域会与右侧预览区域同步滚动</li>
+                    <li>• 修改后记得点击"保存修改"按钮</li>
+                  </ul>
                 </div>
-              </div>
+              </Alert>
             </form>
           </div>
         )}

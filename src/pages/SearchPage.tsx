@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { getArticles } from '../utils/articleService';
+import { Input, Card } from '../components/ui';
 
 interface Post {
   post_id: string;
@@ -127,21 +128,22 @@ const SearchPage: React.FC = () => {
         </div>
 
         {/* 搜索输入框 */}
-        <div className="card hover-lift p-6 mb-8">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <span className="text-gray-400 text-xl">🔍</span>
-            </div>
-            <input
-              id="search-input"
-              type="text"
-              value={keyword}
-              onChange={handleInput}
-              placeholder="请输入搜索关键词（支持搜索标题、内容、代码和标签）..."
-              className="form-input pl-12 py-4 text-lg"
-              autoComplete="off"
-            />
-          </div>
+        <Card className="p-6 mb-8" hoverable>
+          <Input
+            id="search-input"
+            type="text"
+            value={keyword}
+            onChange={handleInput}
+            placeholder="请输入搜索关键词（支持搜索标题、内容、代码和标签）..."
+            inputSize="lg"
+            fullWidth
+            leftIcon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            }
+            className="text-lg"
+          />
           
           {/* 搜索统计和提示 */}
           <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -170,7 +172,7 @@ const SearchPage: React.FC = () => {
               </span>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* 搜索结果 */}
         <div className="space-y-6">

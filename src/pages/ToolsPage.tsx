@@ -1,5 +1,4 @@
 import React from 'react';
-import '../styles/ToolsPage.css';
 
 interface Tool {
   id: string;

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { getArticles, Article } from '../utils/articleService';
 import ArticleCard from './ArticleCard';
 import { Alert } from './ui';
-import '../styles/ArticleList.css';
 
 const ArticleList: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);

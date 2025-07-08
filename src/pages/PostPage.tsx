@@ -243,7 +243,16 @@ const PostPage: React.FC = () => {
                   onChange={handleInputChange}
                   onScroll={handleEditorScroll}
                   className="flex-1 rounded-t-none font-mono text-sm resize-none border-t-0"
-                  placeholder="# 开始你的创作吧！ 
+                  placeholder="# 开始你的创作吧！
+
+支持 Markdown 语法:
+- **粗体文本**
+- *斜体文本*
+- [链接](URL)
+- ![图片](URL)
+- `行内代码`
+
+开始编写您的文章内容..."
                   required
                   rows={15}
                 />

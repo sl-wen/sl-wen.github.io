@@ -16,9 +16,15 @@ const Header: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
+
+  // 确保组件已挂载，避免SSR/Client不一致
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -34,9 +40,16 @@ const Header: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!mounted) return;
+    
     const profile = localStorage.getItem('userProfile');
     if (profile) {
-      setUserProfile(JSON.parse(profile));
+      try {
+        setUserProfile(JSON.parse(profile));
+      } catch (error) {
+        console.error('Error parsing user profile:', error);
+        localStorage.removeItem('userProfile');
+      }
     }
 
     // 监听登录状态变化
@@ -46,7 +59,11 @@ const Header: React.FC = () => {
       if (event === 'SIGNED_IN' && session) {
         const profile = localStorage.getItem('userProfile');
         if (profile) {
-          setUserProfile(JSON.parse(profile));
+          try {
+            setUserProfile(JSON.parse(profile));
+          } catch (error) {
+            console.error('Error parsing user profile:', error);
+          }
         }
       } else if (event === 'SIGNED_OUT') {
         setUserProfile(null);
@@ -57,7 +74,7 @@ const Header: React.FC = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [mounted]);
 
   const handleLogout = async () => {
     try {
@@ -73,16 +90,74 @@ const Header: React.FC = () => {
 
   const isActive = (path: string) => pathname === path;
 
-  const navItems = [
+  // 基础导航项
+  const baseNavItems = [
     { href: '/', label: '首页', icon: '🏠' },
     { href: '/category', label: '分类', icon: '📁' },
     { href: '/search', label: '搜索', icon: '🔍' },
-    ...(userProfile ? [
-      { href: '/tools', label: '工具', icon: '🛠️' },
-      { href: '/post', label: '发布', icon: '✏️' },
-    ] : []),
     { href: '/about', label: '关于', icon: 'ℹ️' },
   ];
+
+  // 用户相关导航项
+  const userNavItems = [
+    { href: '/tools', label: '工具', icon: '🛠️' },
+    { href: '/post', label: '发布', icon: '✏️' },
+  ];
+
+  // 在mounted之前显示基础导航
+  const navItems = mounted && userProfile 
+    ? [...baseNavItems.slice(0, 3), ...userNavItems, baseNavItems[3]]
+    : baseNavItems;
+
+  // 在组件挂载之前返回占位内容
+  if (!mounted) {
+    return (
+      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+              <div className="relative h-8 w-8 rounded-full overflow-hidden">
+                <Image
+                  src="https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg"
+                  alt="Logo"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <span className="text-xl font-bold text-gray-900">鱼鱼的博客</span>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-1">
+              {baseNavItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`nav-link ${isActive(item.href) ? 'nav-link-active' : ''}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+
+            {/* Login Button Placeholder */}
+            <div className="flex items-center space-x-4">
+              <Link href="/login" className="btn-primary">
+                登录
+              </Link>
+              <button className="md:hidden rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                <span className="sr-only">打开菜单</span>
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <>

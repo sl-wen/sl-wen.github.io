@@ -7,9 +7,9 @@ const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900 text-white">
+    <footer className="relative bg-gray-900 text-white">
       {/* 装饰性背景 */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary-600/20 to-purple-600/20 opacity-50"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
       
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* 主要内容 */}
@@ -17,7 +17,7 @@ const Footer: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* 品牌信息 */}
             <div className="space-y-4">
-              <h3 className="text-xl font-bold text-gradient">鱼鱼的博客</h3>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">鱼鱼的博客</h3>
               <p className="text-gray-300 text-sm leading-relaxed">
                 一个分享技术、记录生活、探索世界的个人博客。在这里，我们一起学习、成长、创造。
               </p>
@@ -84,11 +84,11 @@ const Footer: React.FC = () => {
               <h4 className="text-lg font-semibold">联系方式</h4>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
-                  <i className="fas fa-envelope text-primary-400"></i>
+                  <i className="fas fa-envelope text-blue-400"></i>
                   <span className="text-gray-300 text-sm">contact@blog.com</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <i className="fas fa-map-marker-alt text-primary-400"></i>
+                  <i className="fas fa-map-marker-alt text-blue-400"></i>
                   <span className="text-gray-300 text-sm">中国</span>
                 </div>
               </div>

@@ -5,6 +5,20 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../utils/supabase-config';
 import { Button, Input, Card, Alert } from '../components/ui';
 
+// 图标组件定义在组件外部避免重新渲染
+const EmailIcon = () => (
+  <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+  </svg>
+);
+
+const LockIcon = () => (
+  <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+  </svg>
+);
+
 const LoginPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -108,21 +122,6 @@ const LoginPage: React.FC = () => {
   };
 
   const passwordStrength = getPasswordStrength(password);
-
-  // 图标组件
-  const EmailIcon = () => (
-    <svg viewBox="0 0 20 20" fill="currentColor">
-      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-    </svg>
-  );
-
-  const LockIcon = () => (
-    <svg viewBox="0 0 20 20" fill="currentColor">
-      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-    </svg>
-  );
-
   const isPasswordInvalid = !isLogin && password && !validatePassword(password);
 
   return (
@@ -174,6 +173,7 @@ const LoginPage: React.FC = () => {
               leftIcon={<EmailIcon />}
               required
               fullWidth
+              autoComplete="email"
             />
 
             {/* 密码输入 */}
@@ -190,6 +190,7 @@ const LoginPage: React.FC = () => {
               leftIcon={<LockIcon />}
               required
               fullWidth
+              autoComplete={isLogin ? "current-password" : "new-password"}
               error={!!isPasswordInvalid}
               errorMessage={
                 isPasswordInvalid 

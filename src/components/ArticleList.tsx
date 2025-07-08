@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { getArticles, Article } from '../utils/articleService';
 import ArticleCard from './ArticleCard';
-import { Alert } from './components/ui';
+import { Alert } from './ui';
 
 const ArticleList: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);

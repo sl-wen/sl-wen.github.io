@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { getArticles, Article } from '../utils/articleService';
 import ArticleCard from './ArticleCard';
-import { Alert } from './ui';
+import { Alert } from './components/ui';
 
 const ArticleList: React.FC = () => {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -15,8 +15,8 @@ const ArticleList: React.FC = () => {
   const loadArticles = async () => {
     try {
       setLoading(true);
-      const data = await getArticles(page);
-      if (data.length < 15) {
+      const data = await getArticles(page,10);
+      if (data.length < 10) {
         setHasMore(false);
       }
       setArticles((prev) => (page === 1 ? data : [...prev, ...data]));

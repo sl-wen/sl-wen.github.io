@@ -53,7 +53,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   // 获取文章标签
   const getTags = () => {
     if (article.tags && Array.isArray(article.tags)) {
-      return article.tags.slice(0, 3); // 最多显示3个标签
+      return article.tags.slice(0, 5); // 最多显示5个标签
     }
     // 默认标签
     const defaultTags = ['技术', '博客'];
@@ -128,13 +128,6 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           </h2>
         </div>
 
-        {/* 文章摘要 */}
-        <div className="mb-4">
-          <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3">
-            {excerpt}
-          </p>
-        </div>
-
         {/* 标签区域 */}
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
@@ -172,7 +165,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
-              <span>{article.likes_count || Math.floor(Math.random() * 20) + 1}</span>
+              <span>{article.likes_count || 0}</span>
             </div>
           </div>
 

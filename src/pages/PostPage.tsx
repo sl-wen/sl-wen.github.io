@@ -232,7 +232,7 @@ const PostPage: React.FC = () => {
                   <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                     <span>支持 Markdown</span>
                     <span>|</span>
-                    <span>实时同步</span>
+                    <span>实时同步</span> 
                   </div>
                 </div>
                 <Textarea
@@ -243,34 +243,7 @@ const PostPage: React.FC = () => {
                   onChange={handleInputChange}
                   onScroll={handleEditorScroll}
                   className="flex-1 rounded-t-none font-mono text-sm resize-none border-t-0"
-                  placeholder="# 开始你的创作吧！
-
-## 这里是一些 Markdown 语法示例：
-
-**粗体文本** 和 *斜体文本*
-
-### 列表：
-- 无序列表项
-- 另一个列表项
-
-### 有序列表：
-1. 第一项
-2. 第二项
-
-### 代码块：
-```javascript
-console.log('Hello World!');
-```
-
-### 链接：
-[链接文本](https://example.com)
-
-### 引用：
-> 这是一个引用
-
----
-
-现在开始写你的精彩内容吧！✨"
+                  placeholder="# 开始你的创作吧！ 
                   required
                   rows={15}
                 />

@@ -16,6 +16,7 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('form submit handled', email, password,isLogin);
     setLoading(true);
     setMessage('');
 

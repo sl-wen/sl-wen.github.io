@@ -251,13 +251,12 @@ const EditArticlePage: React.FC = () => {
             <span className="ml-2 text-gray-600 dark:text-gray-300">加载中...</span>
           </div>
         )}
-        
+
         {message && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.type === 'success' 
-              ? 'bg-green-50 border border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300' 
-              : 'bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300'
-          }`}>
+          <div className={`mb-6 p-4 rounded-lg ${message.type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300'
+            : 'bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300'
+            }`}>
             {message.text}
           </div>
         )}
@@ -308,7 +307,7 @@ const EditArticlePage: React.FC = () => {
                       </svg>
                     }
                   />
-                  
+
                   <Input
                     label="作者"
                     type="text"
@@ -388,7 +387,8 @@ const EditArticlePage: React.FC = () => {
 
                   {/* 编辑器和预览区域 */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 h-96">
-                    <div className="border-r border-gray-200 dark:border-gray-700">
+                    {/* 编辑区：始终显示 */}
+                    <div className="border-r border-gray-200 dark:border-gray-700 h-full flex flex-col min-h-0">
                       <Textarea
                         id="content"
                         name="content"
@@ -397,12 +397,13 @@ const EditArticlePage: React.FC = () => {
                         onChange={handleInputChange}
                         onScroll={handleEditorScroll}
                         required
-                        className="w-full h-full border-0 resize-none focus:ring-0 focus:border-0 font-mono text-sm rounded-none"
+                        className="w-full h-full border-0 resize-none focus:ring-0 focus:border-0 font-mono text-sm rounded-none overflow-y-auto"
                         placeholder="开始编写你的文章内容..."
-                        rows={20}
+                        style={{ minHeight: 0 }}
                       />
                     </div>
-                    <div className="bg-gray-50 dark:bg-gray-900">
+                    {/* 预览区：仅lg及以上显示，手机端（sm/md）隐藏 */}
+                    <div className="bg-gray-50 dark:bg-gray-900 h-full flex flex-col min-h-0 hidden lg:block">
                       <div
                         ref={previewRef}
                         className="h-full p-4 overflow-y-auto prose prose-sm dark:prose-invert max-w-none"
@@ -416,7 +417,7 @@ const EditArticlePage: React.FC = () => {
               {/* 操作按钮 */}
               <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <Button
-                  type="submit" 
+                  type="submit"
                   variant="primary"
                   size="lg"
                   disabled={loading}
@@ -430,7 +431,7 @@ const EditArticlePage: React.FC = () => {
                 >
                   保存修改
                 </Button>
-                
+
                 <Button
                   type="button"
                   variant="danger"
@@ -451,10 +452,10 @@ const EditArticlePage: React.FC = () => {
                 >
                   删除文章
                 </Button>
-                
+
                 <Link href={`/article/${post?.post_id}`}>
                   <Button
-                    type="button" 
+                    type="button"
                     variant="ghost"
                     size="lg"
                     disabled={loading}

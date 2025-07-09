@@ -19,13 +19,15 @@ jobs:
       with:
         host: ${{ secrets.SERVER_IP }} 
         username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SERVER_KEY }}
+        password: ${{ secrets.SERVER_PASSWORD }}
         port: 22
         timeout: 30s
         command_timeout: 10m
         script: |
           echo "=== 开始部署 ==="
           echo "时间: $(date)"
+          echo "用户: $(whoami)"
+          echo "家目录: $HOME"
           
           # 进入项目目录
           cd /var/www/blog
@@ -44,22 +46,83 @@ jobs:
           sudo systemctl kill blog || echo "进程清理完成"
           sleep 2
           
+          # 检查SSH密钥和配置
+          echo "检查SSH环境..."
+          echo "SSH密钥文件："
+          ls -la ~/.ssh/ 2>/dev/null || echo "~/.ssh 目录不存在"
+          ls -la /root/.ssh/ 2>/dev/null || echo "/root/.ssh 目录不存在"
+          
+          # 设置SSH环境变量
+          export HOME=/root
+          export SSH_AUTH_SOCK=""
+          
+          # 检查可用的SSH密钥
+          SSH_KEY=""
+          if [ -f /root/.ssh/id_ed25519 ]; then
+            SSH_KEY="/root/.ssh/id_ed25519"
+            echo "找到 Ed25519 密钥: $SSH_KEY"
+          elif [ -f /root/.ssh/id_rsa ]; then
+            SSH_KEY="/root/.ssh/id_rsa"
+            echo "找到 RSA 密钥: $SSH_KEY"
+          elif [ -f ~/.ssh/id_ed25519 ]; then
+            SSH_KEY="~/.ssh/id_ed25519"
+            echo "找到用户 Ed25519 密钥: $SSH_KEY"
+          elif [ -f ~/.ssh/id_rsa ]; then
+            SSH_KEY="~/.ssh/id_rsa"
+            echo "找到用户 RSA 密钥: $SSH_KEY"
+          else
+            echo "❌ 未找到SSH密钥文件"
+          fi
+          
+          # 启动SSH Agent并添加密钥
+          if [ -n "$SSH_KEY" ]; then
+            echo "配置SSH Agent..."
+            eval "$(ssh-agent -s)"
+            
+            # 确保密钥权限正确
+            chmod 600 "$SSH_KEY" 2>/dev/null || echo "无法修改密钥权限"
+            
+            # 添加密钥到SSH Agent
+            ssh-add "$SSH_KEY" 2>/dev/null && echo "✅ SSH密钥已加载" || echo "⚠️ SSH密钥加载失败"
+          fi
+          
+          # 检查和修复远程仓库配置
+          echo "检查远程仓库配置..."
+          CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
+          echo "当前远程仓库: $CURRENT_REMOTE"
+          
+          # 修复错误的SSH域名
+          if [[ "$CURRENT_REMOTE" == *"ssh.github.com"* ]]; then
+            echo "🔧 修复错误的SSH域名..."
+            git remote set-url origin git@github.com:sl-wen/sl-wen.github.io.git
+            echo "✅ 已修复为正确的GitHub SSH域名"
+          fi
+          
           # 验证SSH连接
           echo "验证SSH连接..."
-          if ssh -T git@github.com  | grep -q "successfully authenticated"; then
+          SSH_TEST=$(ssh -T git@github.com -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o BatchMode=yes 2>&1)
+          if echo "$SSH_TEST" | grep -q "successfully authenticated"; then
             echo "✅ SSH连接验证成功"
+            echo "认证信息: $SSH_TEST"
           else
-            echo "⚠️ SSH连接验证失败，但继续尝试拉取代码"
+            echo "⚠️ SSH连接验证失败: $SSH_TEST"
+            echo "尝试使用替代方法..."
           fi
           
           # 拉取最新代码
           echo "拉取最新代码..."
           OLD_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
           
-          # 设置git配置以避免SSH问题
-          export GIT_SSH_COMMAND="ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no"
+          # 设置Git SSH命令，指定密钥文件
+          if [ -n "$SSH_KEY" ]; then
+            export GIT_SSH_COMMAND="ssh -i $SSH_KEY -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o BatchMode=yes"
+          else
+            export GIT_SSH_COMMAND="ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o BatchMode=yes"
+          fi
           
-          if git fetch origin --prune; then
+          # 尝试拉取代码
+          echo "使用Git SSH命令: $GIT_SSH_COMMAND"
+          if timeout 30 git fetch origin --prune; then
             echo "✅ 代码拉取成功"
             git reset --hard origin/react
             git checkout react
@@ -73,7 +136,8 @@ jobs:
             fi
           else
             echo "❌ 代码拉取失败，使用本地版本继续部署"
-            echo "Git状态: $(git status --porcelain)"
+            echo "Git状态: $(git status --porcelain 2>/dev/null || echo '无法获取Git状态')"
+            echo "继续使用现有代码进行部署..."
           fi
           
           echo "代码更新完成"

@@ -35,14 +35,32 @@ chmod +x init-server.sh
 
 ### 3. Git 和 SSH 配置
 
-#### SSH 连接诊断
+#### 一键配置 SSH 环境
 
-运行 SSH 诊断脚本：
+运行 SSH 配置脚本（推荐）：
 
 ```bash
 cd /var/www/blog
-chmod +x scripts/check-ssh.sh
-./scripts/check-ssh.sh
+chmod +x scripts/setup-ssh-for-deployment.sh
+./scripts/setup-ssh-for-deployment.sh
+```
+
+这个脚本会：
+- 自动检查和设置SSH密钥位置
+- 确保root用户可以访问SSH密钥
+- 修复权限问题
+- 配置GitHub主机密钥
+- 测试SSH连接
+- 修复错误的远程仓库URL
+
+#### SSH 连接诊断
+
+如需详细诊断，运行：
+
+```bash
+cd /var/www/blog
+chmod +x scripts/deploy-test.sh
+./scripts/deploy-test.sh
 ```
 
 #### 修复常见的 SSH 问题
@@ -157,6 +175,33 @@ ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 ```bash
 ssh -T git@github.com
 # 成功的输出应该包含: "Hi username! You've successfully authenticated"
+```
+
+**GitHub Actions 专用问题**:
+
+如果只在GitHub Actions中出现SSH问题，而手动登录服务器没问题，通常是因为：
+
+e) **SSH密钥位置问题** - GitHub Actions可能以不同用户身份执行：
+```bash
+# 确保SSH密钥在root用户目录下
+sudo cp ~/.ssh/id_ed25519* /root/.ssh/
+sudo chmod 600 /root/.ssh/id_ed25519
+sudo chmod 644 /root/.ssh/id_ed25519.pub
+```
+
+f) **环境变量问题** - GitHub Actions中的环境可能不同：
+```bash
+# 手动设置环境变量
+export HOME=/root
+export SSH_AUTH_SOCK=""
+```
+
+**一键修复命令**:
+```bash
+# 运行专用的SSH配置脚本
+cd /var/www/blog
+chmod +x scripts/setup-ssh-for-deployment.sh
+./scripts/setup-ssh-for-deployment.sh
 ```
 
 ### 2. ESLint 依赖缺失

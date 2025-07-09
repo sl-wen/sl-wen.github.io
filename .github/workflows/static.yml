@@ -44,10 +44,32 @@ jobs:
           sudo systemctl kill blog || echo "进程清理完成"
           sleep 2
           
+          # 检查并配置git远程仓库为HTTPS
+          echo "配置git远程仓库..."
+          CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
+          if [[ "$CURRENT_REMOTE" == git@* ]]; then
+            echo "切换到HTTPS远程仓库..."
+            git remote set-url origin git@github.com:sl-wen/sl-wen.github.io.git
+          fi
+          
           # 拉取最新代码
           echo "拉取最新代码..."
-          git fetch origin
-          git reset --hard origin/react
+          if git fetch origin; then
+            echo "✅ 代码拉取成功"
+            # 检查是否有新的提交
+            OLD_COMMIT=$(git rev-parse HEAD)
+            git reset --hard origin/react
+            NEW_COMMIT=$(git rev-parse HEAD)
+            
+            if [ "$OLD_COMMIT" != "$NEW_COMMIT" ]; then
+              echo "✅ 发现新提交，从 $OLD_COMMIT 更新到 $NEW_COMMIT"
+            else
+              echo "ℹ️ 已是最新版本，无需更新"
+            fi
+          else
+            echo "❌ 代码拉取失败，使用本地版本继续部署"
+            echo "错误详情: $(git fetch origin 2>&1 || echo '无法获取详细错误')"
+          fi
           echo "代码更新完成"
           
           # 检查依赖更新
@@ -59,6 +81,13 @@ jobs:
             echo "依赖无变化，跳过安装"
           fi
           
+          # 检查并安装缺失的开发依赖
+          echo "检查ESLint依赖..."
+          if ! npm list eslint-plugin-react-hooks > /dev/null 2>&1; then
+            echo "安装缺失的ESLint依赖..."
+            npm install --save-dev eslint-plugin-react-hooks || echo "ESLint依赖安装失败，继续构建"
+          fi
+          
           # 构建应用
           echo "构建应用..."
           export NODE_OPTIONS="--max-old-space-size=512"
@@ -68,8 +97,12 @@ jobs:
           rm -rf .next
           
           # 构建应用
-          npm run build
-          echo "构建完成"
+          if npm run build; then
+            echo "✅ 构建完成"
+          else
+            echo "❌ 构建失败"
+            exit 1
+          fi
           
           # 启动服务
           echo "启动blog服务..."
@@ -126,6 +159,7 @@ jobs:
           echo "时间: $(date)"
           echo "服务状态: $(sudo systemctl is-active blog)"
           echo "内存使用: $(free -h | grep Mem | awk '{print $3 "/" $2}')"
+          echo "当前提交: $(git log --oneline -n 1)"
           
           # 显示访问信息
           EXTERNAL_IP=$(curl -s --connect-timeout 5 ifconfig.me 2>/dev/null || echo "unknown")

@@ -204,13 +204,42 @@ chmod +x scripts/setup-ssh-for-deployment.sh
 ./scripts/setup-ssh-for-deployment.sh
 ```
 
-### 2. ESLint 依赖缺失
+### 2. ESLint 配置问题
 
-**问题**: `Cannot find module 'eslint-plugin-react-hooks'`
+**问题**: 
+- `Cannot find module 'eslint-plugin-react-hooks'`
+- `Failed to load config "@typescript-eslint/recommended"`
+- `Failed to load plugin '@typescript-eslint'`
 
 **解决方案**:
-- 更新的部署脚本会自动安装缺失的开发依赖
-- 或手动安装：`npm install --save-dev eslint-plugin-react-hooks`
+
+a) **使用自动修复脚本** (推荐):
+```bash
+cd /var/www/blog
+chmod +x scripts/fix-eslint.sh
+./scripts/fix-eslint.sh
+```
+
+b) **手动修复**:
+```bash
+# 安装缺失的ESLint依赖
+npm install --save-dev \
+  eslint-plugin-react-hooks \
+  @typescript-eslint/eslint-plugin \
+  @typescript-eslint/parser \
+  eslint-config-next
+
+# 验证配置
+npx eslint --print-config .eslintrc.cjs
+```
+
+c) **重置依赖** (如果问题持续):
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**注意**: 更新的部署脚本会自动检测和安装缺失的ESLint依赖
 
 ### 3. 内存不足
 

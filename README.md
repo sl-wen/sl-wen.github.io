@@ -16,6 +16,7 @@
 - **语言**: TypeScript
 - **数据库**: Supabase
 - **部署**: GitHub Actions + Ubuntu 24.04
+- **代码质量**: ESLint + Prettier
 
 ### 主要功能
 
@@ -47,6 +48,31 @@ npm run dev
 
 项目使用 GitHub Actions 自动部署，详见 [DEPLOYMENT.md](./DEPLOYMENT.md)
 
+## 开发工具
+
+### 代码质量
+
+```bash
+# 运行ESLint检查
+npm run lint
+
+# 自动修复ESLint问题
+npm run lint -- --fix
+
+# 代码格式化
+npm run format
+```
+
+### 故障排除
+
+如果遇到ESLint配置问题：
+
+```bash
+# 运行ESLint修复脚本
+chmod +x scripts/fix-eslint.sh
+./scripts/fix-eslint.sh
+```
+
 ## 项目结构
 
 ```
@@ -61,6 +87,11 @@ src/
 ## 贡献
 
 欢迎提交 Issue 和 Pull Request！
+
+请确保代码通过ESLint检查：
+```bash
+npm run lint
+```
 
 ## 许可证
 

@@ -154,9 +154,26 @@ jobs:
           
           # 检查并安装缺失的开发依赖
           echo "检查ESLint依赖..."
+          MISSING_DEPS=""
+          
+          # 检查必需的ESLint包
           if ! npm list eslint-plugin-react-hooks > /dev/null 2>&1; then
-            echo "安装缺失的ESLint依赖..."
-            npm install --save-dev eslint-plugin-react-hooks || echo "ESLint依赖安装失败，继续构建"
+            MISSING_DEPS="$MISSING_DEPS eslint-plugin-react-hooks"
+          fi
+          
+          if ! npm list @typescript-eslint/eslint-plugin > /dev/null 2>&1; then
+            MISSING_DEPS="$MISSING_DEPS @typescript-eslint/eslint-plugin"
+          fi
+          
+          if ! npm list @typescript-eslint/parser > /dev/null 2>&1; then
+            MISSING_DEPS="$MISSING_DEPS @typescript-eslint/parser"
+          fi
+          
+          if [ -n "$MISSING_DEPS" ]; then
+            echo "安装缺失的ESLint依赖: $MISSING_DEPS"
+            npm install --save-dev $MISSING_DEPS || echo "部分ESLint依赖安装失败，继续构建"
+          else
+            echo "✅ ESLint依赖完整"
           fi
           
           # 构建应用

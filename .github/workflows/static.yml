@@ -46,30 +46,12 @@ jobs:
           
           # 检查并配置git远程仓库为HTTPS
           echo "配置git远程仓库..."
-          CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
-          if [[ "$CURRENT_REMOTE" == git@* ]]; then
-            echo "切换到HTTPS远程仓库..."
-            git remote set-url origin git@github.com:sl-wen/sl-wen.github.io.git
-          fi
+          git fetch --all
+          git reset --hard origin/react
+          git checkout react
+          git status
+          git clean -fd
           
-          # 拉取最新代码
-          echo "拉取最新代码..."
-          if git fetch origin; then
-            echo "✅ 代码拉取成功"
-            # 检查是否有新的提交
-            OLD_COMMIT=$(git rev-parse HEAD)
-            git reset --hard origin/react
-            NEW_COMMIT=$(git rev-parse HEAD)
-            
-            if [ "$OLD_COMMIT" != "$NEW_COMMIT" ]; then
-              echo "✅ 发现新提交，从 $OLD_COMMIT 更新到 $NEW_COMMIT"
-            else
-              echo "ℹ️ 已是最新版本，无需更新"
-            fi
-          else
-            echo "❌ 代码拉取失败，使用本地版本继续部署"
-            echo "错误详情: $(git fetch origin 2>&1 || echo '无法获取详细错误')"
-          fi
           echo "代码更新完成"
           
           # 检查依赖更新

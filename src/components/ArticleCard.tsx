@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Article } from '../utils/articleService';
+import { Article } from '@/utils/articleService';
 
 interface ArticleCardProps {
   article: Article;

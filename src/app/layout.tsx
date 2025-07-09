@@ -4,6 +4,7 @@ import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import StatusMessages from '@/components/StatusMessages';
+import { AuthProvider } from '@/utils/auth-context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -67,21 +68,23 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className={`${inter.className} antialiased`}>
-        <div className="min-h-screen flex flex-col bg-gray-50">
-          {/* Header */}
-          <Header />
-          
-          {/* Main Content */}
-          <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mobile-content">
-            {children}
-          </main>
-          
-          {/* Footer */}
-          <Footer />
-          
-          {/* Status Messages */}
-          <StatusMessages />
-        </div>
+        <AuthProvider>
+          <div className="min-h-screen flex flex-col bg-gray-50">
+            {/* Header */}
+            <Header />
+            
+            {/* Main Content */}
+            <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mobile-content">
+              {children}
+            </main>
+            
+            {/* Footer */}
+            <Footer />
+            
+            {/* Status Messages */}
+            <StatusMessages />
+          </div>
+        </AuthProvider>
         
         {/* PWA Installation Scripts */}
         <script

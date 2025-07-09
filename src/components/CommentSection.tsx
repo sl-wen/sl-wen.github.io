@@ -7,9 +7,9 @@ import {
   addComment,
   updateComment,
   deleteComment
-} from '../utils/commentService';
-import { addCommentReaction, getCommentReaction } from '../utils/reactionService';
-import { getUserProfile } from '../utils/supabase-config';
+} from '@/utils/commentService';
+import { addCommentReaction, getCommentReaction } from '@/utils/reactionService';
+import { getUserProfile } from '@/utils/supabase-config';
 import { Button, Textarea, Card, Alert } from './ui';
 
 interface UserProfile {

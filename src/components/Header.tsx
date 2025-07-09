@@ -4,16 +4,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
-import { supabase } from '@/utils/supabase-config';
-
-interface UserProfile {
-  username?: string;
-  avatar_url?: string;
-  email: string;
-}
+import { useAuth } from '@/utils/auth-context';
 
 const Header: React.FC = () => {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const { userProfile, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -39,49 +33,9 @@ const Header: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (!mounted) return;
-    
-    const profile = localStorage.getItem('userProfile');
-    if (profile) {
-      try {
-        setUserProfile(JSON.parse(profile));
-      } catch (error) {
-        console.error('Error parsing user profile:', error);
-        localStorage.removeItem('userProfile');
-      }
-    }
-
-    // 监听登录状态变化
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        const profile = localStorage.getItem('userProfile');
-        if (profile) {
-          try {
-            setUserProfile(JSON.parse(profile));
-          } catch (error) {
-            console.error('Error parsing user profile:', error);
-          }
-        }
-      } else if (event === 'SIGNED_OUT') {
-        setUserProfile(null);
-      }
-    });
-
-    // 清理订阅
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [mounted]);
-
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
-      localStorage.removeItem('userProfile');
-      localStorage.removeItem('userSession');
-      setUserProfile(null);
+      await logout();
       router.push('/login');
     } catch (error) {
       console.error('Logout error:', error);

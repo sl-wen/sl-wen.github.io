@@ -33,13 +33,43 @@ chmod +x init-server.sh
 ./init-server.sh
 ```
 
-### 3. Git 配置修复
+### 3. Git 和 SSH 配置
 
-如果遇到 SSH 密钥问题，可以手动将远程仓库设置为 HTTPS：
+#### SSH 连接诊断
+
+运行 SSH 诊断脚本：
 
 ```bash
 cd /var/www/blog
-git remote set-url origin https://github.com/sl-wen/sl-wen.github.io.git
+chmod +x scripts/check-ssh.sh
+./scripts/check-ssh.sh
+```
+
+#### 修复常见的 SSH 问题
+
+1. **错误的 GitHub SSH 域名**：
+```bash
+# 检查当前远程仓库URL
+git remote get-url origin
+
+# 如果显示 git@ssh.github.com，需要修复为正确的域名
+git remote set-url origin git@github.com:sl-wen/sl-wen.github.io.git
+```
+
+2. **验证 SSH 连接**：
+```bash
+ssh -T git@github.com
+```
+
+3. **添加 GitHub 主机密钥**：
+```bash
+ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+```
+
+4. **检查密钥权限**：
+```bash
+chmod 600 ~/.ssh/id_ed25519
+chmod 644 ~/.ssh/id_ed25519.pub
 ```
 
 ### 4. 服务配置
@@ -94,11 +124,40 @@ sudo systemctl start blog
 
 ### 1. SSH 密钥问题
 
-**问题**: `Permission denied (publickey)`
+**问题**: `Permission denied (publickey)` 或 `git@ssh.github.com: Permission denied`
 
-**解决方案**:
-- 确保服务器上的 Git 配置使用 HTTPS 而非 SSH
-- 更新的部署脚本会自动处理这个问题
+**常见原因和解决方案**:
+
+a) **错误的 GitHub 域名** (最常见):
+```bash
+# 错误的域名：git@ssh.github.com
+# 正确的域名：git@github.com
+git remote set-url origin git@github.com:sl-wen/sl-wen.github.io.git
+```
+
+b) **SSH 密钥未加载到 SSH Agent**:
+```bash
+ssh-add ~/.ssh/id_ed25519
+# 或
+ssh-add ~/.ssh/id_rsa
+```
+
+c) **密钥权限不正确**:
+```bash
+chmod 600 ~/.ssh/id_ed25519
+chmod 644 ~/.ssh/id_ed25519.pub
+```
+
+d) **GitHub 主机密钥未知**:
+```bash
+ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+```
+
+**验证修复**:
+```bash
+ssh -T git@github.com
+# 成功的输出应该包含: "Hi username! You've successfully authenticated"
+```
 
 ### 2. ESLint 依赖缺失
 

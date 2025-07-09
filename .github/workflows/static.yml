@@ -44,15 +44,40 @@ jobs:
           sudo systemctl kill blog || echo "进程清理完成"
           sleep 2
           
-          # 检查并配置git远程仓库为HTTPS
-          echo "配置git远程仓库..."
-          git fetch --all
-          git reset --hard origin/react
-          git checkout react
-          git status
-          git clean -fd
+          # 验证SSH连接
+          echo "验证SSH连接..."
+          if ssh -T git@github.com  | grep -q "successfully authenticated"; then
+            echo "✅ SSH连接验证成功"
+          else
+            echo "⚠️ SSH连接验证失败，但继续尝试拉取代码"
+          fi
+          
+          # 拉取最新代码
+          echo "拉取最新代码..."
+          OLD_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+          
+          # 设置git配置以避免SSH问题
+          export GIT_SSH_COMMAND="ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no"
+          
+          if git fetch origin --prune; then
+            echo "✅ 代码拉取成功"
+            git reset --hard origin/react
+            git checkout react
+            git clean -fd
+            
+            NEW_COMMIT=$(git rev-parse HEAD)
+            if [ "$OLD_COMMIT" != "$NEW_COMMIT" ]; then
+              echo "✅ 发现新提交，从 $OLD_COMMIT 更新到 $NEW_COMMIT"
+            else
+              echo "ℹ️ 已是最新版本，无需更新"
+            fi
+          else
+            echo "❌ 代码拉取失败，使用本地版本继续部署"
+            echo "Git状态: $(git status --porcelain)"
+          fi
           
           echo "代码更新完成"
+          echo "最终提交: $(git log --oneline -n 1)"
           
           # 检查依赖更新
           if git diff HEAD~1 --name-only | grep -q "package.json"; then

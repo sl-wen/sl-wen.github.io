@@ -74,7 +74,7 @@ export default function CategoryPage() {
         {tags.map((tag) => (
           <div key={tag} className="card">
             {/* 分类标题 */}
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-3 mb-6 pb-4 p-3 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full text-white text-sm font-bold">
                 {tag.charAt(0)}
               </div>

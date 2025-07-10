@@ -160,7 +160,7 @@ export default function ArticlePage() {
     try {
       setIsReactionLoading(true);
 
-      await addPostReaction(
+      const success = await addPostReaction(
         article.post_id,
         userProfile.user_id,
         reactionType,
@@ -168,48 +168,19 @@ export default function ArticlePage() {
         article.dislikes_count
       );
 
-      const newReaction = PostReaction === reactionType ? null : reactionType;
-      setPostReaction(newReaction);
+      if (success) {
+        // 重新获取用户的反应状态
+        const newReaction = await getPostReaction(article.post_id, userProfile.user_id);
+        setPostReaction(newReaction);
 
-      // 更新文章的点赞/点踩数量
-      setArticle((prev) => {
-        if (!prev) return null;
-
-        let newLikesCount = prev.likes_count;
-        let newDislikesCount = prev.dislikes_count;
-
-        if (reactionType === 'like') {
-          // 处理点赞
-          if (newReaction === 'like') {
-            newLikesCount += 1;
-            // 如果之前是点踩，需要减少点踩数
-            if (PostReaction === 'dislike') {
-              newDislikesCount -= 1;
-            }
-          } else {
-            // 取消点赞
-            newLikesCount -= 1;
-          }
-        } else {
-          // 处理点踩
-          if (newReaction === 'dislike') {
-            newDislikesCount += 1;
-            // 如果之前是点赞，需要减少点赞数
-            if (PostReaction === 'like') {
-              newLikesCount -= 1;
-            }
-          } else {
-            // 取消点踩
-            newDislikesCount -= 1;
-          }
+        // 重新获取文章数据以确保数据同步
+        const updatedArticle = await getArticleById(article.post_id);
+        if (updatedArticle) {
+          setArticle(updatedArticle);
         }
-
-        return {
-          ...prev,
-          likes_count: newLikesCount,
-          dislikes_count: newDislikesCount
-        };
-      });
+      } else {
+        alert('操作失败，请重试');
+      }
 
     } catch (error) {
       console.error('操作失败:', error);
@@ -255,11 +226,27 @@ export default function ArticlePage() {
 
   useEffect(() => {
     const data = localStorage.getItem('userProfile');
-    setUserProfile(JSON.parse(data || '{}'));
+    const profile = JSON.parse(data || '{}');
+    setUserProfile(profile);
+  }, []);
+
+  useEffect(() => {
     if (article && userProfile?.user_id) {
-      getPostReaction(article.post_id, userProfile.user_id).then(setPostReaction);
+      // 加载用户的反应状态
+      const loadUserReaction = async () => {
+        try {
+          const reaction = await getPostReaction(article.post_id, userProfile.user_id);
+          setPostReaction(reaction);
+        } catch (error) {
+          console.error('加载用户反应状态失败:', error);
+        }
+      };
+      loadUserReaction();
+    } else {
+      // 如果用户未登录，清空反应状态
+      setPostReaction(null);
     }
-  }, [article]);
+  }, [article, userProfile?.user_id]);
 
 
   useEffect(() => {
@@ -327,7 +314,7 @@ export default function ArticlePage() {
         </div>
 
         {/* 文章主体 */}
-        <article className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <article className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-2">
           {/* 文章标题 */}
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
             {article.title}
@@ -389,7 +376,7 @@ export default function ArticlePage() {
             {prevArticle && (
               <Link
                 href={`/article/${prevArticle.post_id}`}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 group"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-2 hover:shadow-lg transition-shadow duration-200 group"
               >
                 <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">上一篇</div>
                 <div className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
@@ -401,7 +388,7 @@ export default function ArticlePage() {
             {nextArticle && (
               <Link
                 href={`/article/${nextArticle.post_id}`}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 group md:text-right"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-2 hover:shadow-lg transition-shadow duration-200 group md:text-right"
               >
                 <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">下一篇</div>
                 <div className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">

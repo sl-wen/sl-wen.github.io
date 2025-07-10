@@ -44,8 +44,8 @@ export default function HomePage() {
 
       {/* 英雄区块 */}
       <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-950 overflow-hidden">
-        <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="container mx-auto px-4 py-4 md:py-4 relative z-10">
+          <div className="text-center">
             {/* 文本内容 */}
             <div className="space-y-8">
               {/* 问候语 */}
@@ -55,10 +55,7 @@ export default function HomePage() {
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                欢迎来到
-                <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient-x">
-                  鱼鱼的博客
-                </span>
+                欢迎来到 鱼鱼的博客
                 <span className="block text-2xl md:text-3xl lg:text-4xl text-gray-600 dark:text-gray-400 font-normal mt-2">
                   分享知识，记录成长
                 </span>
@@ -70,7 +67,7 @@ export default function HomePage() {
                 <span className="text-blue-600 dark:text-blue-400 font-medium">探索知识的边界，记录成长的足迹。</span>
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <a
                   href="#articles"
                   className="group btn-primary px-8 py-4 text-lg text-center relative overflow-hidden"
@@ -95,7 +92,7 @@ export default function HomePage() {
               </div>
 
               {/* 统计信息 */}
-              <div className="grid grid-cols-3 gap-6 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <div className="grid grid-cols-2 gap-6 pt-8 border-t border-gray-200 dark:border-gray-700">
                 <div className="text-center">
                   <div className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">{ArticlesCount}</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">技术文章</div>
@@ -128,26 +125,9 @@ export default function HomePage() {
       </section>
       
       {/* 最新文章区域 */}
-      <section id="articles" className="py-20 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-950/30 dark:to-purple-950/30">
+      <section id="articles" className="py-4 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-950/30 dark:to-purple-950/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 text-blue-600 dark:text-blue-400 rounded-full text-sm font-medium mb-4 border border-blue-200 dark:border-blue-800">
-              <svg className="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              最新更新
-            </div>
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              最新
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">文章</span>
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              探索最新的想法和见解，与我一起在知识的海洋中遨游
-            </p>
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full mx-auto mt-8 animate-pulse"></div>
-          </div>
-
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w mx-auto">
             <ArticleList />
           </div>
         </div>

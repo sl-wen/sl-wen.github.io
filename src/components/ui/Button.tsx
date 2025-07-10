@@ -21,10 +21,10 @@ const buttonVariants = {
 };
 
 const buttonSizes = {
-  sm: 'px-3 py-2 text-sm min-h-[2rem]',
-  md: 'px-4 py-3 text-base min-h-[2.5rem]',
-  lg: 'px-6 py-4 text-lg min-h-[3rem]',
-  xl: 'px-8 py-5 text-xl min-h-[3.5rem]'
+  sm: 'px-2 py-1 text-sm min-h-[1.5rem]',
+  md: 'px-3 py-2 text-base min-h-[2rem]',
+  lg: 'px-4 py-3 text-lg min-h-[2.5rem]',
+  xl: 'px-5 py-4 text-xl min-h-[3rem]'
 };
 
 export const Button: React.FC<ButtonProps> = ({

@@ -42,7 +42,7 @@ export const Button: React.FC<ButtonProps> = ({
   const baseClasses = [
     'relative inline-flex items-center justify-center gap-2',
     'font-medium leading-6 text-center no-underline',
-    'border border-solid rounded-lg cursor-pointer',
+    'border-2 border-solid rounded-lg cursor-pointer',
     'transition-all duration-200 ease-out outline-none',
     'select-none whitespace-nowrap overflow-hidden',
     'focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2',

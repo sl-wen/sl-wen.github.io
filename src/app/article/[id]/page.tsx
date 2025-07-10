@@ -84,8 +84,6 @@ export default function ArticlePage() {
   const params = useParams();
   const post_id = params?.id as string;
   const [article, setArticle] = useState<Article | null>(null);
-  const [dislikeCount, setDislikeCount] = useState<number>(0);
-  const [likeCount, setLikeCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [prevArticle, setPrevArticle] = useState<Article | null>(null);
@@ -212,8 +210,7 @@ export default function ArticlePage() {
           dislikes_count: newDislikesCount
         };
       });
-      setDislikeCount(article.dislikes_count);
-      setLikeCount(article.likes_count);
+
     } catch (error) {
       console.error('操作失败:', error);
       alert('操作失败，请重试');
@@ -243,8 +240,6 @@ export default function ArticlePage() {
         }
 
         setArticle(articleData);
-        setDislikeCount(articleData.dislikes_count);
-        setLikeCount(articleData.likes_count);
         setPrevArticle(adjacentArticles.prev);
         setNextArticle(adjacentArticles.next);
         recordPostsView(post_id);
@@ -314,7 +309,7 @@ export default function ArticlePage() {
                 </svg>
               }
             >
-              {likeCount || 0}
+              {article.likes_count || 0}
             </Button>
             <Button
               variant={PostReaction === 'dislike' ? 'danger' : 'ghost'}
@@ -326,7 +321,7 @@ export default function ArticlePage() {
                 </svg>
               }
             >
-              {dislikeCount || 0}
+              {article.dislikes_count || 0}
             </Button>
           </div>
         </div>

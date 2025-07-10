@@ -30,17 +30,14 @@ export default function PostPage() {
     email: string;
   } | null>(null);
 
+  // 检查登录状态
   useEffect(() => {
     const data = localStorage.getItem('userProfile');
     setUserProfile(JSON.parse(data || '{}'));
-  }, []);
-
-  // 检查登录状态
-  useEffect(() => {
-    if (!userProfile) {
+    if (!userProfile?.user_id) {
       router.push('/login');
     }
-  }, [userProfile, router]);
+  }, [router]);
 
   // 实时预览功能
   useEffect(() => {
@@ -57,7 +54,7 @@ export default function PostPage() {
 
   // 初始化表单数据
   useEffect(() => {
-    if (userProfile) {
+    if (userProfile?.username) {
       setFormData(prev => ({
         ...prev,
         author: userProfile.username || ''
@@ -119,7 +116,7 @@ export default function PostPage() {
   };
 
   // 如果未登录，显示登录提示
-  if (!userProfile) {
+  if (!userProfile?.user_id) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">

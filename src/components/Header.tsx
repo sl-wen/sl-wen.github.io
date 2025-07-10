@@ -5,9 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/utils/auth-context';
+import { supabase } from './supabase-config';
 
 const Header: React.FC = () => {
-  const { userProfile, logout } = useAuth();
+  const { userProfile } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -35,7 +36,9 @@ const Header: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await supabase.auth.signOut();
+      localStorage.removeItem('userProfile');
+      localStorage.removeItem('userSession');
       router.push('/login');
     } catch (error) {
       console.error('Logout error:', error);

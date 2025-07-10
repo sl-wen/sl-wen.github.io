@@ -222,6 +222,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
       // 计算新的反应状态
       const newReaction = previousReaction === type ? null : type;
 
+
+      // 发送请求到服务器
+      const success = await addCommentReaction(
+        comment_id,
+        userProfile.user_id,
+        type,
+        comment.likes_count || 0,
+        comment.dislikes_count || 0
+      );
+
       // 立即更新本地状态，提供即时反馈
       setCommentReactions((prev) => ({ ...prev, [comment_id]: newReaction }));
 
@@ -259,21 +269,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
         })
       );
 
-      // 发送请求到服务器
-      const success = await addCommentReaction(
-        comment_id,
-        userProfile.user_id,
-        type,
-        comment.likes_count || 0,
-        comment.dislikes_count || 0
-      );
-
       if (!success) {
         // 如果服务器请求失败，回滚本地状态
         setCommentReactions((prev) => ({ ...prev, [comment_id]: previousReaction }));
         setComments(previousComments);
         setError('操作失败，请稍后重试');
       }
+
     } catch (error) {
       console.error('处理评论反应失败:', error);
       setError('操作失败，请稍后重试');

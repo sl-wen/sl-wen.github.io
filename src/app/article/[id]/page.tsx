@@ -211,6 +211,8 @@ export default function ArticlePage() {
           dislikes_count: newDislikesCount
         };
       });
+      setDislikeCount(article.dislikes_count);
+      setLikeCount(article.likes_count);
     } catch (error) {
       console.error('操作失败:', error);
       alert('操作失败，请重试');
@@ -219,10 +221,6 @@ export default function ArticlePage() {
     }
   };
 
-  useEffect(() => {
-    const data = localStorage.getItem('userProfile');
-    setUserProfile(JSON.parse(data || '{}'));
-  }, []);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -260,11 +258,17 @@ export default function ArticlePage() {
   }, [post_id]);
 
   useEffect(() => {
-    addCopyButtons();
+    const data = localStorage.getItem('userProfile');
+    setUserProfile(JSON.parse(data || '{}'));
     if (article && userProfile?.user_id) {
       getPostReaction(article.post_id, userProfile.user_id).then(setPostReaction);
     }
   }, [article]);
+
+
+  useEffect(() => {
+    addCopyButtons();
+  }, []);
 
   if (loading) {
     return <Loading />;

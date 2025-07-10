@@ -34,10 +34,7 @@ export default function PostPage() {
   useEffect(() => {
     const data = localStorage.getItem('userProfile');
     setUserProfile(JSON.parse(data || '{}'));
-    if (!userProfile?.user_id) {
-      router.push('/login');
-    }
-  }, [router]);
+  }, []);
 
   // 实时预览功能
   useEffect(() => {
@@ -104,7 +101,8 @@ export default function PostPage() {
         author: userProfile ? userProfile.username || '' : '',
         user_id: userProfile ? userProfile.user_id || '' : '',
         views: 0,
-        dislikes_count: 0
+        dislikes_count: 0,
+        likes_count: 0
       });
 
       router.push(`/article/${article?.post_id}`);
@@ -261,16 +259,7 @@ export default function PostPage() {
                   onChange={handleInputChange}
                   onScroll={handleEditorScroll}
                   className="flex-1 rounded-t-none font-mono text-sm resize-none border-t-0 border border-gray-300 dark:border-gray-600 p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  placeholder="# 开始你的创作吧！
-
-支持 Markdown 语法:
-- **粗体文本**
-- *斜体文本*
-- [链接](URL)
-- ![图片](URL)
-- `行内代码`
-
-开始编写您的文章内容..."
+                  placeholder="# 开始你的创作吧！"
                   required
                   rows={15}
                 />

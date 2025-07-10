@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/utils/auth-context';
 import { createArticle, renderMarkdown } from '@/utils/articleService';
 
 interface PostFormData {
@@ -25,7 +24,16 @@ export default function PostPage() {
   const router = useRouter();
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
-  const { userProfile } = useAuth();
+  const [userProfile, setUserProfile] = useState<{
+    user_id: string;
+    username: string;
+    email: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const data = localStorage.getItem('userProfile');
+    setUserProfile(JSON.parse(data || '{}'));
+  }, []);
 
   // 检查登录状态
   useEffect(() => {
@@ -97,7 +105,7 @@ export default function PostPage() {
       const article = await createArticle({
         ...formData,
         author: userProfile ? userProfile.username || '' : '',
-        user_id: userProfile ? userProfile.id || '' : '',
+        user_id: userProfile ? userProfile.user_id || '' : '',
         views: 0,
         dislikes_count: 0
       });

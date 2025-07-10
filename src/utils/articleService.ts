@@ -32,6 +32,19 @@ export const getArticles = async (page: number = 1, limit: number = 10): Promise
   }
 };
 
+export const getArticlesCount = async (): Promise<number> => {
+  try {
+    const { count, error } = await supabase
+      .from('posts')
+      .select('*', { count: 'exact', head: true }); // 只返回count
+    if (error) throw error;
+    return count || 0;
+  } catch (error) {
+    console.error('获取文章数量失败:', error);
+    return 0;
+  }
+};
+
 export const getArticleById = async (post_id: string): Promise<Article | null> => {
   try {
     const { data, error } = await supabase

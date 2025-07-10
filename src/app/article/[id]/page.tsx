@@ -70,7 +70,7 @@ interface ShareButtonProps {
 }
 
 const ShareButton: React.FC<ShareButtonProps> = ({ platform, icon, onClick }) => (
-  <button 
+  <button
     className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
     onClick={onClick}
   >
@@ -289,33 +289,33 @@ export default function ArticlePage() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* 操作按钮区域 */}
         <div className="flex justify-between items-center mb-8">
-          <Link 
-            href={`/article/${article.post_id}/edit`} 
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-          >
-            编辑文章
-          </Link>
-          
+          {userProfile?.user_id && (
+            <Link
+              href={`/article/${article.post_id}/edit`}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            >
+              编辑文章
+            </Link>
+          )}
+
           <div className="flex items-center gap-2">
             <button
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                PostReaction === 'like' 
-                  ? 'bg-blue-500 text-white' 
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${PostReaction === 'like'
+                  ? 'bg-blue-500 text-white'
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-              } ${isReactionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                } ${isReactionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => handleReaction('like')}
               disabled={isReactionLoading}
             >
               <span>👍</span>
               <span>{likeCount || 0}</span>
             </button>
-            
+
             <button
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                PostReaction === 'dislike' 
-                  ? 'bg-red-500 text-white' 
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${PostReaction === 'dislike'
+                  ? 'bg-red-500 text-white'
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-              } ${isReactionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                } ${isReactionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => handleReaction('dislike')}
               disabled={isReactionLoading}
             >
@@ -331,26 +331,26 @@ export default function ArticlePage() {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
             {article.title}
           </h1>
-          
+
           {/* 文章元信息 */}
           <div className="flex flex-wrap items-center gap-4 mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
               <span>✍️</span>
               <span>作者：{article.author}</span>
             </div>
-            
+
             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
               <span>📅</span>
               <span>发布于：{new Date(article.created_at).toLocaleDateString()}</span>
             </div>
-            
+
             {article.tags && article.tags.length > 0 && (
               <div className="flex items-center gap-2">
                 <span className="text-gray-600 dark:text-gray-400">🏷️ 标签：</span>
                 <div className="flex flex-wrap gap-2">
                   {article.tags.map((tag, index) => (
-                    <span 
-                      key={index} 
+                    <span
+                      key={index}
                       className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                     >
                       {tag}
@@ -360,7 +360,7 @@ export default function ArticlePage() {
               </div>
             )}
           </div>
-          
+
           {/* 文章内容 */}
           <div
             className="prose prose-lg dark:prose-invert max-w-none markdownBody"
@@ -386,8 +386,8 @@ export default function ArticlePage() {
         {(prevArticle || nextArticle) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
             {prevArticle && (
-              <Link 
-                href={`/article/${prevArticle.post_id}`} 
+              <Link
+                href={`/article/${prevArticle.post_id}`}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 group"
               >
                 <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">上一篇</div>
@@ -396,10 +396,10 @@ export default function ArticlePage() {
                 </div>
               </Link>
             )}
-            
+
             {nextArticle && (
-              <Link 
-                href={`/article/${nextArticle.post_id}`} 
+              <Link
+                href={`/article/${nextArticle.post_id}`}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 group md:text-right"
               >
                 <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">下一篇</div>

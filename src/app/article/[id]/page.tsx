@@ -10,6 +10,7 @@ import { recordPostsView } from '@/utils/stats';
 import { marked } from 'marked';
 import { addPostReaction, getPostReaction } from '@/utils/reactionService';
 import CommentSection from '@/components/CommentSection';
+import { Button } from '@/components/ui/Button';
 
 const addCopyButtons = () => {
   const codeBlocks = document.querySelectorAll('.markdownBody pre code');
@@ -143,7 +144,7 @@ export default function ArticlePage() {
   };
 
   // 处理点赞/点踩的函数
-  const handleReaction = async (reactionType: 'like' | 'dislike') => {
+  const handlePostReaction = async (reactionType: 'like' | 'dislike') => {
     // 防止重复点击
     if (isReactionLoading) {
       return;
@@ -303,29 +304,30 @@ export default function ArticlePage() {
           )}
 
           <div className="flex items-center gap-2">
-            <button
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${PostReaction === 'like'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                } ${isReactionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              onClick={() => handleReaction('like')}
-              disabled={isReactionLoading}
+            <Button
+              variant={PostReaction === 'like' ? 'success' : 'ghost'}
+              size="sm"
+              onClick={() => handlePostReaction('like')}
+              leftIcon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                </svg>
+              }
             >
-              <span>👍</span>
-              <span>{likeCount || 0}</span>
-            </button>
-
-            <button
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${PostReaction === 'dislike'
-                  ? 'bg-red-500 text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                } ${isReactionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              onClick={() => handleReaction('dislike')}
-              disabled={isReactionLoading}
+              {likeCount || 0}
+            </Button>
+            <Button
+              variant={PostReaction === 'dislike' ? 'danger' : 'ghost'}
+              size="sm"
+              onClick={() => handlePostReaction('dislike')}
+              leftIcon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.7M10 14v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2M17 4H19a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
+                </svg>
+              }
             >
-              <span>👎</span>
-              <span>{dislikeCount || 0}</span>
-            </button>
+              {dislikeCount || 0}
+            </Button>
           </div>
         </div>
 

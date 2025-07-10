@@ -293,7 +293,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
           {comments.filter(c => !c.parent_id).length} 条评论
         </span>
       </div>
-      
+
       {error && (
         <Alert variant="error" onClose={() => setError(null)}>
           {error}
@@ -338,7 +338,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                   <img
                     src={commentUserProfiles[comment.user_id]?.avatar_url || ''}
                     alt="用户头像"
-                    className="user-avatar"
+                    className="w-10 h-10"
                   />
                   <span className="username">
                     {commentUserProfiles[comment.user_id]?.username || '匿名用户'}
@@ -368,9 +368,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                       label="编辑评论"
                     />
                     <div className="flex justify-end gap-2">
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
+                      <Button
+                        type="button"
+                        variant="ghost"
                         onClick={() => setEditingCommentId(null)}
                       >
                         取消
@@ -382,163 +382,173 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                   </form>
                 </Card>
               ) : (
-                <>
-                  <p className="comment-content">{comment.content}</p>
-                  <div className="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant={commentReactions[comment.comment_id] === 'like' ? 'success' : 'ghost'}
-                        size="sm"
-                        onClick={() => handleReaction(comment.comment_id, 'like')}
-                        leftIcon={
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                          </svg>
-                        }
-                      >
-                        {comment.likes_count || 0}
-                      </Button>
-                      <Button
-                        variant={commentReactions[comment.comment_id] === 'dislike' ? 'danger' : 'ghost'}
-                        size="sm"
-                        onClick={() => handleReaction(comment.comment_id, 'dislike')}
-                        leftIcon={
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.7M10 14v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2M17 4H19a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
-                          </svg>
-                        }
-                      >
-                        {comment.dislikes_count || 0}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleReply(comment.comment_id)}
-                        leftIcon={
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                          </svg>
-                        }
-                      >
-                        回复
-                      </Button>
-                    </div>
-                    {userProfile?.user_id === comment.user_id && (
+                  <>
+                    <p className="comment-content">{comment.content}</p>
+                    <div className="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                       <div className="flex items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleEdit(comment)}
+                        <Button
+                          variant={commentReactions[comment.comment_id] === 'like' ? 'success' : 'ghost'}
+                          size="sm"
+                          onClick={() => handleReaction(comment.comment_id, 'like')}
                           leftIcon={
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
                             </svg>
                           }
                         >
-                          编辑
+                          {comment.likes_count || 0}
+                        </Button>
+                        <Button
+                          variant={commentReactions[comment.comment_id] === 'dislike' ? 'danger' : 'ghost'}
+                          size="sm"
+                          onClick={() => handleReaction(comment.comment_id, 'dislike')}
+                          leftIcon={
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.7M10 14v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2M17 4H19a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
+                            </svg>
+                          }
+                        >
+                          {comment.dislikes_count || 0}
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(comment.comment_id)}
+                          onClick={() => handleReply(comment.comment_id)}
                           leftIcon={
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                             </svg>
                           }
                         >
-                          删除
-                        </Button>
+                          回复
+                      </Button>
                       </div>
-                    )}
-                  </div>
-
-                  {replyingToId === comment.comment_id && (
-                    <Card variant="outlined" className="mt-4">
-                      <form onSubmit={handleSubmitReply} className="space-y-4">
-                        <Textarea
-                          value={replyContent}
-                          onChange={(e) => setReplyContent(e.target.value)}
-                          placeholder={`回复 @${commentUserProfiles[comment.user_id]?.username || '匿名用户'}`}
-                          required
-                          rows={3}
-                          fullWidth
-                          label="回复评论"
-                        />
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            type="button" 
-                            variant="ghost" 
-                            onClick={handleCancelReply}
+                      {userProfile?.user_id === comment.user_id && (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(comment)}
+                            leftIcon={
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            }
                           >
-                            取消
-                          </Button>
-                          <Button type="submit" variant="primary">
-                            发表回复
-                          </Button>
+                            编辑
+                        </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(comment.comment_id)}
+                            leftIcon={
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            }
+                          >
+                            删除
+                        </Button>
                         </div>
-                      </form>
-                    </Card>
-                  )}
+                      )}
+                    </div>
 
-                  <div className="replies-list">
-                    {comments
-                      .filter((reply) => reply.parent_id === comment.comment_id)
-                      .map((reply) => (
-                        <div key={reply.comment_id} className="reply">
-                          <div className="comment-header">
-                            <div className="comment-user-info">
-                              <img
-                                src={
-                                  commentUserProfiles[reply.user_id]?.avatar_url ||
-                                  ''
-                                }
-                                alt="用户头像"
-                                className="user-avatar"
-                              />
-                              <span className="username">
-                                {commentUserProfiles[reply.user_id]?.username || '匿名用户'}
-                              </span>
-                              <span className="user-level">
-                                Lv.{commentUserProfiles[reply.user_id]?.level || 1}
-                              </span>
-                            </div>
-                            <time>{new Date(reply.created_at).toLocaleString()}</time>
+                    {replyingToId === comment.comment_id && (
+                      <Card variant="outlined" className="mt-4">
+                        <form onSubmit={handleSubmitReply} className="space-y-4">
+                          <Textarea
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            placeholder={`回复 @${commentUserProfiles[comment.user_id]?.username || '匿名用户'}`}
+                            required
+                            rows={3}
+                            fullWidth
+                            label="回复评论"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              onClick={handleCancelReply}
+                            >
+                              取消
+                          </Button>
+                            <Button type="submit" variant="primary">
+                              发表回复
+                          </Button>
                           </div>
-                          <p className="comment-content">{reply.content}</p>
-                          <div className="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant={commentReactions[reply.comment_id] === 'like' ? 'success' : 'ghost'}
-                                size="sm"
-                                onClick={() => handleReaction(reply.comment_id, 'like')}
-                              >
-                                👍 {reply.likes_count || 0}
-                              </Button>
-                              <Button
-                                variant={commentReactions[reply.comment_id] === 'dislike' ? 'danger' : 'ghost'}
-                                size="sm"
-                                onClick={() => handleReaction(reply.comment_id, 'dislike')}
-                              >
-                                👎 {reply.dislikes_count || 0}
-                              </Button>
+                        </form>
+                      </Card>
+                    )}
+
+                    <div className="replies-list">
+                      {comments
+                        .filter((reply) => reply.parent_id === comment.comment_id)
+                        .map((reply) => (
+                          <div key={reply.comment_id} className="reply">
+                            <div className="comment-header">
+                              <div className="comment-user-info">
+                                <img
+                                  src={
+                                    commentUserProfiles[reply.user_id]?.avatar_url ||
+                                    ''
+                                  }
+                                  alt="用户头像"
+                                  className="w-10 h-10"
+                                />
+                                <span className="username">
+                                  {commentUserProfiles[reply.user_id]?.username || '匿名用户'}
+                                </span>
+                                <span className="user-level">
+                                  Lv.{commentUserProfiles[reply.user_id]?.level || 1}
+                                </span>
+                              </div>
+                              <time>{new Date(reply.created_at).toLocaleString()}</time>
                             </div>
-                            {userProfile?.user_id === reply.user_id && (
+                            <p className="comment-content">{reply.content}</p>
+                            <div className="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                               <div className="flex items-center gap-2">
-                                <Button variant="ghost" size="sm" onClick={() => handleEdit(reply)}>
-                                  编辑
+                                <Button
+                                  variant={commentReactions[reply.comment_id] === 'like' ? 'success' : 'ghost'}
+                                  size="sm"
+                                  onClick={() => handleReaction(reply.comment_id, 'like')}
+                                  leftIcon={
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                                    </svg>
+                                  }
+                                >
+                                  {reply.likes_count || 0}
                                 </Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleDelete(reply.comment_id)}>
-                                  删除
+                                <Button
+                                  variant={commentReactions[reply.comment_id] === 'dislike' ? 'danger' : 'ghost'}
+                                  size="sm"
+                                  onClick={() => handleReaction(reply.comment_id, 'dislike')}
+                                  leftIcon={
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.7M10 14v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2M17 4H19a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
+                                    </svg>
+                                  }
+                                >
+                                  {reply.dislikes_count || 0}
                                 </Button>
                               </div>
-                            )}
+                              {userProfile?.user_id === reply.user_id && (
+                                <div className="flex items-center gap-2">
+                                  <Button variant="ghost" size="sm" onClick={() => handleEdit(reply)}>
+                                    编辑
+                                </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => handleDelete(reply.comment_id)}>
+                                    删除
+                                </Button>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                  </div>
-                </>
-              )}
+                        ))}
+                    </div>
+                  </>
+                )}
             </div>
           ))}
       </div>

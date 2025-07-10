@@ -17,6 +17,7 @@ interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   refreshProfile: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,6 +77,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await loadUserProfile();
   };
 
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      localStorage.removeItem('userProfile');
+      localStorage.removeItem('userSession');
+      setUserProfile(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   useEffect(() => {
     loadUserProfile();
@@ -112,7 +123,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     userProfile,
     loading,
-    refreshProfile
+    refreshProfile,
+    logout,
   };
 
   return (

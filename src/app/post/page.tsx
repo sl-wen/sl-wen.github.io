@@ -99,10 +99,7 @@ export default function PostPage() {
       const article = await createArticle({
         ...formData,
         author: userProfile ? userProfile.username || '' : '',
-        user_id: userProfile ? userProfile.user_id || '' : '',
-        views: 0,
-        dislikes_count: 0,
-        likes_count: 0
+        user_id: userProfile ? userProfile.user_id || '' : ''
       });
 
       router.push(`/article/${article?.post_id}`);

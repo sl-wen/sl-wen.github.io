@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/utils/auth-context';
-import { supabase } from './supabase-config';
+import { supabase } from '@/utils/supabase-config';
 
 const Header: React.FC = () => {
   const { userProfile } = useAuth();

@@ -158,27 +158,81 @@ export default function ArticlePage() {
     }
 
     try {
+      // 当用户点击点赞/点踩按钮
       setIsReactionLoading(true);
 
+      // 1. 本地乐观更新UI  
+      let oldLikes = article.likes_count;
+      let oldDislikes = article.dislikes_count;
+      let oldReaction = PostReaction;
+
+      // 假设 reactionType 是 'like' 或 'dislike'
+      let newLikes = oldLikes;
+      let newDislikes = oldDislikes;
+
+      // 你需要处理取消、切换等逻辑，这里是简单示例
+      if (reactionType === 'like') {
+        if (oldReaction === 'like') {
+          newLikes -= 1; // 取消点赞
+          setPostReaction(null);
+        } else {
+          newLikes += 1;
+          if (oldReaction === 'dislike') {
+            newDislikes -= 1; // 从踩切换到赞
+          }
+          setPostReaction('like');
+        }
+      } else if (reactionType === 'dislike') {
+        if (oldReaction === 'dislike') {
+          newDislikes -= 1; // 取消点踩
+          setPostReaction(null);
+        } else {
+          newDislikes += 1;
+          if (oldReaction === 'like') {
+            newLikes -= 1; // 从赞切换到踩
+          }
+          setPostReaction('dislike');
+        }
+      }
+
+      // 立即先更新页面显示
+      setArticle((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          likes_count: oldLikes,
+          dislikes_count: oldDislikes,
+        };
+      });
+
+      // 2. 再做请求
       const success = await addPostReaction(
         article.post_id,
         userProfile.user_id,
         reactionType,
-        article.likes_count,
-        article.dislikes_count
+        oldLikes,
+        oldDislikes
       );
 
       if (success) {
-        // 重新获取用户的反应状态
+        // 如果你想再确保绝对同步，可以用服务器结果更新一遍
+        const updatedArticle = await getArticleById(article.post_id);
+        if (updatedArticle) setArticle(updatedArticle);
+
+        // 反应状态重新拉一遍
         const newReaction = await getPostReaction(article.post_id, userProfile.user_id);
         setPostReaction(newReaction);
-
-        // 重新获取文章数据以确保数据同步
-        const updatedArticle = await getArticleById(article.post_id);
-        if (updatedArticle) {
-          setArticle(updatedArticle);
-        }
       } else {
+        // 请求失败，回退状态
+        setArticle((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            likes_count: oldLikes,
+            dislikes_count: oldDislikes,
+          };
+        });
+        setPostReaction(oldReaction);
         alert('操作失败，请重试');
       }
 

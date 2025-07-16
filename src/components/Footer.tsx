@@ -10,7 +10,7 @@ const Footer: React.FC = () => {
     <footer className="relative bg-gray-900 text-white">
       {/* 装饰性背景 */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
-      
+
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* 主要内容 */}
         <div className="py-2 lg:py-2">
@@ -103,6 +103,14 @@ const Footer: React.FC = () => {
             <div className="text-center md:text-left">
               <p className="text-gray-400 text-sm">
                 © {currentYear} 鱼鱼的博客. 保留所有权利.
+                <a
+                  href="https://beian.miit.gov.cn/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-2 text-gray-400 hover:text-white underline"
+                >
+                  赣ICP备2025067253号-1
+                </a>
               </p>
             </div>
             <div className="flex items-center space-x-4">

@@ -111,6 +111,7 @@ jobs:
           
           # 拉取最新代码
           echo "拉取最新代码..."
+          git config --global --add safe.directory /var/www/blog
           OLD_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
           
           # 设置Git SSH命令，指定密钥文件

@@ -13,49 +13,66 @@ import CommentSection from '@/components/CommentSection';
 import { Button } from '@/components/ui/Button';
 
 const addCopyButtons = () => {
-  const codeBlocks = document.querySelectorAll('.markdownBody pre code');
-  codeBlocks.forEach((block) => {
-    const copyButton = document.createElement('button');
-    copyButton.className = 'copy-button';
-    copyButton.innerHTML = '<i class="fas fa-copy"></i>';
-    copyButton.title = '复制代码';
+  document.querySelectorAll('.markdownBody pre').forEach((pre) => {
+    // 防止重复插入
+    if (pre.querySelector('.copy-button')) return;
 
-    copyButton.addEventListener('click', async () => {
-      const code = block.querySelector('code');
-      if (code) {
-        try {
-          const text = code.textContent || '';
-          if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(text);
-          } else {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            textArea.style.top = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-              document.execCommand('copy');
-            } catch (err) {
-              console.error('复制失败:', err);
-            }
-            textArea.remove();
-          }
-          copyButton.innerHTML = '<i class="fas fa-check"></i>';
-          copyButton.classList.add('copied');
-          setTimeout(() => {
-            copyButton.innerHTML = '<i class="fas fa-copy"></i>';
-            copyButton.classList.remove('copied');
-          }, 2000);
-        } catch (err) {
-          console.error('复制失败:', err);
+    const code = pre.querySelector('code');
+    if (!code) return;
+
+    // 设置pre为relative布局
+    pre.classList.add('relative');
+
+    // 创建按钮
+    const copyButton = document.createElement('button');
+    copyButton.type = 'button';
+    copyButton.className = [
+      'copy-button', // 标识方便后续判断
+      'absolute', 'top-2', 'right-3', 'z-10',
+      'bg-slate-700/80', 'text-white', 'rounded', 'px-3', 'py-1', 'text-xs',
+      'hover:bg-slate-900/90', 'transition', 'outline-none', 'focus:ring-2',
+      'focus:ring-blue-500', 'select-none'
+    ].join(' ');
+    copyButton.textContent = '复制';
+
+    copyButton.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const text = code.textContent || '';
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.style.position = 'fixed';
+          textarea.style.left = '-9999px';
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          document.execCommand('copy');
+          textarea.remove();
         }
+        copyButton.textContent = '已复制';
+        copyButton.classList.remove('bg-slate-700/80');
+        copyButton.classList.add('bg-green-500');
+        setTimeout(() => {
+          copyButton.textContent = '复制';
+          copyButton.classList.remove('bg-green-500');
+          copyButton.classList.add('bg-slate-700/80');
+        }, 2000);
+      } catch {
+        copyButton.textContent = '失败';
+        copyButton.classList.remove('bg-slate-700/80');
+        copyButton.classList.add('bg-red-500');
+        setTimeout(() => {
+          copyButton.textContent = '复制';
+          copyButton.classList.remove('bg-red-500');
+          copyButton.classList.add('bg-slate-700/80');
+        }, 2000);
       }
     });
 
-    block.appendChild(copyButton);
+    pre.appendChild(copyButton);
   });
 };
 

@@ -1,15 +1,16 @@
-# 部署指南
+# 全栈应用部署指南
 
 ## 概述
 
-本项目使用 GitHub Actions 自动部署到 Ubuntu 24.04 服务器。当代码推送到 `react` 分支时，会自动触发部署流程。
+本项目使用 GitHub Actions 自动部署到 Ubuntu 24.04 服务器。支持前端（React + Next.js）和后端（Python API）的独立或联合部署。
 
 ## 服务器要求
 
 - Ubuntu 24.04 LTS
 - Node.js 18+ 
+- Python 3.8+
 - PM2 或 systemd 服务管理
-- Nginx (可选，用于反向代理)
+- Nginx (反向代理)
 - Git
 
 ## 部署配置
@@ -26,82 +27,71 @@ SERVER_PASSWORD=服务器密码
 
 ### 2. 服务器初始化
 
-运行初始化脚本：
+#### 一键初始化（推荐）
+
+运行全栈应用初始化脚本：
 
 ```bash
-chmod +x init-server.sh
-./init-server.sh
+chmod +x scripts/init-server-fullstack.sh
+./scripts/init-server-fullstack.sh
 ```
 
-### 3. Git 和 SSH 配置
+#### 手动初始化
 
-#### 一键配置 SSH 环境
-
-运行 SSH 配置脚本（推荐）：
+如果需要手动配置，运行以下命令：
 
 ```bash
+# 更新系统
+sudo apt update && sudo apt upgrade -y
+
+# 安装依赖
+sudo apt install -y curl wget git nginx python3 python3-pip python3-venv nodejs npm
+
+# 安装最新Node.js
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# 创建项目目录
+sudo mkdir -p /var/www/blog /var/www/novel
+sudo chown -R $USER:$USER /var/www/blog /var/www/novel
+```
+
+### 3. 项目克隆
+
+```bash
+# 克隆前端项目
+git clone git@github.com:sl-wen/sl-wen.github.io.git /var/www/blog
 cd /var/www/blog
-chmod +x scripts/setup-ssh-for-deployment.sh
-./scripts/setup-ssh-for-deployment.sh
-```
+git checkout react
 
-这个脚本会：
-- 自动检查和设置SSH密钥位置
-- 确保root用户可以访问SSH密钥
-- 修复权限问题
-- 配置GitHub主机密钥
-- 测试SSH连接
-- 修复错误的远程仓库URL
-
-#### SSH 连接诊断
-
-如需详细诊断，运行：
-
-```bash
-cd /var/www/blog
-chmod +x scripts/deploy-test.sh
-./scripts/deploy-test.sh
-```
-
-#### 修复常见的 SSH 问题
-
-1. **错误的 GitHub SSH 域名**：
-```bash
-# 检查当前远程仓库URL
-git remote get-url origin
-
-# 如果显示 git@ssh.github.com，需要修复为正确的域名
-git remote set-url origin git@github.com:sl-wen/sl-wen.github.io.git
-```
-
-2. **验证 SSH 连接**：
-```bash
-ssh -T git@github.com
-```
-
-3. **添加 GitHub 主机密钥**：
-```bash
-ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-```
-
-4. **检查密钥权限**：
-```bash
-chmod 600 ~/.ssh/id_ed25519
-chmod 644 ~/.ssh/id_ed25519.pub
+# 克隆后端项目
+git clone git@github.com:sl-wen/novel.git /var/www/novel
+cd /var/www/novel
+git checkout main
 ```
 
 ### 4. 服务配置
 
-创建 systemd 服务文件 `/etc/systemd/system/blog.service`：
+#### 自动配置（推荐）
+
+```bash
+chmod +x scripts/setup-systemd-services.sh
+./scripts/setup-systemd-services.sh
+```
+
+#### 手动配置
+
+创建前端服务文件 `/etc/systemd/system/blog.service`：
 
 ```ini
 [Unit]
-Description=Blog Application
+Description=Blog Frontend Application
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
+Group=www-data
 WorkingDirectory=/var/www/blog
 Environment=NODE_ENV=production
 Environment=PORT=3000
@@ -113,30 +103,173 @@ RestartSec=10
 WantedBy=multi-user.target
 ```
 
+创建后端服务文件 `/etc/systemd/system/novel-api.service`：
+
+```ini
+[Unit]
+Description=Novel Backend API Service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/novel
+Environment=PATH=/var/www/novel/venv/bin
+ExecStart=/var/www/novel/venv/bin/python app.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
 启用服务：
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable blog
-sudo systemctl start blog
+sudo systemctl enable blog novel-api
+```
+
+### 5. Nginx 配置
+
+Nginx 配置文件位于 `/etc/nginx/sites-available/fullstack-app`：
+
+```nginx
+server {
+    listen 80;
+    server_name _;
+    
+    # 前端应用
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+    
+    # 后端API
+    location /api/ {
+        proxy_pass http://localhost:8000/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+    
+    # 静态文件缓存
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+启用配置：
+
+```bash
+sudo ln -sf /etc/nginx/sites-available/fullstack-app /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
 ```
 
 ## 部署流程
 
 ### 自动部署
 
-1. 代码推送到 `react` 分支
+#### 分支触发规则
+
+- **前端部署**：推送到 `react` 分支
+- **后端部署**：推送到 `main` 分支
+- **手动部署**：在 GitHub Actions 页面手动触发
+
+#### 部署步骤
+
+1. 代码推送到对应分支
 2. GitHub Actions 触发部署
 3. SSH 连接到服务器
 4. 拉取最新代码
 5. 安装依赖（如有变化）
-6. 构建应用
+6. 构建应用（前端）/ 更新虚拟环境（后端）
 7. 重启服务
-8. 验证部署
+8. 配置 Nginx
+9. 健康检查
 
 ### 手动部署
 
-也可以在 GitHub Actions 页面手动触发部署。
+```bash
+# 使用部署脚本
+sudo /usr/local/bin/deploy-fullstack
+
+# 或手动部署
+cd /var/www/blog
+git pull origin react
+npm install
+npm run build
+sudo systemctl restart blog
+
+cd /var/www/novel
+git pull origin main
+source venv/bin/activate
+pip install -r requirements.txt
+sudo systemctl restart novel-api
+
+sudo systemctl restart nginx
+```
+
+## 服务管理
+
+### 启动服务
+
+```bash
+sudo systemctl start blog novel-api nginx
+```
+
+### 停止服务
+
+```bash
+sudo systemctl stop blog novel-api nginx
+```
+
+### 重启服务
+
+```bash
+sudo systemctl restart blog novel-api nginx
+```
+
+### 查看状态
+
+```bash
+sudo systemctl status blog novel-api nginx
+```
+
+### 查看日志
+
+```bash
+# 前端服务日志
+sudo journalctl -u blog -f
+
+# 后端API服务日志
+sudo journalctl -u novel-api -f
+
+# Nginx日志
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+```
+
+## 访问地址
+
+- **前端应用**：`http://your-server-ip`
+- **后端API**：`http://your-server-ip/api/`
 
 ## 常见问题和解决方案
 
@@ -144,203 +277,190 @@ sudo systemctl start blog
 
 **问题**: `Permission denied (publickey)` 或 `git@ssh.github.com: Permission denied`
 
-**常见原因和解决方案**:
+**解决方案**:
 
-a) **错误的 GitHub 域名** (最常见):
 ```bash
-# 错误的域名：git@ssh.github.com
-# 正确的域名：git@github.com
+# 检查SSH密钥
+ls -la ~/.ssh/
+
+# 修复GitHub SSH域名
 git remote set-url origin git@github.com:sl-wen/sl-wen.github.io.git
-```
 
-b) **SSH 密钥未加载到 SSH Agent**:
-```bash
-ssh-add ~/.ssh/id_ed25519
-# 或
-ssh-add ~/.ssh/id_rsa
-```
-
-c) **密钥权限不正确**:
-```bash
-chmod 600 ~/.ssh/id_ed25519
-chmod 644 ~/.ssh/id_ed25519.pub
-```
-
-d) **GitHub 主机密钥未知**:
-```bash
+# 添加GitHub主机密钥
 ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-```
 
-**验证修复**:
-```bash
+# 验证SSH连接
 ssh -T git@github.com
-# 成功的输出应该包含: "Hi username! You've successfully authenticated"
 ```
 
-**GitHub Actions 专用问题**:
+### 2. 端口冲突
 
-如果只在GitHub Actions中出现SSH问题，而手动登录服务器没问题，通常是因为：
-
-e) **SSH密钥位置问题** - GitHub Actions可能以不同用户身份执行：
-```bash
-# 确保SSH密钥在root用户目录下
-sudo cp ~/.ssh/id_ed25519* /root/.ssh/
-sudo chmod 600 /root/.ssh/id_ed25519
-sudo chmod 644 /root/.ssh/id_ed25519.pub
-```
-
-f) **环境变量问题** - GitHub Actions中的环境可能不同：
-```bash
-# 手动设置环境变量
-export HOME=/root
-export SSH_AUTH_SOCK=""
-```
-
-**一键修复命令**:
-```bash
-# 运行专用的SSH配置脚本
-cd /var/www/blog
-chmod +x scripts/setup-ssh-for-deployment.sh
-./scripts/setup-ssh-for-deployment.sh
-```
-
-### 2. ESLint 配置问题
-
-**问题**: 
-- `Cannot find module 'eslint-plugin-react-hooks'`
-- `Failed to load config "@typescript-eslint/recommended"`
-- `Failed to load plugin '@typescript-eslint'`
+**问题**: 端口 3000 或 8000 被占用
 
 **解决方案**:
 
-a) **使用自动修复脚本** (推荐):
 ```bash
-cd /var/www/blog
-chmod +x scripts/fix-eslint.sh
-./scripts/fix-eslint.sh
+# 检查端口占用
+sudo netstat -tlnp | grep :3000
+sudo netstat -tlnp | grep :8000
+
+# 杀死占用进程
+sudo pkill -f "node.*3000"
+sudo pkill -f "python.*8000"
 ```
 
-b) **手动修复**:
-```bash
-# 安装缺失的ESLint依赖
-npm install --save-dev \
-  eslint-plugin-react-hooks \
-  @typescript-eslint/eslint-plugin \
-  @typescript-eslint/parser \
-  eslint-config-next
+### 3. 权限问题
 
-# 验证配置
-npx eslint --print-config .eslintrc.cjs
+**问题**: 文件权限错误
+
+**解决方案**:
+
+```bash
+# 修复目录权限
+sudo chown -R www-data:www-data /var/www/blog
+sudo chown -R www-data:www-data /var/www/novel
+sudo chmod -R 755 /var/www/blog
+sudo chmod -R 755 /var/www/novel
 ```
 
-c) **重置依赖** (如果问题持续):
+### 4. Python 虚拟环境问题
+
+**问题**: Python 依赖安装失败
+
+**解决方案**:
+
 ```bash
-rm -rf node_modules package-lock.json
-npm install
+cd /var/www/novel
+
+# 重新创建虚拟环境
+rm -rf venv
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-**注意**: 更新的部署脚本会自动检测和安装缺失的ESLint依赖
-
-### 3. 内存不足
+### 5. Node.js 内存不足
 
 **问题**: 构建过程中内存不足
 
 **解决方案**:
-- 部署脚本已设置 `NODE_OPTIONS="--max-old-space-size=512"`
-- 如果仍有问题，可增加交换空间
 
-### 4. 端口冲突
-
-**问题**: 端口 3000 被占用
-
-**解决方案**:
 ```bash
-sudo netstat -tlnp | grep :3000
-sudo systemctl stop blog
-sudo systemctl start blog
+# 设置Node.js内存限制
+export NODE_OPTIONS="--max-old-space-size=512"
+
+# 或增加交换空间
+sudo fallocate -l 1G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
 ```
 
-### 5. 服务启动失败
+## 监控和维护
 
-**问题**: 服务无法启动
+### 系统监控
 
-**解决方案**:
 ```bash
-sudo journalctl -u blog -f  # 查看实时日志
-sudo systemctl status blog  # 查看服务状态
+# 查看系统资源
+htop
+free -h
+df -h
+
+# 查看服务状态
+sudo systemctl list-units --type=service --state=running
 ```
 
-## 部署后验证
+### 日志轮转
 
-部署完成后，脚本会自动进行以下验证：
-
-1. ✅ 服务状态检查
-2. ✅ 端口监听检查
-3. ✅ 应用响应检查
-4. ✅ 内存使用监控
-
-## 性能监控
-
-### 内存使用
-
-部署脚本会显示内存使用情况：
 ```bash
-内存使用: 445Mi/1.6Gi
+# 配置日志轮转
+sudo tee /etc/logrotate.d/blog << 'EOF'
+/var/log/blog/*.log {
+    daily
+    missingok
+    rotate 7
+    compress
+    delaycompress
+    notifempty
+    create 644 www-data www-data
+}
+EOF
 ```
 
-### 服务状态
+### 备份策略
 
 ```bash
-sudo systemctl status blog
-```
+# 创建备份脚本
+sudo tee /usr/local/bin/backup-fullstack << 'EOF'
+#!/bin/bash
+BACKUP_DIR="/var/backups/fullstack/$(date +%Y%m%d_%H%M%S)"
+mkdir -p $BACKUP_DIR
 
-### 应用日志
+# 备份前端
+cp -r /var/www/blog $BACKUP_DIR/
 
-```bash
-sudo journalctl -u blog --since "1 hour ago"
-```
+# 备份后端
+cp -r /var/www/novel $BACKUP_DIR/
 
-## 回滚
+# 备份数据库（如果有）
+# pg_dump your_database > $BACKUP_DIR/database.sql
 
-如果新版本有问题，可以回滚到上一个版本：
+echo "备份完成: $BACKUP_DIR"
+EOF
 
-```bash
-cd /var/www/blog
-git log --oneline -n 5  # 查看最近的提交
-git reset --hard <commit-hash>  # 回滚到指定提交
-npm run build
-sudo systemctl restart blog
-```
-
-## 升级维护
-
-### Node.js 升级
-
-```bash
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-
-### 依赖更新
-
-```bash
-cd /var/www/blog
-npm update
-npm audit fix
+sudo chmod +x /usr/local/bin/backup-fullstack
 ```
 
 ## 安全建议
 
-1. 定期更新服务器系统：`sudo apt update && sudo apt upgrade`
-2. 配置防火墙：只开放必要端口
-3. 使用 SSH 密钥认证而非密码
-4. 定期备份应用数据和配置
+1. **定期更新系统**：`sudo apt update && sudo apt upgrade`
+2. **配置防火墙**：只开放必要端口
+3. **使用HTTPS**：配置SSL证书
+4. **定期备份**：设置自动备份脚本
+5. **监控日志**：定期检查服务日志
+6. **限制访问**：配置IP白名单（如需要）
 
-## 联系支持
+## 故障排除
 
-如果遇到部署问题，请：
+### 服务无法启动
 
-1. 检查 GitHub Actions 的部署日志
-2. 查看服务器上的应用日志
-3. 确认所有配置文件正确
-4. 参考本文档的故障排除部分 
+```bash
+# 查看详细错误信息
+sudo systemctl status blog --no-pager
+sudo journalctl -u blog --no-pager -n 50
+
+# 检查配置文件
+sudo nginx -t
+sudo systemctl status nginx --no-pager
+```
+
+### 网络连接问题
+
+```bash
+# 检查端口监听
+sudo netstat -tlnp | grep LISTEN
+
+# 检查防火墙
+sudo ufw status
+
+# 测试本地连接
+curl http://localhost:3000
+curl http://localhost:8000
+```
+
+### 性能优化
+
+```bash
+# 启用Nginx gzip压缩
+# 在nginx配置中添加：
+gzip on;
+gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+# 配置Node.js集群模式
+# 在package.json中添加：
+"scripts": {
+  "start": "next start -p 3000",
+  "start:cluster": "pm2 start npm --name 'blog' -- start"
+}
+``` 

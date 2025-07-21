@@ -24,6 +24,14 @@ export default function ToolsPage() {
       isFeatured: true
     },
     {
+      id: 'novel',
+      title: '小说搜索器',
+      description: '小说聚合搜索与下载',
+      icon: '📝',
+      link: '/novel',
+      isFeatured: true
+    },
+    {
       id: 'code-formatter',
       title: '代码格式化',
       description: '支持多种编程语言的代码格式化和美化工具',

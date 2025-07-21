@@ -7,7 +7,7 @@ export default function NovelPage() {
   const [novels, setNovels] = useState([]);
   const [error, setError] = useState(null);
 
-  const handleSearch = async (e) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!keyword.trim()) return;
     setLoading(true);

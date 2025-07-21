@@ -13,6 +13,7 @@ import CommentSection from '@/components/CommentSection';
 import { Button } from '@/components/ui/Button';
 
 const addCopyButtons = () => {
+  console.log('addCopyButtons called');
   document.querySelectorAll('.markdownBody pre').forEach((pre) => {
     // 防止重复插入
     if (pre.querySelector('.copy-button')) return;
@@ -321,8 +322,13 @@ export default function ArticlePage() {
 
 
   useEffect(() => {
-    addCopyButtons();
-  }, []);
+    const timer = setTimeout(() => {
+      if (article && article.content) {
+        addCopyButtons();
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [article?.content]);
 
   if (loading) {
     return <Loading />;

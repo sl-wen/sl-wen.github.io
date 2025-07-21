@@ -120,7 +120,7 @@ export default function PostPage() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">需要登录</h1>
           <p className="text-gray-600 mb-4">请先登录以发布文章</p>
-          <button 
+          <button
             onClick={() => router.push('/login')}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
@@ -141,7 +141,7 @@ export default function PostPage() {
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            <button 
+            <button
               onClick={() => setError(null)}
               className="float-right text-red-500 hover:text-red-700"
             >
@@ -161,7 +161,7 @@ export default function PostPage() {
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">填写文章的基本信息</p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -246,7 +246,7 @@ export default function PostPage() {
                   <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                     <span>支持 Markdown</span>
                     <span>|</span>
-                    <span>实时同步</span> 
+                    <span>实时同步</span>
                   </div>
                 </div>
                 <textarea
@@ -264,7 +264,7 @@ export default function PostPage() {
               </div>
 
               {/* 预览区域 */}
-              <div className="flex flex-col">
+              <div className="hidden md:flex flex-col">
                 <div className="flex items-center justify-between mb-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-t-lg border border-b-0 border-gray-300 dark:border-gray-600">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                     <span>👁️</span>
@@ -278,8 +278,8 @@ export default function PostPage() {
                 <div
                   ref={previewRef}
                   className="flex-1 w-full p-6 border border-gray-300 dark:border-gray-600 rounded-t-none rounded-b-lg bg-white dark:bg-gray-800 overflow-y-auto prose prose-sm dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ 
-                    __html: preview || '<div class="text-center text-gray-400 italic py-8"><p>✨ 预览内容将在这里显示</p><p class="text-xs mt-2">开始在左侧编辑器中输入内容...</p></div>' 
+                  dangerouslySetInnerHTML={{
+                    __html: preview || '<div class="text-center text-gray-400 italic py-8"><p>✨ 预览内容将在这里显示</p><p class="text-xs mt-2">开始在左侧编辑器中输入内容...</p></div>'
                   }}
                 />
               </div>
@@ -293,7 +293,7 @@ export default function PostPage() {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">准备发布？</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">检查内容无误后点击发布按钮</p>
               </div>
-              
+
               <div className="flex gap-3 w-full sm:w-auto">
                 <button
                   type="button"
@@ -314,7 +314,7 @@ export default function PostPage() {
                 </button>
               </div>
             </div>
-            
+
             {/* 发布提示 */}
             <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <div>

@@ -16,14 +16,6 @@ interface Tool {
 export default function ToolsPage() {
   const tools: Tool[] = [
     {
-      id: 'markdown-editor',
-      title: 'Markdown 编辑器',
-      description: '实时预览的在线 Markdown 编辑器，支持语法高亮和导出功能',
-      icon: '📝',
-      link: '#',
-      isFeatured: true
-    },
-    {
       id: 'novel',
       title: '小说搜索器',
       description: '小说聚合搜索与下载',
@@ -44,13 +36,6 @@ export default function ToolsPage() {
       title: 'JSON 解析器',
       description: '解析、验证和格式化 JSON 数据的在线工具',
       icon: '🔧',
-      link: '#'
-    },
-    {
-      id: 'url-shortener',
-      title: 'URL 短链接',
-      description: '生成短链接，支持访问统计和自定义域名',
-      icon: '🔗',
       link: '#'
     },
     {

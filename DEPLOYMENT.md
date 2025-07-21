@@ -27,15 +27,6 @@ SERVER_PASSWORD=服务器密码
 
 ### 2. 服务器初始化
 
-#### 一键初始化（推荐）
-
-运行全栈应用初始化脚本：
-
-```bash
-chmod +x scripts/init-server-fullstack.sh
-./scripts/init-server-fullstack.sh
-```
-
 #### 手动初始化
 
 如果需要手动配置，运行以下命令：
@@ -72,13 +63,6 @@ git checkout main
 
 ### 4. 服务配置
 
-#### 自动配置（推荐）
-
-```bash
-chmod +x scripts/setup-systemd-services.sh
-./scripts/setup-systemd-services.sh
-```
-
 #### 手动配置
 
 创建前端服务文件 `/etc/systemd/system/blog.service`：
@@ -103,7 +87,7 @@ RestartSec=10
 WantedBy=multi-user.target
 ```
 
-创建后端服务文件 `/etc/systemd/system/novel-api.service`：
+创建后端服务文件 `/etc/systemd/system/novel.service`：
 
 ```ini
 [Unit]
@@ -128,48 +112,70 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable blog novel-api
+sudo systemctl enable blog
 ```
 
 ### 5. Nginx 配置
 
-Nginx 配置文件位于 `/etc/nginx/sites-available/fullstack-app`：
+Nginx 配置文件位于 `/etc/nginx/sites-available/blog`：
 
 ```nginx
 server {
+    if ($host = www.slwen.cn) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    if ($host = slwen.cn) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
     listen 80;
-    server_name _;
-    
-    # 前端应用
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-    
-    # 后端API
+    server_name slwen.cn www.slwen.cn;
+
+}
+
+server {
+    listen 443 ssl http2;
+    server_name slwen.cn www.slwen.cn;
+
+    # SSL 配置
+    ssl_certificate /etc/letsencrypt/live/slwen.cn/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/slwen.cn/privkey.pem; # managed by Certbot
+
+    # SSL 安全设置
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+        # 推荐：增强安全性
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
+    ssl_session_tickets off;
+
+    # 其他SSL安全优化（可选）
+    # add_header Strict-Transport-Security "max-age=63072000" always;
+
+    # 后端API反代【加在 location / 前面！！】
     location /api/ {
-        proxy_pass http://localhost:8000/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
     }
-    
-    # 静态文件缓存
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
+
+    # 反向代理到 Next.js
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        # 以下配置为 websocket/Keepalive/真实client IP 转发
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 ```
@@ -177,7 +183,6 @@ server {
 启用配置：
 
 ```bash
-sudo ln -sf /etc/nginx/sites-available/fullstack-app /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
@@ -207,10 +212,7 @@ sudo systemctl restart nginx
 ### 手动部署
 
 ```bash
-# 使用部署脚本
-sudo /usr/local/bin/deploy-fullstack
-
-# 或手动部署
+# 手动部署
 cd /var/www/blog
 git pull origin react
 npm install
@@ -231,25 +233,25 @@ sudo systemctl restart nginx
 ### 启动服务
 
 ```bash
-sudo systemctl start blog novel-api nginx
+sudo systemctl start blog novel nginx
 ```
 
 ### 停止服务
 
 ```bash
-sudo systemctl stop blog novel-api nginx
+sudo systemctl stop blog novel nginx
 ```
 
 ### 重启服务
 
 ```bash
-sudo systemctl restart blog novel-api nginx
+sudo systemctl restart blog novel nginx
 ```
 
 ### 查看状态
 
 ```bash
-sudo systemctl status blog novel-api nginx
+sudo systemctl status blog novel nginx
 ```
 
 ### 查看日志
@@ -259,7 +261,7 @@ sudo systemctl status blog novel-api nginx
 sudo journalctl -u blog -f
 
 # 后端API服务日志
-sudo journalctl -u novel-api -f
+sudo journalctl -u novel -f
 
 # Nginx日志
 sudo tail -f /var/log/nginx/access.log
@@ -388,29 +390,6 @@ sudo tee /etc/logrotate.d/blog << 'EOF'
 EOF
 ```
 
-### 备份策略
-
-```bash
-# 创建备份脚本
-sudo tee /usr/local/bin/backup-fullstack << 'EOF'
-#!/bin/bash
-BACKUP_DIR="/var/backups/fullstack/$(date +%Y%m%d_%H%M%S)"
-mkdir -p $BACKUP_DIR
-
-# 备份前端
-cp -r /var/www/blog $BACKUP_DIR/
-
-# 备份后端
-cp -r /var/www/novel $BACKUP_DIR/
-
-# 备份数据库（如果有）
-# pg_dump your_database > $BACKUP_DIR/database.sql
-
-echo "备份完成: $BACKUP_DIR"
-EOF
-
-sudo chmod +x /usr/local/bin/backup-fullstack
-```
 
 ## 安全建议
 

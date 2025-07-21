@@ -1,11 +1,20 @@
 'use client';
 import React, { useState } from 'react';
 
+// 定义小说数据的类型
+interface Novel {
+  bookName: string;
+  author: string;
+  sourceName: string;
+  url?: string;
+  latestChapter?: string;
+}
+
 export default function NovelPage() {
   const [keyword, setKeyword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [novels, setNovels] = useState([]);
-  const [error, setError] = useState(null);
+  const [novels, setNovels] = useState<Novel[]>([]); // 指定类型
+  const [error, setError] = useState<string | null>(null); // 指定类型
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();

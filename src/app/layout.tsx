@@ -5,7 +5,6 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import StatusMessages from '@/components/StatusMessages';
 import { AuthProvider } from '@/utils/auth-context';
-import Live2DWidget from "@/components/Live2DWidget";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -129,7 +128,6 @@ export default function RootLayout({
             `,
           }}
         />
-        <Live2DWidget />
       </body>
     </html>
   );

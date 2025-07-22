@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import StatusMessages from '@/components/StatusMessages';
 import { AuthProvider } from '@/utils/auth-context';
+import Live2DWidget from "@/components/Live2DWidget";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,9 +28,9 @@ export const metadata: Metadata = {
     title: '鱼鱼的博客',
   },
   other: {
-    'apple-mobile-web-app-capable': 'yes',
-    'apple-mobile-web-app-status-bar-style': 'black-translucent',
-    'apple-mobile-web-app-title': '鱼鱼的博客',
+    'mobile-web-app-capable': 'yes',
+    'mobile-web-app-status-bar-style': 'black-translucent',
+    'mobile-web-app-title': '鱼鱼的博客',
     'msapplication-TileColor': '#24292e',
     'application-name': '鱼鱼的博客',
   },
@@ -56,13 +57,13 @@ export default function RootLayout({
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="mask-icon" href="/masked-icon.svg" color="#24292e" />
-        
+
         {/* Font Awesome */}
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         />
-        
+
         {/* Preload critical resources */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -72,20 +73,20 @@ export default function RootLayout({
           <div className="min-h-screen flex flex-col bg-gray-50">
             {/* Header */}
             <Header />
-            
+
             {/* Main Content */}
             <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mobile-content">
               {children}
             </main>
-            
+
             {/* Footer */}
             <Footer />
-            
+
             {/* Status Messages */}
             <StatusMessages />
           </div>
         </AuthProvider>
-        
+
         {/* PWA Installation Scripts */}
         <script
           dangerouslySetInnerHTML={{
@@ -128,6 +129,7 @@ export default function RootLayout({
             `,
           }}
         />
+        <Live2DWidget />
       </body>
     </html>
   );

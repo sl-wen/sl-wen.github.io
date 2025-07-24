@@ -204,11 +204,6 @@ export default function NovelPage() {
       <div className="space-y-4">
         {novels.length === 0 && !loading && !error && (
           <div className="text-gray-400 text-center py-8">暂无搜索结果</div>
-          <div className="mt-8 px-4 sm:px-6 md:px-8 max-w-2xl mx-auto">
-            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-md p-3 text-sm text-center leading-relaxed">
-              免责声明：本工具仅供学习、交流与技术研究使用，所有小说内容均来自网络公开渠道，严禁用于任何商业用途。请遵守相关法律法规，勿将下载内容用于传播或非法用途。如有侵权或不当使用，请及时联系我们处理
-            </div>
-          </div>
         )}
 
         {novels.map((novel, idx) => (

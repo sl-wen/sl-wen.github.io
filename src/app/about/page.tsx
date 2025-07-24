@@ -25,7 +25,7 @@ export default function AboutPage() {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">个人简介</h2>
             </div>
             <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-              我是一名全栈开发者，热衷于使用现代 JavaScript 技术栈构建 Web 应用。
+              我是一名全栈开发者，热衷于使用现代 TypeScript 技术栈构建 Web 应用。
               在这个博客中，我会分享技术心得、学习笔记和一些有趣的项目经验。
             </p>
           </section>
@@ -43,7 +43,7 @@ export default function AboutPage() {
                 { name: 'Node.js', emoji: '🟢' },
                 { name: 'PostgreSQL', emoji: '🐘' },
                 { name: 'Supabase', emoji: '⚡' },
-                { name: 'Webpack', emoji: '📦' },
+                { name: '.Next', emoji: '📦' },
                 { name: 'HTML5/CSS3', emoji: '🎨' },
                 { name: 'Git', emoji: '🔀' }
               ].map((tech, index) => (
@@ -78,7 +78,7 @@ export default function AboutPage() {
               <p>
                 如果你对本博客感兴趣，欢迎访问 
                 <a 
-                  href="https://github.com" 
+                  href="https://github.com/sl-wen/sl-wen.github.io"
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 ml-1"

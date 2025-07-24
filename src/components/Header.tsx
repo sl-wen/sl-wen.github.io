@@ -15,6 +15,7 @@ const Header: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const defaultLogoUrl = "https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg";
 
   // 确保组件已挂载，避免SSR/Client不一致
   useEffect(() => {
@@ -76,7 +77,7 @@ const Header: React.FC = () => {
             <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
               <div className="relative h-8 w-8 rounded-full overflow-hidden">
                 <Image
-                  src="https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg"
+                  src={defaultLogoUrl}
                   alt="Logo"
                   fill
                   className="object-cover"
@@ -126,13 +127,13 @@ const Header: React.FC = () => {
             <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
               <div className="relative h-8 w-8 rounded-full overflow-hidden">
                 <Image
-                  src="https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg"
+                  src={(userProfile && userProfile.avatar_url) ? userProfile.avatar_url : defaultLogoUrl}
                   alt="Logo"
                   fill
                   className="object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = 'https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg';
+                    target.src = defaultLogoUrl;
                   }}
                 />
               </div>

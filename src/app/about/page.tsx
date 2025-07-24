@@ -98,14 +98,14 @@ export default function AboutPage() {
             </div>
             <div className="flex flex-wrap gap-4">
               <a 
-                href="mailto:contact@example.com"
+                href="mailto:sl-wen@outlook.com"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200"
               >
                 <span>📧</span>
                 <span>邮箱联系</span>
               </a>
               <a 
-                href="https://github.com"
+                href="https://github.com/sl-wen/sl-wen.github.io"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"

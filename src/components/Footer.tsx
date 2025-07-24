@@ -111,6 +111,14 @@ const Footer: React.FC = () => {
                 >
                   赣ICP备2025067253号-1
                 </a>
+                <a
+                  href="/rss.xml"
+                  className="text-gray-400 hover:text-white text-sm transition-colors duration-200"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  RSS
+                </a>
               </p>
             </div>
             <div className="flex items-center space-x-4">

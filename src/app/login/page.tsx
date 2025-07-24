@@ -180,7 +180,7 @@ export default function LoginPage() {
                 placeholder={
                   isLogin 
                     ? "请输入您的密码" 
-                    : "请设置强密码（至少8位，包含大小写字母、数字和特殊字符）"
+                    : "最少8位,大小写字母或数字其中2种以上"
                 }
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

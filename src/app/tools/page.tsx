@@ -222,13 +222,13 @@ export default function ToolsPage() {
           </p>
           <div className="flex justify-center gap-4">
             <a
-              href="mailto:contact@example.com"
+              href="mailto:sl-wen@outlook.com"
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
             >
               📧 联系我们
             </a>
             <a
-              href="https://github.com"
+              href="https://github.com/sl-wen/sl-wen.github.io"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"

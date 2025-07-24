@@ -1,7 +1,5 @@
-// sitemap-generator.js
-
-import fs from 'fs';
-import { createClient } from '@supabase/supabase-js';
+const fs = require('fs');
+const { createClient } = require('@supabase/supabase-js');
 
 // === Supabase 配置信息 ===
 const supabaseUrl = 'https://pcwbtcsigmjnrigkfixm.supabase.co';

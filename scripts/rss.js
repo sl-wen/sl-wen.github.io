@@ -1,8 +1,7 @@
 // rss-generator.js
-
-import fs from 'fs';
-import { createClient } from '@supabase/supabase-js';
-import { marked } from 'marked';  // 导入 Markdown 解析器
+const fs = require('fs');
+const { createClient } = require('@supabase/supabase-js');
+const { marked } = require('marked'); 
 
 // === Supabase 配置信息 ===
 const supabaseUrl = 'https://pcwbtcsigmjnrigkfixm.supabase.co';

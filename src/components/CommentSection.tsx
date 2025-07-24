@@ -272,7 +272,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
   };
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto px-4 sm:px-6">
+    <div className="space-y-8 max-w-4xl mx-auto">
       {/* 评论标题和统计 */}
       <div className="flex items-center justify-between pb-6 border-b-2 border-gradient-to-r from-blue-200 via-purple-200 to-pink-200 dark:border-gray-700">
         <div className="flex items-center gap-4">
@@ -396,7 +396,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
             <div key={comment.comment_id} className="group relative">
               {/* 装饰性背景 */}
               <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 via-white to-purple-50/50 dark:from-blue-900/20 dark:via-gray-800 dark:to-purple-900/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              
+
               <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden transition-all duration-300 group-hover:transform group-hover:scale-[1.02]">
                 {/* 主评论容器 */}
                 <div className="p-6">
@@ -408,7 +408,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                           <div className="w-full h-full rounded-full bg-white dark:bg-gray-800 flex items-center justify-center">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
                               {/* 用户头像 */}
-                              <img src={ commentUserProfiles[comment.user_id]?.avatar_url } alt="用户头像" className="w-10 h-10 rounded-full object-cover" />
+                              <img src={commentUserProfiles[comment.user_id]?.avatar_url} alt="用户头像" className="w-10 h-10 rounded-full object-cover" />
                             </div>
                           </div>
                         </div>
@@ -495,11 +495,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                             variant={commentReactions[comment.comment_id] === 'like' ? 'success' : 'ghost'}
                             size="sm"
                             onClick={() => handleReaction(comment.comment_id, 'like')}
-                            className={`flex items-center gap-1 px-3 py-2 rounded-full transition-all ${
-                              commentReactions[comment.comment_id] === 'like' 
-                                ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                            className={`flex items-center gap-1 px-3 py-2 rounded-full transition-all ${commentReactions[comment.comment_id] === 'like'
+                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
+                              }`}
                             leftIcon={
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
@@ -512,11 +511,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                             variant={commentReactions[comment.comment_id] === 'dislike' ? 'danger' : 'ghost'}
                             size="sm"
                             onClick={() => handleReaction(comment.comment_id, 'dislike')}
-                            className={`flex items-center gap-1 px-3 py-2 rounded-full transition-all ${
-                              commentReactions[comment.comment_id] === 'dislike' 
-                                ? 'bg-red-100 text-red-700 hover:bg-red-200' 
+                            className={`flex items-center gap-1 px-3 py-2 rounded-full transition-all ${commentReactions[comment.comment_id] === 'dislike'
+                                ? 'bg-red-100 text-red-700 hover:bg-red-200'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
+                              }`}
                             leftIcon={
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.7M10 14v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2M17 4H19a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
@@ -612,7 +610,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                         {/* 回复连接线 */}
                         {/* <div className="absolute -left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400 to-blue-200 dark:from-blue-600 dark:to-blue-800"></div> */}
                         {/* <div className="absolute -left-8 top-6 w-4 h-0.5 bg-blue-400 dark:bg-blue-600"></div> */}
-                        
+
                         {/* 回复内容卡片 */}
                         <div className="bg-gray-50 dark:bg-gray-750 rounded-lg p-4 border border-gray-200 dark:border-gray-600 shadow-sm">
                           {/* 回复头部 */}
@@ -649,11 +647,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                                 variant={commentReactions[reply.comment_id] === 'like' ? 'success' : 'ghost'}
                                 size="sm"
                                 onClick={() => handleReaction(reply.comment_id, 'like')}
-                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${
-                                  commentReactions[reply.comment_id] === 'like' 
-                                    ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${commentReactions[reply.comment_id] === 'like'
+                                    ? 'bg-green-100 text-green-600 hover:bg-green-200'
                                     : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                }`}
+                                  }`}
                                 leftIcon={
                                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
@@ -666,11 +663,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                                 variant={commentReactions[reply.comment_id] === 'dislike' ? 'danger' : 'ghost'}
                                 size="sm"
                                 onClick={() => handleReaction(reply.comment_id, 'dislike')}
-                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${
-                                  commentReactions[reply.comment_id] === 'dislike' 
-                                    ? 'bg-red-100 text-red-600 hover:bg-red-200' 
+                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${commentReactions[reply.comment_id] === 'dislike'
+                                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
                                     : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                }`}
+                                  }`}
                                 leftIcon={
                                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.7M10 14v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2M17 4H19a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
@@ -682,17 +678,17 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                             </div>
                             {userProfile?.user_id === reply.user_id && (
                               <div className="flex items-center gap-1">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={() => handleEdit(reply)}
                                   className="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-500 hover:bg-gray-200"
                                 >
                                   编辑
                                 </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={() => handleDelete(reply.comment_id)}
                                   className="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-red-100 text-red-500 hover:bg-red-200"
                                 >

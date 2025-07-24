@@ -20,11 +20,11 @@ export default function AboutPage() {
         <div className="space-y-12">
           {/* 个人简介 */}
           <section className="card">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 p-3">
               <div className="text-2xl">👋</div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">个人简介</h2>
             </div>
-            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+            <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed p-3">
               我是一名全栈开发者，热衷于使用现代 TypeScript 技术栈构建 Web 应用。
               在这个博客中，我会分享技术心得、学习笔记和一些有趣的项目经验。
             </p>
@@ -32,11 +32,11 @@ export default function AboutPage() {
 
           {/* 技术栈 */}
           <section className="card">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 p-3">
               <div className="text-2xl">🛠️</div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">技术栈</h2>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-3">
               {[
                 { name: 'JavaScript/TypeScript', emoji: '⚡' },
                 { name: 'React', emoji: '⚛️' },
@@ -47,7 +47,7 @@ export default function AboutPage() {
                 { name: 'HTML5/CSS3', emoji: '🎨' },
                 { name: 'Git', emoji: '🔀' }
               ].map((tech, index) => (
-                <div 
+                <div
                   key={index}
                   className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
@@ -62,11 +62,11 @@ export default function AboutPage() {
 
           {/* 博客介绍 */}
           <section className="card">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 p-3">
               <div className="text-2xl">📝</div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">博客介绍</h2>
             </div>
-            <div className="space-y-4 text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+            <div className="space-y-4 text-lg text-gray-600 dark:text-gray-300 leading-relaxed p-3">
               <p>
                 这个博客使用 <span className="font-semibold text-blue-600 dark:text-blue-400">React + TypeScript</span> 构建，
                 采用 <span className="font-semibold text-green-600 dark:text-green-400">Supabase</span> 作为后端服务。
@@ -76,15 +76,15 @@ export default function AboutPage() {
                 实时预览，文章分类，以及响应式设计。
               </p>
               <p>
-                如果你对本博客感兴趣，欢迎访问 
-                <a 
+                如果你对本博客感兴趣，欢迎访问
+                <a
                   href="https://github.com/sl-wen/sl-wen.github.io"
-                  target="_blank" 
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 ml-1"
                 >
                   GitHub 仓库
-                </a> 
+                </a>
                 了解更多信息。
               </p>
             </div>
@@ -92,19 +92,19 @@ export default function AboutPage() {
 
           {/* 联系方式 */}
           <section className="card">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 p-3">
               <div className="text-2xl">📬</div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">联系方式</h2>
             </div>
-            <div className="flex flex-wrap gap-4">
-              <a 
+            <div className="flex flex-wrap gap-4 p-3">
+              <a
                 href="mailto:sl-wen@outlook.com"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200"
               >
                 <span>📧</span>
                 <span>邮箱联系</span>
               </a>
-              <a 
+              <a
                 href="https://github.com/sl-wen/sl-wen.github.io"
                 target="_blank"
                 rel="noopener noreferrer"

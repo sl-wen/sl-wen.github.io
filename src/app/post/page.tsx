@@ -238,7 +238,7 @@ export default function PostPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-96">
               {/* 编辑器区域 */}
               <div className="flex flex-col">
-                <div className="flex items-center justify-between mb-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-t-lg border border-b-0 border-gray-300 dark:border-gray-600">
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-t-lg border border-b-0 border-gray-300 dark:border-gray-600">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                     <span>📝</span>
                     编辑器
@@ -256,7 +256,7 @@ export default function PostPage() {
                   value={formData.content}
                   onChange={handleInputChange}
                   onScroll={handleEditorScroll}
-                  className="flex-1 rounded-t-none font-mono text-sm resize-none border-t-0 border border-gray-300 dark:border-gray-600 p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="flex-1 rounded-t-none font-mono text-sm resize-none border border-gray-300 dark:border-gray-600 p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="# 开始你的创作吧！"
                   required
                   rows={15}
@@ -265,7 +265,7 @@ export default function PostPage() {
 
               {/* 预览区域 */}
               <div className="hidden md:flex flex-col">
-                <div className="flex items-center justify-between mb-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-t-lg border border-b-0 border-gray-300 dark:border-gray-600">
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-t-lg border border-b-0 border-gray-300 dark:border-gray-600">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                     <span>👁️</span>
                     实时预览

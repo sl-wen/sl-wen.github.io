@@ -59,8 +59,8 @@ export default function CategoryPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* 页面标题 */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+      <div className="text-center mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
           文章分类
         </h1>
         <p className="text-xl text-gray-600 dark:text-gray-400">
@@ -74,7 +74,7 @@ export default function CategoryPage() {
         {tags.map((tag) => (
           <div key={tag} className="card">
             {/* 分类标题 */}
-            <div className="flex items-center gap-3 mb-6 pb-4 p-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-3 pb-4 p-3 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full text-white text-sm font-bold">
                 {tag.charAt(0)}
               </div>
@@ -89,12 +89,12 @@ export default function CategoryPage() {
             </div>
 
             {/* 文章列表 */}
-            <div className="space-y-4">
+            <div className="space-y-1">
               {groupedArticles[tag]
                 .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                 .map((article) => (
-                  <div 
-                    key={article.post_id} 
+                  <div
+                    key={article.post_id}
                     className="group p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md transition-all duration-200"
                   >
                     {/* 文章主要信息 */}
@@ -108,7 +108,7 @@ export default function CategoryPage() {
 
                       {/* 文章标题 */}
                       <div className="flex-grow">
-                        <Link 
+                        <Link
                           href={`/article/${article.post_id}`}
                           className="interactive text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 block py-1 relative z-10"
                         >
@@ -134,8 +134,8 @@ export default function CategoryPage() {
                       {/* 标签 */}
                       <div className="flex flex-wrap gap-2">
                         {article.tags && article.tags.map((tagLabel, index) => (
-                          <span 
-                            key={index} 
+                          <span
+                            key={index}
                             className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                           >
                             {tagLabel}

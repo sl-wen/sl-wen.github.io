@@ -63,7 +63,7 @@ const Header: React.FC = () => {
   ];
 
   // 在mounted之前显示基础导航
-  const navItems = mounted && userProfile 
+  const navItems = mounted && userProfile
     ? [...baseNavItems.slice(0, 3), ...userNavItems, baseNavItems[3]]
     : baseNavItems;
 
@@ -146,7 +146,7 @@ const Header: React.FC = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`nav-link ${isActive(item.href) ? 'nav-link-active' : ''}`}
+                  className={`nav-link text-2xl ${isActive(item.href) ? 'nav-link-active' : ''}`}
                 >
                   {item.label}
                 </Link>
@@ -242,11 +242,10 @@ const Header: React.FC = () => {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`block px-3 py-2 text-base font-medium rounded-md ${
-                    isActive(item.href)
-                      ? 'text-primary-600 bg-primary-50'
-                      : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
-                  }`}
+                  className={`block px-3 py-2 text-base font-medium rounded-md ${isActive(item.href)
+                    ? 'text-primary-600 bg-primary-50'
+                    : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
+                    }`}
                 >
                   <span className="mr-2">{item.icon}</span>
                   {item.label}

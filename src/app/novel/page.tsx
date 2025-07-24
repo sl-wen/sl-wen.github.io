@@ -39,7 +39,7 @@ export default function NovelPage() {
   };
 
   // 下载小说函数 - 优化版
-  const handleDownload = async (novel: Novel, format: 'txt' | 'epub' | 'pdf' = 'txt', index: number) => {
+  const handleDownload = async (novel: Novel, format: 'txt' | 'epub' = 'txt', index: number) => {
     if (!novel.url) {
       alert('该小说没有可用的下载链接');
       return;
@@ -181,12 +181,12 @@ export default function NovelPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-4">
-      <h1 className="text-3xl font-bold mb-8">小说聚合搜索引擎</h1>
+      <h1 className="text-3xl font-bold mb-8">小说聚合搜索</h1>
       <form className="flex gap-2 mb-8" onSubmit={handleSearch}>
         <input
           type="text"
           className="flex-1 px-4 py-2 border rounded shadow-sm focus:outline-none focus:ring"
-          placeholder="请输入小说名或作者、如：三体"
+          placeholder="请输入小说名或作者"
           value={keyword}
           onChange={e => setKeyword(e.target.value)}
         />
@@ -204,6 +204,11 @@ export default function NovelPage() {
       <div className="space-y-4">
         {novels.length === 0 && !loading && !error && (
           <div className="text-gray-400 text-center py-8">暂无搜索结果</div>
+          <div className="mt-8 px-4 sm:px-6 md:px-8 max-w-2xl mx-auto">
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-md p-3 text-sm text-center leading-relaxed">
+              免责声明：本工具仅供学习、交流与技术研究使用，所有小说内容均来自网络公开渠道，严禁用于任何商业用途。请遵守相关法律法规，勿将下载内容用于传播或非法用途。如有侵权或不当使用，请及时联系我们处理
+            </div>
+          </div>
         )}
 
         {novels.map((novel, idx) => (
@@ -235,14 +240,14 @@ export default function NovelPage() {
 
               {/* 下载按钮组 */}
               <div className="flex gap-1">
-                {(['txt', 'epub', 'pdf'] as const).map((format) => (
+                {(['txt', 'epub'] as const).map((format) => (
                   <button
                     key={format}
                     onClick={() => handleDownload(novel, format, idx)}
                     disabled={downloadingIds.has(idx) || !novel.url}
                     className={`px-3 py-1 text-sm rounded transition ${downloadingIds.has(idx)
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-green-100 text-green-700 hover:bg-green-200'
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-green-100 text-green-700 hover:bg-green-200'
                       }`}
                   >
                     {downloadingIds.has(idx) ? '下载中...' : `下载${format.toUpperCase()}`}

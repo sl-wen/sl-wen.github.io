@@ -106,7 +106,7 @@ export default function PrivacyPage() {
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">9. 联系我们</h2>
                 <p className="text-gray-600 leading-relaxed">
                   如果您对此隐私政策有任何疑问或关于您个人信息处理的投诉，
-                  请通过 contact@blog.com 联系我们。
+                  请通过 sl-wen@outlook.com 联系我们。
                 </p>
               </section>
             </div>

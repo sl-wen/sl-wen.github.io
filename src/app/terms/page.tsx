@@ -71,7 +71,7 @@ export default function TermsPage() {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">7. 联系我们</h2>
                 <p className="text-gray-600 leading-relaxed">
-                  如果您对这些使用条款有任何疑问，请通过 contact@blog.com 联系我们。
+                  如果您对这些使用条款有任何疑问，请通过 sl-wen@outlook.com 联系我们。
                 </p>
               </section>
             </div>

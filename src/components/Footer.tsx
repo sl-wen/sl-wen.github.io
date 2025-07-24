@@ -101,7 +101,7 @@ const Footer: React.FC = () => {
         <div className="border-t border-gray-800 py-3">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-center md:text-left">
-              <p className="text-gray-400 text-sm gap-2">
+              <p className="text-gray-400 text-sm gap-4">
                 © {currentYear} 鱼鱼的博客. 保留所有权利.
                 <a
                   href="https://beian.miit.gov.cn/"

@@ -25,7 +25,7 @@ export default function ProfilePage() {
 
   // 检查登录状态
   useEffect(() => {
-    if (!userProfile) {
+    if (!userProfile?.user_id) {
       router.push('/login');
       return;
     }

@@ -112,23 +112,8 @@ export default function PostPage() {
 
   // 如果未登录，显示登录提示
   if (!userProfile?.user_id) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl text-white">✏️</span>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">需要登录</h1>
-          <p className="text-gray-600 mb-4">请先登录以发布文章</p>
-          <button
-            onClick={() => router.push('/login')}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            前往登录
-          </button>
-        </div>
-      </div>
-    );
+    router.push('/login');
+    return;
   }
 
   return (
@@ -210,15 +195,6 @@ export default function PostPage() {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">用逗号分隔，例如：技术,前端,React</p>
-                {formData.tags.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {formData.tags.map((tag, index) => (
-                      <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -315,18 +291,6 @@ export default function PostPage() {
               </div>
             </div>
 
-            {/* 发布提示 */}
-            <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <div>
-                <p className="font-medium mb-1 text-blue-800 dark:text-blue-300">发布小贴士：</p>
-                <ul className="space-y-1 text-xs text-blue-700 dark:text-blue-400">
-                  <li>• 确保标题简洁明了，能够吸引读者</li>
-                  <li>• 检查文章内容格式是否正确</li>
-                  <li>• 添加合适的标签有助于文章被发现</li>
-                  <li>• 发布后可以随时编辑修改</li>
-                </ul>
-              </div>
-            </div>
           </div>
         </form>
       </div>

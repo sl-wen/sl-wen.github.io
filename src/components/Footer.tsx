@@ -14,9 +14,9 @@ const Footer: React.FC = () => {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* 主要内容 */}
         <div className="py-2 lg:py-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
             {/* 品牌信息 */}
-            <div className="space-y-2">
+            <div className="space-y-1">
               <h3 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">鱼鱼的博客</h3>
               <p className="text-gray-300 text-sm leading-relaxed">
                 一个分享技术、记录生活、探索世界的个人博客。在这里，我们一起学习、成长、创造。

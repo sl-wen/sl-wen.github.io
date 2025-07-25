@@ -44,11 +44,11 @@ const nextConfig = {
 
   eslint: {
     // 在构建时忽略 ESLint 错误
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
     // 如果也有 TypeScript 错误，也可以忽略
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   
   // 其他配置

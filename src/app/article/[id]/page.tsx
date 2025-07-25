@@ -120,6 +120,12 @@ export default function ArticlePage() {
   const [isReactionLoading, setIsReactionLoading] = useState(false);
 
   const handleShare = async (platform: string) => {
+    // 仅在客户端获取window.location.href
+    if (typeof window === 'undefined') {
+      // SSR环境下，不处理
+      return;
+    }
+    
     const url = window.location.href;
 
     try {

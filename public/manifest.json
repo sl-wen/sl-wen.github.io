@@ -1,6 +1,6 @@
 {
   "name": "鱼鱼的博客",
-  "short_name": "鱼鱼博客",
+  "short_name": "鱼鱼",
   "description": "一个现代化的个人博客网站",
   "start_url": "/",
   "display": "standalone",
@@ -66,7 +66,7 @@
       "sizes": "512x512",
       "type": "image/png",
       "platform": "wide",
-      "label": "鱼鱼的博客首页"
+      "label": "鱼鱼的博客"
     }
   ]
 } 

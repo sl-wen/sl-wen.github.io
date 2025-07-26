@@ -39,7 +39,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'gss0.bdstatic.com'
       }
-    ]
+    ],
+    // 图片优化配置
+    formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
   eslint: {
@@ -51,14 +58,23 @@ const nextConfig = {
     ignoreBuildErrors: false
   },
 
-  // 其他配置
+  // 性能优化配置
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
   swcMinify: true,
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production'
+    removeConsole: process.env.NODE_ENV === 'production',
+    // 移除 React 开发时的警告
+    reactRemoveProperties: process.env.NODE_ENV === 'production' ? { properties: ['^data-testid$'] } : false,
   },
+
+  // 实验性功能
+  experimental: {
+    // 启用服务器组件缓存
+    serverComponentsExternalPackages: ['@supabase/supabase-js'],
+  },
+
   env: {
     CUSTOM_KEY: 'value'
   },
@@ -88,6 +104,31 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin'
+          },
+          // 缓存控制
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      // 静态资源缓存
+      {
+        source: '/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
+          }
+        ]
+      },
+      // API 路由缓存
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=60, s-maxage=300'
           }
         ]
       }

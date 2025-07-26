@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@/utils/auth-context';
 import { supabase } from '@/utils/supabase-config';
 import { Button, Input, Card, Alert } from '@/components/ui';
@@ -12,7 +13,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'info' | 'success' | 'warning' | 'error'>('info');
-  
+
   // 表单状态
   const [formData, setFormData] = useState({
     username: '',
@@ -29,7 +30,7 @@ export default function ProfilePage() {
       router.push('/login');
       return;
     }
-    
+
     // 填充表单数据
     setFormData({
       username: userProfile.username || '',
@@ -63,10 +64,10 @@ export default function ProfilePage() {
       // 更新本地存储
       const updatedProfile = { ...userProfile, ...formData };
       localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
-      
+
       // 刷新认证状态
       await refreshProfile();
-      
+
       setMessage('个人资料更新成功！');
       setMessageType('success');
     } catch (error) {
@@ -113,9 +114,11 @@ export default function ProfilePage() {
             <div className="relative inline-block">
               <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
                 {formData.avatar_url ? (
-                  <img 
-                    src={formData.avatar_url} 
-                    alt="头像" 
+                  <Image
+                    src={formData.avatar_url}
+                    alt="头像"
+                    width={96}
+                    height={96}
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (

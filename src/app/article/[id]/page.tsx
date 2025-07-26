@@ -82,21 +82,6 @@ marked.setOptions({
   async: false
 });
 
-interface ShareButtonProps {
-  platform: string;
-  icon: string;
-  onClick: () => void;
-}
-
-const ShareButton: React.FC<ShareButtonProps> = ({ platform, icon, onClick }) => (
-  <button
-    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
-    onClick={onClick}
-  >
-    <i className={icon}></i>
-    {platform}
-  </button>
-);
 
 export default function ArticlePage() {
   const params = useParams();
@@ -106,9 +91,6 @@ export default function ArticlePage() {
   const [error, setError] = useState<string | null>(null);
   const [prevArticle, setPrevArticle] = useState<Article | null>(null);
   const [nextArticle, setNextArticle] = useState<Article | null>(null);
-
-  const [showShareTip, setShowShareTip] = useState(false);
-  const [shareTipText, setShareTipText] = useState('');
   const [PostReaction, setPostReaction] = useState<'like' | 'dislike' | null>(null);
   const [userProfile, setUserProfile] = useState<{
     user_id: string;
@@ -118,52 +100,6 @@ export default function ArticlePage() {
 
   // 添加防止重复点击的状态
   const [isReactionLoading, setIsReactionLoading] = useState(false);
-
-  const handleShare = async (platform: string) => {
-    // 仅在客户端获取window.location.href
-    if (typeof window === 'undefined') {
-      // SSR环境下，不处理
-      return;
-    }
-    
-    const url = window.location.href;
-
-    try {
-      switch (platform) {
-        case '复制链接':
-          try {
-            if (navigator.clipboard) {
-              await navigator.clipboard.writeText(url);
-              setShareTipText('链接已复制到剪贴板');
-            } else {
-              // 兼容旧版浏览器
-              const textArea = document.createElement('textarea');
-              textArea.value = url;
-              document.body.appendChild(textArea);
-              textArea.select();
-              document.execCommand('copy');
-              document.body.removeChild(textArea);
-              setShareTipText('链接已复制');
-            }
-            setShowShareTip(true);
-          } catch (error) {
-            console.error('复制失败:', error);
-            setShareTipText('复制失败，请手动复制链接');
-            setShowShareTip(true);
-          }
-          break;
-      }
-
-      // 3秒后隐藏提示
-      setTimeout(() => {
-        setShowShareTip(false);
-      }, 3000);
-    } catch (error) {
-      console.error('分享失败:', error);
-      setShareTipText('分享失败，请重试');
-      setShowShareTip(true);
-    }
-  };
 
   // 处理点赞/点踩的函数
   const handlePostReaction = async (reactionType: 'like' | 'dislike') => {
@@ -219,15 +155,12 @@ export default function ArticlePage() {
         }
       }
 
-      // 立即先更新页面显示
-      setArticle((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          likes_count: oldLikes,
-          dislikes_count: oldDislikes,
-        };
-      });
+      // 更新本地状态
+      setArticle(prev => prev ? {
+        ...prev,
+        likes_count: newLikes,
+        dislikes_count: newDislikes
+      } : null);
 
       // 2. 再做请求
       const success = await addPostReaction(
@@ -316,17 +249,18 @@ export default function ArticlePage() {
           const reaction = await getPostReaction(article.post_id, userProfile.user_id);
           setPostReaction(reaction);
         } catch (error) {
-          console.error('加载用户反应状态失败:', error);
+          console.error('加载用户反应失败:', error);
+          setPostReaction(null);
         }
       };
       loadUserReaction();
     } else {
-      // 如果用户未登录，清空反应状态
       setPostReaction(null);
     }
   }, [article, userProfile?.user_id]);
 
 
+  // 添加复制按钮到代码块
   useEffect(() => {
     const timer = setTimeout(() => {
       if (article && article.content) {
@@ -334,7 +268,7 @@ export default function ArticlePage() {
       }
     }, 0);
     return () => clearTimeout(timer);
-  }, [article?.content]);
+  }, [article]);
 
   if (loading) {
     return <Loading />;
@@ -440,17 +374,7 @@ export default function ArticlePage() {
             }}
           />
 
-          {/* 分享操作 */}
-          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-4">
-              <span className="text-gray-600 dark:text-gray-400">分享文章：</span>
-              <ShareButton
-                platform="复制链接"
-                icon="icon-link"
-                onClick={() => handleShare('复制链接')}
-              />
-            </div>
-          </div>
+
         </article>
 
         {/* 上下篇导航 */}
@@ -488,12 +412,6 @@ export default function ArticlePage() {
         </div>
       </div>
 
-      {/* 分享提示 */}
-      {showShareTip && (
-        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
-          {shareTipText}
-        </div>
-      )}
     </div>
   );
 } 

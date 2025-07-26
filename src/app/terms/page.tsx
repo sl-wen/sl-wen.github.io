@@ -9,8 +9,8 @@ export default function TermsPage() {
           <div className="space-y-8">
             <div className="text-center">
               <h1 className="text-3xl font-bold text-gray-900 mb-4">使用条款</h1>
-              <p className="text-gray-600">
-                最后更新时间：{new Date().toLocaleDateString('zh-CN')}
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                欢迎使用我们的服务！在使用本网站之前，请仔细阅读以下条款和条件。通过访问和使用本网站，您同意遵守这些条款。
               </p>
             </div>
 
@@ -55,7 +55,7 @@ export default function TermsPage() {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">5. 免责声明</h2>
                 <p className="text-gray-600 leading-relaxed">
-                  本网站按"现状"提供服务，不作任何明示或暗示的保证。我们不保证网站的可用性、
+                  本网站按&quot;现状&quot;提供服务，不作任何明示或暗示的保证。我们不保证网站的可用性、
                   准确性或适用性，也不对因使用本网站而造成的任何损失承担责任。
                 </p>
               </section>

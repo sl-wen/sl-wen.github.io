@@ -143,7 +143,7 @@ export default function SearchPage() {
               className="w-full pl-10 pr-4 py-3 text-lg border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
           </div>
-          
+
           {/* 搜索统计和提示 */}
           <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {keyword && (
@@ -151,7 +151,7 @@ export default function SearchPage() {
                 找到 <span className="font-semibold text-blue-600 dark:text-blue-400 text-lg">{results.length}</span> 个相关结果
               </div>
             )}
-            
+
             <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
               <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
                 <span>📝</span>
@@ -216,7 +216,7 @@ export default function SearchPage() {
             <div className="space-y-6">
               {results.map((post) => {
                 // 预处理文案和代码高亮
-                const { text: contentText, codeBlocks } = extractTextFromMarkdown(post.content);
+                const { codeBlocks } = extractTextFromMarkdown(post.content);
                 const matchingCodeBlock = codeBlocks.find(
                   (block) =>
                     block.code.toLowerCase().includes(keyword.toLowerCase()) ||
@@ -254,7 +254,7 @@ export default function SearchPage() {
                                 __html: highlightKeyword(
                                   DOMPurify.sanitize(
                                     matchingCodeBlock.code.substring(0, 200) +
-                                      (matchingCodeBlock.code.length > 200 ? '...' : '')
+                                    (matchingCodeBlock.code.length > 200 ? '...' : '')
                                   ),
                                   keyword
                                 )
@@ -270,7 +270,7 @@ export default function SearchPage() {
                               DOMPurify.sanitize(
                                 marked.parse(
                                   post.content.substring(0, 300) +
-                                    (post.content.length > 300 ? '...' : ''),
+                                  (post.content.length > 300 ? '...' : ''),
                                   { async: false }
                                 ) as string
                               ),

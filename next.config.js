@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const withPWA = require('next-pwa')({
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
+  disable: process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production',
   register: true,
   skipWaiting: true,
   runtimeCaching: [
@@ -23,7 +23,7 @@ const nextConfig = {
   // 暂时禁用静态导出，使用标准构建
   // output: 'export',
   trailingSlash: true,
-  
+
   // 图片配置
   images: {
     remotePatterns: [
@@ -50,7 +50,7 @@ const nextConfig = {
     // 如果也有 TypeScript 错误，也可以忽略
     ignoreBuildErrors: false,
   },
-  
+
   // 其他配置
   compress: true,
   poweredByHeader: false,
@@ -62,7 +62,15 @@ const nextConfig = {
   env: {
     CUSTOM_KEY: 'value',
   },
-  
+
+  // 忽略构建时的某些错误
+  onDemandEntries: {
+    // 页面在内存中保持的时间（毫秒）
+    maxInactiveAge: 25 * 1000,
+    // 同时保持的页面数量
+    pagesBufferLength: 2,
+  },
+
   // 安全头配置
   async headers() {
     return [

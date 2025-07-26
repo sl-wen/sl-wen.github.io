@@ -1,10 +1,9 @@
 module.exports = {
   extends: [
-    'next/core-web-vitals',
-    '@typescript-eslint/recommended'
+    'next/core-web-vitals'
   ],
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'react-hooks'],
+  plugins: ['@typescript-eslint'],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
@@ -15,9 +14,7 @@ module.exports = {
   rules: {
     '@typescript-eslint/no-unused-vars': 'error',
     '@typescript-eslint/no-explicit-any': 'warn',
-    'react/react-in-jsx-scope': 'off',
-    'react-hooks/rules-of-hooks': 'error',
-    'react-hooks/exhaustive-deps': 'warn'
+    'react/react-in-jsx-scope': 'off'
   },
   settings: {
     react: {

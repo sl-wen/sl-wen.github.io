@@ -16,9 +16,9 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
     "buffer": "^6.0.3",
-    "lodash": "^4.17.21",
     "dompurify": "^3.2.6",
     "gray-matter": "^4.0.3",
+    "lodash": "^4.17.21",
     "marked": "^15.0.7",
     "next": "^14.0.4",
     "next-pwa": "^5.6.0",
@@ -27,15 +27,15 @@
     "sharp": "^0.34.2"
   },
   "devDependencies": {
-    "@types/node": "^22.15.29",
-    "@types/lodash": "^4.14.202",
-    "@types/react": "^18.2.66",
-    "@types/react-dom": "^18.2.22",
-    "@typescript-eslint/eslint-plugin": "^8.35.0",
-    "@typescript-eslint/parser": "^8.35.0",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.10",
-    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^22.15.29",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "autoprefixer": "^10.4.16",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.0.4",
@@ -46,7 +46,14 @@
     "typescript": "^5.8.3"
   },
   "description": "[![Language](https://img.shields.io/badge/Jekyll-Theme-blue)](https://github.com/sl-wen/slwen)\r [![license](https://img.shields.io/github/license/slwen/slwen)](https://github.com/sl-wen/slwen)\r [![GitHub stars](https://img.shields.io/github/stars/slwen/?style=social)](https://github.com/sl-wen/)",
-  "keywords": ["blog", "next.js", "react", "typescript", "tailwind", "pwa"],
+  "keywords": [
+    "blog",
+    "next.js",
+    "react",
+    "typescript",
+    "tailwind",
+    "pwa"
+  ],
   "author": "",
   "license": "ISC"
 }

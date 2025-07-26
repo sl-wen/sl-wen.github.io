@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { supabase } from './supabase-config';
 
 export interface UserProfile {
-  id?: string;
+  user_id?: string;
   username?: string;
   avatar_url?: string;
   email: string;
@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           .select('*')
           .eq('user_id', session.user.id)
           .single();
-        
+
         if (profile) {
           localStorage.setItem('userProfile', JSON.stringify(profile));
           setUserProfile(profile);
@@ -96,14 +96,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       data: { subscription }
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event);
-      
+
       if (event === 'SIGNED_IN' && session?.user) {
         const { data: profile } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', session.user.id)
           .single();
-        
+
         if (profile) {
           localStorage.setItem('userProfile', JSON.stringify(profile));
           setUserProfile(profile);

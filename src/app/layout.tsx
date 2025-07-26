@@ -90,40 +90,43 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // PWA Installation Prompt
-              let deferredPrompt;
-              window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                
-                const installButton = document.createElement('button');
-                installButton.textContent = '安装应用';
-                installButton.className = 'fixed bottom-24 right-4 bg-primary-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-primary-700 transition-colors duration-200 z-40 text-sm font-medium';
-                
-                installButton.addEventListener('click', () => {
-                  deferredPrompt.prompt();
-                  deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                      console.log('用户接受了安装提示');
-                      installButton.remove();
-                    }
-                    deferredPrompt = null;
+              // 确保在客户端环境执行
+              if (typeof window !== 'undefined') {
+                // PWA Installation Prompt
+                let deferredPrompt;
+                window.addEventListener('beforeinstallprompt', (e) => {
+                  e.preventDefault();
+                  deferredPrompt = e;
+                  
+                  const installButton = document.createElement('button');
+                  installButton.textContent = '安装应用';
+                  installButton.className = 'fixed bottom-24 right-4 bg-primary-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-primary-700 transition-colors duration-200 z-40 text-sm font-medium';
+                  
+                  installButton.addEventListener('click', () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                      if (choiceResult.outcome === 'accepted') {
+                        console.log('用户接受了安装提示');
+                        installButton.remove();
+                      }
+                      deferredPrompt = null;
+                    });
                   });
+                  
+                  document.body.appendChild(installButton);
+                  
+                  setTimeout(() => {
+                    if (installButton.parentNode) {
+                      installButton.style.opacity = '0';
+                      setTimeout(() => installButton.remove(), 300);
+                    }
+                  }, 10000);
                 });
-                
-                document.body.appendChild(installButton);
-                
-                setTimeout(() => {
-                  if (installButton.parentNode) {
-                    installButton.style.opacity = '0';
-                    setTimeout(() => installButton.remove(), 300);
-                  }
-                }, 10000);
-              });
 
-              // Dark Mode Support
-              if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.documentElement.classList.add('dark');
+                // Dark Mode Support
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                  document.documentElement.classList.add('dark');
+                }
               }
             `,
           }}

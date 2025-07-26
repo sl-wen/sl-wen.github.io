@@ -26,17 +26,6 @@ interface PostFormData {
   tags: string[];
 }
 
-// 安全的 marked 解析
-function safeMarked(content: string): string {
-  if (!content || typeof content !== 'string') return '';
-  try {
-    return marked.parse(content, { async: false }) as string;
-  } catch (e) {
-    console.error('Markdown 解析错误:', e);
-    return '内容解析错误';
-  }
-}
-
 // 自定义图片渲染器与 marked 配置
 const renderer = new marked.Renderer();
 renderer.image = function ({

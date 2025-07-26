@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getArticles, Article } from '@/utils/articleService';
 import ArticleCard from './ArticleCard';
 import { Alert } from './ui';
@@ -12,10 +12,10 @@ const ArticleList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  const loadArticles = async () => {
+  const loadArticles = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getArticles(page,10);
+      const data = await getArticles(page, 10);
       if (data.length < 10) {
         setHasMore(false);
       }
@@ -26,11 +26,11 @@ const ArticleList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
 
   useEffect(() => {
     loadArticles();
-  }, [page]);
+  }, [loadArticles]);
 
   const handleLoadMore = () => {
     if (!loading && hasMore) {
@@ -54,9 +54,9 @@ const ArticleList: React.FC = () => {
       {/* 加载更多按钮 */}
       {hasMore && (
         <div className="flex justify-center py-8">
-          <button 
+          <button
             className="btn-primary px-8 py-3 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:transform hover:scale-105"
-            onClick={handleLoadMore} 
+            onClick={handleLoadMore}
             disabled={loading}
           >
             {loading ? (

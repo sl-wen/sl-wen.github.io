@@ -221,11 +221,10 @@ export default function EditArticlePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {message && (
           <div
-            className={`mb-6 p-4 rounded-lg ${
-              message.type === 'success'
+            className={`mb-6 p-4 rounded-lg ${message.type === 'success'
                 ? 'bg-green-50 border border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300'
                 : 'bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300'
-            }`}
+              }`}
           >
             {message.text}
           </div>
@@ -398,7 +397,7 @@ export default function EditArticlePage() {
                       />
                     </div>
                     {/* 预览区 */}
-                    <div className="bg-gray-50 dark:bg-gray-900 h-full flex flex-col min-h-0 hidden lg:block">
+                    <div className="bg-gray-50 dark:bg-gray-900 h-full flex-col min-h-0 hidden lg:block">
                       <div
                         ref={previewRef}
                         className="h-full p-4 overflow-y-auto prose prose-sm dark:prose-invert max-w-none"

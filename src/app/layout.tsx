@@ -84,7 +84,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* 预加载关键资源 */}
         <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" />
-        <link rel="preload" href="/favicon.ico" as="image" type="image/x-icon" />
 
         {/* Font Awesome */}
         <link
@@ -121,115 +120,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* PWA Installation Scripts */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `
-              // 确保在客户端环境执行
-              if (typeof window !== 'undefined') {
-                // 性能监控
-                if ('performance' in window) {
-                  // 监控页面加载性能
-                  window.addEventListener('load', () => {
-                    setTimeout(() => {
-                      const perfData = performance.getEntriesByType('navigation')[0];
-                      if (perfData) {
-                        console.log('页面加载性能:', {
-                          'DOM内容加载时间': perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart + 'ms',
-                          '页面完全加载时间': perfData.loadEventEnd - perfData.loadEventStart + 'ms',
-                          '首次内容绘制': perfData.domContentLoadedEventEnd - perfData.fetchStart + 'ms'
-                        });
-                      }
-                    }, 0);
-                  });
-
-                  // 监控资源加载
-                  const observer = new PerformanceObserver((list) => {
-                    for (const entry of list.getEntries()) {
-                      if (entry.initiatorType === 'img' && entry.duration > 1000) {
-                        console.warn('图片加载缓慢:', entry.name, entry.duration + 'ms');
-                      }
-                    }
-                  });
-                  observer.observe({ entryTypes: ['resource'] });
-                }
-
-                // PWA Installation Prompt
-                let deferredPrompt;
-                window.addEventListener('beforeinstallprompt', (e) => {
-                  e.preventDefault();
-                  deferredPrompt = e;
-                  
-                  const installButton = document.createElement('button');
-                  installButton.textContent = '安装应用';
-                  installButton.className = 'fixed bottom-24 right-4 bg-primary-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-primary-700 transition-colors duration-200 z-40 text-sm font-medium';
-                  
-                  installButton.addEventListener('click', () => {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                      if (choiceResult.outcome === 'accepted') {
-                        console.log('用户接受了安装提示');
-                        installButton.remove();
-                      }
-                      deferredPrompt = null;
-                    });
-                  });
-                  
-                  document.body.appendChild(installButton);
-                  
-                  setTimeout(() => {
-                    if (installButton.parentNode) {
-                      installButton.style.opacity = '0';
-                      setTimeout(() => installButton.remove(), 300);
-                    }
-                  }, 10000);
-                });
-
-                // Dark Mode Support
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                  document.documentElement.classList.add('dark');
-                }
-
-                // 预加载关键资源
-                const preloadCriticalResources = () => {
-                  const criticalImages = [
-                    '/favicon.ico',
-                    '/apple-touch-icon.png'
-                  ];
-                  
-                  criticalImages.forEach(src => {
-                    const link = document.createElement('link');
-                    link.rel = 'preload';
-                    link.as = 'image';
-                    link.href = src;
-                    document.head.appendChild(link);
-                  });
-                };
-
-                // 延迟加载非关键资源
-                const loadNonCriticalResources = () => {
-                  // 延迟加载 Font Awesome
-                  if (!document.querySelector('link[href*="font-awesome"]')) {
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-                    link.media = 'print';
-                    link.onload = () => {
-                      link.media = 'all';
-                    };
-                    document.head.appendChild(link);
-                  }
-                };
-
-                // 执行资源优化
-                if (document.readyState === 'loading') {
-                  document.addEventListener('DOMContentLoaded', () => {
-                    preloadCriticalResources();
-                    setTimeout(loadNonCriticalResources, 1000);
-                  });
-                } else {
-                  preloadCriticalResources();
-                  setTimeout(loadNonCriticalResources, 1000);
-                }
-              }
-            `,
+            __html:
+              "if (typeof window !== 'undefined') {" +
+              "if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {" +
+              "document.documentElement.classList.add('dark');" +
+              "}" +
+              "window.addEventListener('beforeinstallprompt', function(e) {" +
+              "e.preventDefault();" +
+              "var deferredPrompt = e;" +
+              "var installButton = document.createElement('button');" +
+              "installButton.textContent = 'Install App';" +
+              "installButton.className = 'fixed bottom-24 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-200 z-40 text-sm font-medium';" +
+              "installButton.addEventListener('click', function() {" +
+              "deferredPrompt.prompt();" +
+              "deferredPrompt.userChoice.then(function(choiceResult) {" +
+              "if (choiceResult.outcome === 'accepted') {" +
+              "installButton.remove();" +
+              "}" +
+              "});" +
+              "});" +
+              "document.body.appendChild(installButton);" +
+              "setTimeout(function() {" +
+              "if (installButton.parentNode) {" +
+              "installButton.remove();" +
+              "}" +
+              "}, 10000);" +
+              "});" +
+              "}"
           }}
         />
       </body>

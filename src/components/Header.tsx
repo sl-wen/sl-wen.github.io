@@ -151,7 +151,7 @@ const Header: React.FC = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-1">
+            <nav className="hidden md:flex items-center space-x-4">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
@@ -267,11 +267,10 @@ const Header: React.FC = () => {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`block px-3 py-2 text-base font-medium rounded-md ${
-                    isActive(item.href)
-                      ? 'text-primary-600 bg-primary-50'
-                      : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
-                  }`}
+                  className={`block px-3 py-2 text-base font-medium rounded-md ${isActive(item.href)
+                    ? 'text-primary-600 bg-primary-50'
+                    : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
+                    }`}
                 >
                   <span className="mr-2">{item.icon}</span>
                   {item.label}

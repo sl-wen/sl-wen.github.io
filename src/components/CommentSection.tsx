@@ -450,16 +450,19 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                           <div className="w-full h-full rounded-full bg-white dark:bg-gray-800 flex items-center justify-center">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
                               {/* 用户头像 */}
-                              <Image
-                                src={
-                                  commentUserProfiles[comment.user_id]?.avatar_url ||
-                                  '/default-avatar.png'
-                                }
-                                alt="用户头像"
-                                width={40}
-                                height={40}
-                                className="w-10 h-10 rounded-full object-cover"
-                              />
+                              {commentUserProfiles[comment.user_id]?.avatar_url ? (
+                                <Image
+                                  src={commentUserProfiles[comment.user_id]?.avatar_url || ''}
+                                  alt="用户头像"
+                                  width={40}
+                                  height={40}
+                                  className="w-10 h-10 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                                  {(commentUserProfiles[comment.user_id]?.username || 'U').charAt(0).toUpperCase()}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -568,11 +571,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                             }
                             size="sm"
                             onClick={() => handleReaction(comment.comment_id, 'like')}
-                            className={`flex items-center gap-1 px-3 py-2 rounded-full transition-all ${
-                              commentReactions[comment.comment_id] === 'like'
-                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
+                            className={`flex items-center gap-1 px-3 py-2 rounded-full transition-all ${commentReactions[comment.comment_id] === 'like'
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              }`}
                             leftIcon={
                               <svg
                                 className="w-4 h-4"
@@ -599,11 +601,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                             }
                             size="sm"
                             onClick={() => handleReaction(comment.comment_id, 'dislike')}
-                            className={`flex items-center gap-1 px-3 py-2 rounded-full transition-all ${
-                              commentReactions[comment.comment_id] === 'dislike'
-                                ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
+                            className={`flex items-center gap-1 px-3 py-2 rounded-full transition-all ${commentReactions[comment.comment_id] === 'dislike'
+                              ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              }`}
                             leftIcon={
                               <svg
                                 className="w-4 h-4"
@@ -778,11 +779,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                                 }
                                 size="sm"
                                 onClick={() => handleReaction(reply.comment_id, 'like')}
-                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${
-                                  commentReactions[reply.comment_id] === 'like'
-                                    ? 'bg-green-100 text-green-600 hover:bg-green-200'
-                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                }`}
+                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${commentReactions[reply.comment_id] === 'like'
+                                  ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                  }`}
                                 leftIcon={
                                   <svg
                                     className="w-3 h-3"
@@ -809,11 +809,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
                                 }
                                 size="sm"
                                 onClick={() => handleReaction(reply.comment_id, 'dislike')}
-                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${
-                                  commentReactions[reply.comment_id] === 'dislike'
-                                    ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                }`}
+                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${commentReactions[reply.comment_id] === 'dislike'
+                                  ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                  }`}
                                 leftIcon={
                                   <svg
                                     className="w-3 h-3"

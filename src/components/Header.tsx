@@ -47,7 +47,14 @@ const Header: React.FC = () => {
     }
   };
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => {
+    // 处理根路径的特殊情况
+    if (path === '/') {
+      return pathname === '/';
+    }
+    // 对于其他路径，检查是否以该路径开头
+    return pathname.startsWith(path);
+  };
 
   // 基础导航项
   const baseNavItems = [

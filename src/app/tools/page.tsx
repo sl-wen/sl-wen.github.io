@@ -182,11 +182,10 @@ export default function ToolsPage() {
               <div className="mt-auto">
                 <a
                   href={tool.link}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
-                    tool.isComingSoon
-                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white group-hover:bg-blue-700'
-                  }`}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors text-sm ${tool.isComingSoon
+                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white group-hover:bg-blue-700'
+                    }`}
                   onClick={(e) => {
                     if (tool.isComingSoon) {
                       e.preventDefault();
@@ -196,9 +195,8 @@ export default function ToolsPage() {
                 >
                   {tool.isComingSoon ? '即将推出' : '使用工具'}
                   <span
-                    className={`transition-transform ${
-                      tool.isComingSoon ? '' : 'group-hover:translate-x-1'
-                    }`}
+                    className={`transition-transform ${tool.isComingSoon ? '' : 'group-hover:translate-x-1'
+                      }`}
                   >
                     →
                   </span>

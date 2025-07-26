@@ -240,11 +240,10 @@ export default function NovelPage() {
                     key={format}
                     onClick={() => handleDownload(novel, format, idx)}
                     disabled={downloadingIds.has(idx) || !novel.url}
-                    className={`px-3 py-1 text-sm rounded transition ${
-                      downloadingIds.has(idx)
+                    className={`px-3 py-1 text-sm rounded transition ${downloadingIds.has(idx)
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-green-100 text-green-700 hover:bg-green-200'
-                    }`}
+                      }`}
                   >
                     {downloadingIds.has(idx) ? '下载中...' : `下载${format.toUpperCase()}`}
                   </button>

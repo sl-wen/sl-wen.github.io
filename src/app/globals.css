@@ -129,6 +129,34 @@
     @apply w-full;
   }
 
+  /* 移动端底部导航栏 */
+  .mobile-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 shadow-lg;
+    padding-bottom: env(safe-area-inset-bottom);
+    height: 60px;
+  }
+
+  .mobile-nav-item {
+    @apply flex flex-col items-center justify-center py-1 px-2 text-gray-600 dark:text-gray-400 transition-all duration-200;
+    min-height: 50px;
+  }
+
+  .mobile-nav-item:hover {
+    @apply text-blue-600 dark:text-blue-400;
+  }
+
+  .mobile-nav-item-active {
+    @apply text-blue-600 dark:text-blue-400;
+  }
+
+  .mobile-nav-item span:first-child {
+    @apply text-xl;
+  }
+
+  .mobile-nav-item span:last-child {
+    @apply text-xs mt-1;
+  }
+
   /* 骨架屏动画 */
   .skeleton {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);

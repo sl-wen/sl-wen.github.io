@@ -291,7 +291,7 @@ const Header: React.FC = () => {
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-nav md:hidden">
         <div className="flex justify-around items-center px-4">
-          {navItems.slice(0, 5).map((item) => (
+          {navItems.slice(0, 6).map((item) => (
             <Link
               key={item.href}
               href={item.href}

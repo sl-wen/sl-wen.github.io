@@ -16,8 +16,8 @@ const StatusMessages: React.FC = () => {
     // 监听全局消息事件
     const handleMessage = (event: CustomEvent<Message>) => {
       const message = event.detail;
-      setMessages(prev => [...prev, message]);
-      
+      setMessages((prev) => [...prev, message]);
+
       // 自动移除消息
       if (message.duration !== 0) {
         setTimeout(() => {
@@ -27,14 +27,14 @@ const StatusMessages: React.FC = () => {
     };
 
     window.addEventListener('showMessage', handleMessage as EventListener);
-    
+
     return () => {
       window.removeEventListener('showMessage', handleMessage as EventListener);
     };
   }, []);
 
   const removeMessage = (id: string) => {
-    setMessages(prev => prev.filter(msg => msg.id !== id));
+    setMessages((prev) => prev.filter((msg) => msg.id !== id));
   };
 
   const getMessageClasses = (type: string) => {
@@ -84,7 +84,12 @@ const StatusMessages: React.FC = () => {
             >
               <span className="sr-only">关闭</span>
               <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -104,11 +109,11 @@ export const showMessage = (
     id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
     type,
     content,
-    duration,
+    duration
   };
 
   const event = new CustomEvent('showMessage', { detail: message });
   window.dispatchEvent(event);
 };
 
-export default StatusMessages; 
+export default StatusMessages;

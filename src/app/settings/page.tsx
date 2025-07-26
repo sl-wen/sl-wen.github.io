@@ -37,7 +37,9 @@ export default function SettingsPage() {
 
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('用户未登录');
 
       // 删除用户资料
@@ -51,7 +53,7 @@ export default function SettingsPage() {
       // 删除用户账户（需要服务端配合）
       setMessage('账户删除请求已提交，请联系管理员完成删除');
       setMessageType('warning');
-      
+
       // 登出用户
       await logout();
       router.push('/');
@@ -67,7 +69,7 @@ export default function SettingsPage() {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(userProfile?.email || '');
       if (error) throw error;
-      
+
       setMessage('密码重置邮件已发送，请检查您的邮箱');
       setMessageType('success');
     } catch (error) {
@@ -82,9 +84,7 @@ export default function SettingsPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">需要登录</h1>
           <p className="text-gray-600 mb-4">请先登录以访问设置页面</p>
-          <Button onClick={() => router.push('/login')}>
-            前往登录
-          </Button>
+          <Button onClick={() => router.push('/login')}>前往登录</Button>
         </div>
       </div>
     );
@@ -112,7 +112,7 @@ export default function SettingsPage() {
             {/* 账户管理 */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">账户管理</h2>
-              
+
               <div className="space-y-4">
                 {/* 个人资料 */}
                 <div className="flex items-center justify-between py-3 border-b border-gray-100">
@@ -120,11 +120,7 @@ export default function SettingsPage() {
                     <h3 className="font-medium text-gray-900">个人资料</h3>
                     <p className="text-sm text-gray-600">编辑您的用户名、头像等信息</p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => router.push('/profile')}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => router.push('/profile')}>
                     编辑
                   </Button>
                 </div>
@@ -135,11 +131,7 @@ export default function SettingsPage() {
                     <h3 className="font-medium text-gray-900">更改密码</h3>
                     <p className="text-sm text-gray-600">通过邮箱重置您的密码</p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleChangePassword}
-                  >
+                  <Button variant="ghost" size="sm" onClick={handleChangePassword}>
                     重置密码
                   </Button>
                 </div>
@@ -150,11 +142,7 @@ export default function SettingsPage() {
                     <h3 className="font-medium text-gray-900">退出登录</h3>
                     <p className="text-sm text-gray-600">安全退出您的账户</p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleLogout}
-                  >
+                  <Button variant="ghost" size="sm" onClick={handleLogout}>
                     退出登录
                   </Button>
                 </div>
@@ -164,7 +152,7 @@ export default function SettingsPage() {
             {/* 外观设置 */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">外观设置</h2>
-              
+
               <div className="space-y-4">
                 {/* 主题设置 */}
                 <div className="flex items-center justify-between py-3">
@@ -184,7 +172,7 @@ export default function SettingsPage() {
             {/* 隐私设置 */}
             <div className="bg-white border border-gray-200 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">隐私设置</h2>
-              
+
               <div className="space-y-4">
                 {/* 数据导出 */}
                 <div className="flex items-center justify-between py-3 border-b border-gray-100">
@@ -206,13 +194,15 @@ export default function SettingsPage() {
             {/* 危险区域 */}
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-red-900 mb-4">危险区域</h2>
-              
+
               <div className="space-y-4">
                 {/* 删除账户 */}
                 <div className="flex items-center justify-between py-3">
                   <div>
                     <h3 className="font-medium text-red-900">删除账户</h3>
-                    <p className="text-sm text-red-600">永久删除您的账户和所有数据，此操作不可恢复</p>
+                    <p className="text-sm text-red-600">
+                      永久删除您的账户和所有数据，此操作不可恢复
+                    </p>
                   </div>
                   <Button
                     variant="danger"
@@ -229,12 +219,7 @@ export default function SettingsPage() {
 
           {/* 返回按钮 */}
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <Button
-              variant="ghost"
-              size="lg"
-              onClick={() => router.back()}
-              className="w-full"
-            >
+            <Button variant="ghost" size="lg" onClick={() => router.back()} className="w-full">
               返回
             </Button>
           </div>
@@ -242,4 +227,4 @@ export default function SettingsPage() {
       </div>
     </div>
   );
-} 
+}

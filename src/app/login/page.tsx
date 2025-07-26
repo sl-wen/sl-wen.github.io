@@ -46,13 +46,13 @@ export default function LoginPage() {
           // 保存到localStorage
           localStorage.setItem('userProfile', JSON.stringify(profileData));
           localStorage.setItem('userSession', JSON.stringify(data));
-          
+
           // 刷新auth context
           await refreshProfile();
-          
+
           setMessage('登录成功！正在跳转...');
           setMessageType('success');
-          
+
           // 跳转到首页
           setTimeout(() => {
             router.replace('/');
@@ -93,10 +93,14 @@ export default function LoginPage() {
 
   const getMessageStyle = () => {
     switch (messageType) {
-      case 'success': return 'bg-green-50 text-green-700 border-green-200';
-      case 'error': return 'bg-red-50 text-red-700 border-red-200';
-      case 'warning': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-      default: return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'success':
+        return 'bg-green-50 text-green-700 border-green-200';
+      case 'error':
+        return 'bg-red-50 text-red-700 border-red-200';
+      case 'warning':
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      default:
+        return 'bg-blue-50 text-blue-700 border-blue-200';
     }
   };
 
@@ -123,9 +127,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                isLogin
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                isLogin ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               登录
@@ -134,9 +136,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => setIsLogin(false)}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                !isLogin
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                !isLogin ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               注册
@@ -145,9 +145,7 @@ export default function LoginPage() {
 
           {/* 消息显示 */}
           {message && (
-            <div className={`mb-6 p-4 rounded-lg border ${getMessageStyle()}`}>
-              {message}
-            </div>
+            <div className={`mb-6 p-4 rounded-lg border ${getMessageStyle()}`}>{message}</div>
           )}
 
           {/* 表单 */}
@@ -177,16 +175,12 @@ export default function LoginPage() {
               <input
                 id="password"
                 type="password"
-                placeholder={
-                  isLogin 
-                    ? "请输入您的密码" 
-                    : "最少8位,大小写字母或数字其中2种以上"
-                }
+                placeholder={isLogin ? '请输入您的密码' : '最少8位,大小写字母或数字其中2种以上'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                autoComplete={isLogin ? "current-password" : "new-password"}
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
               />
             </div>
 
@@ -201,8 +195,10 @@ export default function LoginPage() {
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   {isLogin ? '登录中...' : '注册中...'}
                 </div>
+              ) : isLogin ? (
+                '立即登录'
               ) : (
-                isLogin ? '立即登录' : '创建账户'
+                '创建账户'
               )}
             </button>
           </form>
@@ -224,4 +220,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-} 
+}

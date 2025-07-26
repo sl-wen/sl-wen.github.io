@@ -18,21 +18,21 @@ export const metadata: Metadata = {
   formatDetection: {
     email: false,
     address: false,
-    telephone: false,
+    telephone: false
   },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: '鱼鱼的博客',
+    title: '鱼鱼的博客'
   },
   other: {
     'mobile-web-app-capable': 'yes',
     'mobile-web-app-status-bar-style': 'black-translucent',
     'mobile-web-app-title': '鱼鱼的博客',
     'msapplication-TileColor': '#24292e',
-    'application-name': '鱼鱼的博客',
-  },
+    'application-name': '鱼鱼的博客'
+  }
 };
 
 export const viewport: Viewport = {
@@ -41,14 +41,10 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   themeColor: '#24292e',
-  colorScheme: 'light',
+  colorScheme: 'light'
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN" className="scroll-smooth">
       <head>
@@ -128,10 +124,10 @@ export default function RootLayout({
                   document.documentElement.classList.add('dark');
                 }
               }
-            `,
+            `
           }}
         />
       </body>
     </html>
   );
-} 
+}

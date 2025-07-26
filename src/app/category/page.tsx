@@ -63,9 +63,7 @@ export default function CategoryPage() {
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
           文章分类
         </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400">
-          按标签浏览所有文章
-        </p>
+        <p className="text-xl text-gray-600 dark:text-gray-400">按标签浏览所有文章</p>
         <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto mt-4"></div>
       </div>
 
@@ -78,9 +76,7 @@ export default function CategoryPage() {
               <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full text-white text-sm font-bold">
                 {tag.charAt(0)}
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {tag}
-              </h3>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{tag}</h3>
               <div className="ml-auto bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   {groupedArticles[tag].length} 篇文章
@@ -133,14 +129,15 @@ export default function CategoryPage() {
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                       {/* 标签 */}
                       <div className="flex flex-wrap gap-2">
-                        {article.tags && article.tags.map((tagLabel, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                          >
-                            {tagLabel}
-                          </span>
-                        ))}
+                        {article.tags &&
+                          article.tags.map((tagLabel, index) => (
+                            <span
+                              key={index}
+                              className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                            >
+                              {tagLabel}
+                            </span>
+                          ))}
                       </div>
 
                       {/* 作者 */}
@@ -165,4 +162,4 @@ export default function CategoryPage() {
       )}
     </div>
   );
-} 
+}

@@ -22,23 +22,37 @@ const Loading: React.FC<LoadingProps> = ({
     }
   };
 
-  const renderSpinner = () => (
-    <div className={`loading-spinner ${getSizeClasses(size)}`}></div>
-  );
+  const renderSpinner = () => <div className={`loading-spinner ${getSizeClasses(size)}`}></div>;
 
   const renderDots = () => (
     <div className="flex space-x-1">
-      <div className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-bounce`}></div>
-      <div className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-bounce`} style={{ animationDelay: '0.1s' }}></div>
-      <div className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-bounce`} style={{ animationDelay: '0.2s' }}></div>
+      <div
+        className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-bounce`}
+      ></div>
+      <div
+        className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-bounce`}
+        style={{ animationDelay: '0.1s' }}
+      ></div>
+      <div
+        className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-bounce`}
+        style={{ animationDelay: '0.2s' }}
+      ></div>
     </div>
   );
 
   const renderPulse = () => (
     <div className="flex space-x-1">
-      <div className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-pulse`}></div>
-      <div className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-pulse`} style={{ animationDelay: '0.2s' }}></div>
-      <div className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-pulse`} style={{ animationDelay: '0.4s' }}></div>
+      <div
+        className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-pulse`}
+      ></div>
+      <div
+        className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-pulse`}
+        style={{ animationDelay: '0.2s' }}
+      ></div>
+      <div
+        className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-pulse`}
+        style={{ animationDelay: '0.4s' }}
+      ></div>
     </div>
   );
 
@@ -64,25 +78,45 @@ const Loading: React.FC<LoadingProps> = ({
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center p-8 ${size === 'small' ? 'p-4' : size === 'large' ? 'p-12' : 'p-8'}`}>
+    <div
+      className={`flex flex-col items-center justify-center p-8 ${size === 'small' ? 'p-4' : size === 'large' ? 'p-12' : 'p-8'}`}
+    >
       {renderLoadingContent()}
       {variant !== 'skeleton' && (
-        <p className={`mt-4 text-gray-600 font-medium ${size === 'small' ? 'text-sm' : size === 'large' ? 'text-lg' : 'text-base'}`}>
+        <p
+          className={`mt-4 text-gray-600 font-medium ${size === 'small' ? 'text-sm' : size === 'large' ? 'text-lg' : 'text-base'}`}
+        >
           {text}
           <span className="inline-flex">
             <span className="animate-bounce">.</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>.</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>.</span>
+            <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>
+              .
+            </span>
+            <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>
+              .
+            </span>
           </span>
         </p>
       )}
 
       {/* 装饰性背景 */}
       <div className="absolute inset-0 -z-10 opacity-20">
-        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-        <div className="absolute top-1/3 right-1/4 w-1 h-1 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0.5s' }}></div>
-        <div className="absolute bottom-1/3 left-1/3 w-3 h-3 bg-primary-300 rounded-full animate-bounce" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-1/4 right-1/3 w-1 h-1 bg-primary-600 rounded-full animate-bounce" style={{ animationDelay: '1.5s' }}></div>
+        <div
+          className="absolute top-1/4 left-1/4 w-2 h-2 bg-primary-400 rounded-full animate-bounce"
+          style={{ animationDelay: '0s' }}
+        ></div>
+        <div
+          className="absolute top-1/3 right-1/4 w-1 h-1 bg-primary-500 rounded-full animate-bounce"
+          style={{ animationDelay: '0.5s' }}
+        ></div>
+        <div
+          className="absolute bottom-1/3 left-1/3 w-3 h-3 bg-primary-300 rounded-full animate-bounce"
+          style={{ animationDelay: '1s' }}
+        ></div>
+        <div
+          className="absolute bottom-1/4 right-1/3 w-1 h-1 bg-primary-600 rounded-full animate-bounce"
+          style={{ animationDelay: '1.5s' }}
+        ></div>
       </div>
     </div>
   );

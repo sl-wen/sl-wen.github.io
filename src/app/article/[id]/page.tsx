@@ -29,10 +29,22 @@ const addCopyButtons = () => {
     copyButton.type = 'button';
     copyButton.className = [
       'copy-button', // 标识方便后续判断
-      'absolute', 'top-2', 'right-3', 'z-10',
-      'bg-slate-700/80', 'text-white', 'rounded', 'px-3', 'py-1', 'text-xs',
-      'hover:bg-slate-900/90', 'transition', 'outline-none', 'focus:ring-2',
-      'focus:ring-blue-500', 'select-none'
+      'absolute',
+      'top-2',
+      'right-3',
+      'z-10',
+      'bg-slate-700/80',
+      'text-white',
+      'rounded',
+      'px-3',
+      'py-1',
+      'text-xs',
+      'hover:bg-slate-900/90',
+      'transition',
+      'outline-none',
+      'focus:ring-2',
+      'focus:ring-blue-500',
+      'select-none'
     ].join(' ');
     copyButton.textContent = '复制';
 
@@ -82,7 +94,6 @@ marked.setOptions({
   async: false
 });
 
-
 export default function ArticlePage() {
   const params = useParams();
   const post_id = params?.id as string;
@@ -121,7 +132,7 @@ export default function ArticlePage() {
       // 当用户点击点赞/点踩按钮
       setIsReactionLoading(true);
 
-      // 1. 本地乐观更新UI  
+      // 1. 本地乐观更新UI
       let oldLikes = article.likes_count;
       let oldDislikes = article.dislikes_count;
       let oldReaction = PostReaction;
@@ -156,11 +167,15 @@ export default function ArticlePage() {
       }
 
       // 更新本地状态
-      setArticle(prev => prev ? {
-        ...prev,
-        likes_count: newLikes,
-        dislikes_count: newDislikes
-      } : null);
+      setArticle((prev) =>
+        prev
+          ? {
+              ...prev,
+              likes_count: newLikes,
+              dislikes_count: newDislikes
+            }
+          : null
+      );
 
       // 2. 再做请求
       const success = await addPostReaction(
@@ -186,13 +201,12 @@ export default function ArticlePage() {
           return {
             ...prev,
             likes_count: oldLikes,
-            dislikes_count: oldDislikes,
+            dislikes_count: oldDislikes
           };
         });
         setPostReaction(oldReaction);
         alert('操作失败，请重试');
       }
-
     } catch (error) {
       console.error('操作失败:', error);
       alert('操作失败，请重试');
@@ -200,7 +214,6 @@ export default function ArticlePage() {
       setIsReactionLoading(false);
     }
   };
-
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -259,7 +272,6 @@ export default function ArticlePage() {
     }
   }, [article, userProfile?.user_id]);
 
-
   // 添加复制按钮到代码块
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -309,7 +321,12 @@ export default function ArticlePage() {
               onClick={() => handlePostReaction('like')}
               leftIcon={
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
+                  />
                 </svg>
               }
             >
@@ -321,7 +338,12 @@ export default function ArticlePage() {
               onClick={() => handlePostReaction('dislike')}
               leftIcon={
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.7M10 14v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2M17 4H19a2 2 0 012 2v6a2 2 0 01-2 2h-2.5" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.7M10 14v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2M17 4H19a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
+                  />
                 </svg>
               }
             >
@@ -373,8 +395,6 @@ export default function ArticlePage() {
               __html: DOMPurify.sanitize(marked.parse(article.content).toString())
             }}
           />
-
-
         </article>
 
         {/* 上下篇导航 */}
@@ -411,7 +431,6 @@ export default function ArticlePage() {
           <CommentSection post_id={article.post_id} />
         </div>
       </div>
-
     </div>
   );
-} 
+}

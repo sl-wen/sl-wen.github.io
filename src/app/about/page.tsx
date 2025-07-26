@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: '关于我们 - 鱼鱼的博客',
-  description: '了解鱼鱼的博客，我们的故事和使命。',
+  description: '了解鱼鱼的博客，我们的故事和使命。'
 };
 
 export default function AboutPage() {
@@ -68,12 +68,18 @@ export default function AboutPage() {
             </div>
             <div className="space-y-4 text-lg text-gray-600 dark:text-gray-300 leading-relaxed p-3">
               <p>
-                这个博客使用 <span className="font-semibold text-blue-600 dark:text-blue-400">React + TypeScript</span> 构建，
-                采用 <span className="font-semibold text-green-600 dark:text-green-400">Supabase</span> 作为后端服务。
+                这个博客使用{' '}
+                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                  React + TypeScript
+                </span>{' '}
+                构建， 采用{' '}
+                <span className="font-semibold text-green-600 dark:text-green-400">Supabase</span>{' '}
+                作为后端服务。
               </p>
               <p>
-                博客支持 <span className="font-semibold text-purple-600 dark:text-purple-400">Markdown</span> 文章编写，
-                实时预览，文章分类，以及响应式设计。
+                博客支持{' '}
+                <span className="font-semibold text-purple-600 dark:text-purple-400">Markdown</span>{' '}
+                文章编写， 实时预览，文章分类，以及响应式设计。
               </p>
               <p>
                 如果你对本博客感兴趣，欢迎访问
@@ -119,4 +125,4 @@ export default function AboutPage() {
       </div>
     </div>
   );
-} 
+}

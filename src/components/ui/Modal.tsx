@@ -39,13 +39,13 @@ export const Modal: React.FC<ModalProps> = ({
   // ESC键关闭
   useEffect(() => {
     if (!closeOnEscape || !isOpen) return;
-    
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
       }
     };
-    
+
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, closeOnEscape, onClose]);
@@ -57,7 +57,7 @@ export const Modal: React.FC<ModalProps> = ({
     } else {
       document.body.style.overflow = 'unset';
     }
-    
+
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -95,9 +95,7 @@ export const Modal: React.FC<ModalProps> = ({
         {(title || showCloseButton) && (
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             {title && (
-              <h2 className="text-xl font-semibold text-gray-900 leading-tight">
-                {title}
-              </h2>
+              <h2 className="text-xl font-semibold text-gray-900 leading-tight">{title}</h2>
             )}
             {showCloseButton && (
               <button
@@ -110,27 +108,25 @@ export const Modal: React.FC<ModalProps> = ({
                 aria-label="关闭"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </button>
             )}
           </div>
         )}
-        
+
         {/* 内容 */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {children}
-        </div>
-        
+        <div className="flex-1 overflow-y-auto p-6">{children}</div>
+
         {/* 底部 */}
-        {footer && (
-          <div className="border-t border-gray-200 p-6">
-            {footer}
-          </div>
-        )}
+        {footer && <div className="border-t border-gray-200 p-6">{footer}</div>}
       </div>
     </div>
   );
 };
 
-export default Modal; 
+export default Modal;

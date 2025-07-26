@@ -5,6 +5,7 @@
 ## 组件列表
 
 ### Button 按钮组件
+
 - **变体**: primary, secondary, ghost, danger, success, warning
 - **尺寸**: sm, md, lg, xl
 - **功能**: 图标支持、加载状态、禁用状态、全宽选项
@@ -26,6 +27,7 @@ import { Button } from './components/ui';
 ```
 
 ### Input 输入框组件
+
 - **变体**: default, filled, underlined
 - **尺寸**: sm, md, lg
 - **功能**: 图标支持、标签、帮助文本、错误状态、加载状态
@@ -42,10 +44,11 @@ import { Input } from './components/ui';
   required
   error={hasError}
   errorMessage="用户名不能为空"
-/>
+/>;
 ```
 
 ### Textarea 文本框组件
+
 - **变体**: default, filled, underlined
 - **尺寸**: sm, md, lg
 - **功能**: 自动调整高度、标签、帮助文本、错误状态
@@ -60,10 +63,11 @@ import { Textarea } from './components/ui';
   onChange={(e) => setDescription(e.target.value)}
   autoResize
   helperText="最多500个字符"
-/>
+/>;
 ```
 
 ### Card 卡片组件
+
 - **变体**: default, outlined, elevated, filled
 - **尺寸**: sm, md, lg
 - **功能**: 头部、底部、悬停效果、交互式
@@ -76,7 +80,7 @@ import { Card } from './components/ui';
   <p>卡片内容</p>
 </Card>
 
-<Card 
+<Card
   variant="elevated"
   header={<h3>带头部的卡片</h3>}
   footer={<Button>操作</Button>}
@@ -90,6 +94,7 @@ import { Card } from './components/ui';
 ```
 
 ### Alert 提示组件
+
 - **变体**: info, success, warning, error
 - **尺寸**: sm, md, lg
 - **功能**: 自定义图标、标题、关闭按钮
@@ -101,9 +106,9 @@ import { Alert } from './components/ui';
   操作成功完成！
 </Alert>
 
-<Alert 
-  variant="error" 
-  title="错误" 
+<Alert
+  variant="error"
+  title="错误"
   icon={<CustomIcon />}
   onClose={handleClose}
 >
@@ -112,6 +117,7 @@ import { Alert } from './components/ui';
 ```
 
 ### Modal 模态框组件
+
 - **尺寸**: sm, md, lg, xl, full
 - **功能**: ESC关闭、遮罩层关闭、自定义头部底部、防止背景滚动
 
@@ -135,20 +141,13 @@ import { Modal } from './components/ui';
   }
 >
   <p>模态框内容</p>
-</Modal>
+</Modal>;
 ```
 
 ## 统一导入
 
 ```tsx
-import { 
-  Button, 
-  Input, 
-  Textarea, 
-  Card, 
-  Alert, 
-  Modal 
-} from './components/ui';
+import { Button, Input, Textarea, Card, Alert, Modal } from './components/ui';
 ```
 
 ## 设计特点
@@ -163,6 +162,7 @@ import {
 ## 工具函数
 
 ### cn 类名合并函数
+
 用于合并和处理 CSS 类名：
 
 ```tsx
@@ -188,4 +188,4 @@ const className = cn(
 
 ## 演示页面
 
-查看 `UIComponentDemo.tsx` 文件可以看到所有组件的完整演示和使用示例。 
+查看 `UIComponentDemo.tsx` 文件可以看到所有组件的完整演示和使用示例。

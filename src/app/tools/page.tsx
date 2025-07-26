@@ -108,18 +108,19 @@ export default function ToolsPage() {
   };
 
   const getCardClasses = (tool: Tool) => {
-    let baseClasses = 'group relative bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 cursor-pointer border border-gray-200 dark:border-gray-700';
-    
+    let baseClasses =
+      'group relative bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 cursor-pointer border border-gray-200 dark:border-gray-700';
+
     if (tool.isComingSoon) {
       baseClasses += ' opacity-60 cursor-not-allowed';
     } else {
       baseClasses += ' hover:-translate-y-2';
     }
-    
+
     if (tool.isFeatured) {
       baseClasses += ' ring-2 ring-blue-500 ring-opacity-50';
     }
-    
+
     return baseClasses;
   };
 
@@ -131,9 +132,7 @@ export default function ToolsPage() {
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             实用工具集
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400">
-            精选开发者工具，提升工作效率
-          </p>
+          <p className="text-xl text-gray-600 dark:text-gray-400">精选开发者工具，提升工作效率</p>
           <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto mt-4"></div>
         </div>
 
@@ -196,9 +195,11 @@ export default function ToolsPage() {
                   aria-disabled={tool.isComingSoon}
                 >
                   {tool.isComingSoon ? '即将推出' : '使用工具'}
-                  <span className={`transition-transform ${
-                    tool.isComingSoon ? '' : 'group-hover:translate-x-1'
-                  }`}>
+                  <span
+                    className={`transition-transform ${
+                      tool.isComingSoon ? '' : 'group-hover:translate-x-1'
+                    }`}
+                  >
                     →
                   </span>
                 </a>
@@ -240,4 +241,4 @@ export default function ToolsPage() {
       </div>
     </div>
   );
-} 
+}

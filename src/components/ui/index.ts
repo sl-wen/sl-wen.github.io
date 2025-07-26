@@ -20,4 +20,4 @@ export type { ModalProps } from './Modal';
 // Re-export for convenience
 export { default as ButtonComponent } from './Button';
 export { default as InputComponent } from './Input';
-export { default as TextareaComponent } from './Textarea'; 
+export { default as TextareaComponent } from './Textarea';

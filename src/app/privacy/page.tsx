@@ -17,9 +17,7 @@ export default function PrivacyPage() {
             <div className="prose prose-gray max-w-none">
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. 信息收集</h2>
-                <p className="text-gray-600 leading-relaxed mb-4">
-                  我们可能收集以下类型的信息：
-                </p>
+                <p className="text-gray-600 leading-relaxed mb-4">我们可能收集以下类型的信息：</p>
                 <ul className="list-disc list-inside text-gray-600 space-y-2">
                   <li>您主动提供的个人信息（如姓名、邮箱地址）</li>
                   <li>自动收集的技术信息（如IP地址、浏览器类型、访问时间）</li>
@@ -30,9 +28,7 @@ export default function PrivacyPage() {
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. 信息使用</h2>
-                <p className="text-gray-600 leading-relaxed mb-4">
-                  我们使用收集的信息用于：
-                </p>
+                <p className="text-gray-600 leading-relaxed mb-4">我们使用收集的信息用于：</p>
                 <ul className="list-disc list-inside text-gray-600 space-y-2">
                   <li>提供和改善我们的服务</li>
                   <li>处理您的请求和查询</li>
@@ -105,8 +101,8 @@ export default function PrivacyPage() {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">9. 联系我们</h2>
                 <p className="text-gray-600 leading-relaxed">
-                  如果您对此隐私政策有任何疑问或关于您个人信息处理的投诉，
-                  请通过 sl-wen@outlook.com 联系我们。
+                  如果您对此隐私政策有任何疑问或关于您个人信息处理的投诉， 请通过 sl-wen@outlook.com
+                  联系我们。
                 </p>
               </section>
             </div>
@@ -115,4 +111,4 @@ export default function PrivacyPage() {
       </div>
     </div>
   );
-} 
+}

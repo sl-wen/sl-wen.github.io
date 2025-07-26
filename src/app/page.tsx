@@ -64,7 +64,9 @@ export default function HomePage() {
               <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed">
                 在这里，我分享技术见解、生活感悟和创意思考。
                 <br />
-                <span className="text-blue-600 dark:text-blue-400 font-medium">探索知识的边界，记录成长的足迹。</span>
+                <span className="text-blue-600 dark:text-blue-400 font-medium">
+                  探索知识的边界，记录成长的足迹。
+                </span>
               </p>
 
               <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -74,8 +76,18 @@ export default function HomePage() {
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     开始阅读
-                    <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    <svg
+                      className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-200"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
                     </svg>
                   </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
@@ -85,8 +97,18 @@ export default function HomePage() {
                   className="group inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-gray-700 dark:text-gray-300 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all duration-200"
                 >
                   <span>了解更多</span>
-                  <svg className="w-5 h-5 ml-2 transform group-hover:rotate-45 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  <svg
+                    className="w-5 h-5 ml-2 transform group-hover:rotate-45 transition-transform duration-200"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
                   </svg>
                 </a>
               </div>
@@ -94,16 +116,19 @@ export default function HomePage() {
               {/* 统计信息 */}
               <div className="grid grid-cols-2 gap-6 pt-8 border-t border-gray-200 dark:border-gray-700">
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">{ArticlesCount}</div>
+                  <div className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
+                    {ArticlesCount}
+                  </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">技术文章</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400">{visitCount}</div>
+                  <div className="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400">
+                    {visitCount}
+                  </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">阅读量</div>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
 
@@ -117,15 +142,28 @@ export default function HomePage() {
         {/* 滚动提示 */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
           <div className="animate-bounce">
-            <svg className="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            <svg
+              className="w-6 h-6 text-gray-400 dark:text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 14l-7 7m0 0l-7-7m7 7V3"
+              />
             </svg>
           </div>
         </div>
       </section>
-      
+
       {/* 最新文章区域 */}
-      <section id="articles" className="py-4 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-950/30 dark:to-purple-950/30">
+      <section
+        id="articles"
+        className="py-4 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-950/30 dark:to-purple-950/30"
+      >
         <div className="container mx-auto px-4">
           <div className="max-w mx-auto">
             <ArticleList />

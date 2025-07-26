@@ -37,20 +37,16 @@ export const Card: React.FC<CardProps> = ({
   className = '',
   onClick
 }) => {
-  const baseClasses = [
-    'rounded-lg transition-all duration-200',
-    'overflow-hidden'
-  ];
+  const baseClasses = ['rounded-lg transition-all duration-200', 'overflow-hidden'];
 
   const variantClasses = cardVariants[variant];
   const sizeClasses = cardSizes[size];
-  
-  const interactiveClasses = interactive || hoverable 
-    ? 'cursor-pointer hover:shadow-md hover:-translate-y-1' 
-    : '';
-  
-  const focusClasses = interactive 
-    ? 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20' 
+
+  const interactiveClasses =
+    interactive || hoverable ? 'cursor-pointer hover:shadow-md hover:-translate-y-1' : '';
+
+  const focusClasses = interactive
+    ? 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20'
     : '';
 
   const cardClassName = cn(
@@ -66,29 +62,27 @@ export const Card: React.FC<CardProps> = ({
   const Component = interactive ? 'button' : 'div';
 
   return (
-    <Component
-      className={cardClassName}
-      tabIndex={interactive ? 0 : undefined}
-      onClick={onClick}
-    >
+    <Component className={cardClassName} tabIndex={interactive ? 0 : undefined} onClick={onClick}>
       {header && (
-        <div className={cn(
-          'border-b border-gray-200 -m-6 mb-6 p-6',
-          variant === 'filled' ? 'bg-white border-gray-300' : ''
-        )}>
+        <div
+          className={cn(
+            'border-b border-gray-200 -m-6 mb-6 p-6',
+            variant === 'filled' ? 'bg-white border-gray-300' : ''
+          )}
+        >
           {header}
         </div>
       )}
-      
-      <div className={contentClassName}>
-        {children}
-      </div>
-      
+
+      <div className={contentClassName}>{children}</div>
+
       {footer && (
-        <div className={cn(
-          'border-t border-gray-200 -m-6 mt-6 p-6',
-          variant === 'filled' ? 'bg-white border-gray-300' : ''
-        )}>
+        <div
+          className={cn(
+            'border-t border-gray-200 -m-6 mt-6 p-6',
+            variant === 'filled' ? 'bg-white border-gray-300' : ''
+          )}
+        >
           {footer}
         </div>
       )}
@@ -96,4 +90,4 @@ export const Card: React.FC<CardProps> = ({
   );
 };
 
-export default Card; 
+export default Card;

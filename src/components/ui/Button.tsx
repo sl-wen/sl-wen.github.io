@@ -12,12 +12,16 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const buttonVariants = {
-  primary: 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white shadow-md hover:shadow-lg border-blue-600',
+  primary:
+    'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white shadow-md hover:shadow-lg border-blue-600',
   secondary: 'bg-white hover:bg-gray-50 text-gray-900 border-gray-300 shadow-sm hover:shadow-md',
   ghost: 'bg-transparent hover:bg-blue-50 text-blue-600 hover:text-blue-700 border-transparent',
-  danger: 'bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-md hover:shadow-lg border-red-600',
-  success: 'bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white shadow-md hover:shadow-lg border-green-600',
-  warning: 'bg-gradient-to-r from-yellow-500 to-yellow-700 hover:from-yellow-600 hover:to-yellow-800 text-white shadow-md hover:shadow-lg border-yellow-600'
+  danger:
+    'bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-md hover:shadow-lg border-red-600',
+  success:
+    'bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white shadow-md hover:shadow-lg border-green-600',
+  warning:
+    'bg-gradient-to-r from-yellow-500 to-yellow-700 hover:from-yellow-600 hover:to-yellow-800 text-white shadow-md hover:shadow-lg border-yellow-600'
 };
 
 const buttonSizes = {
@@ -66,18 +70,11 @@ export const Button: React.FC<ButtonProps> = ({
   );
 
   return (
-    <button
-      className={combinedClassName}
-      disabled={disabled || isLoading}
-      {...props}
-    >
+    <button className={combinedClassName} disabled={disabled || isLoading} {...props}>
       {/* 加载状态图标 */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <svg 
-            className="w-4 h-4 animate-spin" 
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
             <circle
               cx="12"
               cy="12"
@@ -97,19 +94,17 @@ export const Button: React.FC<ButtonProps> = ({
           </svg>
         </div>
       )}
-      
+
       {/* 左侧图标 */}
       {!isLoading && leftIcon && (
         <span className="flex items-center justify-center flex-shrink-0 -ml-1">
           <div className="w-4 h-4">{leftIcon}</div>
         </span>
       )}
-      
+
       {/* 按钮文本 */}
-      <span className={isLoading ? 'opacity-0' : 'opacity-100'}>
-        {children}
-      </span>
-      
+      <span className={isLoading ? 'opacity-0' : 'opacity-100'}>{children}</span>
+
       {/* 右侧图标 */}
       {!isLoading && rightIcon && (
         <span className="flex items-center justify-center flex-shrink-0 -mr-1">
@@ -120,4 +115,4 @@ export const Button: React.FC<ButtonProps> = ({
   );
 };
 
-export default Button; 
+export default Button;

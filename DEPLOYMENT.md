@@ -7,7 +7,7 @@
 ## 服务器要求
 
 - Ubuntu 24.04 LTS
-- Node.js 18+ 
+- Node.js 18+
 - Python 3.8+
 - PM2 或 systemd 服务管理
 - Nginx (反向代理)
@@ -390,7 +390,6 @@ sudo tee /etc/logrotate.d/blog << 'EOF'
 EOF
 ```
 
-
 ## 安全建议
 
 1. **定期更新系统**：`sudo apt update && sudo apt upgrade`
@@ -442,4 +441,4 @@ gzip_types text/plain text/css application/json application/javascript text/xml 
   "start": "next start -p 3000",
   "start:cluster": "pm2 start npm --name 'blog' -- start"
 }
-``` 
+```

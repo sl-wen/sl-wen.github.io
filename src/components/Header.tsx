@@ -15,7 +15,8 @@ const Header: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const defaultLogoUrl = "https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg";
+  const defaultLogoUrl =
+    'https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg';
 
   // 确保组件已挂载，避免SSR/Client不一致
   useEffect(() => {
@@ -53,19 +54,20 @@ const Header: React.FC = () => {
     { href: '/', label: '首页', icon: '🏠' },
     { href: '/category', label: '分类', icon: '📁' },
     { href: '/search', label: '搜索', icon: '🔍' },
-    { href: '/about', label: '关于', icon: 'ℹ️' },
+    { href: '/about', label: '关于', icon: 'ℹ️' }
   ];
 
   // 用户相关导航项
   const userNavItems = [
     { href: '/tools', label: '工具', icon: '🛠️' },
-    { href: '/post', label: '发布', icon: '✏️' },
+    { href: '/post', label: '发布', icon: '✏️' }
   ];
 
   // 在mounted之前显示基础导航
-  const navItems = mounted && userProfile
-    ? [...baseNavItems.slice(0, 3), ...userNavItems, baseNavItems[3]]
-    : baseNavItems;
+  const navItems =
+    mounted && userProfile
+      ? [...baseNavItems.slice(0, 3), ...userNavItems, baseNavItems[3]]
+      : baseNavItems;
 
   // 在组件挂载之前返回占位内容
   if (!mounted) {
@@ -74,14 +76,12 @@ const Header: React.FC = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <Link
+              href="/"
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+            >
               <div className="relative h-8 w-8 rounded-full overflow-hidden">
-                <Image
-                  src={defaultLogoUrl}
-                  alt="Logo"
-                  fill
-                  className="object-cover"
-                />
+                <Image src={defaultLogoUrl} alt="Logo" fill className="object-cover" />
               </div>
               <span className="text-xl font-bold text-gray-900">鱼鱼的博客</span>
             </Link>
@@ -107,7 +107,12 @@ const Header: React.FC = () => {
               <button className="md:hidden rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                 <span className="sr-only">打开菜单</span>
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               </button>
             </div>
@@ -124,10 +129,15 @@ const Header: React.FC = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <Link
+              href="/"
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+            >
               <div className="relative h-8 w-8 rounded-full overflow-hidden">
                 <Image
-                  src={(userProfile && userProfile.avatar_url) ? userProfile.avatar_url : defaultLogoUrl}
+                  src={
+                    userProfile && userProfile.avatar_url ? userProfile.avatar_url : defaultLogoUrl
+                  }
                   alt="Logo"
                   fill
                   className="object-cover"
@@ -168,7 +178,12 @@ const Header: React.FC = () => {
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </button>
 
@@ -218,7 +233,12 @@ const Header: React.FC = () => {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
                 <svg
                   className={`h-6 w-6 ${isMenuOpen ? 'block' : 'hidden'}`}
@@ -226,7 +246,12 @@ const Header: React.FC = () => {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -242,10 +267,11 @@ const Header: React.FC = () => {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`block px-3 py-2 text-base font-medium rounded-md ${isActive(item.href)
-                    ? 'text-primary-600 bg-primary-50'
-                    : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
-                    }`}
+                  className={`block px-3 py-2 text-base font-medium rounded-md ${
+                    isActive(item.href)
+                      ? 'text-primary-600 bg-primary-50'
+                      : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
+                  }`}
                 >
                   <span className="mr-2">{item.icon}</span>
                   {item.label}

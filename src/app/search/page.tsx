@@ -64,7 +64,10 @@ function highlightKeyword(html: string, keyword: string) {
   if (!keyword) return html;
   const safeKey = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const regex = new RegExp(`(${safeKey})`, 'gi');
-  return html.replace(regex, `<span class="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">$1</span>`);
+  return html.replace(
+    regex,
+    `<span class="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">$1</span>`
+  );
 }
 
 export default function SearchPage() {
@@ -120,9 +123,7 @@ export default function SearchPage() {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             文章搜索
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400">
-            搜索文章标题、内容、代码和标签
-          </p>
+          <p className="text-xl text-gray-600 dark:text-gray-400">搜索文章标题、内容、代码和标签</p>
           <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto mt-4"></div>
         </div>
 
@@ -130,8 +131,18 @@ export default function SearchPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8 hover:shadow-xl transition-shadow">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
             <input
@@ -148,7 +159,11 @@ export default function SearchPage() {
           <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {keyword && (
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                找到 <span className="font-semibold text-blue-600 dark:text-blue-400 text-lg">{results.length}</span> 个相关结果
+                找到{' '}
+                <span className="font-semibold text-blue-600 dark:text-blue-400 text-lg">
+                  {results.length}
+                </span>{' '}
+                个相关结果
               </div>
             )}
 
@@ -196,7 +211,9 @@ export default function SearchPage() {
             <div className="text-center py-16">
               <div className="text-6xl mb-4 opacity-20">🔍</div>
               <div className="text-gray-500 dark:text-gray-400 text-lg">请输入搜索关键词</div>
-              <div className="text-gray-400 dark:text-gray-500 text-sm mt-2">支持搜索标题、内容、代码和标签</div>
+              <div className="text-gray-400 dark:text-gray-500 text-sm mt-2">
+                支持搜索标题、内容、代码和标签
+              </div>
             </div>
           )}
 
@@ -224,7 +241,10 @@ export default function SearchPage() {
                 );
 
                 return (
-                  <article key={post.post_id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200">
+                  <article
+                    key={post.post_id}
+                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200"
+                  >
                     {/* 文章标题 */}
                     <h2 className="text-xl md:text-2xl font-bold mb-4">
                       <Link
@@ -254,7 +274,7 @@ export default function SearchPage() {
                                 __html: highlightKeyword(
                                   DOMPurify.sanitize(
                                     matchingCodeBlock.code.substring(0, 200) +
-                                    (matchingCodeBlock.code.length > 200 ? '...' : '')
+                                      (matchingCodeBlock.code.length > 200 ? '...' : '')
                                   ),
                                   keyword
                                 )
@@ -270,7 +290,7 @@ export default function SearchPage() {
                               DOMPurify.sanitize(
                                 marked.parse(
                                   post.content.substring(0, 300) +
-                                  (post.content.length > 300 ? '...' : ''),
+                                    (post.content.length > 300 ? '...' : ''),
                                   { async: false }
                                 ) as string
                               ),
@@ -289,7 +309,10 @@ export default function SearchPage() {
                         <span
                           className="text-sm text-gray-600 dark:text-gray-400"
                           dangerouslySetInnerHTML={{
-                            __html: highlightKeyword(DOMPurify.sanitize(post.author || '匿名'), keyword)
+                            __html: highlightKeyword(
+                              DOMPurify.sanitize(post.author || '匿名'),
+                              keyword
+                            )
                           }}
                         />
                       </div>
@@ -327,4 +350,4 @@ export default function SearchPage() {
       </div>
     </div>
   );
-} 
+}

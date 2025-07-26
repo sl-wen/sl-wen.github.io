@@ -87,7 +87,9 @@ const ArticleList: React.FC = () => {
         <div className="text-center py-16">
           <div className="text-6xl mb-4 opacity-20">📝</div>
           <div className="text-gray-500 dark:text-gray-400 text-lg">暂无文章</div>
-          <div className="text-gray-400 dark:text-gray-500 text-sm mt-2">等待第一篇精彩文章的诞生</div>
+          <div className="text-gray-400 dark:text-gray-500 text-sm mt-2">
+            等待第一篇精彩文章的诞生
+          </div>
         </div>
       )}
     </div>

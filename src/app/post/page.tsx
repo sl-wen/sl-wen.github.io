@@ -52,7 +52,7 @@ export default function PostPage() {
   // 初始化表单数据
   useEffect(() => {
     if (userProfile?.username) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         author: userProfile.username || ''
       }));
@@ -149,7 +149,10 @@ export default function PostPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   文章标题
                 </label>
                 <input
@@ -165,7 +168,10 @@ export default function PostPage() {
               </div>
 
               <div>
-                <label htmlFor="author" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="author"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   作者
                 </label>
                 <input
@@ -182,7 +188,10 @@ export default function PostPage() {
               </div>
 
               <div className="md:col-span-2">
-                <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label
+                  htmlFor="tags"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
                   标签
                 </label>
                 <input
@@ -194,7 +203,9 @@ export default function PostPage() {
                   placeholder="添加相关标签来帮助读者更好地发现你的文章"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">用逗号分隔，例如：技术,前端,React</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  用逗号分隔，例如：技术,前端,React
+                </p>
               </div>
             </div>
           </div>
@@ -255,7 +266,9 @@ export default function PostPage() {
                   ref={previewRef}
                   className="flex-1 w-full p-6 border border-gray-300 dark:border-gray-600 rounded-t-none rounded-b-lg bg-white dark:bg-gray-800 overflow-y-auto prose prose-sm dark:prose-invert max-w-none"
                   dangerouslySetInnerHTML={{
-                    __html: preview || '<div class="text-center text-gray-400 italic py-8"><p>✨ 预览内容将在这里显示</p><p class="text-xs mt-2">开始在左侧编辑器中输入内容...</p></div>'
+                    __html:
+                      preview ||
+                      '<div class="text-center text-gray-400 italic py-8"><p>✨ 预览内容将在这里显示</p><p class="text-xs mt-2">开始在左侧编辑器中输入内容...</p></div>'
                   }}
                 />
               </div>
@@ -266,8 +279,12 @@ export default function PostPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">准备发布？</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">检查内容无误后点击发布按钮</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                  准备发布？
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  检查内容无误后点击发布按钮
+                </p>
               </div>
 
               <div className="flex gap-3 w-full sm:w-auto">
@@ -290,10 +307,9 @@ export default function PostPage() {
                 </button>
               </div>
             </div>
-
           </div>
         </form>
       </div>
     </div>
   );
-} 
+}

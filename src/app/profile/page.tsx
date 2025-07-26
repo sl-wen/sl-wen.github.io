@@ -48,7 +48,9 @@ export default function ProfilePage() {
     setMessage('');
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('用户未登录');
 
       const { error } = await supabase
@@ -79,7 +81,7 @@ export default function ProfilePage() {
   };
 
   const handleInputChange = (field: string, value: string | number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value
     }));
@@ -91,9 +93,7 @@ export default function ProfilePage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">需要登录</h1>
           <p className="text-gray-600 mb-4">请先登录以访问个人资料页面</p>
-          <Button onClick={() => router.push('/login')}>
-            前往登录
-          </Button>
+          <Button onClick={() => router.push('/login')}>前往登录</Button>
         </div>
       </div>
     );
@@ -220,4 +220,4 @@ export default function ProfilePage() {
       </div>
     </div>
   );
-} 
+}

@@ -38,10 +38,10 @@
   /* 所有可点击元素的最小触摸目标 */
   button,
   a,
-  [role="button"],
-  input[type="button"],
-  input[type="submit"],
-  input[type="reset"],
+  [role='button'],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'],
   .btn,
   .touch-target {
     min-height: 44px;
@@ -132,8 +132,6 @@
     padding-bottom: 80px;
   }
 }
-
-
 
 /* 卡片组件移动端优化 */
 @media (max-width: 768px) {
@@ -245,7 +243,6 @@
   }
 }
 
-
 /* 可访问性优化 */
 @media (max-width: 768px) {
   .sr-only {
@@ -312,4 +309,4 @@
     max-height: calc(100vh - 32px);
     margin: 16px;
   }
-} 
+}

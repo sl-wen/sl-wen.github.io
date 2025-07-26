@@ -18,11 +18,11 @@
   }
 
   /* 确保所有交互元素可点击 */
-  button, 
+  button,
   a,
-  [role="button"],
-  [role="link"],
-  [tabindex="0"] {
+  [role='button'],
+  [role='link'],
+  [tabindex='0'] {
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
@@ -30,8 +30,8 @@
     -webkit-touch-callout: none;
   }
 
-  input, 
-  textarea, 
+  input,
+  textarea,
   select {
     cursor: text;
     user-select: text;
@@ -54,7 +54,13 @@
   }
 
   /* 文本优化 */
-  h1, h2, h3, h4, h5, h6, p {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p {
     word-wrap: break-word;
     overflow-wrap: break-word;
   }
@@ -314,13 +320,13 @@
 /* 移动端优化 */
 @media (max-width: 768px) {
   /* 确保移动端触摸目标足够大 */
-  button, 
-  a, 
-  input, 
-  textarea, 
+  button,
+  a,
+  input,
+  textarea,
   select,
-  [role="button"],
-  [role="link"] {
+  [role='button'],
+  [role='link'] {
     min-height: 44px;
     min-width: 44px;
   }
@@ -401,23 +407,43 @@
 
 /* 自定义动画 */
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 @keyframes float-delayed {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-15px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
 }
 
 @keyframes float-slow {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes gradient-x {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .animate-float {
@@ -437,4 +463,4 @@
 .animate-gradient-x {
   background-size: 400% 400%;
   animation: gradient-x 3s ease infinite;
-} 
+}

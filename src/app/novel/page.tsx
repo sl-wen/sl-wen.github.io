@@ -45,7 +45,7 @@ export default function NovelPage() {
       return;
     }
 
-    setDownloadingIds(prev => new Set(prev).add(index));
+    setDownloadingIds((prev) => new Set(prev).add(index));
 
     try {
       const params = new URLSearchParams({
@@ -76,7 +76,7 @@ export default function NovelPage() {
       console.error('下载失败:', error);
       alert(`下载失败: ${error instanceof Error ? error.message : '未知错误'}`);
     } finally {
-      setDownloadingIds(prev => {
+      setDownloadingIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(index);
         return newSet;
@@ -188,7 +188,7 @@ export default function NovelPage() {
           className="flex-1 px-4 py-2 border rounded shadow-sm focus:outline-none focus:ring"
           placeholder="请输入小说名或作者"
           value={keyword}
-          onChange={e => setKeyword(e.target.value)}
+          onChange={(e) => setKeyword(e.target.value)}
         />
         <button
           type="submit"
@@ -240,10 +240,11 @@ export default function NovelPage() {
                     key={format}
                     onClick={() => handleDownload(novel, format, idx)}
                     disabled={downloadingIds.has(idx) || !novel.url}
-                    className={`px-3 py-1 text-sm rounded transition ${downloadingIds.has(idx)
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-green-100 text-green-700 hover:bg-green-200'
-                      }`}
+                    className={`px-3 py-1 text-sm rounded transition ${
+                      downloadingIds.has(idx)
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-green-100 text-green-700 hover:bg-green-200'
+                    }`}
                   >
                     {downloadingIds.has(idx) ? '下载中...' : `下载${format.toUpperCase()}`}
                   </button>

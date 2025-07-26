@@ -89,6 +89,7 @@ src/
 欢迎提交 Issue 和 Pull Request！
 
 请确保代码通过ESLint检查：
+
 ```bash
 npm run lint
 ```
@@ -99,4 +100,4 @@ MIT License
 
 ---
 
-*最后更新: 2025年7月*
+_最后更新: 2025年7月_

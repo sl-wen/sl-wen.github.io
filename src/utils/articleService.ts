@@ -97,7 +97,16 @@ export const getAdjacentArticles = async (
 };
 
 export const createArticle = async (
-  article: Omit<Article, 'post_id' | 'created_at' | 'updated_at' | 'views' | 'likes_count' | 'dislikes_count' | 'comments_count'>
+  article: Omit<
+    Article,
+    | 'post_id'
+    | 'created_at'
+    | 'updated_at'
+    | 'views'
+    | 'likes_count'
+    | 'dislikes_count'
+    | 'comments_count'
+  >
 ): Promise<Article | null> => {
   try {
     const { data, error } = await supabase.from('posts').insert([article]).select().single();

@@ -17,16 +17,24 @@ const Footer: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
             {/* 品牌信息 */}
             <div className="space-y-1">
-              <h3 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">鱼鱼的博客</h3>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                鱼鱼的博客
+              </h3>
               <p className="text-gray-300 text-sm leading-relaxed">
                 一个分享技术、记录生活、探索世界的个人博客。在这里，我们一起学习、成长、创造。
               </p>
               <div className="flex space-x-2">
-                <a href="https://github.com/sl-wen/sl-wen.github.io" className="text-gray-400 hover:text-white transition-colors duration-200">
+                <a
+                  href="https://github.com/sl-wen/sl-wen.github.io"
+                  className="text-gray-400 hover:text-white transition-colors duration-200"
+                >
                   <span className="sr-only">GitHub</span>
                   <i className="fab fa-github text-xl"></i>
                 </a>
-                <a href="sl-wen@outlook.com" className="text-gray-400 hover:text-white transition-colors duration-200">
+                <a
+                  href="sl-wen@outlook.com"
+                  className="text-gray-400 hover:text-white transition-colors duration-200"
+                >
                   <span className="sr-only">邮箱</span>
                   <i className="fas fa-envelope text-xl"></i>
                 </a>
@@ -38,22 +46,34 @@ const Footer: React.FC = () => {
               <h4 className="text-lg font-semibold">快速链接</h4>
               <ul className="flex flex-row gap-4">
                 <div>
-                  <Link href="/" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
+                  <Link
+                    href="/"
+                    className="text-gray-300 hover:text-white transition-colors duration-200 text-sm"
+                  >
                     首页
                   </Link>
                 </div>
                 <div>
-                  <Link href="/category" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
+                  <Link
+                    href="/category"
+                    className="text-gray-300 hover:text-white transition-colors duration-200 text-sm"
+                  >
                     分类
                   </Link>
                 </div>
                 <div>
-                  <Link href="/search" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
+                  <Link
+                    href="/search"
+                    className="text-gray-300 hover:text-white transition-colors duration-200 text-sm"
+                  >
                     搜索
                   </Link>
                 </div>
                 <div>
-                  <Link href="/about" className="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
+                  <Link
+                    href="/about"
+                    className="text-gray-300 hover:text-white transition-colors duration-200 text-sm"
+                  >
                     关于
                   </Link>
                 </div>
@@ -92,7 +112,6 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-
         {/* 底部版权 */}
         <div className="border-t border-gray-800 py-3">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
@@ -118,10 +137,16 @@ const Footer: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors duration-200">
+              <Link
+                href="/privacy"
+                className="text-gray-400 hover:text-white text-sm transition-colors duration-200"
+              >
                 隐私政策
               </Link>
-              <Link href="/terms" className="text-gray-400 hover:text-white text-sm transition-colors duration-200">
+              <Link
+                href="/terms"
+                className="text-gray-400 hover:text-white text-sm transition-colors duration-200"
+              >
                 使用条款
               </Link>
             </div>

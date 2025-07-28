@@ -129,24 +129,35 @@
     @apply w-full;
   }
 
+  /* 为移动端页面内容添加底部间距 */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+  
+  /* 或者为主要内容区域添加间距 */
+  main {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom) + 1rem);
+  }
+}
 /* 移动端底部导航栏 */
- .mobile-nav {
-  @apply relative fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 shadow-lg;
+.mobile-nav {
+  @apply fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 shadow-lg;
+  /* 移除 relative，只保留 fixed */
   padding-bottom: env(safe-area-inset-bottom);
-  height: calc(60px + env(safe-area-inset-bottom)); /* 动态高度适配安全区域 */
-  backdrop-filter: blur(10px); /* 可选：毛玻璃效果 */
+  height: calc(60px + env(safe-area-inset-bottom));
+  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
- }
+}
 
- .mobile-nav-item {
+.mobile-nav-item {
   @apply flex flex-col items-center justify-center py-1 px-2 text-gray-600 dark:text-gray-400 transition-all duration-200;
   min-height: 50px;
-  font-size: 10px; /* 调整字体大小 */
- }
+}
 
- .mobile-nav-item-active {
+.mobile-nav-item-active {
   @apply text-blue-600 dark:text-blue-400;
- }
+}
 
   .mobile-nav-item:hover {
     @apply text-blue-600 dark:text-blue-400;

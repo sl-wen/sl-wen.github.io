@@ -94,7 +94,7 @@ const Header: React.FC = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-1">
+            <nav className="hidden md:flex items-center space-x-4">
               {baseNavItems.map((item) => (
                 <Link
                   key={item.href}
@@ -163,7 +163,7 @@ const Header: React.FC = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`nav-link text-2xl ${isActive(item.href) ? 'nav-link-active' : ''}`}
+                  className={`nav-link ${isActive(item.href) ? 'nav-link-active' : ''}`}
                 >
                   {item.label}
                 </Link>

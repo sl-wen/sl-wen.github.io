@@ -120,33 +120,34 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* PWA Installation Scripts */}
         <script
           dangerouslySetInnerHTML={{
-            __html:
-              "if (typeof window !== 'undefined') {" +
-              "if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {" +
-              "document.documentElement.classList.add('dark');" +
-              "}" +
-              "window.addEventListener('beforeinstallprompt', function(e) {" +
-              "e.preventDefault();" +
-              "var deferredPrompt = e;" +
-              "var installButton = document.createElement('button');" +
-              "installButton.textContent = 'Install App';" +
-              "installButton.className = 'fixed bottom-24 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-200 z-40 text-sm font-medium';" +
-              "installButton.addEventListener('click', function() {" +
-              "deferredPrompt.prompt();" +
-              "deferredPrompt.userChoice.then(function(choiceResult) {" +
-              "if (choiceResult.outcome === 'accepted') {" +
-              "installButton.remove();" +
-              "}" +
-              "});" +
-              "});" +
-              "document.body.appendChild(installButton);" +
-              "setTimeout(function() {" +
-              "if (installButton.parentNode) {" +
-              "installButton.remove();" +
-              "}" +
-              "}, 10000);" +
-              "});" +
-              "}"
+            __html: `
+              if (typeof window !== 'undefined') {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                  document.documentElement.classList.add('dark');
+                }
+                window.addEventListener('beforeinstallprompt', function(e) {
+                  e.preventDefault();
+                  var deferredPrompt = e;
+                  var installButton = document.createElement('button');
+                  installButton.textContent = 'Install App';
+                  installButton.className = 'fixed bottom-24 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-200 z-40 text-sm font-medium';
+                  installButton.addEventListener('click', function() {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then(function(choiceResult) {
+                      if (choiceResult.outcome === 'accepted') {
+                        installButton.remove();
+                      }
+                    });
+                  });
+                  document.body.appendChild(installButton);
+                  setTimeout(function() {
+                    if (installButton.parentNode) {
+                      installButton.remove();
+                    }
+                  }, 10000);
+                });
+              }
+            `
           }}
         />
       </body>

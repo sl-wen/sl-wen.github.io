@@ -290,7 +290,7 @@ const Header: React.FC = () => {
 
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-nav md:hidden">
-        <div className="flex justify-around items-center px-4">
+        <div className="flex justify-around items-center px-4 h-full">
           {navItems.slice(0, 6).map((item) => (
             <Link
               key={item.href}
@@ -298,7 +298,7 @@ const Header: React.FC = () => {
               className={`mobile-nav-item ${isActive(item.href) ? 'mobile-nav-item-active' : ''}`}
             >
               <span className="text-lg mb-1">{item.icon}</span>
-              <span>{item.label}</span>
+              <span className="text-xs">{item.label}</span>
             </Link>
           ))}
         </div>

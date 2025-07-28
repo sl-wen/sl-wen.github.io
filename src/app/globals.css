@@ -129,23 +129,26 @@
     @apply w-full;
   }
 
-  /* 移动端底部导航栏 */
-  .mobile-nav {
-    @apply fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 shadow-lg;
-    padding-bottom: env(safe-area-inset-bottom);
-    height: 60px;
-  }
+/* 移动端底部导航栏 */
+.mobile-nav {
+  @apply fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 shadow-lg;
+  padding-bottom: env(safe-area-inset-bottom);
+  height: calc(60px + env(safe-area-inset-bottom)); /* 动态高度适配安全区域 */
+  backdrop-filter: blur(10px); /* 可选：毛玻璃效果 */
+  -webkit-backdrop-filter: blur(10px);
+}
 
-  .mobile-nav-item {
-    @apply flex flex-col items-center justify-center py-1 px-2 text-gray-600 dark:text-gray-400 transition-all duration-200;
-    min-height: 50px;
-  }
+.mobile-nav-item {
+  @apply flex flex-col items-center justify-center py-1 px-2 text-gray-600 dark:text-gray-400 transition-all duration-200;
+  min-height: 50px;
+  font-size: 10px; /* 调整字体大小 */
+}
+
+.mobile-nav-item-active {
+  @apply text-blue-600 dark:text-blue-400;
+}
 
   .mobile-nav-item:hover {
-    @apply text-blue-600 dark:text-blue-400;
-  }
-
-  .mobile-nav-item-active {
     @apply text-blue-600 dark:text-blue-400;
   }
 

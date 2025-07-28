@@ -38,10 +38,10 @@
   /* 所有可点击元素的最小触摸目标 */
   button,
   a,
-  [role='button'],
-  input[type='button'],
-  input[type='submit'],
-  input[type='reset'],
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
   .btn,
   .touch-target {
     min-height: 44px;
@@ -133,6 +133,158 @@
   }
 }
 
+/* 评论区移动端优化 */
+@media (max-width: 768px) {
+  .comment-section {
+    padding: 16px 0;
+  }
+
+  .comment {
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .comment-header {
+    margin-bottom: 12px;
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+  }
+
+  .comment-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .comment-actions button {
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    min-height: 36px;
+    touch-action: manipulation;
+  }
+
+  .like-button,
+  .dislike-button {
+    background: var(--gray-100);
+    border: none;
+    transition: all 0.2s ease-out;
+  }
+
+  .like-button:active,
+  .dislike-button:active {
+    transform: scale(1.1);
+  }
+
+  .like-button.active {
+    background: #e3f2fd;
+    color: #2196f3;
+  }
+
+  .dislike-button.active {
+    background: #ffebee;
+    color: #f44336;
+  }
+
+  .reply-button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+  }
+
+  /* 回复表单优化 */
+  .reply-form {
+    margin-left: 0;
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .reply-form textarea {
+    border-radius: 8px;
+    min-height: 100px;
+    font-size: 16px; /* 防止iOS缩放 */
+  }
+
+  .replies-list {
+    margin-left: 12px;
+    border-left: 2px solid var(--primary-color);
+    padding-left: 12px;
+  }
+}
+
+/* 表单元素移动端优化 */
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select,
+  .form-input {
+    font-size: 16px; /* 防止iOS Safari缩放 */
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 2px solid var(--border-primary);
+    transition: border-color 0.2s ease-out;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus,
+  .form-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  /* 文件上传优化 */
+  input[type="file"] {
+    padding: 8px;
+  }
+}
+
+/* 模态框和弹窗移动端优化 */
+@media (max-width: 768px) {
+  .modal,
+  .popup {
+    width: calc(100% - 32px);
+    max-width: none;
+    margin: 16px;
+    border-radius: 12px;
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border-primary);
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 1;
+  }
+
+  .modal-body {
+    padding: 20px 24px;
+  }
+
+  .modal-footer {
+    padding: 16px 24px 20px;
+    border-top: 1px solid var(--border-primary);
+    position: sticky;
+    bottom: 0;
+    background: white;
+  }
+}
+
 /* 卡片组件移动端优化 */
 @media (max-width: 768px) {
   .card {
@@ -211,6 +363,111 @@
   }
 }
 
+/* 搜索框移动端优化 */
+@media (max-width: 768px) {
+  .search-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    border-radius: 24px;
+    border: 2px solid var(--border-primary);
+    background: var(--background-secondary);
+    font-size: 16px;
+  }
+
+  .search-input:focus {
+    border-color: var(--primary-color);
+    background: white;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+  }
+}
+
+/* 图片和媒体移动端优化 */
+@media (max-width: 768px) {
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  .image-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin: 16px 0;
+  }
+
+  .image-item {
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease-out;
+  }
+
+  .image-item:active {
+    transform: scale(0.95);
+  }
+}
+
+/* 文本内容移动端优化 */
+@media (max-width: 768px) {
+  .content-text {
+    line-height: 1.6;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .content-text h1,
+  .content-text h2,
+  .content-text h3 {
+    margin-top: 24px;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .content-text p {
+    margin-bottom: 16px;
+  }
+
+  .content-text ul,
+  .content-text ol {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+
+  .content-text li {
+    margin-bottom: 8px;
+  }
+
+  .content-text code {
+    background: var(--background-secondary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  .content-text pre {
+    background: var(--background-secondary);
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+}
+
 /* 浮动操作按钮 */
 @media (max-width: 768px) {
   .fab {
@@ -240,6 +497,45 @@
   .fab:hover {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
     transform: translateY(-2px);
+  }
+}
+
+/* 手势优化 */
+@media (max-width: 768px) {
+  .swipeable {
+    touch-action: pan-x;
+  }
+
+  .scrollable-horizontal {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollable-horizontal::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pull-to-refresh {
+    touch-action: pan-y;
+  }
+}
+
+/* 性能优化 */
+@media (max-width: 768px) {
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-scroll {
+    will-change: scroll-position;
+  }
+
+  .gpu-acceleration {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
   }
 }
 
@@ -309,4 +605,4 @@
     max-height: calc(100vh - 32px);
     margin: 16px;
   }
-}
+} 

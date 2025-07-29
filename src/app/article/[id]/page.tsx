@@ -133,12 +133,10 @@ export default function ArticlePage() {
 
     const oldLikes = article.likes_count;
     const oldDislikes = article.dislikes_count;
+    const oldReaction = PostReaction;
 
     setArticle(prev => {
       if (!prev) return prev;
-
-      const oldReaction = PostReaction;
-
       let newLikes = oldLikes;
       let newDislikes = oldDislikes;
       let newReaction = oldReaction;
@@ -202,7 +200,7 @@ export default function ArticlePage() {
           dislikes_count: oldDislikes
         };
       });
-      setPostReaction(PostReaction);
+      setPostReaction(oldReaction);
       alert('操作失败，请稍后再试');
     } finally {
       setIsReactionLoading(false);
@@ -274,7 +272,7 @@ export default function ArticlePage() {
       }
     }, 0);
     return () => clearTimeout(timer);
-  }, [article]);
+  }, [article?.content]);
 
   if (loading) {
     return <Loading />;

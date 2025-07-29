@@ -124,6 +124,10 @@ export default function ArticlePage() {
       return;
     }
 
+    if (!article) {
+      return;
+    }
+
     // 当用户点击点赞/点踩按钮
     setIsReactionLoading(true);
 

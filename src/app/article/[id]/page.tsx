@@ -131,50 +131,51 @@ export default function ArticlePage() {
     // 当用户点击点赞/点踩按钮
     setIsReactionLoading(true);
 
-    // 1. 本地乐观更新UI
-    let oldLikes = article.likes_count;
-    let oldDislikes = article.dislikes_count;
-    let oldReaction = PostReaction;
+    const oldLikes = article.likes_count;
+    const oldDislikes = article.dislikes_count;
 
-    // 假设 reactionType 是 'like' 或 'dislike'
-    let newLikes = oldLikes;
-    let newDislikes = oldDislikes;
+    setArticle(prev => {
+      if (!prev) return prev;
 
-    // 你需要处理取消、切换等逻辑，这里是简单示例
-    if (reactionType === 'like') {
-      if (oldReaction === 'like') {
-        newLikes -= 1; // 取消点赞
-        setPostReaction(null);
-      } else {
-        newLikes += 1;
-        if (oldReaction === 'dislike') {
-          newDislikes -= 1; // 从踩切换到赞
-        }
-        setPostReaction('like');
-      }
-    } else if (reactionType === 'dislike') {
-      if (oldReaction === 'dislike') {
-        newDislikes -= 1; // 取消点踩
-        setPostReaction(null);
-      } else {
-        newDislikes += 1;
+      const oldReaction = PostReaction;
+
+      let newLikes = oldLikes;
+      let newDislikes = oldDislikes;
+      let newReaction = oldReaction;
+
+      // 计算新的点赞踩数量和反应类型
+      if (reactionType === 'like') {
         if (oldReaction === 'like') {
-          newLikes -= 1; // 从赞切换到踩
+          newLikes -= 1;
+          newReaction = null;
+        } else {
+          newLikes += 1;
+          if (oldReaction === 'dislike') {
+            newDislikes -= 1;
+          }
+          newReaction = 'like';
         }
-        setPostReaction('dislike');
+      } else if (reactionType === 'dislike') {
+        if (oldReaction === 'dislike') {
+          newDislikes -= 1;
+          newReaction = null;
+        } else {
+          newDislikes += 1;
+          if (oldReaction === 'like') {
+            newLikes -= 1;
+          }
+          newReaction = 'dislike';
+        }
       }
-    }
 
-    // 更新本地状态
-    setArticle((prev) =>
-      prev
-        ? {
-          ...prev,
-          likes_count: newLikes,
-          dislikes_count: newDislikes
-        }
-        : null
-    );
+      setPostReaction(newReaction);
+
+      return {
+        ...prev,
+        likes_count: newLikes,
+        dislikes_count: newDislikes,
+      };
+    });
 
     try {
       // 2. 再做请求
@@ -186,24 +187,23 @@ export default function ArticlePage() {
         oldDislikes
       );
 
-      if (success) {
-        return
-      } else {
+      if (!success) {
         // 请求失败，回退状态
-        setArticle((prev) => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            likes_count: oldLikes,
-            dislikes_count: oldDislikes
-          };
-        });
-        setPostReaction(oldReaction);
-        alert('操作失败，请重试');
+        throw new Error('操作失败');
       }
-    } catch (error) {
-      console.error('操作失败:', error);
-      alert('操作失败，请重试');
+    } catch (e) {
+      // 回滚
+      setArticle(prev => {
+        if (!prev) return prev;
+        // 注意这里假设postReaction未变动，最好保存旧状态到闭包中再恢复
+        return {
+          ...prev,
+          likes_count: oldLikes,
+          dislikes_count: oldDislikes
+        };
+      });
+      setPostReaction(PostReaction);
+      alert('操作失败，请稍后再试');
     } finally {
       setIsReactionLoading(false);
     }

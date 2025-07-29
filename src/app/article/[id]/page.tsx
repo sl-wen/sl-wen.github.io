@@ -128,8 +128,8 @@ export default function ArticlePage() {
     setIsReactionLoading(true);
 
     // 1. 本地乐观更新UI
-    let oldLikes = article?.likes_count;
-    let oldDislikes = article?.dislikes_count;
+    let oldLikes = article.likes_count;
+    let oldDislikes = article.dislikes_count;
     let oldReaction = PostReaction;
 
     // 假设 reactionType 是 'like' 或 'dislike'

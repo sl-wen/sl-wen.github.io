@@ -23,6 +23,9 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
   }, [userProfile]);
 
   const loadTasks = async () => {
+    if (!userProfile?.user_id) {
+      return;
+    }
     try {
       setLoading(true);
       const userTasks = await getUserTasks(userProfile.user_id);

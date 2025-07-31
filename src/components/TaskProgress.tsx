@@ -20,7 +20,7 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
     if (userProfile?.user_id) {
       loadTasks();
     }
-  }, [userProfile]);
+  }, [userProfile?.user_id]);
 
   const loadTasks = async () => {
     if (!userProfile?.user_id) {

@@ -20,7 +20,7 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
     if (userProfile?.user_id) {
       loadHistory();
     }
-  }, [userProfile]);
+  }, [userProfile?.user_id]);
 
   const loadHistory = async () => {
     if (!userProfile?.user_id) return;

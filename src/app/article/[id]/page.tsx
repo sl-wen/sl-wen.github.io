@@ -272,7 +272,7 @@ export default function ArticlePage() {
   // 添加复制按钮到代码块
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (article && article.content) {
+      if (article?.content) {
         addCopyButtons();
       }
     }, 0);

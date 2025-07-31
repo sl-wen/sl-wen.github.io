@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from './supabase-config';
-import { initUserTasks, handleLoginRewards } from './task';
+import { initUserTasks, handleLoginRewards, updateTaskProgress } from './task';
 
 export interface UserProfile {
   user_id?: string;
@@ -105,14 +105,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const handleUserLogin = async (profile: UserProfile) => {
     try {
-      // 处理登录奖励
-      await handleLoginRewards(profile);
-      
+      // 登录任务进度更新（替代直接发放奖励）
+      if (profile.user_id) {
+        await updateTaskProgress(profile.user_id, 'login', 1);
+      }
       // 初始化用户任务
       if (profile.user_id) {
         await initializeUserTasks(profile.user_id);
       }
-      
       // 刷新用户资料
       await refreshProfile();
     } catch (error) {

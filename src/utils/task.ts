@@ -40,12 +40,9 @@ export interface TaskRewardHistory {
   task_reward_history_id: string;
   user_id: string;
   task_id: string;
-  coins_reward: number;
-  exp_reward: number;
+  coins_gained: number;
+  experience_gained: number;
   claimed_at: string;
-  task_name: string;
-  task_description: string;
-  action_type: string;
 }
 
 export interface UserLevel {
@@ -54,6 +51,8 @@ export interface UserLevel {
   daily_login_exp: number;
   daily_login_coins: number;
   level_up_reward_coins: number;
+  level_name: string;
+  description: string;
 }
 
 export interface ConsecutiveLoginReward {
@@ -102,7 +101,7 @@ export const getConsecutiveLoginRewards = async (consecutiveLogins: number): Pro
 };
 
 // 更新用户等级
-export const updateProfileLevel = async (level: number, userId: string): Promise<void> => {
+export const updateProfileLevel = async (level: number, user_id: string): Promise<void> => {
   try {
     const { error } = await supabase
       .from('profiles')
@@ -110,7 +109,7 @@ export const updateProfileLevel = async (level: number, userId: string): Promise
         level: level + 1,
         updated_at: new Date().toISOString()
       })
-      .eq('user_id', userId);
+      .eq('user_id', user_id);
 
     if (error) throw error;
   } catch (error) {
@@ -120,7 +119,7 @@ export const updateProfileLevel = async (level: number, userId: string): Promise
 };
 
 // 更新用户登录时间
-export const updateProfileLastLogin = async (userId: string): Promise<void> => {
+export const updateProfileLastLogin = async (user_id: string): Promise<void> => {
   try {
     const { error } = await supabase
       .from('profiles')
@@ -128,7 +127,7 @@ export const updateProfileLastLogin = async (userId: string): Promise<void> => {
         last_login: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .eq('user_id', userId);
+      .eq('user_id', user_id);
 
     if (error) throw error;
   } catch (error) {
@@ -278,10 +277,10 @@ export const handleLoginRewards = async (profile: any): Promise<void> => {
 };
 
 // 初始化任务处理函数
-export const initUserTasks = async (userId: string): Promise<void> => {
+export const initUserTasks = async (user_id: string): Promise<void> => {
   try {
     console.log('初始化任务开始');
-    const userTasksData = await getUserTasks(userId);
+    const userTasksData = await getUserTasks(user_id);
     console.log('userTasksData:', userTasksData);
 
     if (!userTasksData || userTasksData.length === 0) {
@@ -293,7 +292,7 @@ export const initUserTasks = async (userId: string): Promise<void> => {
         for (const taskData of tasksData) {
           try {
             const newUserTask = {
-              user_id: userId,
+              user_id: user_id,
               task_id: taskData.task_id,
               current_count: 0,
               is_claimed: false,
@@ -327,18 +326,13 @@ export const initUserTasks = async (userId: string): Promise<void> => {
   }
 };
 
-// 计算新等级
-export const calculateNewLevel = (experience: number, rewardsExperience: number, requiredExp: number): boolean => {
-  return (experience + rewardsExperience) > requiredExp;
-};
-
 // 获取用户任务
-export const getUserTasks = async (userId: string): Promise<TaskProgress[] | null> => {
+export const getUserTasks = async (user_id: string): Promise<TaskProgress[] | null> => {
   try {
     const { data: userTasks, error } = await supabase
       .from('user_tasks_view')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user_id)
       .order('name', { ascending: true })
       .order('action_type', { ascending: false });
 
@@ -434,12 +428,12 @@ export const getTaskType = async (taskTypeId: string): Promise<any | null> => {
 };
 
 // 获取任务奖励历史
-export const getTaskRewardHistory = async (userId: string): Promise<TaskRewardHistory[] | null> => {
+export const getTaskRewardHistory = async (user_id: string): Promise<TaskRewardHistory[] | null> => {
   try {
     const { data: taskRewardHistory, error } = await supabase
       .from('task_reward_history')
       .select('*')
-      .eq('user_id', userId);
+      .eq('user_id', user_id);
 
     if (error) throw error;
     return taskRewardHistory;
@@ -450,14 +444,14 @@ export const getTaskRewardHistory = async (userId: string): Promise<TaskRewardHi
 };
 
 // 领取任务奖励
-export const claimTaskReward = async (userTaskId: string, userId: string): Promise<void> => {
+export const claimTaskReward = async (userTaskId: string, user_id: string): Promise<void> => {
   try {
     // 获取用户任务信息
     const { data: userTask, error: userTaskError } = await supabase
       .from('user_tasks_view')
       .select('*')
       .eq('usertask_id', userTaskId)
-      .eq('user_id', userId)
+      .eq('user_id', user_id)
       .single();
 
     if (userTaskError) throw userTaskError;
@@ -490,7 +484,7 @@ export const claimTaskReward = async (userTaskId: string, userId: string): Promi
     const { error: historyError } = await supabase
       .from('task_reward_history')
       .insert({
-        user_id: userId,
+        user_id: user_id,
         task_id: userTask.task_id,
         coins_reward: userTask.coins_reward,
         exp_reward: userTask.exp_reward,
@@ -503,7 +497,7 @@ export const claimTaskReward = async (userTaskId: string, userId: string): Promi
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('coins, experience')
-      .eq('user_id', userId)
+      .eq('user_id', user_id)
       .single();
 
     if (profileError) throw profileError;
@@ -515,7 +509,7 @@ export const claimTaskReward = async (userTaskId: string, userId: string): Promi
         experience: (profile.experience || 0) + userTask.exp_reward,
         updated_at: new Date().toISOString()
       })
-      .eq('user_id', userId);
+      .eq('user_id', user_id);
 
     if (updateProfileError) throw updateProfileError;
 
@@ -526,10 +520,10 @@ export const claimTaskReward = async (userTaskId: string, userId: string): Promi
 };
 
 // 更新任务进度
-export const updateTaskProgress = async (userId: string, actionType: string, count: number = 1): Promise<void> => {
+export const updateTaskProgress = async (user_id: string, actionType: string, count: number = 1): Promise<void> => {
   try {
     // 获取用户的所有任务
-    const userTasks = await getUserTasks(userId);
+    const userTasks = await getUserTasks(user_id);
     if (!userTasks) return;
 
     // 找到匹配的任务并更新进度
@@ -554,113 +548,4 @@ export const updateTaskProgress = async (userId: string, actionType: string, cou
     console.error('updateTaskProgress error', error);
     throw error;
   }
-};
-
-export const getAvailableTasks = async (userLevel: number) => {
-  try {
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .lte('min_level', userLevel)
-      .eq('is_active', true);
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const getTaskProgress = async (user_id: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('user_tasks_view')
-      .select('*')
-      .eq('user_id', user_id)
-      .order('task_name', { ascending: false });
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const startTask = async (userId: string, taskId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('task_progress')
-      .insert({
-        user_id: userId,
-        task_id: taskId,
-        status: 'in_progress',
-        started_at: new Date().toISOString()
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const completeTask = async (userId: string, taskId: string) => {
-  try {
-    const { data: task, error: taskError } = await supabase
-      .from('tasks')
-      .select('reward_coins, reward_exp')
-      .eq('id', taskId)
-      .single();
-
-    if (taskError) throw taskError;
-
-    const { data: progress, error: progressError } = await supabase
-      .from('task_progress')
-      .update({
-        status: 'completed',
-        completed_at: new Date().toISOString()
-      })
-      .eq('user_id', userId)
-      .eq('task_id', taskId)
-      .select()
-      .single();
-
-    if (progressError) throw progressError;
-
-    // 更新用户的金币和经验值
-    const { error: updateError } = await supabase.rpc('update_user_rewards', {
-      user_id: userId,
-      coins: task.reward_coins,
-      exp: task.reward_exp
-    });
-
-    if (updateError) throw updateError;
-
-    return progress;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const calculateLevel = (experience: number): number => {
-  const baseExp = 100;
-  const expMultiplier = 1.5;
-  let level = 1;
-  let expRequired = baseExp;
-
-  while (experience >= expRequired) {
-    experience -= expRequired;
-    level++;
-    expRequired = Math.floor(baseExp * Math.pow(expMultiplier, level - 1));
-  }
-
-  return level;
-};
-
-export const getExpForNextLevel = (currentLevel: number): number => {
-  const baseExp = 100;
-  const expMultiplier = 1.5;
-  return Math.floor(baseExp * Math.pow(expMultiplier, currentLevel - 1));
 };

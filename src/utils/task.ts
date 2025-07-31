@@ -204,78 +204,7 @@ export const getConsecutiveLogins = (lastLogin: string | null, consecutiveLogins
   }
 };
 
-/**
- * 处理用户登录奖励
- */
-export const handleLoginRewards = async (profile: any): Promise<void> => {
-  try {
-    console.log('处理用户登录奖励开始');
-    const consecutiveLogins = getConsecutiveLogins(
-      profile.last_login,
-      profile.consecutive_logins || 0
-    );
-    console.log('更新连续登录天数:', consecutiveLogins);
 
-    const userLevel = await getUserLevel(profile.level);
-    console.log('userLevel:', userLevel);
-
-    const isFirstLogin = isFirstLoginOfDay(profile.last_login);
-    console.log('是否为当天首次登录:', isFirstLogin);
-
-    let rewardsExperience = 0;
-    let rewardsCoins = 0;
-    let updateLevel = profile.level;
-
-    if (!isFirstLogin) {
-      await updateProfileLastLogin(profile.user_id);
-      return;
-    }
-
-    rewardsExperience = userLevel?.daily_login_exp || 0;
-    rewardsCoins = userLevel?.daily_login_coins || 0;
-    
-    const consecutiveLoginsRewards = await getConsecutiveLoginRewards(consecutiveLogins);
-    if (consecutiveLoginsRewards) {
-      rewardsExperience += consecutiveLoginsRewards.exp_reward || 0;
-      rewardsCoins += consecutiveLoginsRewards.coins_reward || 0;
-      console.log('连续登录:', consecutiveLoginsRewards);
-    }
-
-    if (consecutiveLogins > 1) {
-      console.log(`连续登录 ${consecutiveLogins} 天,获得 ${consecutiveLoginsRewards?.exp_reward} 经验和 ${consecutiveLoginsRewards?.coins_reward} 币`);
-    }
-
-    if (userLevel && (profile.experience + rewardsExperience) > userLevel.required_exp) {
-      updateLevel = updateLevel + 1;
-      rewardsCoins += userLevel.level_up_reward_coins;
-      console.log(`恭喜升级！到达 ${updateLevel} 级,获得${userLevel.level_up_reward_coins} 币`);
-    }
-
-    const updatedProfile = {
-      experience: (profile.experience || 0) + rewardsExperience,
-      coins: (profile.coins || 0) + rewardsCoins,
-      consecutive_logins: consecutiveLogins,
-      level: updateLevel,
-      last_login: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
-    console.log('updatedProfile:', updatedProfile);
-
-    const { data: updatedProfiles, error } = await supabase
-      .from('profiles')
-      .update(updatedProfile)
-      .eq('user_id', profile.user_id)
-      .select();
-
-    if (error) throw error;
-
-    localStorage.setItem('userProfile', JSON.stringify(updatedProfiles[0]));
-  } catch (error) {
-    console.error('处理登录奖励失败:', error);
-    throw error;
-  }
-};
 
 // 初始化任务处理函数
 export const initUserTasks = async (userId: string): Promise<void> => {

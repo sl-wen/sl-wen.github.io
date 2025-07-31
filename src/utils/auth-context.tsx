@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from './supabase-config';
-import { initUserTasks, handleLoginRewards, updateTaskProgress } from './task';
+import { initUserTasks, updateTaskProgress } from './task';
 
 export interface UserProfile {
   user_id?: string;

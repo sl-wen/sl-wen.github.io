@@ -120,7 +120,7 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
                     <div>
                       <span className="text-gray-500">任务类型:</span>
                       <span className="ml-1 font-medium">
-                        {getActionTypeLabel(record.action_type)}
+                        {/* {getActionTypeLabel(record.action_type)} */}
                       </span>
                     </div>
                     <div>

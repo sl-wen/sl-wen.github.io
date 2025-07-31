@@ -12,6 +12,7 @@ import {
 import { addCommentReaction, getCommentReaction } from '@/utils/reactionService';
 import { getUserProfile } from '@/utils/supabase-config';
 import { Button, Textarea, Card, Alert } from './ui';
+import { useTaskProgress, TASK_ACTIONS } from '@/utils/task-hooks';
 
 interface UserProfile {
   username: string;
@@ -42,6 +43,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
   }>({});
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
+  const { updateProgress } = useTaskProgress();
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -113,6 +115,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
         setComments([...comments, comment]);
         setNewComment('');
         setError(null);
+        
+        // 更新任务进度 - 评论
+        await updateProgress(TASK_ACTIONS.COMMENT);
       }
     } catch (err) {
       setError('发表评论失败');
@@ -192,6 +197,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
         setComments([...comments, reply]);
         handleCancelReply();
         setError(null);
+        
+        // 更新任务进度 - 评论
+        await updateProgress(TASK_ACTIONS.COMMENT);
       }
     } catch (error) {
       setError('回复发表失败');
@@ -264,6 +272,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ post_id }) => {
         setCommentReactions((prev) => ({ ...prev, [comment_id]: previousReaction }));
         setComments(previousComments);
         setError('操作失败，请稍后重试');
+      } else if (type === 'like' && newReaction === 'like') {
+        // 更新任务进度 - 点赞
+        await updateProgress(TASK_ACTIONS.LIKE);
       }
     } catch (error) {
       console.error('处理评论反应失败:', error);

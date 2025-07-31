@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from './supabase-config';
+import { initUserTasks, handleLoginRewards } from './task';
 
 export interface UserProfile {
   user_id?: string;
@@ -11,6 +12,8 @@ export interface UserProfile {
   level?: number;
   coins?: number;
   experience?: number;
+  consecutive_logins?: number;
+  last_login?: string;
 }
 
 interface AuthContextType {
@@ -90,6 +93,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const initializeUserTasks = async (userId: string) => {
+    try {
+      // 初始化用户任务
+      await initUserTasks(userId);
+      console.log('用户任务初始化完成');
+    } catch (error) {
+      console.error('初始化用户任务失败:', error);
+    }
+  };
+
+  const handleUserLogin = async (profile: UserProfile) => {
+    try {
+      // 处理登录奖励
+      await handleLoginRewards(profile);
+      
+      // 初始化用户任务
+      if (profile.user_id) {
+        await initializeUserTasks(profile.user_id);
+      }
+      
+      // 刷新用户资料
+      await refreshProfile();
+    } catch (error) {
+      console.error('处理用户登录失败:', error);
+    }
+  };
+
   useEffect(() => {
     loadUserProfile();
 
@@ -109,6 +139,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (profile) {
           localStorage.setItem('userProfile', JSON.stringify(profile));
           setUserProfile(profile);
+          
+          // 处理用户登录
+          await handleUserLogin(profile);
         }
       } else if (event === 'SIGNED_OUT') {
         localStorage.removeItem('userProfile');

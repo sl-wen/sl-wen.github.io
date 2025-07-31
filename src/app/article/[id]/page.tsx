@@ -11,6 +11,7 @@ import { marked } from 'marked';
 import { addPostReaction, getPostReaction } from '@/utils/reactionService';
 import CommentSection from '@/components/CommentSection';
 import { Button } from '@/components/ui/Button';
+import { useTaskProgress, TASK_ACTIONS } from '@/utils/task-hooks';
 
 const addCopyButtons = () => {
   console.log('addCopyButtons called');
@@ -111,6 +112,7 @@ export default function ArticlePage() {
 
   // 添加防止重复点击的状态
   const [isReactionLoading, setIsReactionLoading] = useState(false);
+  const { updateProgress } = useTaskProgress();
 
   // 处理点赞/点踩的函数
   const handlePostReaction = async (reactionType: 'like' | 'dislike') => {
@@ -188,6 +190,9 @@ export default function ArticlePage() {
       if (!success) {
         // 请求失败，回退状态
         throw new Error('操作失败');
+      } else if (reactionType === 'like' && oldReaction !== 'like') {
+        // 更新任务进度 - 点赞
+        await updateProgress(TASK_ACTIONS.LIKE);
       }
     } catch (e) {
       // 回滚

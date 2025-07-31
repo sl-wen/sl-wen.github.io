@@ -10,7 +10,7 @@ import TaskProgressComponent from '@/components/TaskProgress';
 import TaskHistoryComponent from '@/components/TaskHistory';
 
 export default function ProfilePage() {
-  const { userProfile, refreshProfile } = useAuth();
+  const { userProfile, refreshProfile, loading: authLoading } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -29,21 +29,23 @@ export default function ProfilePage() {
 
   // 检查登录状态
   useEffect(() => {
-    if (!userProfile?.user_id) {
+    if (!authLoading && !userProfile?.user_id) {
       router.push('/login');
       return;
     }
 
     // 填充表单数据
-    setFormData({
-      username: userProfile.username || '',
-      email: userProfile.email || '',
-      avatar_url: userProfile.avatar_url || '',
-      level: userProfile.level || 0,
-      coins: userProfile.coins || 0,
-      experience: userProfile.experience || 0
-    });
-  }, [userProfile, router]);
+    if (userProfile) {
+      setFormData({
+        username: userProfile.username || '',
+        email: userProfile.email || '',
+        avatar_url: userProfile.avatar_url || '',
+        level: userProfile.level || 0,
+        coins: userProfile.coins || 0,
+        experience: userProfile.experience || 0
+      });
+    }
+  }, [userProfile, router, authLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +92,19 @@ export default function ProfilePage() {
     }));
   };
 
-  if (!userProfile) {
+  // 显示加载状态
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">加载中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userProfile?.user_id) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -106,30 +120,30 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* 页面标题 */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">个人中心</h1>
+        <div className="text-center mb-2">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">个人中心</h1>
           <p className="text-gray-600">管理您的账户信息和任务进度</p>
         </div>
 
         {/* 用户统计信息 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="p-6 text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">{formData.level}</div>
+        <div className="grid grid-cols-4 md:grid-cols-4 gap-3 mb-2">
+          <Card className="text-center">
             <div className="text-sm text-gray-600">等级</div>
+            <div className="text-md p-1 text-center font-bold text-blue-600 mb-1">{formData.level}</div>
           </Card>
-          <Card className="p-6 text-center">
-            <div className="text-3xl font-bold text-yellow-600 mb-2">{formData.coins}</div>
+          <Card className="text-center">
             <div className="text-sm text-gray-600">金币</div>
+            <div className="text-md p-1 text-center font-bold text-yellow-600 mb-1">{formData.coins}</div>
           </Card>
-          <Card className="p-6 text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">{formData.experience}</div>
-            <div className="text-sm text-gray-600">经验值</div>
+          <Card className="text-center">
+            <div className="text-sm text-gray-600">经验</div>
+            <div className="text-md font-bold text-green-600 mb-1">{formData.experience}</div>
           </Card>
-          <Card className="p-6 text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">
+          <Card className="text-center">
+            <div className="text-sm text-gray-600">登录</div>
+            <div className="text-md font-bold text-purple-600 mb-1">
               {userProfile.consecutive_logins || 0}
             </div>
-            <div className="text-sm text-gray-600">连续登录</div>
           </Card>
         </div>
 
@@ -137,31 +151,28 @@ export default function ProfilePage() {
         <div className="flex border-b border-gray-200 mb-8">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'profile'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'profile'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
           >
             个人资料
           </button>
           <button
             onClick={() => setActiveTab('tasks')}
-            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'tasks'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'tasks'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
           >
             任务进度
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'history'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'history'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
           >
             任务历史
           </button>
@@ -169,7 +180,7 @@ export default function ProfilePage() {
 
         {/* 标签页内容 */}
         {activeTab === 'profile' && (
-          <Card size="lg" variant="elevated" className="shadow-lg">
+          <Card size="md" variant="elevated" className="shadow-lg">
             {/* 用户头像区域 */}
             <div className="text-center mb-8">
               <div className="relative inline-block">

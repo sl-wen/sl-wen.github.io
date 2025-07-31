@@ -21,8 +21,8 @@ const cardVariants = {
 };
 
 const cardSizes = {
-  sm: 'p-4',
-  md: 'p-6',
+  sm: 'p-2',
+  md: 'p-4 pt-2 pb-2',
   lg: 'p-8'
 };
 

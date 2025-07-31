@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createArticle, renderMarkdown } from '@/utils/articleService';
+import { useTaskProgress, TASK_ACTIONS } from '@/utils/task-hooks';
 
 interface PostFormData {
   title: string;
@@ -29,6 +30,7 @@ export default function PostPage() {
     username: string;
     email: string;
   } | null>(null);
+  const { updateProgress } = useTaskProgress();
 
   // 检查登录状态
   useEffect(() => {
@@ -101,6 +103,9 @@ export default function PostPage() {
         author: userProfile ? userProfile.username || '' : '',
         user_id: userProfile ? userProfile.user_id || '' : ''
       });
+
+      // 更新任务进度 - 发帖
+      await updateProgress(TASK_ACTIONS.POST);
 
       router.push(`/article/${article?.post_id}`);
     } catch (err) {

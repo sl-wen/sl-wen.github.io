@@ -11,7 +11,8 @@
     "export": "next export",
     "tsc": "tsc --noEmit",
     "validate:css": "node --experimental-modules scripts/css-path-validator.js",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
+    "test:task": "node scripts/test-task-system.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",

@@ -3,6 +3,10 @@ import { Inter } from 'next/font/google';
 import dynamic from 'next/dynamic';
 import './globals.css';
 import { AuthProvider } from '@/utils/auth-context';
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import PerformanceMonitor from '@/components/PerformanceMonitor';
+import NetworkStatus from '@/components/NetworkStatus';
+import ResourcePreloader from '@/components/ResourcePreloader';
 
 // 优化字体加载
 const inter = Inter({
@@ -116,6 +120,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <StatusMessages />
           </div>
         </AuthProvider>
+
+        {/* Service Worker Registration */}
+        <ServiceWorkerRegistration />
+        
+        {/* Performance Monitor */}
+        <PerformanceMonitor />
+        
+        {/* Network Status */}
+        <NetworkStatus />
+        
+        {/* Resource Preloader */}
+        <ResourcePreloader />
 
         {/* PWA Installation Scripts */}
         <script

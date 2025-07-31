@@ -40,8 +40,8 @@ export interface TaskRewardHistory {
   task_reward_history_id: string;
   user_id: string;
   task_id: string;
-  coins_reward: number;
-  exp_reward: number;
+  coins_gained: number;
+  experience_gained: number;
   claimed_at: string;
   task_name?: string;
   task_description?: string;
@@ -367,11 +367,31 @@ export const getTaskRewardHistory = async (userId: string): Promise<TaskRewardHi
   try {
     const { data: taskRewardHistory, error } = await supabase
       .from('task_reward_history')
-      .select('*')
-      .eq('user_id', userId);
+      .select(`
+        *,
+        tasks!inner(
+          task_name,
+          task_description,
+          action_type
+        )
+      `)
+      .eq('user_id', userId)
+      .order('claimed_at', { ascending: false });
 
     if (error) throw error;
-    return taskRewardHistory;
+    
+    // 映射数据以匹配接口
+    return taskRewardHistory?.map(record => ({
+      task_reward_history_id: record.task_reward_history_id,
+      user_id: record.user_id,
+      task_id: record.task_id,
+      coins_gained: record.coins_gained,
+      experience_gained: record.experience_gained,
+      claimed_at: record.claimed_at,
+      task_name: record.tasks?.task_name,
+      task_description: record.tasks?.task_description,
+      action_type: record.tasks?.action_type
+    })) || null;
   } catch (error) {
     console.error('getTaskRewardHistory error', error);
     return null;
@@ -421,8 +441,8 @@ export const claimTaskReward = async (userTaskId: string, userId: string): Promi
       .insert({
         user_id: userId,
         task_id: userTask.task_id,
-        coins_reward: userTask.coins_reward,
-        exp_reward: userTask.exp_reward,
+        coins_gained: userTask.coins_reward,
+        experience_gained: userTask.exp_reward,
         claimed_at: new Date().toISOString()
       });
 

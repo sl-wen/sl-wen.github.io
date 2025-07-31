@@ -120,20 +120,19 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
                     <div>
                       <span className="text-gray-500">任务类型:</span>
                       <span className="ml-1 font-medium">
-                        {/* {getActionTypeLabel(record.action_type)} */}
-                        {getActionTypeLabel('login')}
+                        {getActionTypeLabel(record.action_type || 'login')}
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-500">金币奖励:</span>
                       <span className="ml-1 font-medium text-yellow-600">
-                        +{record.coins_reward}
+                        +{record.coins_gained}
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-500">经验奖励:</span>
                       <span className="ml-1 font-medium text-green-600">
-                        +{record.exp_reward}
+                        +{record.experience_gained}
                       </span>
                     </div>
                     <div>
@@ -150,11 +149,11 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
               <div className="flex items-center justify-end gap-2 text-sm">
                 <div className="flex items-center gap-1 text-yellow-600">
                   <span>💰</span>
-                  <span>{record.coins_reward}</span>
+                  <span>{record.coins_gained}</span>
                 </div>
                 <div className="flex items-center gap-1 text-green-600">
                   <span>⭐</span>
-                  <span>{record.exp_reward}</span>
+                  <span>{record.experience_gained}</span>
                 </div>
               </div>
             </div>
@@ -173,13 +172,13 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600">
-                {history.reduce((sum, record) => sum + record.coins_reward, 0)}
+                {history.reduce((sum, record) => sum + record.coins_gained, 0)}
               </div>
               <div className="text-gray-600">总金币</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {history.reduce((sum, record) => sum + record.exp_reward, 0)}
+                {history.reduce((sum, record) => sum + record.experience_gained, 0)}
               </div>
               <div className="text-gray-600">总经验</div>
             </div>

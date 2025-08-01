@@ -91,22 +91,8 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
     return 'bg-blue-500';
   };
 
-  if (!userProfile) {
-    return (
-      <Card className={`p-6 ${className}`}>
-        <div className="text-center text-gray-500">
-          请先登录以查看任务进度
-        </div>
-      </Card>
-    );
-  }
-
   return (
     <Card className={`p-6 ${className}`}>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">任务进度</h2>
-        <p className="text-gray-600">完成任务获得金币和经验值奖励</p>
-      </div>
 
       {message && (
         <Alert variant={messageType} className="mb-6">

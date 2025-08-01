@@ -70,22 +70,8 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
     }
   };
 
-  if (!userProfile) {
-    return (
-      <Card className={`p-6 ${className}`}>
-        <div className="text-center text-gray-500">
-          请先登录以查看任务历史
-        </div>
-      </Card>
-    );
-  }
-
   return (
     <Card className={`p-6 ${className}`}>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">任务历史</h2>
-        <p className="text-gray-600">查看已领取的任务奖励记录</p>
-      </div>
 
       {message && (
         <Alert variant={messageType} className="mb-6">

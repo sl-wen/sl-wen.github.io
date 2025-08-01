@@ -92,7 +92,7 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
   };
 
   return (
-    <Card className={`p-6 ${className}`}>
+    <Card className={`p-2 ${className}`}>
 
       {message && (
         <Alert variant={messageType} className="mb-6">
@@ -112,7 +112,7 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
       ) : (
         <div className="space-y-4">
           {tasks.map((task) => (
-            <div key={task.usertask_id} className="border rounded-lg p-4 bg-white">
+            <div key={task.usertask_id} className="border rounded-lg p-1 bg-white">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">

@@ -111,7 +111,24 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
         </div>
       ) : (
         <div className="space-y-4">
-          {tasks.map((task) => (
+          {tasks
+            .filter(task => !task.is_claimed) // 过滤掉已领取的任务
+            .sort((a, b) => {
+              // 优先显示可领取的任务（已完成但未领取）
+              const aCanClaim = a.current_count >= a.required_count;
+              const bCanClaim = b.current_count >= b.required_count;
+              
+              if (aCanClaim && !bCanClaim) return -1;
+              if (!aCanClaim && bCanClaim) return 1;
+              
+              // 如果都是可领取或都不可领取，按任务类型排序
+              const typeOrder = { daily: 1, weekly: 2, achievement: 3, behavior: 4 };
+              const aTypeOrder = typeOrder[a.name as keyof typeof typeOrder] || 5;
+              const bTypeOrder = typeOrder[b.name as keyof typeof typeOrder] || 5;
+              
+              return aTypeOrder - bTypeOrder;
+            })
+            .map((task) => (
             <div key={task.usertask_id} className="border rounded-lg p-3 bg-white">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
@@ -167,7 +184,7 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
 
               {/* 操作按钮 */}
               <div className="flex justify-end">
-                {!task.is_claimed && task.current_count >= task.required_count ? (
+                {task.current_count >= task.required_count ? (
                   <Button
                     onClick={() => handleClaimReward(task.usertask_id)}
                     disabled={loading}
@@ -176,8 +193,6 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
                   >
                     {loading ? '领取中...' : '领取奖励'}
                   </Button>
-                ) : task.is_claimed ? (
-                  <span className="text-green-600 text-sm font-medium">✓ 已领取</span>
                 ) : (
                   <span className="text-gray-500 text-sm">继续完成任务</span>
                 )}

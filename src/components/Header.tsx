@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/utils/auth-context';
 import { supabase } from '@/utils/supabase-config';
+import { incrementVisitCount } from '@/utils/stats';
 
 const Header: React.FC = () => {
   const { userProfile } = useAuth();
@@ -21,6 +22,7 @@ const Header: React.FC = () => {
   // 确保组件已挂载，避免SSR/Client不一致
   useEffect(() => {
     setMounted(true);
+    incrementVisitCount();
   }, []);
 
   useEffect(() => {

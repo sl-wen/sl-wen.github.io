@@ -131,7 +131,7 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
                     </div>
                     <div>
                       <span className="text-gray-500">进度:</span>
-                      <span className="font-medium">
+                      <span className="font-medium text-red-600">
                         {task.current_count}/{task.required_count}
                       </span>
                     </div>
@@ -152,7 +152,7 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
               </div>
 
               {/* 进度条 */}
-              <div className="mb-3">
+              <div className="mb-2">
                 <div className="flex justify-between text-xs text-gray-500 mb-1">
                   <span>进度</span>
                   <span>{Math.round(getProgressPercentage(task.current_count, task.required_count))}%</span>

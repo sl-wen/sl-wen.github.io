@@ -91,7 +91,7 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
       ) : (
         <div className="space-y-4">
           {history.map((record) => (
-            <div key={record.task_reward_history_id} className="border rounded-lg p-1 bg-white">
+            <div key={record.task_reward_history_id} className="border rounded-lg p-3 bg-white">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -100,7 +100,6 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
                     </span>
                     <h3 className="font-semibold text-gray-900">{record.task_name}</h3>
                   </div>
-                  <p className="text-sm text-gray-600 mb-3">{record.task_description}</p>
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
@@ -110,15 +109,18 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
                       </span>
                     </div>
                     <div>
+                      <span className="text-sm text-gray-600 mb-3">{record.task_description}</span>
+                    </div>
+                    <div>
                       <span className="text-gray-500">金币奖励:</span>
                       <span className="ml-1 font-medium text-yellow-600">
-                        +{record.coins_gained}
+                        +{record.coins_gained}💰
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-500">经验奖励:</span>
                       <span className="ml-1 font-medium text-green-600">
-                        +{record.experience_gained}
+                        +{record.experience_gained}⭐
                       </span>
                     </div>
                     <div>
@@ -128,18 +130,6 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
                       </span>
                     </div>
                   </div>
-                </div>
-              </div>
-
-              {/* 奖励图标 */}
-              <div className="flex items-center justify-end gap-2 text-sm">
-                <div className="flex items-center gap-1 text-yellow-600">
-                  <span>💰</span>
-                  <span>{record.coins_gained}</span>
-                </div>
-                <div className="flex items-center gap-1 text-green-600">
-                  <span>⭐</span>
-                  <span>{record.experience_gained}</span>
                 </div>
               </div>
             </div>

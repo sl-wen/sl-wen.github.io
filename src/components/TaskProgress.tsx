@@ -47,13 +47,13 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
     try {
       setLoading(true);
       await claimTaskReward(userTaskId, userProfile.user_id);
-      
+
       // 刷新用户资料以更新金币和经验值
       await refreshProfile();
-      
+
       // 重新加载任务
       await loadTasks();
-      
+
       setMessage('奖励领取成功！');
       setMessageType('success');
     } catch (error) {
@@ -112,21 +112,23 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
       ) : (
         <div className="space-y-4">
           {tasks.map((task) => (
-            <div key={task.usertask_id} className="border rounded-lg p-1 bg-white">
+            <div key={task.usertask_id} className="border rounded-lg p-3 bg-white">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTaskTypeColor(task.name)}`}>
-                      {task.name === 'daily' ? '每日' : 
-                       task.name === 'weekly' ? '每周' : 
-                       task.name === 'achievement' ? '成就' : 
-                       task.name === 'behavior' ? '行为' : task.name}
+                      {task.name === 'daily' ? '每日' :
+                        task.name === 'weekly' ? '每周' :
+                          task.name === 'achievement' ? '成就' :
+                            task.name === 'behavior' ? '行为' : task.name}
                     </span>
                     <h3 className="font-semibold text-gray-900">{task.task_name}</h3>
                   </div>
-                  <p className="text-sm text-gray-600 mb-3">{task.task_description}</p>
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-sm text-gray-600 mb-3">{task.task_description}</span>
+                    </div>
                     <div>
                       <span className="text-gray-500">进度:</span>
                       <span className="ml-1 font-medium">
@@ -143,16 +145,6 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
                       <span className="text-gray-500">经验奖励:</span>
                       <span className="ml-1 font-medium text-green-600">
                         {task.exp_reward}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">状态:</span>
-                      <span className={`ml-1 font-medium ${
-                        task.is_claimed ? 'text-green-600' : 
-                        task.current_count >= task.required_count ? 'text-blue-600' : 'text-gray-600'
-                      }`}>
-                        {task.is_claimed ? '已领取' : 
-                         task.current_count >= task.required_count ? '可领取' : '进行中'}
                       </span>
                     </div>
                   </div>

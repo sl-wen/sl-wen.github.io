@@ -125,25 +125,25 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
                     <h3 className="font-semibold text-gray-900">{task.task_name}</h3>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-1 text-sm">
                     <div>
-                      <span className="text-sm text-gray-600 mb-3">{task.task_description}</span>
+                      <span className="text-sm text-gray-600 mb-2">{task.task_description}</span>
                     </div>
                     <div>
                       <span className="text-gray-500">进度:</span>
-                      <span className="ml-1 font-medium">
+                      <span className="font-medium">
                         {task.current_count}/{task.required_count}
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-500">金币奖励:</span>
-                      <span className="ml-1 font-medium text-yellow-600">
+                      <span className="font-medium text-yellow-600">
                         {task.coins_reward}
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-500">经验奖励:</span>
-                      <span className="ml-1 font-medium text-green-600">
+                      <span className="font-medium text-green-600">
                         {task.exp_reward}
                       </span>
                     </div>

@@ -101,10 +101,10 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
                     <h3 className="font-semibold text-gray-900">{record.task_name}</h3>
                   </div>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-1 text-sm">
                     <div>
                       <span className="text-gray-500">任务类型:</span>
-                      <span className="ml-1 font-medium">
+                      <span className="font-medium">
                         {getActionTypeLabel(record.action_type || 'login')}
                       </span>
                     </div>
@@ -113,23 +113,23 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
                     </div>
                     <div>
                       <span className="text-gray-500">金币奖励:</span>
-                      <span className="ml-1 font-medium text-yellow-600">
+                      <span className="font-medium text-yellow-600">
                         +{record.coins_gained}💰
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-500">经验奖励:</span>
-                      <span className="ml-1 font-medium text-green-600">
+                      <span className="font-medium text-green-600">
                         +{record.experience_gained}⭐
                       </span>
                     </div>
-                    <div>
+                  </div>
+                  <div>
                       <span className="text-gray-500">领取时间:</span>
-                      <span className="ml-1 font-medium text-gray-600">
+                      <span className="font-medium text-gray-600">
                         {formatDate(record.claimed_at)}
                       </span>
                     </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -147,6 +147,12 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
               <div className="text-gray-600">完成任务</div>
             </div>
             <div className="text-center">
+              <div className="text-xl font-bold text-purple-600">
+                {new Set(history.map(record => record.action_type)).size}
+              </div>
+              <div className="text-gray-600">任务类型</div>
+            </div>
+            <div className="text-center">
               <div className="text-xl font-bold text-yellow-600">
                 {history.reduce((sum, record) => sum + record.coins_gained, 0)}
               </div>
@@ -157,12 +163,6 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
                 {history.reduce((sum, record) => sum + record.experience_gained, 0)}
               </div>
               <div className="text-gray-600">总经验</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-purple-600">
-                {new Set(history.map(record => record.action_type)).size}
-              </div>
-              <div className="text-gray-600">任务类型</div>
             </div>
           </div>
         </div>

@@ -13,11 +13,19 @@ export default function ResourcePreloader() {
         ];
 
         fontLinks.forEach(href => {
-          const link = document.createElement('link');
-          link.rel = 'preload';
-          link.as = 'style';
-          link.href = href;
-          document.head.appendChild(link);
+          try {
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'style';
+            link.href = href;
+            link.onerror = () => {
+              console.warn(`Failed to preload font: ${href}`);
+              document.head.removeChild(link);
+            };
+            document.head.appendChild(link);
+          } catch (error) {
+            console.warn(`Error preloading font ${href}:`, error);
+          }
         });
 
         // 预加载关键图片
@@ -29,11 +37,19 @@ export default function ResourcePreloader() {
         ];
 
         imageUrls.forEach(src => {
-          const link = document.createElement('link');
-          link.rel = 'preload';
-          link.as = 'image';
-          link.href = src;
-          document.head.appendChild(link);
+          try {
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'image';
+            link.href = src;
+            link.onerror = () => {
+              console.warn(`Failed to preload image: ${src}`);
+              document.head.removeChild(link);
+            };
+            document.head.appendChild(link);
+          } catch (error) {
+            console.warn(`Error preloading image ${src}:`, error);
+          }
         });
 
         // 预加载关键页面
@@ -44,10 +60,18 @@ export default function ResourcePreloader() {
         ];
 
         pageUrls.forEach(href => {
-          const link = document.createElement('link');
-          link.rel = 'prefetch';
-          link.href = href;
-          document.head.appendChild(link);
+          try {
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = href;
+            link.onerror = () => {
+              console.warn(`Failed to preload page: ${href}`);
+              document.head.removeChild(link);
+            };
+            document.head.appendChild(link);
+          } catch (error) {
+            console.warn(`Error preloading page ${href}:`, error);
+          }
         });
 
         // 预连接到外部域名
@@ -88,7 +112,7 @@ export default function ResourcePreloader() {
         // 预加载其他页面
         const otherPages = [
           '/category',
-          '/article',
+          '/post',
           '/novel',
           '/tools',
           '/settings',
@@ -99,10 +123,19 @@ export default function ResourcePreloader() {
         ];
 
         otherPages.forEach(href => {
-          const link = document.createElement('link');
-          link.rel = 'prefetch';
-          link.href = href;
-          document.head.appendChild(link);
+          try {
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = href;
+            // 添加错误处理
+            link.onerror = () => {
+              console.warn(`Failed to preload: ${href}`);
+              document.head.removeChild(link);
+            };
+            document.head.appendChild(link);
+          } catch (error) {
+            console.warn(`Error preloading ${href}:`, error);
+          }
         });
       };
 

@@ -10,8 +10,7 @@ import { recordPostsView } from '@/utils/stats';
 import { marked } from 'marked';
 import { addPostReaction, getPostReaction } from '@/utils/reactionService';
 import CommentSection from '@/components/CommentSection';
-import { Button } from '@/components/ui/Button';
-import { useTaskProgress, TASK_ACTIONS } from '@/utils/task-hooks';
+import { useSafeTaskProgress, TASK_ACTIONS } from '@/utils/task-hooks';
 
 const addCopyButtons = () => {
   console.log('addCopyButtons called');
@@ -112,7 +111,15 @@ export default function ArticlePage() {
 
   // 添加防止重复点击的状态
   const [isReactionLoading, setIsReactionLoading] = useState(false);
-  const { updateProgress } = useTaskProgress();
+
+  // Safely use the task progress hook
+  let updateProgress: ((actionType: string, count?: number) => Promise<void>) | null = null;
+  try {
+    const taskProgress = useSafeTaskProgress();
+    updateProgress = taskProgress.updateProgress;
+  } catch (error) {
+    console.error('Failed to initialize task progress:', error);
+  }
 
   // 处理点赞/点踩的函数
   const handlePostReaction = async (reactionType: 'like' | 'dislike') => {
@@ -187,56 +194,78 @@ export default function ArticlePage() {
         oldDislikes
       );
 
-      if (!success) {
-        // 请求失败，回退状态
-        throw new Error('操作失败');
-      } else if (reactionType === 'like' && oldReaction !== 'like') {
-        // 更新任务进度 - 点赞
-        await updateProgress(TASK_ACTIONS.LIKE);
+      if (success) {
+        // 3. 更新任务进度
+        if (updateProgress) {
+          try {
+            await updateProgress(TASK_ACTIONS.LIKE, 1);
+          } catch (taskError) {
+            console.error('更新任务进度失败:', taskError);
+          }
+        }
+      } else {
+        // 如果请求失败，回滚状态
+        setArticle(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            likes_count: oldLikes,
+            dislikes_count: oldDislikes,
+          };
+        });
+        setPostReaction(oldReaction);
       }
-    } catch (e) {
-      // 回滚
+    } catch (error) {
+      console.error('处理反应失败:', error);
+      // 回滚状态
       setArticle(prev => {
         if (!prev) return prev;
-        // 注意这里假设postReaction未变动，最好保存旧状态到闭包中再恢复
         return {
           ...prev,
           likes_count: oldLikes,
-          dislikes_count: oldDislikes
+          dislikes_count: oldDislikes,
         };
       });
       setPostReaction(oldReaction);
-      alert('操作失败，请稍后再试');
     } finally {
       setIsReactionLoading(false);
     }
   };
 
+  // 获取文章数据
   useEffect(() => {
     const fetchArticle = async () => {
-      if (!post_id) {
-        setError('文章ID无效');
-        return;
-      }
+      if (!post_id) return;
 
       try {
         setLoading(true);
-        const [articleData, adjacentArticles] = await Promise.all([
-          getArticleById(post_id),
-          getAdjacentArticles(post_id)
-        ]);
+        setError(null);
 
-        if (!articleData) {
+        const articleData = await getArticleById(post_id);
+        if (articleData) {
+          setArticle(articleData);
+
+          // 记录文章浏览
+          try {
+            await recordPostsView(post_id);
+          } catch (viewError) {
+            console.error('记录文章浏览失败:', viewError);
+          }
+
+          // 获取相邻文章
+          try {
+            const adjacentArticles = await getAdjacentArticles(post_id);
+            setPrevArticle(adjacentArticles.prev);
+            setNextArticle(adjacentArticles.next);
+          } catch (adjacentError) {
+            console.error('获取相邻文章失败:', adjacentError);
+          }
+        } else {
           setError('文章不存在');
-          return;
         }
-
-        setArticle(articleData);
-        setPrevArticle(adjacentArticles.prev);
-        setNextArticle(adjacentArticles.next);
-        recordPostsView(post_id);
-      } catch (err) {
-        setError('加载文章失败');
+      } catch (error) {
+        console.error('获取文章失败:', error);
+        setError('获取文章失败');
       } finally {
         setLoading(false);
       }
@@ -245,15 +274,22 @@ export default function ArticlePage() {
     fetchArticle();
   }, [post_id]);
 
+  // 加载用户资料
   useEffect(() => {
-    const data = localStorage.getItem('userProfile');
-    const profile = JSON.parse(data || '{}');
-    setUserProfile(profile);
+    try {
+      const data = localStorage.getItem('userProfile');
+      if (data) {
+        const profile = JSON.parse(data);
+        setUserProfile(profile);
+      }
+    } catch (error) {
+      console.error('加载用户资料失败:', error);
+    }
   }, []);
 
+  // 加载用户反应状态
   useEffect(() => {
     if (article && userProfile?.user_id) {
-      // 加载用户的反应状态
       const loadUserReaction = async () => {
         try {
           const reaction = await getPostReaction(article.post_id, userProfile.user_id);
@@ -299,134 +335,88 @@ export default function ArticlePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* 操作按钮区域 */}
-        <div className="flex justify-between items-center mb-8">
-          {userProfile?.user_id && (
-            <Link
-              href={`/article/${article.post_id}/edit`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-            >
-              编辑文章
-            </Link>
-          )}
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant={PostReaction === 'like' ? 'success' : 'ghost'}
-              size="sm"
-              onClick={() => handlePostReaction('like')}
-              leftIcon={
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
-                  />
-                </svg>
-              }
-            >
-              {article.likes_count || 0}
-            </Button>
-            <Button
-              variant={PostReaction === 'dislike' ? 'danger' : 'ghost'}
-              size="sm"
-              onClick={() => handlePostReaction('dislike')}
-              leftIcon={
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.7M10 14v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2M17 4H19a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"
-                  />
-                </svg>
-              }
-            >
-              {article.dislikes_count || 0}
-            </Button>
-          </div>
-        </div>
-
-        {/* 文章主体 */}
-        <article className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-2">
-          {/* 文章标题 */}
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* 文章头部 */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
             {article.title}
           </h1>
 
-          {/* 文章元信息 */}
-          <div className="flex flex-wrap items-center gap-4 mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-              <span>✍️</span>
-              <span>作者：{article.author}</span>
+          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-6">
+            <div className="flex items-center space-x-4">
+              <span>发布于 {new Date(article.created_at).toLocaleDateString()}</span>
+              <span>浏览 {article.views || 0}</span>
             </div>
 
-            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-              <span>📅</span>
-              <span>发布于：{new Date(article.created_at).toLocaleDateString()}</span>
-            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handlePostReaction('like')}
+                disabled={isReactionLoading}
+                className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${PostReaction === 'like'
+                    ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+              >
+                <i className="fas fa-thumbs-up text-sm"></i>
+                <span>{article.likes_count || 0}</span>
+              </button>
 
-            {article.tags && article.tags.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600 dark:text-gray-400">🏷️ 标签：</span>
-                <div className="flex flex-wrap gap-2">
-                  {article.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+              <button
+                onClick={() => handlePostReaction('dislike')}
+                disabled={isReactionLoading}
+                className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${PostReaction === 'dislike'
+                    ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300'
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+              >
+                <i className="fas fa-thumbs-down text-sm"></i>
+                <span>{article.dislikes_count || 0}</span>
+              </button>
+            </div>
           </div>
+        </div>
 
-          {/* 文章内容 */}
+        {/* 文章内容 */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
           <div
-            className="prose prose-lg dark:prose-invert max-w-none markdownBody"
+            className="markdownBody prose prose-lg max-w-none dark:prose-invert"
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(marked.parse(article.content).toString())
+              __html: DOMPurify.sanitize(marked.parse(article.content) as string)
             }}
           />
-        </article>
+        </div>
 
-        {/* 上下篇导航 */}
-        {(prevArticle || nextArticle) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-            {prevArticle && (
+        {/* 相邻文章导航 */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex justify-between">
+            {prevArticle ? (
               <Link
                 href={`/article/${prevArticle.post_id}`}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-2 hover:shadow-lg transition-shadow duration-200 group"
+                className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
               >
-                <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">上一篇</div>
-                <div className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
-                  {prevArticle.title}
-                </div>
+                <i className="fas fa-chevron-left"></i>
+                <span>{prevArticle.title}</span>
               </Link>
+            ) : (
+              <div></div>
             )}
 
-            {nextArticle && (
+            {nextArticle ? (
               <Link
                 href={`/article/${nextArticle.post_id}`}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-2 hover:shadow-lg transition-shadow duration-200 group md:text-right"
+                className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
               >
-                <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">下一篇</div>
-                <div className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
-                  {nextArticle.title}
-                </div>
+                <span>{nextArticle.title}</span>
+                <i className="fas fa-chevron-right"></i>
               </Link>
+            ) : (
+              <div></div>
             )}
           </div>
-        )}
-
-        {/* 评论区域 */}
-        <div className="mt-8">
-          <CommentSection post_id={article.post_id} />
         </div>
+
+        {/* 评论区 */}
+        <CommentSection postId={article.post_id} />
       </div>
     </div>
   );

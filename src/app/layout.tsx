@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import dynamic from 'next/dynamic';
 import './globals.css';
 import { AuthProvider } from '@/utils/auth-context';
-import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+// import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import PerformanceMonitor from '@/components/PerformanceMonitor';
 import NetworkStatus from '@/components/NetworkStatus';
 import ResourcePreloader from '@/components/ResourcePreloader';
@@ -45,19 +45,6 @@ export const metadata: Metadata = {
     email: false,
     address: false,
     telephone: false
-  },
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: '鱼鱼的博客'
-  },
-  other: {
-    'mobile-web-app-capable': 'yes',
-    'mobile-web-app-status-bar-style': 'black-translucent',
-    'mobile-web-app-title': '鱼鱼的博客',
-    'msapplication-TileColor': '#24292e',
-    'application-name': '鱼鱼的博客'
   }
 };
 
@@ -66,7 +53,6 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#24292e',
   colorScheme: 'light'
 };
 
@@ -74,10 +60,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN" className="scroll-smooth">
       <head>
-        {/* PWA Icons */}
+        {/* Icons */}
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="mask-icon" href="/masked-icon.svg" color="#24292e" />
 
         {/* 预连接关键域名 */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -122,18 +107,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </AuthProvider>
 
         {/* Service Worker Registration */}
-        <ServiceWorkerRegistration />
-        
+        {/* <ServiceWorkerRegistration /> */}
+
         {/* Performance Monitor */}
         <PerformanceMonitor />
-        
+
         {/* Network Status */}
         <NetworkStatus />
-        
+
         {/* Resource Preloader */}
         <ResourcePreloader />
 
-        {/* PWA Installation Scripts */}
+        {/* Dark Mode Script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -141,27 +126,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                   document.documentElement.classList.add('dark');
                 }
-                window.addEventListener('beforeinstallprompt', function(e) {
-                  e.preventDefault();
-                  var deferredPrompt = e;
-                  var installButton = document.createElement('button');
-                  installButton.textContent = 'Install App';
-                  installButton.className = 'fixed bottom-24 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 transition-colors duration-200 z-40 text-sm font-medium';
-                  installButton.addEventListener('click', function() {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then(function(choiceResult) {
-                      if (choiceResult.outcome === 'accepted') {
-                        installButton.remove();
-                      }
-                    });
-                  });
-                  document.body.appendChild(installButton);
-                  setTimeout(function() {
-                    if (installButton.parentNode) {
-                      installButton.remove();
-                    }
-                  }, 10000);
-                });
               }
             `
           }}

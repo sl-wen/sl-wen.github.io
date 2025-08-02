@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Alert } from '@/components/ui';
 import { getTaskRewardHistory, TaskRewardHistory } from '@/utils/task';
 import { useAuth } from '@/utils/auth-context';
@@ -16,13 +16,7 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'info' | 'success' | 'warning' | 'error'>('info');
 
-  useEffect(() => {
-    if (userProfile?.user_id) {
-      loadHistory();
-    }
-  }, [userProfile?.user_id]);
-
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     if (!userProfile?.user_id) return;
 
     try {
@@ -38,7 +32,13 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
     } finally {
       setLoading(false);
     }
-  };
+  }, [userProfile?.user_id]);
+
+  useEffect(() => {
+    if (userProfile?.user_id) {
+      loadHistory();
+    }
+  }, [userProfile?.user_id, loadHistory]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -100,7 +100,7 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
                     </span>
                     <h3 className="font-semibold text-gray-900">{record.task_name}</h3>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-1 text-sm">
                     <div>
                       <span className="text-gray-500">任务类型:</span>
@@ -125,11 +125,11 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
                     </div>
                   </div>
                   <div>
-                      <span className="text-sm text-gray-500">领取时间:</span>
-                      <span className="text-sm font-medium text-gray-600">
-                        {formatDate(record.claimed_at)}
-                      </span>
-                    </div>
+                    <span className="text-sm text-gray-500">领取时间:</span>
+                    <span className="text-sm font-medium text-gray-600">
+                      {formatDate(record.claimed_at)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

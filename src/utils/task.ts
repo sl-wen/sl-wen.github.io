@@ -280,7 +280,13 @@ export const getUserTasks = async (userId: string): Promise<TaskProgress[] | nul
 };
 
 // 插入用户任务
-export const insertUserTask = async (newUserTask: any): Promise<void> => {
+export const insertUserTask = async (newUserTask: {
+  user_id: string;
+  task_id: string;
+  current_count: number;
+  is_claimed: boolean;
+  claimed_at: string | null;
+}): Promise<void> => {
   try {
     const { error } = await supabase
       .from('user_tasks')
@@ -346,7 +352,11 @@ export const getAllTasks = async (): Promise<Task[] | null> => {
 };
 
 // 获取任务类型
-export const getTaskType = async (taskTypeId: string): Promise<any | null> => {
+export const getTaskType = async (taskTypeId: string): Promise<{
+  tasktype_id: string;
+  name: string;
+  description: string;
+} | null> => {
   try {
     const { data: taskType, error } = await supabase
       .from('task_types')
@@ -379,7 +389,7 @@ export const getTaskRewardHistory = async (userId: string): Promise<TaskRewardHi
       .order('claimed_at', { ascending: false });
 
     if (error) throw error;
-    
+
     // 映射数据以匹配接口
     return taskRewardHistory?.map(record => ({
       task_reward_history_id: record.task_reward_history_id,
@@ -485,7 +495,7 @@ export const updateTaskProgress = async (userId: string, actionType: string, cou
     for (const userTask of userTasks) {
       if (userTask.action_type === actionType && !userTask.is_claimed) {
         const newCount = Math.min(userTask.current_count + count, userTask.required_count);
-        
+
         const { error } = await supabase
           .from('user_tasks')
           .update({

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { supabase } from './supabase-config';
 import { initUserTasks, updateTaskProgress } from './task';
 
@@ -41,15 +41,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadUserProfile = async () => {
+  const loadUserProfile = useCallback(async () => {
     try {
+      // Check if we're in a browser environment
+      if (typeof window === 'undefined') {
+        setLoading(false);
+        return;
+      }
+
       // 先检查localStorage
       const profileData = localStorage.getItem('userProfile');
       if (profileData) {
-        const profile = JSON.parse(profileData);
-        setUserProfile(profile);
-        setLoading(false);
-        return;
+        try {
+          const profile = JSON.parse(profileData);
+          setUserProfile(profile);
+          setLoading(false);
+          return;
+        } catch (parseError) {
+          console.error('Error parsing localStorage profile:', parseError);
+          localStorage.removeItem('userProfile');
+        }
       }
 
       // 从Supabase获取session
@@ -76,17 +87,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     await loadUserProfile();
-  };
+  }, [loadUserProfile]);
 
   const logout = async () => {
     try {
       await supabase.auth.signOut();
-      localStorage.removeItem('userProfile');
-      localStorage.removeItem('userSession');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('userProfile');
+        localStorage.removeItem('userSession');
+      }
       setUserProfile(null);
     } catch (error) {
       console.error('Logout error:', error);
@@ -103,7 +116,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const handleUserLogin = async (profile: UserProfile) => {
+  const handleUserLogin = useCallback(async (profile: UserProfile) => {
     try {
       // 登录任务进度更新（替代直接发放奖励）
       if (profile.user_id) {
@@ -118,15 +131,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('处理用户登录失败:', error);
     }
-  };
+  }, [refreshProfile]);
 
   useEffect(() => {
-    loadUserProfile();
+    let isMounted = true;
+
+    const loadProfile = async () => {
+      await loadUserProfile();
+    };
+
+    if (isMounted) {
+      loadProfile();
+    }
 
     // 监听认证状态变化
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+
       console.log('Auth state changed:', event);
 
       if (event === 'SIGNED_IN' && session?.user) {
@@ -136,14 +159,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           .eq('user_id', session.user.id)
           .single();
 
-        if (profile) {
+        if (profile && isMounted) {
           localStorage.setItem('userProfile', JSON.stringify(profile));
           setUserProfile(profile);
-          
+
           // 处理用户登录
           await handleUserLogin(profile);
         }
-      } else if (event === 'SIGNED_OUT') {
+      } else if (event === 'SIGNED_OUT' && isMounted) {
         localStorage.removeItem('userProfile');
         localStorage.removeItem('userSession');
         setUserProfile(null);
@@ -151,9 +174,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [loadUserProfile, handleUserLogin]);
 
   const value: AuthContextType = {
     userProfile,

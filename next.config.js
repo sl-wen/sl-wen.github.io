@@ -1,23 +1,4 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
-  skipWaiting: true,
-  runtimeCaching: [
-    {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'offlineCache',
-        expiration: {
-          maxEntries: 200,
-          maxAgeSeconds: 30 * 24 * 60 * 60 // 30 days
-        }
-      }
-    }
-  ]
-});
 
 const nextConfig = {
   // 暂时禁用静态导出，使用标准构建
@@ -136,4 +117,4 @@ const nextConfig = {
   }
 };
 
-module.exports = withPWA(nextConfig); 
+module.exports = nextConfig; 

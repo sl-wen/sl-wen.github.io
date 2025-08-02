@@ -20,6 +20,19 @@ export const useTaskProgress = () => {
   };
 };
 
+// 安全的任务进度钩子包装器
+export const useSafeTaskProgress = () => {
+  try {
+    return useTaskProgress();
+  } catch (error) {
+    console.error('Failed to initialize task progress hook:', error);
+    return {
+      updateProgress: async () => { },
+      isLoggedIn: false
+    };
+  }
+};
+
 // 预定义的任务动作类型
 export const TASK_ACTIONS = {
   LOGIN: 'login',

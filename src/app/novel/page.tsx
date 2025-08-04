@@ -3,12 +3,15 @@ import React, { useState } from 'react';
 
 // 定义小说数据的类型
 interface Novel {
-  bookName: string;
+  title: string;
   author: string;
-  sourceName: string;
+  source_name: string;
   url?: string;
-  latestChapter?: string;
-  sourceId?: number; // 添加 sourceId 字段
+  latest_chapter?: string;
+  update_time?: string;
+  source_id?: number;
+  word_count?: string;
+  status?: string;
 }
 
 export default function NovelPage() {
@@ -53,8 +56,8 @@ export default function NovelPage() {
         format: format
       });
 
-      if (novel.sourceId) {
-        params.append('sourceId', novel.sourceId.toString());
+      if (novel.source_id) {
+        params.append('sourceId', novel.source_id.toString());
       }
 
       const response = await fetch(`/api/novels/download?${params.toString()}`);
@@ -113,7 +116,7 @@ export default function NovelPage() {
     }
 
     // 默认文件名 - 清理特殊字符
-    const cleanTitle = novel.bookName.replace(/[<>:"/\\|?*]/g, '_');
+    const cleanTitle = novel.title.replace(/[<>:"/\\|?*]/g, '_');
     const cleanAuthor = novel.author.replace(/[<>:"/\\|?*]/g, '_');
     return `${cleanTitle}_${cleanAuthor}.${format}`;
   };
@@ -211,12 +214,12 @@ export default function NovelPage() {
             <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
                 <div className="font-semibold text-xl mb-2">
-                  {novel.bookName}
+                  {novel.title}
                   <span className="text-sm text-gray-500 ml-2">by {novel.author}</span>
                 </div>
-                <div className="text-gray-600 mb-2">来源: {novel.sourceName}</div>
-                {novel.latestChapter && (
-                  <div className="text-gray-700 mb-2">最新章节：{novel.latestChapter}</div>
+                <div className="text-gray-600 mb-2">来源: {novel.source_name}</div>
+                {novel.latest_chapter && (
+                  <div className="text-gray-700 mb-2">最新章节：{novel.latest_chapter}</div>
                 )}
               </div>
             </div>
@@ -241,8 +244,8 @@ export default function NovelPage() {
                     onClick={() => handleDownload(novel, format, idx)}
                     disabled={downloadingIds.has(idx) || !novel.url}
                     className={`px-3 py-1 text-sm rounded transition ${downloadingIds.has(idx)
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-green-100 text-green-700 hover:bg-green-200'
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-green-100 text-green-700 hover:bg-green-200'
                       }`}
                   >
                     {downloadingIds.has(idx) ? '下载中...' : `下载${format.toUpperCase()}`}

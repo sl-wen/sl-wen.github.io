@@ -183,19 +183,19 @@ export default function NovelPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4">
+    <div className="max-w-4xl mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8">小说聚合搜索</h1>
       <form className="flex gap-2 mb-8" onSubmit={handleSearch}>
         <input
           type="text"
-          className="flex-1 px-4 py-2 border rounded shadow-sm focus:outline-none focus:ring"
+          className="flex-1 px-2 py-2 border rounded shadow-sm focus:outline-none focus:ring"
           placeholder="请输入小说名或作者"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
         />
         <button
           type="submit"
-          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          className="px-2 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
           disabled={loading}
         >
           {loading ? '搜索中...' : '搜索'}
@@ -216,6 +216,8 @@ export default function NovelPage() {
                 <div className="font-semibold text-xl mb-2">
                   {novel.title}
                   <span className="text-sm text-gray-500 ml-2">by {novel.author}</span>
+                  {novel.word_count}
+                  {novel.status}
                 </div>
                 <div className="text-gray-600 mb-2">来源: {novel.source_name}</div>
                 {novel.latest_chapter && (

@@ -20,6 +20,12 @@ export default function NovelPage() {
   const [novels, setNovels] = useState<Novel[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [downloadingIds, setDownloadingIds] = useState<Set<number>>(new Set()); // 跟踪正在下载的小说
+  const [downloadStates, setDownloadStates] = useState<Record<number, {
+    taskId?: string;
+    progress: number;
+    status: 'idle' | 'starting' | 'running' | 'completed' | 'failed';
+    error?: string;
+  }>>({});
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,49 +47,144 @@ export default function NovelPage() {
     setLoading(false);
   };
 
-  // 下载小说函数 - 优化版
+  // 下载小说（异步：启动任务 -> 轮询进度 -> 拉取结果文件）
   const handleDownload = async (novel: Novel, format: 'txt' | 'epub' = 'txt', index: number) => {
     if (!novel.url) {
       alert('该小说没有可用的下载链接');
       return;
     }
 
-    setDownloadingIds((prev) => new Set(prev).add(index));
+    // 初始化下载状态
+    setDownloadStates(prev => ({
+      ...prev,
+      [index]: { status: 'starting', progress: 0 }
+    }));
+    setDownloadingIds(prev => new Set(prev).add(index));
 
     try {
-      const params = new URLSearchParams({
-        url: novel.url,
-        format: format
-      });
+      // 1) 启动任务
+      const startParams = new URLSearchParams({ url: novel.url, format });
+      if (novel.source_id) startParams.append('sourceId', novel.source_id.toString());
 
-      if (novel.source_id) {
-        params.append('sourceId', novel.source_id.toString());
+      const startResp = await fetch(`/api/novels/download/start?${startParams.toString()}`, { method: 'POST' });
+      const startJson = await safeJson(startResp);
+      const taskId: string | undefined = startJson?.data?.task_id || startJson?.task_id;
+
+      if (!startResp.ok || !taskId) {
+        throw new Error(startJson?.message || '启动下载任务失败');
       }
 
-      const response = await fetch(`/api/novels/download?${params.toString()}`);
+      setDownloadStates(prev => ({
+        ...prev,
+        [index]: { status: 'running', progress: 0, taskId }
+      }));
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`下载失败: ${response.status} ${errorText}`);
-      }
+      // 2) 轮询进度
+      await pollUntilDone(taskId, index);
 
-      // 获取文件名 - 改进版
-      let filename = getFilenameFromResponse(response, novel, format);
+      // 3) 拉取结果文件
+      await fetchAndDownloadResult(taskId, novel, format);
 
-      // 创建并触发下载 - Safari兼容版
-      const blob = await response.blob();
-      downloadFile(blob, filename);
-
+      // 完成
+      setDownloadStates(prev => ({
+        ...prev,
+        [index]: { ...(prev[index] || {}), status: 'completed', progress: 100 }
+      }));
       alert('下载成功！');
     } catch (error) {
       console.error('下载失败:', error);
+      setDownloadStates(prev => ({
+        ...prev,
+        [index]: { ...(prev[index] || {}), status: 'failed', error: error instanceof Error ? error.message : '未知错误', progress: prev[index]?.progress || 0 }
+      }));
       alert(`下载失败: ${error instanceof Error ? error.message : '未知错误'}`);
     } finally {
-      setDownloadingIds((prev) => {
+      setDownloadingIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(index);
         return newSet;
       });
+    }
+  };
+
+  // 轮询进度直至完成
+  const pollUntilDone = async (taskId: string, index: number) => {
+    const maxWaitMs = 5 * 60 * 1000; // 最长等待5分钟
+    const startTime = Date.now();
+    let lastProgress = 0;
+
+    while (true) {
+      // 超时控制
+      if (Date.now() - startTime > maxWaitMs) {
+        throw new Error('下载任务超时');
+      }
+
+      try {
+        const resp = await fetch(`/api/novels/download/progress?task_id=${encodeURIComponent(taskId)}`);
+        const json = await safeJson(resp);
+
+        // 尝试读取进度/状态字段，兼容多种返回结构
+        const status: string = (json?.data?.status || json?.status || '').toString();
+        const progressValue =
+          typeof json?.data?.progress === 'number' ? json.data.progress :
+          typeof json?.progress === 'number' ? json.progress : undefined;
+
+        // 更新进度
+        if (typeof progressValue === 'number') {
+          lastProgress = Math.max(lastProgress, Math.min(100, Math.max(0, Math.round(progressValue))));
+          setDownloadStates(prev => ({
+            ...prev,
+            [index]: { ...(prev[index] || {}), status: 'running', progress: lastProgress }
+          }));
+        } else {
+          // 未提供进度时，维持原进度并显示处理中
+          setDownloadStates(prev => ({
+            ...prev,
+            [index]: { ...(prev[index] || {}), status: 'running', progress: lastProgress }
+          }));
+        }
+
+        // 判断完成
+        if (/finish|complete|success|done/i.test(status) || lastProgress >= 100) {
+          return;
+        }
+
+        // 判断失败
+        if (/fail|error|cancel/i.test(status) || (json?.code && json.code >= 400)) {
+          throw new Error(json?.message || '下载任务失败');
+        }
+      } catch (e) {
+        // 进度查询失败，短暂重试
+        console.warn('进度查询失败，将重试:', e);
+      }
+
+      // 等待一会再轮询
+      await delay(1200);
+    }
+  };
+
+  // 获取结果并触发下载
+  const fetchAndDownloadResult = async (taskId: string, novel: Novel, format: string) => {
+    // 浏览器 fetch 默认跟随跳转，等同于 curl -L
+    const response = await fetch(`/api/novels/download/result?task_id=${encodeURIComponent(taskId)}`);
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      throw new Error(`获取结果失败: ${response.status} ${errorText}`);
+    }
+
+    const filename = getFilenameFromResponse(response, novel, format);
+    const blob = await response.blob();
+    downloadFile(blob, filename);
+  };
+
+  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const safeJson = async (resp: Response) => {
+    try {
+      return await resp.json();
+    } catch {
+      return {} as any;
     }
   };
 
@@ -239,7 +340,7 @@ export default function NovelPage() {
               )}
 
               {/* 下载按钮组 */}
-              <div className="flex gap-1">
+              <div className="flex gap-1 items-center">
                 {(['txt', 'epub'] as const).map((format) => (
                   <button
                     key={format}
@@ -250,9 +351,22 @@ export default function NovelPage() {
                       : 'bg-green-100 text-green-700 hover:bg-green-200'
                       }`}
                   >
-                    {downloadingIds.has(idx) ? '下载中...' : `下载${format.toUpperCase()}`}
+                    {downloadStates[idx]?.status === 'starting' && `启动${format.toUpperCase()}...`}
+                    {downloadStates[idx]?.status === 'running' && `下载中 ${downloadStates[idx]?.progress ?? 0}%`}
+                    {downloadStates[idx]?.status === 'completed' && `已完成`}
+                    {downloadStates[idx]?.status === 'failed' && `失败，重试`}
+                    {!downloadStates[idx]?.status || downloadStates[idx]?.status === 'idle' ? `下载${format.toUpperCase()}` : null}
                   </button>
                 ))}
+
+                {/* 进度提示 */}
+                {downloadingIds.has(idx) && (
+                  <span className="text-xs text-gray-500 ml-2">
+                    {downloadStates[idx]?.status === 'starting' && '启动任务中'}
+                    {downloadStates[idx]?.status === 'running' && `处理中 ${downloadStates[idx]?.progress ?? 0}%`}
+                    {downloadStates[idx]?.status === 'failed' && (downloadStates[idx]?.error || '下载失败')}
+                  </span>
+                )}
               </div>
             </div>
           </div>

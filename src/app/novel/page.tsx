@@ -27,6 +27,31 @@ export default function NovelPage() {
     error?: string;
   }>>({});
 
+  // API 基础地址（默认指向 FastAPI 服务）
+  const API_BASE = (process.env.NEXT_PUBLIC_NOVEL_API_BASE || 'http://localhost:8000').replace(/\/$/, '');
+  const buildApiUrl = (path: string, params?: Record<string, string | number | undefined>) => {
+    const url = new URL(`${API_BASE}${path}`);
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
+      }
+    }
+    return url.toString();
+  };
+
+  // 将不同字段风格（snake_case/camelCase）统一为前端使用的结构
+  const normalizeNovel = (item: any): Novel => ({
+    title: item.title,
+    author: item.author,
+    source_name: item.source_name || item.sourceName || item.source || '',
+    url: item.url,
+    latest_chapter: item.latest_chapter || item.latestChapter,
+    update_time: item.update_time || item.lastUpdateTime,
+    source_id: item.source_id ?? item.sourceId,
+    word_count: item.word_count || item.wordCount,
+    status: item.status,
+  });
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!keyword.trim()) return;
@@ -34,12 +59,32 @@ export default function NovelPage() {
     setError(null);
     setNovels([]);
     try {
-      const res = await fetch(`/api/novels/search?keyword=${encodeURIComponent(keyword)}`);
-      const data = await res.json();
-      if (res.ok && data.code === 200) {
-        setNovels(data.data || []);
+      // 优先调用优化版搜索接口
+      const optimizedUrl = buildApiUrl('/api/optimized/search', {
+        keyword,
+        q: keyword, // 兼容参数名
+        maxResults: 30,
+        max_results: 30, // 兼容参数名
+      });
+      let res = await fetch(optimizedUrl);
+      let data: any = await res.json().catch(async () => ({ raw: await res.text().catch(() => '') }));
+
+      if (res.ok && (data.code === 200 || Array.isArray(data.data))) {
+        const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+        setNovels(list.map(normalizeNovel));
       } else {
-        setError(data.message || '接口错误');
+        // 失败时尝试标准版搜索作为兜底
+        const standardUrl = buildApiUrl('/api/novels/search', { keyword, q: keyword, maxResults: 30, max_results: 30 });
+        res = await fetch(standardUrl);
+        data = await res.json().catch(async () => ({ raw: await res.text().catch(() => '') }));
+        if (res.ok && (data.code === 200 || Array.isArray(data.data))) {
+          const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+          setNovels(list.map(normalizeNovel));
+        } else {
+          const detail = Array.isArray(data?.detail) ? (data.detail[0]?.msg || data.detail[0]?.message) : data?.detail;
+          const msg = data?.message || detail || data?.raw || `接口错误 (${res.status})`;
+          setError(typeof msg === 'string' ? msg : '接口错误');
+        }
       }
     } catch (e) {
       setError('请求失败');
@@ -62,11 +107,39 @@ export default function NovelPage() {
     setDownloadingIds(prev => new Set(prev).add(index));
 
     try {
-      // 1) 启动任务
-      const startParams = new URLSearchParams({ url: novel.url, format });
-      if (novel.source_id) startParams.append('sourceId', novel.source_id.toString());
+      // 优先尝试：优化版直接下载（无任务）
+      try {
+        setDownloadStates(prev => ({ ...prev, [index]: { status: 'running', progress: 0 } }));
+        const directUrl = buildApiUrl('/api/optimized/download', {
+          url: novel.url,
+          sourceId: novel.source_id,
+          source_id: novel.source_id, // 兼容参数名
+          format,
+        });
+        const response = await fetch(directUrl);
+        // 如果返回的是错误 JSON，则抛出以进入任务流兜底
+        const contentType = response.headers.get('content-type') || '';
+        if (!response.ok || /application\/json/i.test(contentType)) {
+          const errJson = await response.json().catch(() => ({}));
+          throw new Error(errJson?.message || `直链下载失败: ${response.status}`);
+        }
+        const filename = getFilenameFromResponse(response, novel, format);
+        const blob = await response.blob();
+        downloadFile(blob, filename);
+        setDownloadStates(prev => ({ ...prev, [index]: { ...(prev[index] || {}), status: 'completed', progress: 100 } }));
+        alert('下载成功！');
+        return; // 直接下载成功则结束
+      } catch (e) {
+        // 进入兜底：使用标准版异步任务
+      }
 
-      const startResp = await fetch(`/api/novels/download/start?${startParams.toString()}`, { method: 'POST' });
+      // 1) 启动任务（标准版）
+      const startUrl = buildApiUrl('/api/novels/download/start', {
+        url: novel.url,
+        sourceId: novel.source_id,
+        format,
+      });
+      const startResp = await fetch(startUrl, { method: 'POST' });
       const startJson = await safeJson(startResp);
       const taskId: string | undefined = startJson?.data?.task_id || startJson?.task_id;
 
@@ -120,14 +193,14 @@ export default function NovelPage() {
       }
 
       try {
-        const resp = await fetch(`/api/novels/download/progress?task_id=${encodeURIComponent(taskId)}`);
+        const resp = await fetch(buildApiUrl('/api/novels/download/progress', { task_id: taskId }));
         const json = await safeJson(resp);
 
         // 尝试读取进度/状态字段，兼容多种返回结构
         const status: string = (json?.data?.status || json?.status || '').toString();
         const progressValue =
           typeof json?.data?.progress === 'number' ? json.data.progress :
-          typeof json?.progress === 'number' ? json.progress : undefined;
+            typeof json?.progress === 'number' ? json.progress : undefined;
 
         // 更新进度
         if (typeof progressValue === 'number') {
@@ -166,7 +239,7 @@ export default function NovelPage() {
   // 获取结果并触发下载
   const fetchAndDownloadResult = async (taskId: string, novel: Novel, format: string) => {
     // 浏览器 fetch 默认跟随跳转，等同于 curl -L
-    const response = await fetch(`/api/novels/download/result?task_id=${encodeURIComponent(taskId)}`);
+    const response = await fetch(buildApiUrl('/api/novels/download/result', { task_id: taskId }));
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');

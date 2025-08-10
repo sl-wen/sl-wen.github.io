@@ -107,33 +107,7 @@ export default function NovelPage() {
     setDownloadingIds(prev => new Set(prev).add(index));
 
     try {
-      // 优先尝试：优化版直接下载（无任务）
-      try {
-        setDownloadStates(prev => ({ ...prev, [index]: { status: 'running', progress: 0 } }));
-        const directUrl = buildApiUrl('/api/optimized/download', {
-          url: novel.url,
-          sourceId: novel.source_id,
-          source_id: novel.source_id, // 兼容参数名
-          format,
-        });
-        const response = await fetch(directUrl);
-        // 如果返回的是错误 JSON，则抛出以进入任务流兜底
-        const contentType = response.headers.get('content-type') || '';
-        if (!response.ok || /application\/json/i.test(contentType)) {
-          const errJson = await response.json().catch(() => ({}));
-          throw new Error(errJson?.message || `直链下载失败: ${response.status}`);
-        }
-        const filename = getFilenameFromResponse(response, novel, format);
-        const blob = await response.blob();
-        downloadFile(blob, filename);
-        setDownloadStates(prev => ({ ...prev, [index]: { ...(prev[index] || {}), status: 'completed', progress: 100 } }));
-        alert('下载成功！');
-        return; // 直接下载成功则结束
-      } catch (e) {
-        // 进入兜底：使用标准版异步任务
-      }
-
-      // 1) 启动任务（标准版）
+      // 1) 启动任务
       const startUrl = buildApiUrl('/api/novels/download/start', {
         url: novel.url,
         sourceId: novel.source_id,

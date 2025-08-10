@@ -25,6 +25,8 @@ export default function NovelPage() {
     progress: number;
     status: 'idle' | 'starting' | 'running' | 'completed' | 'failed';
     error?: string;
+    completedChapters?: number;
+    totalChapters?: number;
   }>>({});
 
   // API 基础地址（默认指向 FastAPI 服务）
@@ -173,21 +175,38 @@ export default function NovelPage() {
         // 尝试读取进度/状态字段，兼容多种返回结构
         const status: string = (json?.data?.status || json?.status || '').toString();
         const progressValue =
-          typeof json?.data?.progress === 'number' ? json.data.progress :
-            typeof json?.progress === 'number' ? json.progress : undefined;
+          typeof json?.data?.progress_percentage === 'number' ? json.data.progress_percentage :
+            typeof json?.data?.progress === 'number' ? json.data.progress : 137
+        typeof json?.progress === 'number' ? json.progress : undefined;
+
+        // 读取章节信息
+        const completedChapters = json?.data?.completed_chapters || json?.completed_chapters;
+        const totalChapters = json?.data?.total_chapters || json?.total_chapters;
 
         // 更新进度
         if (typeof progressValue === 'number') {
           lastProgress = Math.max(lastProgress, Math.min(100, Math.max(0, Math.round(progressValue))));
           setDownloadStates(prev => ({
             ...prev,
-            [index]: { ...(prev[index] || {}), status: 'running', progress: lastProgress }
+            [index]: {
+              ...(prev[index] || {}),
+              status: 'running',
+              progress: lastProgress,
+              completedChapters,
+              totalChapters
+            }
           }));
         } else {
           // 未提供进度时，维持原进度并显示处理中
           setDownloadStates(prev => ({
             ...prev,
-            [index]: { ...(prev[index] || {}), status: 'running', progress: lastProgress }
+            [index]: {
+              ...(prev[index] || {}),
+              status: 'running',
+              progress: lastProgress,
+              completedChapters,
+              totalChapters
+            }
           }));
         }
 
@@ -399,7 +418,8 @@ export default function NovelPage() {
                       }`}
                   >
                     {downloadStates[idx]?.status === 'starting' && `启动${format.toUpperCase()}...`}
-                    {downloadStates[idx]?.status === 'running' && `下载中 ${downloadStates[idx]?.progress ?? 0}%`}
+                    {downloadStates[idx]?.status === 'running' &&
+                      `${downloadStates[idx]?.completedChapters || 0}/${downloadStates[idx]?.totalChapters || 0} ${downloadStates[idx]?.progress ?? 0}%`}
                     {downloadStates[idx]?.status === 'completed' && `已完成`}
                     {downloadStates[idx]?.status === 'failed' && `失败，重试`}
                     {!downloadStates[idx]?.status || downloadStates[idx]?.status === 'idle' ? `下载${format.toUpperCase()}` : null}
@@ -410,7 +430,8 @@ export default function NovelPage() {
                 {downloadingIds.has(idx) && (
                   <span className="text-xs text-gray-500 ml-2">
                     {downloadStates[idx]?.status === 'starting' && '启动任务中'}
-                    {downloadStates[idx]?.status === 'running' && `处理中 ${downloadStates[idx]?.progress ?? 0}%`}
+                    {downloadStates[idx]?.status === 'running' &&
+                      `${downloadStates[idx]?.completedChapters || 0}/${downloadStates[idx]?.totalChapters || 0} 章节 ${downloadStates[idx]?.progress ?? 0}%`}
                     {downloadStates[idx]?.status === 'failed' && (downloadStates[idx]?.error || '下载失败')}
                   </span>
                 )}

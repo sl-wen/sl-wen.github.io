@@ -158,7 +158,7 @@ export default function NovelPage() {
 
   // 轮询进度直至完成
   const pollUntilDone = async (taskId: string, index: number) => {
-    const maxWaitMs = 5 * 60 * 1000; // 最长等待5分钟
+    const maxWaitMs = 10 * 60 * 1000; // 最长等待10分钟
     const startTime = Date.now();
     let lastProgress = 0;
 
@@ -417,12 +417,8 @@ export default function NovelPage() {
                       : 'bg-green-100 text-green-700 hover:bg-green-200'
                       }`}
                   >
-                    {downloadStates[idx]?.status === 'starting' && `启动${format.toUpperCase()}...`}
-                    {downloadStates[idx]?.status === 'running' &&
-                      `${downloadStates[idx]?.completedChapters || 0}/${downloadStates[idx]?.totalChapters || 0} ${downloadStates[idx]?.progress ?? 0}%`}
+                    {downloadStates[idx]?.status === 'running' && `下载中`}
                     {downloadStates[idx]?.status === 'completed' && `已完成`}
-                    {downloadStates[idx]?.status === 'failed' && `失败，重试`}
-                    {!downloadStates[idx]?.status || downloadStates[idx]?.status === 'idle' ? `下载${format.toUpperCase()}` : null}
                   </button>
                 ))}
 

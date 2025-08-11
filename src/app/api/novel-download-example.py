@@ -17,6 +17,7 @@ import json
 from enum import Enum
 from dataclasses import dataclass, asdict
 import logging
+import urllib.parse
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -74,10 +75,15 @@ async def start_download(request: DownloadRequest, background_tasks: BackgroundT
     try:
         task_id = str(uuid.uuid4())
         
+        # URL解码处理 - 如果URL已经被编码，则解码
+        decoded_url = urllib.parse.unquote(request.url)
+        logger.info(f"原始URL: {request.url}")
+        logger.info(f"解码后URL: {decoded_url}")
+        
         # 创建任务记录
         task = DownloadTask(
             task_id=task_id,
-            url=request.url,
+            url=decoded_url,  # 使用解码后的URL
             format=request.format,
             status=TaskStatus.PENDING,
             created_at=time.time()

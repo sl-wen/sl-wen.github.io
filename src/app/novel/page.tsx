@@ -159,13 +159,21 @@ export default function NovelPage() {
     setDownloadingIds(prev => new Set(prev).add(index));
 
     try {
-      // 1) 启动任务
-      const startUrl = buildApiUrl('/api/novels/download/start', {
-        url: novel.url,
+      // 1) 启动任务 - 使用POST请求体发送数据，确保URL被正确编码
+      const startUrl = `${API_BASE}/api/novels/download/start`;
+      const requestBody = {
+        url: encodeURIComponent(novel.url || ''), // URL编码处理
         sourceId: novel.source_id,
         format,
+      };
+      
+      const startResp = await fetch(startUrl, { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
       });
-      const startResp = await fetch(startUrl, { method: 'POST' });
       const startJson = await safeJson(startResp);
       const taskId: string | undefined = startJson?.data?.task_id || startJson?.task_id;
 

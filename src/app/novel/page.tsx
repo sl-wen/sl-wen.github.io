@@ -418,7 +418,8 @@ export default function NovelPage() {
                       }`}
                   >
                     {downloadStates[idx]?.status === 'starting' && `启动${format.toUpperCase()}...`}
-                    {downloadStates[idx]?.status === 'running' && `下载中`}
+                    {downloadStates[idx]?.status === 'running' &&
+                      `${downloadStates[idx]?.completedChapters || 0}/${downloadStates[idx]?.totalChapters || 0} ${downloadStates[idx]?.progress ?? 0}%`}
                     {downloadStates[idx]?.status === 'completed' && `已完成`}
                     {downloadStates[idx]?.status === 'failed' && `失败，重试`}
                     {!downloadStates[idx]?.status || downloadStates[idx]?.status === 'idle' ? `下载${format.toUpperCase()}` : null}

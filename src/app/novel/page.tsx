@@ -169,7 +169,7 @@ export default function NovelPage() {
       }
 
       try {
-        const resp = await fetch(buildApiUrl('/api/novels/download/progress', { task_id: taskId }));
+        const resp = await fetch(buildApiUrl('/api/novels/download/progress/smart', { task_id: taskId, timeout: 120 }));
         const json = await safeJson(resp);
 
         // 尝试读取进度/状态字段，兼容多种返回结构

@@ -417,8 +417,11 @@ export default function NovelPage() {
                       : 'bg-green-100 text-green-700 hover:bg-green-200'
                       }`}
                   >
+                    {downloadStates[idx]?.status === 'starting' && `启动${format.toUpperCase()}...`}
                     {downloadStates[idx]?.status === 'running' && `下载中`}
                     {downloadStates[idx]?.status === 'completed' && `已完成`}
+                    {downloadStates[idx]?.status === 'failed' && `失败，重试`}
+                    {!downloadStates[idx]?.status || downloadStates[idx]?.status === 'idle' ? `下载${format.toUpperCase()}` : null}
                   </button>
                 ))}
 

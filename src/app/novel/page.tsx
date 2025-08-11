@@ -23,11 +23,19 @@ export default function NovelPage() {
   const [downloadStates, setDownloadStates] = useState<Record<number, {
     taskId?: string;
     progress: number;
-    status: 'idle' | 'starting' | 'running' | 'completed' | 'failed';
+    status: 'idle' | 'starting' | 'running' | 'completed' | 'failed' | 'queued';
     error?: string;
     completedChapters?: number;
     totalChapters?: number;
+    startTime?: number;
+    format?: string;
   }>>({});
+  const [downloadQueue, setDownloadQueue] = useState<Array<{
+    novel: Novel;
+    format: 'txt' | 'epub';
+    index: number;
+  }>>([]);
+  const [maxConcurrentDownloads] = useState(2); // 最大并发下载数
 
   // API 基础地址（默认指向 FastAPI 服务）
   const API_BASE = (process.env.NEXT_PUBLIC_NOVEL_API_BASE || 'http://localhost:8000').replace(/\/$/, '');
@@ -94,17 +102,59 @@ export default function NovelPage() {
     setLoading(false);
   };
 
-  // 下载小说（异步：启动任务 -> 轮询进度 -> 拉取结果文件）
+  // 检查当前运行的下载数量
+  const getActiveDownloadsCount = () => {
+    return Object.values(downloadStates).filter(state => 
+      state.status === 'starting' || state.status === 'running'
+    ).length;
+  };
+
+  // 处理下载队列
+  const processDownloadQueue = async () => {
+    if (downloadQueue.length === 0 || getActiveDownloadsCount() >= maxConcurrentDownloads) {
+      return;
+    }
+
+    const nextDownload = downloadQueue[0];
+    setDownloadQueue(prev => prev.slice(1));
+    
+    await executeDownload(nextDownload.novel, nextDownload.format, nextDownload.index);
+  };
+
+  // 添加到下载队列
   const handleDownload = async (novel: Novel, format: 'txt' | 'epub' = 'txt', index: number) => {
     if (!novel.url) {
       alert('该小说没有可用的下载链接');
       return;
     }
 
+    // 检查是否已在下载或队列中
+    if (downloadingIds.has(index) || downloadStates[index]?.status === 'queued') {
+      return;
+    }
+
+    const activeDownloads = getActiveDownloadsCount();
+    
+    if (activeDownloads >= maxConcurrentDownloads) {
+      // 添加到队列
+      setDownloadQueue(prev => [...prev, { novel, format, index }]);
+      setDownloadStates(prev => ({
+        ...prev,
+        [index]: { status: 'queued', progress: 0, format }
+      }));
+      alert(`已添加到下载队列，当前队列位置: ${downloadQueue.length + 1}`);
+    } else {
+      // 直接开始下载
+      await executeDownload(novel, format, index);
+    }
+  };
+
+  // 执行下载（异步：启动任务 -> 轮询进度 -> 拉取结果文件）
+  const executeDownload = async (novel: Novel, format: 'txt' | 'epub' = 'txt', index: number) => {
     // 初始化下载状态
     setDownloadStates(prev => ({
       ...prev,
-      [index]: { status: 'starting', progress: 0 }
+      [index]: { status: 'starting', progress: 0, startTime: Date.now(), format }
     }));
     setDownloadingIds(prev => new Set(prev).add(index));
 
@@ -120,12 +170,12 @@ export default function NovelPage() {
       const taskId: string | undefined = startJson?.data?.task_id || startJson?.task_id;
 
       if (!startResp.ok || !taskId) {
-        throw new Error(startJson?.message || '启动下载任务失败');
+        throw new Error(startJson?.message || startJson?.error || '启动下载任务失败');
       }
 
       setDownloadStates(prev => ({
         ...prev,
-        [index]: { status: 'running', progress: 0, taskId }
+        [index]: { ...prev[index], status: 'running', progress: 0, taskId }
       }));
 
       // 2) 轮询进度
@@ -139,12 +189,23 @@ export default function NovelPage() {
         ...prev,
         [index]: { ...(prev[index] || {}), status: 'completed', progress: 100 }
       }));
-      alert('下载成功！');
+      
+      // 显示成功消息，包含下载时间
+      const downloadTime = downloadStates[index]?.startTime 
+        ? Math.round((Date.now() - downloadStates[index].startTime!) / 1000)
+        : 0;
+      alert(`下载成功！用时 ${downloadTime} 秒`);
+
     } catch (error) {
       console.error('下载失败:', error);
       setDownloadStates(prev => ({
         ...prev,
-        [index]: { ...(prev[index] || {}), status: 'failed', error: error instanceof Error ? error.message : '未知错误', progress: prev[index]?.progress || 0 }
+        [index]: { 
+          ...(prev[index] || {}), 
+          status: 'failed', 
+          error: error instanceof Error ? error.message : '未知错误', 
+          progress: prev[index]?.progress || 0 
+        }
       }));
       alert(`下载失败: ${error instanceof Error ? error.message : '未知错误'}`);
     } finally {
@@ -153,31 +214,42 @@ export default function NovelPage() {
         newSet.delete(index);
         return newSet;
       });
+      
+      // 处理队列中的下一个任务
+      setTimeout(processDownloadQueue, 500);
     }
   };
 
   // 轮询进度直至完成
   const pollUntilDone = async (taskId: string, index: number) => {
-    const maxWaitMs = 10 * 60 * 1000; // 最长等待10分钟
+    const maxWaitMs = 15 * 60 * 1000; // 最长等待15分钟
     const startTime = Date.now();
     let lastProgress = 0;
+    let consecutiveErrors = 0;
+    let pollInterval = 1000; // 动态轮询间隔，从1秒开始
 
     while (true) {
       // 超时控制
       if (Date.now() - startTime > maxWaitMs) {
-        throw new Error('下载任务超时');
+        throw new Error('下载任务超时，请稍后重试');
       }
 
       try {
         const resp = await fetch(buildApiUrl('/api/novels/download/progress/smart', { task_id: taskId, timeout: 120 }));
+        
+        if (!resp.ok) {
+          throw new Error(`服务器响应错误: ${resp.status}`);
+        }
+
         const json = await safeJson(resp);
+        consecutiveErrors = 0; // 重置错误计数
 
         // 尝试读取进度/状态字段，兼容多种返回结构
         const status: string = (json?.data?.status || json?.status || '').toString();
         const progressValue =
           typeof json?.data?.progress_percentage === 'number' ? json.data.progress_percentage :
-            typeof json?.data?.progress === 'number' ? json.data.progress : 137
-        typeof json?.progress === 'number' ? json.progress : undefined;
+            typeof json?.data?.progress === 'number' ? json.data.progress :
+              typeof json?.progress === 'number' ? json.progress : undefined;
 
         // 读取章节信息
         const completedChapters = json?.data?.completed_chapters || json?.completed_chapters;
@@ -185,7 +257,18 @@ export default function NovelPage() {
 
         // 更新进度
         if (typeof progressValue === 'number') {
-          lastProgress = Math.max(lastProgress, Math.min(100, Math.max(0, Math.round(progressValue))));
+          const newProgress = Math.max(lastProgress, Math.min(100, Math.max(0, Math.round(progressValue))));
+          lastProgress = newProgress;
+          
+          // 根据进度调整轮询间隔
+          if (newProgress < 10) {
+            pollInterval = 800; // 初期更频繁
+          } else if (newProgress < 50) {
+            pollInterval = 1500; // 中期适中
+          } else {
+            pollInterval = 2000; // 后期较慢
+          }
+
           setDownloadStates(prev => ({
             ...prev,
             [index]: {
@@ -217,15 +300,25 @@ export default function NovelPage() {
 
         // 判断失败
         if (/fail|error|cancel/i.test(status) || (json?.code && json.code >= 400)) {
-          throw new Error(json?.message || '下载任务失败');
+          const errorMsg = json?.message || json?.error || '下载任务失败';
+          throw new Error(errorMsg);
         }
+
       } catch (e) {
-        // 进度查询失败，短暂重试
-        console.warn('进度查询失败，将重试:', e);
+        consecutiveErrors++;
+        console.warn(`进度查询失败 (${consecutiveErrors}/3):`, e);
+        
+        // 连续错误过多时放弃
+        if (consecutiveErrors >= 3) {
+          throw new Error(`连续查询失败，请检查网络连接或稍后重试`);
+        }
+        
+        // 错误时增加轮询间隔
+        pollInterval = Math.min(pollInterval * 1.5, 5000);
       }
 
       // 等待一会再轮询
-      await delay(1200);
+      await delay(pollInterval);
     }
   };
 
@@ -349,6 +442,75 @@ export default function NovelPage() {
     window.URL.revokeObjectURL(url);
   };
 
+  // 取消下载
+  const cancelDownload = async (index: number) => {
+    const state = downloadStates[index];
+    if (!state || (state.status !== 'running' && state.status !== 'starting' && state.status !== 'queued')) {
+      return;
+    }
+
+    if (state.status === 'queued') {
+      // 从队列中移除
+      setDownloadQueue(prev => prev.filter(item => item.index !== index));
+      setDownloadStates(prev => ({
+        ...prev,
+        [index]: { ...prev[index], status: 'idle', progress: 0 }
+      }));
+      return;
+    }
+
+    // 尝试取消后端任务
+    if (state.taskId) {
+      try {
+        await fetch(buildApiUrl('/api/novels/download/cancel', { task_id: state.taskId }), { method: 'POST' });
+      } catch (e) {
+        console.warn('取消后端任务失败:', e);
+      }
+    }
+
+    setDownloadStates(prev => ({
+      ...prev,
+      [index]: { ...prev[index], status: 'idle', progress: 0, error: '用户取消' }
+    }));
+    
+    setDownloadingIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(index);
+      return newSet;
+    });
+
+    // 处理队列中的下一个任务
+    setTimeout(processDownloadQueue, 500);
+  };
+
+  // 批量下载选中的小说
+  const handleBatchDownload = (format: 'txt' | 'epub' = 'txt') => {
+    const selectedNovels = novels.filter((_, idx) => 
+      !downloadingIds.has(idx) && 
+      downloadStates[idx]?.status !== 'queued' &&
+      downloadStates[idx]?.status !== 'running'
+    );
+
+    if (selectedNovels.length === 0) {
+      alert('没有可下载的小说');
+      return;
+    }
+
+    // 确认批量下载
+    if (!confirm(`确定要下载 ${selectedNovels.length} 本小说吗？`)) {
+      return;
+    }
+
+    selectedNovels.forEach((novel, idx) => {
+      const originalIndex = novels.findIndex(n => n === novel);
+      if (originalIndex !== -1) {
+        handleDownload(novel, format, originalIndex);
+      }
+    });
+
+    alert(`已添加 ${selectedNovels.length} 本小说到下载队列`);
+  };
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8">小说聚合搜索</h1>
@@ -370,6 +532,32 @@ export default function NovelPage() {
       </form>
 
       {error && <div className="mb-4 text-red-500">{error}</div>}
+
+      {/* 批量操作栏 */}
+      {novels.length > 0 && (
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <div className="flex flex-wrap gap-2 items-center justify-between">
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleBatchDownload('txt')}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition text-sm"
+              >
+                批量下载TXT
+              </button>
+              <button
+                onClick={() => handleBatchDownload('epub')}
+                className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition text-sm"
+              >
+                批量下载EPUB
+              </button>
+            </div>
+            
+            <div className="text-sm text-gray-600">
+              活跃下载: {getActiveDownloadsCount()}/{maxConcurrentDownloads} | 队列: {downloadQueue.length}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-4">
         {novels.length === 0 && !loading && !error && (
@@ -406,33 +594,63 @@ export default function NovelPage() {
               )}
 
               {/* 下载按钮组 */}
-              <div className="flex gap-1 items-center">
+              <div className="flex gap-1 items-center flex-wrap">
                 {(['txt', 'epub'] as const).map((format) => (
                   <button
                     key={format}
                     onClick={() => handleDownload(novel, format, idx)}
-                    disabled={downloadingIds.has(idx) || !novel.url}
-                    className={`px-3 py-1 text-sm rounded transition ${downloadingIds.has(idx)
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                    disabled={downloadingIds.has(idx) || downloadStates[idx]?.status === 'queued' || !novel.url}
+                    className={`px-3 py-1 text-sm rounded transition ${
+                      downloadingIds.has(idx) || downloadStates[idx]?.status === 'queued'
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : downloadStates[idx]?.status === 'failed'
+                        ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                        : downloadStates[idx]?.status === 'completed'
+                        ? 'bg-green-200 text-green-800'
+                        : 'bg-green-100 text-green-700 hover:bg-green-200'
                       }`}
                   >
+                    {downloadStates[idx]?.status === 'queued' && `队列中...`}
                     {downloadStates[idx]?.status === 'starting' && `启动${format.toUpperCase()}...`}
                     {downloadStates[idx]?.status === 'running' &&
                       `${downloadStates[idx]?.completedChapters || 0}/${downloadStates[idx]?.totalChapters || 0} ${downloadStates[idx]?.progress ?? 0}%`}
-                    {downloadStates[idx]?.status === 'completed' && `已完成`}
+                    {downloadStates[idx]?.status === 'completed' && `✓ 已完成`}
                     {downloadStates[idx]?.status === 'failed' && `失败，重试`}
                     {!downloadStates[idx]?.status || downloadStates[idx]?.status === 'idle' ? `下载${format.toUpperCase()}` : null}
                   </button>
                 ))}
 
+                {/* 取消按钮 */}
+                {(downloadingIds.has(idx) || downloadStates[idx]?.status === 'queued') && (
+                  <button
+                    onClick={() => cancelDownload(idx)}
+                    className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                  >
+                    取消
+                  </button>
+                )}
+
                 {/* 进度提示 */}
-                {downloadingIds.has(idx) && (
+                {(downloadingIds.has(idx) || downloadStates[idx]?.status === 'queued') && (
                   <span className="text-xs text-gray-500 ml-2">
-                    {downloadStates[idx]?.status === 'starting' && '启动任务中'}
-                    {downloadStates[idx]?.status === 'running' &&
-                      `${downloadStates[idx]?.completedChapters || 0}/${downloadStates[idx]?.totalChapters || 0} 章节 ${downloadStates[idx]?.progress ?? 0}%`}
-                    {downloadStates[idx]?.status === 'failed' && (downloadStates[idx]?.error || '下载失败')}
+                    {downloadStates[idx]?.status === 'queued' && `队列第 ${downloadQueue.findIndex(q => q.index === idx) + 1} 位`}
+                    {downloadStates[idx]?.status === 'starting' && '启动任务中...'}
+                    {downloadStates[idx]?.status === 'running' && (
+                      <span>
+                        {downloadStates[idx]?.completedChapters && downloadStates[idx]?.totalChapters
+                          ? `${downloadStates[idx]?.completedChapters}/${downloadStates[idx]?.totalChapters} 章节`
+                          : ''
+                        } {downloadStates[idx]?.progress ?? 0}%
+                        {downloadStates[idx]?.startTime && (
+                          <span className="ml-1">
+                            ({Math.round((Date.now() - downloadStates[idx].startTime!) / 1000)}s)
+                          </span>
+                        )}
+                      </span>
+                    )}
+                    {downloadStates[idx]?.status === 'failed' && (
+                      <span className="text-red-500">{downloadStates[idx]?.error || '下载失败'}</span>
+                    )}
                   </span>
                 )}
               </div>

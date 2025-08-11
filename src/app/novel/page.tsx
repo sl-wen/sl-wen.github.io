@@ -501,7 +501,7 @@ export default function NovelPage() {
       return;
     }
 
-    selectedNovels.forEach((novel, idx) => {
+    selectedNovels.forEach((novel) => {
       const originalIndex = novels.findIndex(n => n === novel);
       if (originalIndex !== -1) {
         handleDownload(novel, format, originalIndex);

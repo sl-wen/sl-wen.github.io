@@ -158,7 +158,7 @@ export default function NovelPage() {
 
   // 轮询进度直至完成
   const pollUntilDone = async (taskId: string, index: number) => {
-    const maxWaitMs = 5 * 60 * 1000; // 最长等待5分钟
+    const maxWaitMs = 15 * 60 * 1000; // 最长等待15分钟
     const startTime = Date.now();
     let lastProgress = 0;
 

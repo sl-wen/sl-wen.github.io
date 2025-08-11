@@ -61,7 +61,7 @@ export default function NovelPage() {
     setError(null);
     setNovels([]);
     try {
-      // 优先调用优化版搜索接口
+      // 调用优化版搜索接口
       const optimizedUrl = buildApiUrl('/api/optimized/search', {
         keyword,
         q: keyword, // 兼容参数名
@@ -74,20 +74,7 @@ export default function NovelPage() {
       if (res.ok && (data.code === 200 || Array.isArray(data.data))) {
         const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
         setNovels(list.map(normalizeNovel));
-      } else {
-        // 失败时尝试标准版搜索作为兜底
-        const standardUrl = buildApiUrl('/api/novels/search', { keyword, q: keyword, maxResults: 30, max_results: 30 });
-        res = await fetch(standardUrl);
-        data = await res.json().catch(async () => ({ raw: await res.text().catch(() => '') }));
-        if (res.ok && (data.code === 200 || Array.isArray(data.data))) {
-          const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
-          setNovels(list.map(normalizeNovel));
-        } else {
-          const detail = Array.isArray(data?.detail) ? (data.detail[0]?.msg || data.detail[0]?.message) : data?.detail;
-          const msg = data?.message || detail || data?.raw || `接口错误 (${res.status})`;
-          setError(typeof msg === 'string' ? msg : '接口错误');
-        }
-      }
+      } 
     } catch (e) {
       setError('请求失败');
     }

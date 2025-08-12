@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createArticle, renderMarkdown } from '@/utils/articleService';
 import { useTaskProgress, TASK_ACTIONS } from '@/utils/task-hooks';
@@ -261,7 +261,6 @@ export default function PostPage() {
             
             {/* 内容大小警告 */}
             <ContentSizeWarning content={formData.content} threshold={1} />
-            </div>
           </div>
 
           {/* 编辑器和预览区域 */}

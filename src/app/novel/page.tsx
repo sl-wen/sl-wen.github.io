@@ -405,8 +405,7 @@ export default function NovelPage() {
                       }`}
                   >
                     {downloadStates[idx]?.status === 'starting' && `启动${format.toUpperCase()}...`}
-                    {downloadStates[idx]?.status === 'running' &&
-                      `${downloadStates[idx]?.completedChapters || 0}/${downloadStates[idx]?.totalChapters || 0} ${downloadStates[idx]?.progress ?? 0}%`}
+                    {downloadStates[idx]?.status === 'running' && `下载中`}
                     {downloadStates[idx]?.status === 'completed' && `已完成`}
                     {downloadStates[idx]?.status === 'failed' && `失败，重试`}
                     {!downloadStates[idx]?.status || downloadStates[idx]?.status === 'idle' ? `下载${format.toUpperCase()}` : null}
@@ -418,7 +417,7 @@ export default function NovelPage() {
                   <span className="text-xs text-gray-500 ml-2">
                     {downloadStates[idx]?.status === 'starting' && '启动任务中'}
                     {downloadStates[idx]?.status === 'running' &&
-                      `${downloadStates[idx]?.completedChapters || 0}/${downloadStates[idx]?.totalChapters || 0} 章节 ${downloadStates[idx]?.progress ?? 0}%`}
+                      `${downloadStates[idx]?.completedChapters || 0}/${downloadStates[idx]?.totalChapters || 0} 章 ${downloadStates[idx]?.progress ?? 0}%`}
                     {downloadStates[idx]?.status === 'failed' && (downloadStates[idx]?.error || '下载失败')}
                   </span>
                 )}

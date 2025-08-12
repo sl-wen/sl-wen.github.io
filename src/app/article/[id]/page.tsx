@@ -10,6 +10,7 @@ import { recordPostsView } from '@/utils/stats';
 import { marked } from 'marked';
 import { addPostReaction, getPostReaction } from '@/utils/reactionService';
 import CommentSection from '@/components/CommentSection';
+import { Button } from '@/components/ui/Button';
 import { useSafeTaskProgress, TASK_ACTIONS } from '@/utils/task-hooks';
 
 const addCopyButtons = () => {
@@ -336,88 +337,92 @@ export default function ArticlePage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* 操作按钮区域 */}
+        <div className="flex justify-between items-center mb-8">
+          {userProfile?.user_id && (
+            <Link
+              href={`/article/${article.post_id}/edit`}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            >
+              编辑文章
+            </Link>
+          )}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => handlePostReaction('like')}
+              disabled={isReactionLoading}
+              className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${PostReaction === 'like'
+                ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
+                : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+            >
+              <i className="fas fa-thumbs-up text-sm"></i>
+              <span>{article.likes_count || 0}</span>
+            </button>
+
+            <button
+              onClick={() => handlePostReaction('dislike')}
+              disabled={isReactionLoading}
+              className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${PostReaction === 'dislike'
+                ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300'
+                : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+            >
+              <i className="fas fa-thumbs-down text-sm"></i>
+              <span>{article.dislikes_count || 0}</span>
+            </button>
+          </div>
+        </div>
         {/* 文章头部 */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
             {article.title}
           </h1>
-
-          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-6">
-            <div className="flex items-center space-x-4">
-              <span>发布于 {new Date(article.created_at).toLocaleDateString()}</span>
-              <span>浏览 {article.views || 0}</span>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => handlePostReaction('like')}
-                disabled={isReactionLoading}
-                className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${PostReaction === 'like'
-                    ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-              >
-                <i className="fas fa-thumbs-up text-sm"></i>
-                <span>{article.likes_count || 0}</span>
-              </button>
-
-              <button
-                onClick={() => handlePostReaction('dislike')}
-                disabled={isReactionLoading}
-                className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${PostReaction === 'dislike'
-                    ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-              >
-                <i className="fas fa-thumbs-down text-sm"></i>
-                <span>{article.dislikes_count || 0}</span>
-              </button>
-            </div>
-          </div>
         </div>
-
-        {/* 文章内容 */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
-          <div
-            className="markdownBody prose prose-lg max-w-none dark:prose-invert"
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(marked.parse(article.content) as string)
-            }}
-          />
-        </div>
-
-        {/* 相邻文章导航 */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex justify-between">
-            {prevArticle ? (
-              <Link
-                href={`/article/${prevArticle.post_id}`}
-                className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-              >
-                <i className="fas fa-chevron-left"></i>
-                <span>{prevArticle.title}</span>
-              </Link>
-            ) : (
-              <div></div>
-            )}
-
-            {nextArticle ? (
-              <Link
-                href={`/article/${nextArticle.post_id}`}
-                className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-              >
-                <span>{nextArticle.title}</span>
-                <i className="fas fa-chevron-right"></i>
-              </Link>
-            ) : (
-              <div></div>
-            )}
-          </div>
-        </div>
-
-        {/* 评论区 */}
-        <CommentSection postId={article.post_id} />
       </div>
+
+      {/* 文章内容 */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
+        <div
+          className="markdownBody prose prose-lg max-w-none dark:prose-invert"
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(marked.parse(article.content) as string)
+          }}
+        />
+      </div>
+
+      {/* 相邻文章导航 */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
+        <div className="flex justify-between">
+          {prevArticle ? (
+            <Link
+              href={`/article/${prevArticle.post_id}`}
+              className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+            >
+              <i className="fas fa-chevron-left"></i>
+              <span>{prevArticle.title}</span>
+            </Link>
+          ) : (
+            <div></div>
+          )}
+
+          {nextArticle ? (
+            <Link
+              href={`/article/${nextArticle.post_id}`}
+              className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+            >
+              <span>{nextArticle.title}</span>
+              <i className="fas fa-chevron-right"></i>
+            </Link>
+          ) : (
+            <div></div>
+          )}
+        </div>
+      </div>
+
+      {/* 评论区 */}
+      <CommentSection postId={article.post_id} />
     </div>
+    </div >
   );
 }

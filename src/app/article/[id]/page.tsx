@@ -423,6 +423,5 @@ export default function ArticlePage() {
       {/* 评论区 */}
       <CommentSection postId={article.post_id} />
     </div>
-    </div >
   );
 }

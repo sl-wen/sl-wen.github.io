@@ -1,17 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import { getArticleById, getAdjacentArticles, Article } from '@/utils/articleService';
-import DOMPurify from 'dompurify';
-import Loading from '@/components/Loading';
-import { recordPostsView } from '@/utils/stats';
-import { marked } from 'marked';
-import { addPostReaction, getPostReaction } from '@/utils/reactionService';
 import CommentSection from '@/components/CommentSection';
+import Loading from '@/components/Loading';
 import { Button } from '@/components/ui/Button';
-import { useSafeTaskProgress, TASK_ACTIONS } from '@/utils/task-hooks';
+import { Article, getAdjacentArticles, getArticleById } from '@/utils/articleService';
+import { addPostReaction, getPostReaction } from '@/utils/reactionService';
+import { recordPostsView } from '@/utils/stats';
+import { TASK_ACTIONS, useSafeTaskProgress } from '@/utils/task-hooks';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const addCopyButtons = () => {
   console.log('addCopyButtons called');
@@ -348,7 +348,7 @@ export default function ArticlePage() {
             </Link>
           )}
           <div className="flex items-center space-x-2">
-            <button
+            <Button
               onClick={() => handlePostReaction('like')}
               disabled={isReactionLoading}
               className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${PostReaction === 'like'
@@ -358,9 +358,9 @@ export default function ArticlePage() {
             >
               <i className="fas fa-thumbs-up text-sm"></i>
               <span>{article.likes_count || 0}</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={() => handlePostReaction('dislike')}
               disabled={isReactionLoading}
               className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${PostReaction === 'dislike'
@@ -370,7 +370,7 @@ export default function ArticlePage() {
             >
               <i className="fas fa-thumbs-down text-sm"></i>
               <span>{article.dislikes_count || 0}</span>
-            </button>
+            </Button>
           </div>
         </div>
         {/* 文章头部 */}

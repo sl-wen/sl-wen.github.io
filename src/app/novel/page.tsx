@@ -74,7 +74,7 @@ export default function NovelPage() {
       if (res.ok && (data.code === 200 || Array.isArray(data.data))) {
         const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
         setNovels(list.map(normalizeNovel));
-      } 
+      }
     } catch (e) {
       setError('请求失败');
     }
@@ -97,7 +97,7 @@ export default function NovelPage() {
 
     try {
       // 1) 启动任务
-      const startUrl = buildApiUrl('/api/novels/download/start', {
+      const startUrl = buildApiUrl('/api/optimized/download/start', {
         url: novel.url,
         sourceId: novel.source_id,
         format,
@@ -156,7 +156,7 @@ export default function NovelPage() {
       }
 
       try {
-        const resp = await fetch(buildApiUrl('/api/novels/download/progress', { task_id: taskId }));
+        const resp = await fetch(buildApiUrl('/api/optimized/download/progress', { task_id: taskId }));
         const json = await safeJson(resp);
 
         // 尝试读取进度/状态字段，兼容多种返回结构
@@ -219,7 +219,7 @@ export default function NovelPage() {
   // 获取结果并触发下载
   const fetchAndDownloadResult = async (taskId: string, novel: Novel, format: string) => {
     // 浏览器 fetch 默认跟随跳转，等同于 curl -L
-    const response = await fetch(buildApiUrl('/api/novels/download/result', { task_id: taskId }));
+    const response = await fetch(buildApiUrl('/api/optimized/download/result', { task_id: taskId }));
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');

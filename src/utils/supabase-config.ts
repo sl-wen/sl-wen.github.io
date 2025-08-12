@@ -10,6 +10,24 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   },
   db: {
     schema: 'public'
+  },
+  // 添加全局配置以处理长内容
+  global: {
+    headers: {
+      'x-client-info': 'supabase-js-web',
+    },
+    // 增加超时时间到60秒，适应长内容提交
+    fetch: (url, options = {}) => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60秒超时
+      
+      return fetch(url, {
+        ...options,
+        signal: controller.signal,
+      }).finally(() => {
+        clearTimeout(timeoutId);
+      });
+    }
   }
 });
 

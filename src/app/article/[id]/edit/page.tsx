@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { marked } from 'marked';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -10,6 +10,8 @@ import {
   deleteArticle,
   renderMarkdown
 } from '@/utils/articleService';
+import ProgressIndicator from '@/components/ui/ProgressIndicator';
+import ContentSizeWarning from '@/components/ui/ContentSizeWarning';
 
 interface Post {
   post_id: string;
@@ -25,6 +27,23 @@ interface PostFormData {
   content: string;
   tags: string[];
 }
+
+// 防抖钩子
+const useDebounce = (value: string, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 // 自定义图片渲染器与 marked 配置
 const renderer = new marked.Renderer();
@@ -69,12 +88,16 @@ export default function EditArticlePage() {
   const [newpost, setnewPost] = useState<Post | null>(null);
   const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const editorRef = useRef<HTMLTextAreaElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+
+  // 使用防抖来优化预览性能
+  const debouncedContent = useDebounce(formData.content, 300);
 
   // 加载文章
   useEffect(() => {
@@ -107,18 +130,23 @@ export default function EditArticlePage() {
     fetchArticle();
   }, [post_id]);
 
-  // 实时预览功能
+  // 优化的实时预览功能
   useEffect(() => {
     const updatePreview = async () => {
-      if (formData.content) {
-        const rendered = await renderMarkdown(formData.content);
-        setPreview(rendered);
+      if (debouncedContent) {
+        try {
+          const rendered = await renderMarkdown(debouncedContent);
+          setPreview(rendered);
+        } catch (error) {
+          console.error('预览渲染失败:', error);
+          setPreview('<div class="text-red-500">预览渲染失败</div>');
+        }
       } else {
         setPreview('');
       }
     };
     updatePreview();
-  }, [formData.content]);
+  }, [debouncedContent]);
 
   useEffect(() => {
     setnewPost({
@@ -163,19 +191,38 @@ export default function EditArticlePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (post?.post_id && newpost) {
-      try {
-        setLoading(true);
-        await updateArticle(post.post_id, newpost);
-        setMessage({ type: 'success', text: '文章更新成功' });
-        setTimeout(() => {
-          router.push(`/article/${post.post_id}`);
-        }, 1000);
-      } catch (error) {
-        setMessage({ type: 'error', text: '更新文章失败' });
-      } finally {
-        setLoading(false);
+    
+    if (isSubmitting || !post?.post_id || !newpost) return;
+    
+    setIsSubmitting(true);
+    setLoading(true);
+    setMessage(null);
+    
+    try {
+      // 内容长度检查
+      const contentSize = new Blob([formData.content]).size;
+      const sizeInMB = contentSize / (1024 * 1024);
+      
+      if (sizeInMB > 10) {
+        throw new Error('文章内容过大（超过10MB），请适当缩减内容长度');
       }
+
+      const result = await updateArticle(post.post_id, newpost);
+      
+      if (!result) {
+        throw new Error('文章更新失败，请重试');
+      }
+      
+      setMessage({ type: 'success', text: '文章更新成功' });
+      setTimeout(() => {
+        router.push(`/article/${post.post_id}`);
+      }, 1000);
+    } catch (error: any) {
+      console.error('更新文章错误:', error);
+      setMessage({ type: 'error', text: error.message || '更新文章失败，请重试' });
+    } finally {
+      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -217,8 +264,13 @@ export default function EditArticlePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
+      <ProgressIndicator 
+        isVisible={isSubmitting} 
+        message={isSubmitting ? "正在保存文章..." : "处理中..."}
+      />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {message && (
           <div
             className={`mb-6 p-4 rounded-lg ${message.type === 'success'
@@ -320,6 +372,9 @@ export default function EditArticlePage() {
                     用逗号分隔多个标签
                   </p>
                 </div>
+                
+                {/* 内容大小警告 */}
+                <ContentSizeWarning content={formData.content} threshold={1} />
               </div>
 
               {/* 编辑器区域 */}
@@ -412,13 +467,13 @@ export default function EditArticlePage() {
               <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || isSubmitting}
                   className="flex-1 sm:flex-none px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                 >
-                  {loading && (
+                  {(loading || isSubmitting) && (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   )}
-                  保存修改
+                  {isSubmitting ? '保存中...' : (loading ? '处理中...' : '保存修改')}
                 </button>
 
                 <button
@@ -443,7 +498,8 @@ export default function EditArticlePage() {
             </form>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -16,6 +16,39 @@ export interface Article {
   updated_at: string;
 }
 
+// 重试函数，用于处理网络不稳定的情况
+const retryOperation = async <T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  delay: number = 1000
+): Promise<T> => {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      console.warn(`操作失败，第 ${attempt} 次尝试:`, error);
+      
+      if (attempt === maxRetries) {
+        throw error;
+      }
+      
+      // 指数退避延迟
+      await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempt - 1)));
+    }
+  }
+  throw new Error('重试次数已用完');
+};
+
+// 检查内容大小并警告
+const checkContentSize = (content: string): void => {
+  const sizeInBytes = new Blob([content]).size;
+  const sizeInMB = sizeInBytes / (1024 * 1024);
+  
+  if (sizeInMB > 5) {
+    console.warn(`内容较大 (${sizeInMB.toFixed(2)}MB)，可能需要更长时间处理`);
+  }
+};
+
 export const getArticles = async (page: number = 1, limit: number = 10): Promise<Article[]> => {
   try {
     const { data, error } = await supabase
@@ -109,13 +142,35 @@ export const createArticle = async (
   >
 ): Promise<Article | null> => {
   try {
-    const { data, error } = await supabase.from('posts').insert([article]).select().single();
+    // 检查内容大小
+    checkContentSize(article.content);
+    
+    // 使用重试机制创建文章
+    const result = await retryOperation(async () => {
+      const { data, error } = await supabase
+        .from('posts')
+        .insert([article])
+        .select()
+        .single();
 
-    if (error) throw error;
-    return data;
-  } catch (error) {
+      if (error) throw error;
+      return data;
+    }, 3, 2000); // 最多重试3次，初始延迟2秒
+
+    return result;
+  } catch (error: any) {
     console.error('创建文章失败:', error);
-    return null;
+    
+    // 提供更详细的错误信息
+    if (error.message?.includes('timeout')) {
+      throw new Error('网络超时，请检查网络连接后重试');
+    } else if (error.message?.includes('payload')) {
+      throw new Error('文章内容过长，请适当缩减内容长度');
+    } else if (error.code === '23505') {
+      throw new Error('文章标题已存在，请使用不同的标题');
+    }
+    
+    throw new Error(error.message || '发布文章时出现未知错误');
   }
 };
 
@@ -124,18 +179,38 @@ export const updateArticle = async (
   updates: Partial<Article>
 ): Promise<Article | null> => {
   try {
-    const { data, error } = await supabase
-      .from('posts')
-      .update(updates)
-      .eq('post_id', post_id)
-      .select()
-      .single();
+    // 如果更新包含内容，检查内容大小
+    if (updates.content) {
+      checkContentSize(updates.content);
+    }
+    
+    // 使用重试机制更新文章
+    const result = await retryOperation(async () => {
+      const { data, error } = await supabase
+        .from('posts')
+        .update(updates)
+        .eq('post_id', post_id)
+        .select()
+        .single();
 
-    if (error) throw error;
-    return data;
-  } catch (error) {
+      if (error) throw error;
+      return data;
+    }, 3, 2000); // 最多重试3次，初始延迟2秒
+
+    return result;
+  } catch (error: any) {
     console.error('更新文章失败:', error);
-    return null;
+    
+    // 提供更详细的错误信息
+    if (error.message?.includes('timeout')) {
+      throw new Error('网络超时，请检查网络连接后重试');
+    } else if (error.message?.includes('payload')) {
+      throw new Error('文章内容过长，请适当缩减内容长度');
+    } else if (error.code === 'PGRST116') {
+      throw new Error('文章不存在或已被删除');
+    }
+    
+    throw new Error(error.message || '更新文章时出现未知错误');
   }
 };
 

@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createArticle, renderMarkdown } from '@/utils/articleService';
 import { useTaskProgress, TASK_ACTIONS } from '@/utils/task-hooks';
+import ProgressIndicator from '@/components/ui/ProgressIndicator';
+import ContentSizeWarning from '@/components/ui/ContentSizeWarning';
 
 interface PostFormData {
   title: string;
@@ -11,6 +13,23 @@ interface PostFormData {
   content: string;
   tags: string[];
 }
+
+// 防抖钩子
+const useDebounce = (value: string, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 export default function PostPage() {
   const [formData, setFormData] = useState<PostFormData>({
@@ -22,6 +41,7 @@ export default function PostPage() {
   const [preview, setPreview] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -38,18 +58,26 @@ export default function PostPage() {
     setUserProfile(JSON.parse(data || '{}'));
   }, []);
 
+  // 使用防抖来优化预览性能
+  const debouncedContent = useDebounce(formData.content, 300);
+
   // 实时预览功能
   useEffect(() => {
     const updatePreview = async () => {
-      if (formData.content) {
-        const rendered = await renderMarkdown(formData.content);
-        setPreview(rendered);
+      if (debouncedContent) {
+        try {
+          const rendered = await renderMarkdown(debouncedContent);
+          setPreview(rendered);
+        } catch (error) {
+          console.error('预览渲染失败:', error);
+          setPreview('<div class="text-red-500">预览渲染失败</div>');
+        }
       } else {
         setPreview('');
       }
     };
     updatePreview();
-  }, [formData.content]);
+  }, [debouncedContent]);
 
   // 初始化表单数据
   useEffect(() => {
@@ -94,30 +122,53 @@ export default function PostPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isSubmitting) return; // 防止重复提交
+    
+    setIsSubmitting(true);
     setLoading(true);
     setError(null);
 
     try {
+      // 内容长度检查
+      const contentSize = new Blob([formData.content]).size;
+      const sizeInMB = contentSize / (1024 * 1024);
+      
+      if (sizeInMB > 10) {
+        throw new Error('文章内容过大（超过10MB），请适当缩减内容长度');
+      }
+
       const article = await createArticle({
         ...formData,
         author: userProfile ? userProfile.username || '' : '',
         user_id: userProfile ? userProfile.user_id || '' : ''
       });
 
+      if (!article) {
+        throw new Error('文章创建失败，请重试');
+      }
+
       // 更新任务进度 - 发帖
       await updateProgress(TASK_ACTIONS.POST);
 
-      router.push(`/article/${article?.post_id}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '发布文章时出错');
+      router.push(`/article/${article.post_id}`);
+    } catch (err: any) {
+      console.error('发布文章错误:', err);
+      setError(err.message || '发布文章时出错，请重试');
     } finally {
       setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="container mx-auto px-4 max-w-6xl">
+    <>
+      <ProgressIndicator 
+        isVisible={isSubmitting} 
+        message={isSubmitting ? "正在发布文章..." : "处理中..."}
+      />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+        <div className="container mx-auto px-4 max-w-6xl">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">发布文章</h2>
           <p className="text-gray-600 dark:text-gray-400">支持 Markdown 语法，实时预览效果</p>
@@ -206,6 +257,10 @@ export default function PostPage() {
                   用逗号分隔，例如：技术,前端,React
                 </p>
               </div>
+            </div>
+            
+            {/* 内容大小警告 */}
+            <ContentSizeWarning content={formData.content} threshold={1} />
             </div>
           </div>
 
@@ -296,19 +351,20 @@ export default function PostPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || !formData.title.trim() || !formData.content.trim()}
+                  disabled={loading || isSubmitting || !formData.title.trim() || !formData.content.trim()}
                   className="flex-1 sm:flex-none px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                 >
-                  {loading && (
+                  {(loading || isSubmitting) && (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   )}
-                  {loading ? '发布中...' : '发布文章'}
+                  {isSubmitting ? '发布中...' : (loading ? '处理中...' : '发布文章')}
                 </button>
               </div>
             </div>
           </div>
         </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -348,7 +348,7 @@ export default function ArticlePage() {
             </Link>
           )}
           <div className="flex items-center space-x-2">
-            <button
+            <Button
               onClick={() => handlePostReaction('like')}
               disabled={isReactionLoading}
               className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${PostReaction === 'like'
@@ -358,9 +358,9 @@ export default function ArticlePage() {
             >
               <i className="fas fa-thumbs-up text-sm"></i>
               <span>{article.likes_count || 0}</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={() => handlePostReaction('dislike')}
               disabled={isReactionLoading}
               className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${PostReaction === 'dislike'
@@ -370,7 +370,7 @@ export default function ArticlePage() {
             >
               <i className="fas fa-thumbs-down text-sm"></i>
               <span>{article.dislikes_count || 0}</span>
-            </button>
+            </Button>
           </div>
         </div>
         {/* 文章头部 */}

@@ -21,6 +21,20 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000); // 60秒超时
       
+      // 如果已经有signal，需要合并
+      const existingSignal = options.signal;
+      if (existingSignal) {
+        // 如果原signal已经被abort，直接使用原signal
+        if (existingSignal.aborted) {
+          clearTimeout(timeoutId);
+          return Promise.reject(new Error('Request was aborted'));
+        }
+        // 监听原signal的abort事件
+        existingSignal.addEventListener('abort', () => {
+          controller.abort();
+        });
+      }
+      
       return fetch(url, {
         ...options,
         signal: controller.signal,

@@ -198,6 +198,15 @@ export default function EditArticlePage() {
     setLoading(true);
     setMessage(null);
     
+    // 添加超时保护
+    const submitTimeout = setTimeout(() => {
+      if (isSubmitting) {
+        setMessage({ type: 'error', text: '提交超时，请检查网络连接后重试' });
+        setLoading(false);
+        setIsSubmitting(false);
+      }
+    }, 65000); // 65秒超时，比Supabase的60秒稍长
+    
     try {
       // 内容长度检查
       const contentSize = new Blob([formData.content]).size;
@@ -207,22 +216,46 @@ export default function EditArticlePage() {
         throw new Error('文章内容过大（超过10MB），请适当缩减内容长度');
       }
 
+      console.log('开始更新文章...', { post_id: post.post_id, contentSize: sizeInMB.toFixed(2) + 'MB' });
+      
       const result = await updateArticle(post.post_id, newpost);
       
       if (!result) {
         throw new Error('文章更新失败，请重试');
       }
       
+      console.log('文章更新成功:', result);
       setMessage({ type: 'success', text: '文章更新成功' });
+      
+      // 清除超时定时器
+      clearTimeout(submitTimeout);
+      
       setTimeout(() => {
         router.push(`/article/${post.post_id}`);
       }, 1000);
     } catch (error: any) {
       console.error('更新文章错误:', error);
-      setMessage({ type: 'error', text: error.message || '更新文章失败，请重试' });
+      
+      // 清除超时定时器
+      clearTimeout(submitTimeout);
+      
+      let errorMessage = '更新文章失败，请重试';
+      
+      if (error.name === 'AbortError') {
+        errorMessage = '请求被取消，请重试';
+      } else if (error.message?.includes('timeout') || error.message?.includes('超时')) {
+        errorMessage = '网络超时，请检查网络连接后重试';
+      } else if (error.message?.includes('payload') || error.message?.includes('过大')) {
+        errorMessage = '文章内容过长，请适当缩减内容长度';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setMessage({ type: 'error', text: errorMessage });
     } finally {
       setLoading(false);
       setIsSubmitting(false);
+      clearTimeout(submitTimeout);
     }
   };
 
@@ -266,8 +299,12 @@ export default function EditArticlePage() {
   return (
     <>
       <ProgressIndicator 
-        isVisible={isSubmitting} 
-        message={isSubmitting ? "正在保存文章..." : "处理中..."}
+        isVisible={isSubmitting || loading} 
+        message={
+          isSubmitting ? "正在保存文章..." : 
+          loading ? "加载中..." : 
+          "处理中..."
+        }
       />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -467,7 +504,7 @@ export default function EditArticlePage() {
               <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <button
                   type="submit"
-                  disabled={loading || isSubmitting}
+                  disabled={loading || isSubmitting || !formData.title.trim() || !formData.content.trim()}
                   className="flex-1 sm:flex-none px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                 >
                   {(loading || isSubmitting) && (

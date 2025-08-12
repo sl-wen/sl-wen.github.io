@@ -24,16 +24,29 @@ const retryOperation = async <T>(
 ): Promise<T> => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      return await operation();
+      console.log(`执行操作，第 ${attempt} 次尝试`);
+      const result = await operation();
+      console.log(`操作成功，第 ${attempt} 次尝试`);
+      return result;
     } catch (error: any) {
       console.warn(`操作失败，第 ${attempt} 次尝试:`, error);
       
-      if (attempt === maxRetries) {
+      // 如果是AbortError或者已经到了最大重试次数，不再重试
+      if (error.name === 'AbortError' || attempt === maxRetries) {
+        throw error;
+      }
+      
+      // 对于某些特定错误，不需要重试
+      if (error.code === 'PGRST116' || // 记录不存在
+          error.message?.includes('过大') ||
+          error.message?.includes('payload too large')) {
         throw error;
       }
       
       // 指数退避延迟
-      await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempt - 1)));
+      const delayTime = delay * Math.pow(2, attempt - 1);
+      console.log(`等待 ${delayTime}ms 后重试...`);
+      await new Promise(resolve => setTimeout(resolve, delayTime));
     }
   }
   throw new Error('重试次数已用完');
@@ -179,6 +192,8 @@ export const updateArticle = async (
   updates: Partial<Article>
 ): Promise<Article | null> => {
   try {
+    console.log('开始更新文章:', { post_id, hasContent: !!updates.content });
+    
     // 如果更新包含内容，检查内容大小
     if (updates.content) {
       checkContentSize(updates.content);
@@ -186,6 +201,7 @@ export const updateArticle = async (
     
     // 使用重试机制更新文章
     const result = await retryOperation(async () => {
+      console.log('执行Supabase更新操作...');
       const { data, error } = await supabase
         .from('posts')
         .update(updates)
@@ -193,21 +209,32 @@ export const updateArticle = async (
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase更新错误:', error);
+        throw error;
+      }
+      console.log('Supabase更新成功:', data?.title);
       return data;
     }, 3, 2000); // 最多重试3次，初始延迟2秒
 
+    console.log('文章更新完成:', result?.title);
     return result;
   } catch (error: any) {
     console.error('更新文章失败:', error);
     
     // 提供更详细的错误信息
-    if (error.message?.includes('timeout')) {
+    if (error.name === 'AbortError') {
+      throw new Error('请求被取消，请重试');
+    } else if (error.message?.includes('timeout') || error.message?.includes('超时')) {
       throw new Error('网络超时，请检查网络连接后重试');
-    } else if (error.message?.includes('payload')) {
+    } else if (error.message?.includes('payload') || error.message?.includes('过大')) {
       throw new Error('文章内容过长，请适当缩减内容长度');
     } else if (error.code === 'PGRST116') {
       throw new Error('文章不存在或已被删除');
+    } else if (error.code === '23505') {
+      throw new Error('文章标题已存在，请使用不同的标题');
+    } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+      throw new Error('网络连接失败，请检查网络后重试');
     }
     
     throw new Error(error.message || '更新文章时出现未知错误');

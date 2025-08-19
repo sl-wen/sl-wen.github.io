@@ -504,7 +504,7 @@ export default function NovelPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  源站>
+                  源站》
                 </a>
               )}
 

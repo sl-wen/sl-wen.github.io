@@ -20,10 +20,12 @@ export default function NovelPage() {
   const [novels, setNovels] = useState<Novel[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [downloadingIds, setDownloadingIds] = useState<Set<number>>(new Set()); // 跟踪正在下载的小说
+  const [cancelledTasks, setCancelledTasks] = useState<Set<string>>(new Set()); // 跟踪被取消的任务
   const [downloadStates, setDownloadStates] = useState<Record<number, {
     taskId?: string;
     progress: number;
-    status: 'idle' | 'starting' | 'running' | 'completed' | 'failed';
+    status: 'idle' | 'starting' | 'running' | 'polling' | 'downloading' | 'completed' | 'failed' | 'cancelled';
+    phase?: 'init' | 'polling' | 'fetching' | 'done';
     error?: string;
     completedChapters?: number;
     totalChapters?: number;
@@ -95,46 +97,91 @@ export default function NovelPage() {
     }));
     setDownloadingIds(prev => new Set(prev).add(index));
 
+    let taskId: string | undefined;
+
     try {
-      // 1) 启动任务
+      // 阶段1：启动下载任务
+      console.log(`开始启动下载任务: ${novel.title} (${format})`);
       const startUrl = buildApiUrl('/api/optimized/download/start', {
         url: novel.url,
         sourceId: novel.source_id,
         format,
       });
+      
       const startResp = await fetch(startUrl, { method: 'POST' });
       const startJson = await safeJson(startResp);
-      const taskId: string | undefined = startJson?.data?.task_id || startJson?.task_id;
+      taskId = startJson?.data?.task_id || startJson?.task_id;
 
-      if (!startResp.ok || !taskId) {
-        throw new Error(startJson?.message || '启动下载任务失败');
+      if (!startResp.ok) {
+        throw new Error(startJson?.message || `启动任务失败: ${startResp.status} ${startResp.statusText}`);
       }
 
+      if (!taskId) {
+        throw new Error(startJson?.message || '服务器未返回任务ID');
+      }
+
+      console.log(`任务启动成功，任务ID: ${taskId}`);
+      
       setDownloadStates(prev => ({
         ...prev,
         [index]: { status: 'running', progress: 0, taskId }
       }));
 
-      // 2) 轮询进度
+      // 阶段2：轮询进度直到完成
+      console.log(`开始轮询任务进度: ${taskId}`);
+      setDownloadStates(prev => ({
+        ...prev,
+        [index]: { ...(prev[index] || {}), phase: 'polling', status: 'polling' }
+      }));
+      
       await pollUntilDone(taskId, index);
+      console.log(`轮询完成，任务状态为completed: ${taskId}`);
 
-      // 3) 拉取结果文件
+      // 阶段3：拉取结果文件 - 只有轮询完成且状态为completed才会执行到这里
+      console.log(`开始拉取结果文件: ${taskId}`);
+      setDownloadStates(prev => ({
+        ...prev,
+        [index]: { ...(prev[index] || {}), phase: 'fetching', status: 'downloading' }
+      }));
+      
       await fetchAndDownloadResult(taskId, novel, format);
+      console.log(`文件下载完成: ${taskId}`);
 
-      // 完成
+      // 最终完成状态
       setDownloadStates(prev => ({
         ...prev,
-        [index]: { ...(prev[index] || {}), status: 'completed', progress: 100 }
+        [index]: { ...(prev[index] || {}), status: 'completed', progress: 100, phase: 'done' }
       }));
-      alert('下载成功！');
+      
+      alert(`${novel.title} 下载成功！`);
+      
     } catch (error) {
-      console.error('下载失败:', error);
+      const errorMessage = error instanceof Error ? error.message : '未知错误';
+      console.error(`下载失败 (任务ID: ${taskId || 'N/A'}):`, error);
+      
       setDownloadStates(prev => ({
         ...prev,
-        [index]: { ...(prev[index] || {}), status: 'failed', error: error instanceof Error ? error.message : '未知错误', progress: prev[index]?.progress || 0 }
+        [index]: { 
+          ...(prev[index] || {}), 
+          status: 'failed', 
+          error: errorMessage, 
+          progress: prev[index]?.progress || 0,
+          taskId
+        }
       }));
-      alert(`下载失败: ${error instanceof Error ? error.message : '未知错误'}`);
+      
+      // 根据错误类型提供更详细的提示
+      let userMessage = `下载失败: ${errorMessage}`;
+      if (errorMessage.includes('超时')) {
+        userMessage += '\n\n建议：任务可能仍在后台运行，请稍后重试';
+      } else if (errorMessage.includes('网络')) {
+        userMessage += '\n\n建议：检查网络连接后重试';
+      }
+      
+      alert(userMessage);
+      
     } finally {
+      // 清理下载状态
       setDownloadingIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(index);
@@ -143,28 +190,43 @@ export default function NovelPage() {
     }
   };
 
-  // 轮询进度直至完成
-  const pollUntilDone = async (taskId: string, index: number) => {
+  // 轮询进度直至完成 - 严格确保状态为 completed 才结束轮询
+  const pollUntilDone = async (taskId: string, index: number): Promise<void> => {
     const maxWaitMs = 15 * 60 * 1000; // 最长等待15分钟
     const startTime = Date.now();
     let lastProgress = 0;
+    let consecutiveErrors = 0;
+    const maxConsecutiveErrors = 5; // 最多连续5次错误
 
     while (true) {
+      // 检查是否被取消
+      if (cancelledTasks.has(taskId)) {
+        throw new Error('任务已被用户取消');
+      }
+
       // 超时控制
       if (Date.now() - startTime > maxWaitMs) {
-        throw new Error('下载任务超时');
+        throw new Error('下载任务超时（15分钟）');
       }
 
       try {
         const resp = await fetch(buildApiUrl('/api/optimized/download/progress', { task_id: taskId }));
+        
+        // 重置连续错误计数
+        consecutiveErrors = 0;
+
+        if (!resp.ok) {
+          throw new Error(`服务器响应错误: ${resp.status} ${resp.statusText}`);
+        }
+
         const json = await safeJson(resp);
 
         // 尝试读取进度/状态字段，兼容多种返回结构
-        const status: string = (json?.data?.status || json?.status || '').toString();
+        const status: string = (json?.data?.status || json?.status || '').toString().toLowerCase();
         const progressValue =
           typeof json?.data?.progress_percentage === 'number' ? json.data.progress_percentage :
-            typeof json?.data?.progress === 'number' ? json.data.progress : 137
-        typeof json?.progress === 'number' ? json.progress : undefined;
+            typeof json?.data?.progress === 'number' ? json.data.progress :
+            typeof json?.progress === 'number' ? json.progress : undefined;
 
         // 读取章节信息
         const completedChapters = json?.data?.completed_chapters || json?.completed_chapters;
@@ -173,42 +235,55 @@ export default function NovelPage() {
         // 更新进度
         if (typeof progressValue === 'number') {
           lastProgress = Math.max(lastProgress, Math.min(100, Math.max(0, Math.round(progressValue))));
-          setDownloadStates(prev => ({
-            ...prev,
-            [index]: {
-              ...(prev[index] || {}),
-              status: 'running',
-              progress: lastProgress,
-              completedChapters,
-              totalChapters
-            }
-          }));
-        } else {
-          // 未提供进度时，维持原进度并显示处理中
-          setDownloadStates(prev => ({
-            ...prev,
-            [index]: {
-              ...(prev[index] || {}),
-              status: 'running',
-              progress: lastProgress,
-              completedChapters,
-              totalChapters
-            }
-          }));
         }
 
-        // 判断完成
-        if (/finish|complete|success|done/i.test(status) || lastProgress >= 100) {
-          return;
+        // 更新状态
+        setDownloadStates(prev => ({
+          ...prev,
+          [index]: {
+            ...(prev[index] || {}),
+            status: 'polling',
+            progress: lastProgress,
+            completedChapters,
+            totalChapters,
+            taskId,
+            phase: 'polling'
+          }
+        }));
+
+        // 严格判断完成状态 - 只有状态明确为 completed 才认为完成
+        if (status === 'completed' || status === 'finished' || status === 'success' || status === 'done') {
+          console.log(`任务 ${taskId} 轮询完成，状态: ${status}, 进度: ${lastProgress}%`);
+          return; // 轮询结束，可以进行下一步
         }
 
-        // 判断失败
-        if (/fail|error|cancel/i.test(status) || (json?.code && json.code >= 400)) {
-          throw new Error(json?.message || '下载任务失败');
+        // 判断失败状态
+        if (status === 'failed' || status === 'error' || status === 'cancelled' || status === 'timeout') {
+          throw new Error(json?.message || json?.data?.message || `任务失败，状态: ${status}`);
         }
+
+        // 检查是否有错误码
+        if (json?.code && json.code >= 400) {
+          throw new Error(json?.message || json?.data?.message || `任务失败，错误码: ${json.code}`);
+        }
+
+        // 如果进度达到100%但状态不是completed，继续等待状态更新
+        if (lastProgress >= 100 && !['completed', 'finished', 'success', 'done'].includes(status)) {
+          console.log(`进度已100%但状态为 ${status}，继续等待状态更新...`);
+        }
+
       } catch (e) {
-        // 进度查询失败，短暂重试
-        console.warn('进度查询失败，将重试:', e);
+        consecutiveErrors++;
+        console.warn(`进度查询失败 (${consecutiveErrors}/${maxConsecutiveErrors}):`, e);
+        
+        // 如果连续错误过多，抛出异常
+        if (consecutiveErrors >= maxConsecutiveErrors) {
+          throw new Error(`进度查询连续失败 ${maxConsecutiveErrors} 次: ${e instanceof Error ? e.message : '未知错误'}`);
+        }
+        
+        // 连续错误时增加等待时间
+        await delay(2000 * consecutiveErrors);
+        continue;
       }
 
       // 等待一会再轮询
@@ -216,22 +291,85 @@ export default function NovelPage() {
     }
   };
 
-  // 获取结果并触发下载
-  const fetchAndDownloadResult = async (taskId: string, novel: Novel, format: string) => {
-    // 浏览器 fetch 默认跟随跳转，等同于 curl -L
-    const response = await fetch(buildApiUrl('/api/optimized/download/result', { task_id: taskId }));
+  // 获取结果并触发下载 - 只有轮询状态为completed后才会调用此函数
+  const fetchAndDownloadResult = async (taskId: string, novel: Novel, format: string): Promise<void> => {
+    const maxRetries = 3;
+    let attempt = 0;
 
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => '');
-      throw new Error(`获取结果失败: ${response.status} ${errorText}`);
+    while (attempt < maxRetries) {
+      try {
+        console.log(`尝试获取结果文件 (尝试 ${attempt + 1}/${maxRetries}): ${taskId}`);
+        
+        // 浏览器 fetch 默认跟随跳转，等同于 curl -L
+        const response = await fetch(buildApiUrl('/api/optimized/download/result', { task_id: taskId }), {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => '');
+          throw new Error(`获取结果失败 (${response.status}): ${errorText || response.statusText}`);
+        }
+
+        // 检查响应内容类型
+        const contentType = response.headers.get('content-type') || '';
+        const contentLength = response.headers.get('content-length');
+        
+        console.log(`结果文件信息: Content-Type=${contentType}, Content-Length=${contentLength}`);
+
+        // 如果返回的是JSON错误信息而不是文件
+        if (contentType.includes('application/json')) {
+          const json = await response.json();
+          throw new Error(json?.message || json?.error || '服务器返回错误信息');
+        }
+
+        const filename = getFilenameFromResponse(response, novel, format);
+        const blob = await response.blob();
+        
+        // 验证文件大小
+        if (blob.size === 0) {
+          throw new Error('下载的文件为空');
+        }
+
+        console.log(`准备下载文件: ${filename} (${blob.size} bytes)`);
+        downloadFile(blob, filename);
+        
+        return; // 成功，退出重试循环
+        
+      } catch (error) {
+        attempt++;
+        console.warn(`获取结果文件失败 (尝试 ${attempt}/${maxRetries}):`, error);
+        
+        if (attempt >= maxRetries) {
+          throw new Error(`获取结果文件失败，已重试 ${maxRetries} 次: ${error instanceof Error ? error.message : '未知错误'}`);
+        }
+        
+        // 等待后重试
+        await delay(2000 * attempt);
+      }
     }
-
-    const filename = getFilenameFromResponse(response, novel, format);
-    const blob = await response.blob();
-    downloadFile(blob, filename);
   };
 
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // 取消下载任务
+  const handleCancelDownload = (index: number) => {
+    const taskId = downloadStates[index]?.taskId;
+    if (taskId) {
+      setCancelledTasks(prev => new Set(prev).add(taskId));
+      setDownloadStates(prev => ({
+        ...prev,
+        [index]: { ...(prev[index] || {}), status: 'cancelled', error: '用户取消下载' }
+      }));
+      setDownloadingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(index);
+        return newSet;
+      });
+    }
+  };
 
   const safeJson = async (resp: Response) => {
     try {
@@ -401,25 +539,85 @@ export default function NovelPage() {
                     disabled={downloadingIds.has(idx) || !novel.url}
                     className={`px-3 py-1 text-sm rounded transition ${downloadingIds.has(idx)
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                      : downloadStates[idx]?.status === 'completed' 
+                        ? 'bg-green-200 text-green-800'
+                        : downloadStates[idx]?.status === 'failed'
+                          ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                          : 'bg-green-100 text-green-700 hover:bg-green-200'
                       }`}
                   >
                     {downloadStates[idx]?.status === 'starting' && `启动${format.toUpperCase()}...`}
-                    {downloadStates[idx]?.status === 'running' && `下载中`}
-                    {downloadStates[idx]?.status === 'completed' && `已完成`}
-                    {downloadStates[idx]?.status === 'failed' && `失败，重试`}
+                    {downloadStates[idx]?.status === 'running' && `任务运行中`}
+                    {downloadStates[idx]?.status === 'polling' && `轮询进度中`}
+                    {downloadStates[idx]?.status === 'downloading' && `拉取文件中`}
+                    {downloadStates[idx]?.status === 'completed' && `✓ 已完成`}
+                    {downloadStates[idx]?.status === 'failed' && `✗ 失败，重试`}
+                    {downloadStates[idx]?.status === 'cancelled' && `已取消`}
                     {!downloadStates[idx]?.status || downloadStates[idx]?.status === 'idle' ? `下载${format.toUpperCase()}` : null}
                   </button>
                 ))}
 
+                {/* 取消按钮 */}
+                {downloadingIds.has(idx) && (
+                  <button
+                    onClick={() => handleCancelDownload(idx)}
+                    className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                    title="取消下载"
+                  >
+                    取消
+                  </button>
+                )}
+
                 {/* 进度提示 */}
                 {downloadingIds.has(idx) && (
-                  <span className="text-xs text-gray-500 ml-2">
-                    {downloadStates[idx]?.status === 'starting' && '启动任务中'}
-                    {downloadStates[idx]?.status === 'running' &&
-                      `${downloadStates[idx]?.completedChapters || 0}/${downloadStates[idx]?.totalChapters || 0} 章 ${downloadStates[idx]?.progress ?? 0}%`}
-                    {downloadStates[idx]?.status === 'failed' && (downloadStates[idx]?.error || '下载失败')}
-                  </span>
+                  <div className="text-xs text-gray-600 ml-2 flex flex-col">
+                    <div className="flex items-center gap-1">
+                      {downloadStates[idx]?.status === 'starting' && (
+                        <>
+                          <span className="animate-pulse">⏳</span>
+                          <span>启动任务中...</span>
+                        </>
+                      )}
+                      {downloadStates[idx]?.status === 'running' && (
+                        <>
+                          <span className="animate-spin">⚙️</span>
+                          <span>任务运行中...</span>
+                        </>
+                      )}
+                      {downloadStates[idx]?.status === 'polling' && (
+                        <>
+                          <span className="animate-pulse">🔄</span>
+                          <span>轮询进度中: {downloadStates[idx]?.progress ?? 0}%</span>
+                        </>
+                      )}
+                      {downloadStates[idx]?.status === 'downloading' && (
+                        <>
+                          <span className="animate-bounce">⬇️</span>
+                          <span>拉取结果文件中...</span>
+                        </>
+                      )}
+                      {downloadStates[idx]?.status === 'failed' && (
+                        <>
+                          <span>❌</span>
+                          <span className="text-red-600">{downloadStates[idx]?.error || '下载失败'}</span>
+                        </>
+                      )}
+                      {downloadStates[idx]?.status === 'cancelled' && (
+                        <>
+                          <span>⏹️</span>
+                          <span className="text-orange-600">已取消</span>
+                        </>
+                      )}
+                    </div>
+                    {downloadStates[idx]?.status === 'polling' && downloadStates[idx]?.completedChapters && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        章节: {downloadStates[idx]?.completedChapters || 0}/{downloadStates[idx]?.totalChapters || 0}
+                        {downloadStates[idx]?.taskId && (
+                          <span className="ml-2 font-mono text-xs">ID: {downloadStates[idx]?.taskId?.slice(-8)}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

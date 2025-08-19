@@ -20,11 +20,10 @@ export default function NovelPage() {
   const [novels, setNovels] = useState<Novel[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [downloadingIds, setDownloadingIds] = useState<Set<number>>(new Set()); // 跟踪正在下载的小说
-  const [cancelledTasks, setCancelledTasks] = useState<Set<string>>(new Set()); // 跟踪被取消的任务
   const [downloadStates, setDownloadStates] = useState<Record<number, {
     taskId?: string;
     progress: number;
-    status: 'idle' | 'starting' | 'running' | 'polling' | 'downloading' | 'completed' | 'failed' | 'cancelled';
+    status: 'idle' | 'starting' | 'running' | 'polling' | 'downloading' | 'completed' | 'failed';
     phase?: 'init' | 'polling' | 'fetching' | 'done';
     error?: string;
     completedChapters?: number;
@@ -199,10 +198,6 @@ export default function NovelPage() {
     const maxConsecutiveErrors = 5; // 最多连续5次错误
 
     while (true) {
-      // 检查是否被取消
-      if (cancelledTasks.has(taskId)) {
-        throw new Error('任务已被用户取消');
-      }
 
       // 超时控制
       if (Date.now() - startTime > maxWaitMs) {
@@ -353,23 +348,6 @@ export default function NovelPage() {
   };
 
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-  // 取消下载任务
-  const handleCancelDownload = (index: number) => {
-    const taskId = downloadStates[index]?.taskId;
-    if (taskId) {
-      setCancelledTasks(prev => new Set(prev).add(taskId));
-      setDownloadStates(prev => ({
-        ...prev,
-        [index]: { ...(prev[index] || {}), status: 'cancelled', error: '用户取消下载' }
-      }));
-      setDownloadingIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(index);
-        return newSet;
-      });
-    }
-  };
 
   const safeJson = async (resp: Response) => {
     try {
@@ -526,7 +504,7 @@ export default function NovelPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  前往源站
+                  源站>
                 </a>
               )}
 
@@ -552,25 +530,13 @@ export default function NovelPage() {
                     {downloadStates[idx]?.status === 'downloading' && `拉取中`}
                     {downloadStates[idx]?.status === 'completed' && `已完成`}
                     {downloadStates[idx]?.status === 'failed' && `✗ 失败`}
-                    {downloadStates[idx]?.status === 'cancelled' && `已取消`}
-                    {!downloadStates[idx]?.status || downloadStates[idx]?.status === 'idle' ? `下载${format.toUpperCase()}` : null}
+                    {!downloadStates[idx]?.status || downloadStates[idx]?.status === 'idle' ? `${format.toUpperCase()}` : null}
                   </button>
                 ))}
 
-                {/* 取消按钮 */}
-                {downloadingIds.has(idx) && (
-                  <button
-                    onClick={() => handleCancelDownload(idx)}
-                    className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
-                    title="取消下载"
-                  >
-                    取消
-                  </button>
-                )}
-
                 {/* 进度提示 */}
                 {downloadingIds.has(idx) && (
-                  <div className="text-xs text-gray-600 ml-2 flex flex-col">
+                  <div className="text-xs text-gray-600 ml- flex flex-col">
                     <div className="flex items-center gap-1">
                       {downloadStates[idx]?.status === 'starting' && (
                         <>
@@ -587,7 +553,7 @@ export default function NovelPage() {
                       {downloadStates[idx]?.status === 'polling' && (
                         <>
                           <span className="animate-pulse">🔄</span>
-                          <span>进度: {downloadStates[idx]?.progress ?? 0}%</span>
+                          <span>进度{downloadStates[idx]?.progress ?? 0}%</span>
                         </>
                       )}
                       {downloadStates[idx]?.status === 'downloading' && (
@@ -600,12 +566,6 @@ export default function NovelPage() {
                         <>
                           <span>❌</span>
                           <span className="text-red-600">{downloadStates[idx]?.error || '失败'}</span>
-                        </>
-                      )}
-                      {downloadStates[idx]?.status === 'cancelled' && (
-                        <>
-                          <span>⏹️</span>
-                          <span className="text-orange-600">已取消</span>
                         </>
                       )}
                     </div>

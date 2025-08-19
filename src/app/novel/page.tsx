@@ -19,8 +19,19 @@ export default function NovelPage() {
   const [loading, setLoading] = useState(false);
   const [novels, setNovels] = useState<Novel[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [downloadingIds, setDownloadingIds] = useState<Set<number>>(new Set()); // 跟踪正在下载的小说
-  const [downloadStates, setDownloadStates] = useState<Record<number, {
+  // TXT 和 EPUB 分离的状态管理
+  const [downloadingTxtIds, setDownloadingTxtIds] = useState<Set<number>>(new Set()); // 跟踪正在下载TXT的小说
+  const [downloadingEpubIds, setDownloadingEpubIds] = useState<Set<number>>(new Set()); // 跟踪正在下载EPUB的小说
+  const [txtDownloadStates, setTxtDownloadStates] = useState<Record<number, {
+    taskId?: string;
+    progress: number;
+    status: 'idle' | 'starting' | 'running' | 'polling' | 'downloading' | 'completed' | 'failed';
+    phase?: 'init' | 'polling' | 'fetching' | 'done';
+    error?: string;
+    completedChapters?: number;
+    totalChapters?: number;
+  }>>({});
+  const [epubDownloadStates, setEpubDownloadStates] = useState<Record<number, {
     taskId?: string;
     progress: number;
     status: 'idle' | 'starting' | 'running' | 'polling' | 'downloading' | 'completed' | 'failed';
@@ -89,6 +100,11 @@ export default function NovelPage() {
       return;
     }
 
+    // 根据格式选择对应的状态管理函数
+    const isTxt = format === 'txt';
+    const setDownloadStates = isTxt ? setTxtDownloadStates : setEpubDownloadStates;
+    const setDownloadingIds = isTxt ? setDownloadingTxtIds : setDownloadingEpubIds;
+
     // 初始化下载状态
     setDownloadStates(prev => ({
       ...prev,
@@ -133,7 +149,7 @@ export default function NovelPage() {
         [index]: { ...(prev[index] || {}), phase: 'polling', status: 'polling' }
       }));
       
-      await pollUntilDone(taskId, index);
+      await pollUntilDone(taskId, index, setDownloadStates);
       console.log(`轮询完成，任务状态为completed: ${taskId}`);
 
       // 阶段3：拉取结果文件 - 只有轮询完成且状态为completed才会执行到这里
@@ -190,7 +206,15 @@ export default function NovelPage() {
   };
 
   // 轮询进度直至完成 - 严格确保状态为 completed 才结束轮询
-  const pollUntilDone = async (taskId: string, index: number): Promise<void> => {
+  const pollUntilDone = async (taskId: string, index: number, setDownloadStates: React.Dispatch<React.SetStateAction<Record<number, {
+    taskId?: string;
+    progress: number;
+    status: 'idle' | 'starting' | 'running' | 'polling' | 'downloading' | 'completed' | 'failed';
+    phase?: 'init' | 'polling' | 'fetching' | 'done';
+    error?: string;
+    completedChapters?: number;
+    totalChapters?: number;
+  }>>>): Promise<void> => {
     const maxWaitMs = 15 * 60 * 1000; // 最长等待15分钟
     const startTime = Date.now();
     let lastProgress = 0;
@@ -510,68 +534,122 @@ export default function NovelPage() {
 
               {/* 下载按钮组 */}
               <div className="flex gap-1 items-center">
-                {(['txt', 'epub'] as const).map((format) => (
-                  <button
-                    key={format}
-                    onClick={() => handleDownload(novel, format, idx)}
-                    disabled={downloadingIds.has(idx) || !novel.url}
-                    className={`px-3 py-1 text-sm rounded transition ${downloadingIds.has(idx)
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : downloadStates[idx]?.status === 'completed' 
-                        ? 'bg-green-200 text-green-800'
-                        : downloadStates[idx]?.status === 'failed'
-                          ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                          : 'bg-green-100 text-green-700 hover:bg-green-200'
-                      }`}
-                  >
-                    {downloadStates[idx]?.status === 'starting' && `启动${format.toUpperCase()}...`}
-                    {downloadStates[idx]?.status === 'running' && `任务中`}
-                    {downloadStates[idx]?.status === 'polling' && `轮询中`}
-                    {downloadStates[idx]?.status === 'downloading' && `拉取中`}
-                    {downloadStates[idx]?.status === 'completed' && `已完成`}
-                    {downloadStates[idx]?.status === 'failed' && `✗ 失败`}
-                    {!downloadStates[idx]?.status || downloadStates[idx]?.status === 'idle' ? `${format.toUpperCase()}` : null}
-                  </button>
-                ))}
+                {(['txt', 'epub'] as const).map((format) => {
+                  const isTxt = format === 'txt';
+                  const downloadingIds = isTxt ? downloadingTxtIds : downloadingEpubIds;
+                  const downloadStates = isTxt ? txtDownloadStates : epubDownloadStates;
+                  const isDownloading = downloadingIds.has(idx);
+                  const currentState = downloadStates[idx];
+                  
+                  return (
+                    <button
+                      key={format}
+                      onClick={() => handleDownload(novel, format, idx)}
+                      disabled={isDownloading || !novel.url}
+                      className={`px-3 py-1 text-sm rounded transition ${isDownloading
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : currentState?.status === 'completed' 
+                          ? 'bg-green-200 text-green-800'
+                          : currentState?.status === 'failed'
+                            ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                            : 'bg-green-100 text-green-700 hover:bg-green-200'
+                        }`}
+                    >
+                      {currentState?.status === 'starting' && `启动${format.toUpperCase()}...`}
+                      {currentState?.status === 'running' && `任务中`}
+                      {currentState?.status === 'polling' && `轮询中`}
+                      {currentState?.status === 'downloading' && `拉取中`}
+                      {currentState?.status === 'completed' && `已完成`}
+                      {currentState?.status === 'failed' && `✗ 失败`}
+                      {!currentState?.status || currentState?.status === 'idle' ? `${format.toUpperCase()}` : null}
+                    </button>
+                  );
+                })}
 
                 {/* 进度提示 */}
-                {downloadingIds.has(idx) && (
-                  <div className="text-xs text-gray-600 ml-1 flex flex-col">
-                    <div className="flex items-center gap-1">
-                      {downloadStates[idx]?.status === 'starting' && (
-                        <>
-                          <span className="animate-pulse">⏳</span>
-                          <span>启动中.</span>
-                        </>
-                      )}
-                      {downloadStates[idx]?.status === 'running' && (
-                        <>
-                          <span className="animate-spin">⚙️</span>
-                          <span>任务中.</span>
-                        </>
-                      )}
-                      {downloadStates[idx]?.status === 'polling' && (
-                        <>
-                          <span className="animate-pulse">🔄</span>
-                          <span>进度{downloadStates[idx]?.progress ?? 0}%</span>
-                        </>
-                      )}
-                      {downloadStates[idx]?.status === 'downloading' && (
-                        <>
-                          <span className="animate-bounce">⬇️</span>
-                          <span>拉取中.</span>
-                        </>
-                      )}
-                      {downloadStates[idx]?.status === 'failed' && (
-                        <>
-                          <span>❌</span>
-                          <span className="text-red-600">{downloadStates[idx]?.error || '失败'}</span>
-                        </>
-                      )}
-                    </div>
-                    {downloadStates[idx]?.status === 'polling' && downloadStates[idx]?.completedChapters && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        章节: {downloadStates[idx]?.completedChapters || 0}/{downloadStates[idx]?.totalChapters || 0}
+                {(downloadingTxtIds.has(idx) || downloadingEpubIds.has(idx)) && (
+                  <div className="text-xs text-gray-600 ml-1 flex flex-col gap-1">
+                    {/* TXT 进度 */}
+                    {downloadingTxtIds.has(idx) && txtDownloadStates[idx] && (
+                      <div className="flex items-center gap-1">
+                        <span className="text-blue-600 font-semibold">TXT:</span>
+                        {txtDownloadStates[idx]?.status === 'starting' && (
+                          <>
+                            <span className="animate-pulse">⏳</span>
+                            <span>启动中</span>
+                          </>
+                        )}
+                        {txtDownloadStates[idx]?.status === 'running' && (
+                          <>
+                            <span className="animate-spin">⚙️</span>
+                            <span>任务中</span>
+                          </>
+                        )}
+                        {txtDownloadStates[idx]?.status === 'polling' && (
+                          <>
+                            <span className="animate-pulse">🔄</span>
+                            <span>进度{txtDownloadStates[idx]?.progress ?? 0}%</span>
+                          </>
+                        )}
+                        {txtDownloadStates[idx]?.status === 'downloading' && (
+                          <>
+                            <span className="animate-bounce">⬇️</span>
+                            <span>拉取中</span>
+                          </>
+                        )}
+                        {txtDownloadStates[idx]?.status === 'failed' && (
+                          <>
+                            <span>❌</span>
+                            <span className="text-red-600">{txtDownloadStates[idx]?.error || '失败'}</span>
+                          </>
+                        )}
+                        {txtDownloadStates[idx]?.status === 'polling' && txtDownloadStates[idx]?.completedChapters && (
+                          <span className="text-gray-500">
+                            ({txtDownloadStates[idx]?.completedChapters || 0}/{txtDownloadStates[idx]?.totalChapters || 0})
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* EPUB 进度 */}
+                    {downloadingEpubIds.has(idx) && epubDownloadStates[idx] && (
+                      <div className="flex items-center gap-1">
+                        <span className="text-purple-600 font-semibold">EPUB:</span>
+                        {epubDownloadStates[idx]?.status === 'starting' && (
+                          <>
+                            <span className="animate-pulse">⏳</span>
+                            <span>启动中</span>
+                          </>
+                        )}
+                        {epubDownloadStates[idx]?.status === 'running' && (
+                          <>
+                            <span className="animate-spin">⚙️</span>
+                            <span>任务中</span>
+                          </>
+                        )}
+                        {epubDownloadStates[idx]?.status === 'polling' && (
+                          <>
+                            <span className="animate-pulse">🔄</span>
+                            <span>进度{epubDownloadStates[idx]?.progress ?? 0}%</span>
+                          </>
+                        )}
+                        {epubDownloadStates[idx]?.status === 'downloading' && (
+                          <>
+                            <span className="animate-bounce">⬇️</span>
+                            <span>拉取中</span>
+                          </>
+                        )}
+                        {epubDownloadStates[idx]?.status === 'failed' && (
+                          <>
+                            <span>❌</span>
+                            <span className="text-red-600">{epubDownloadStates[idx]?.error || '失败'}</span>
+                          </>
+                        )}
+                        {epubDownloadStates[idx]?.status === 'polling' && epubDownloadStates[idx]?.completedChapters && (
+                          <span className="text-gray-500">
+                            ({epubDownloadStates[idx]?.completedChapters || 0}/{epubDownloadStates[idx]?.totalChapters || 0})
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>

@@ -561,7 +561,7 @@ export default function NovelPage() {
                 {downloadingIds.has(idx) && (
                   <button
                     onClick={() => handleCancelDownload(idx)}
-                    className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                    className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
                     title="取消下载"
                   >
                     取消
@@ -612,9 +612,6 @@ export default function NovelPage() {
                     {downloadStates[idx]?.status === 'polling' && downloadStates[idx]?.completedChapters && (
                       <div className="text-xs text-gray-500 mt-1">
                         章节: {downloadStates[idx]?.completedChapters || 0}/{downloadStates[idx]?.totalChapters || 0}
-                        {downloadStates[idx]?.taskId && (
-                          <span className="ml-2 font-mono text-xs">ID: {downloadStates[idx]?.taskId?.slice(-8)}</span>
-                        )}
                       </div>
                     )}
                   </div>

@@ -122,7 +122,7 @@ export default function NovelPage() {
         sourceId: novel.source_id,
         format,
       });
-      
+
       const startResp = await fetch(startUrl, { method: 'POST' });
       const startJson = await safeJson(startResp);
       taskId = startJson?.data?.task_id || startJson?.task_id;
@@ -136,7 +136,7 @@ export default function NovelPage() {
       }
 
       console.log(`任务启动成功，任务ID: ${taskId}`);
-      
+
       setDownloadStates(prev => ({
         ...prev,
         [index]: { status: 'running', progress: 0, taskId }
@@ -148,7 +148,7 @@ export default function NovelPage() {
         ...prev,
         [index]: { ...(prev[index] || {}), phase: 'polling', status: 'polling' }
       }));
-      
+
       await pollUntilDone(taskId, index, setDownloadStates);
       console.log(`轮询完成，任务状态为completed: ${taskId}`);
 
@@ -158,7 +158,7 @@ export default function NovelPage() {
         ...prev,
         [index]: { ...(prev[index] || {}), phase: 'fetching', status: 'downloading' }
       }));
-      
+
       await fetchAndDownloadResult(taskId, novel, format);
       console.log(`文件下载完成: ${taskId}`);
 
@@ -167,24 +167,24 @@ export default function NovelPage() {
         ...prev,
         [index]: { ...(prev[index] || {}), status: 'completed', progress: 100, phase: 'done' }
       }));
-      
+
       alert(`${novel.title} 下载成功！`);
-      
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '未知错误';
       console.error(`下载失败 (任务ID: ${taskId || 'N/A'}):`, error);
-      
+
       setDownloadStates(prev => ({
         ...prev,
-        [index]: { 
-          ...(prev[index] || {}), 
-          status: 'failed', 
-          error: errorMessage, 
+        [index]: {
+          ...(prev[index] || {}),
+          status: 'failed',
+          error: errorMessage,
           progress: prev[index]?.progress || 0,
           taskId
         }
       }));
-      
+
       // 根据错误类型提供更详细的提示
       let userMessage = `下载失败: ${errorMessage}`;
       if (errorMessage.includes('超时')) {
@@ -192,9 +192,9 @@ export default function NovelPage() {
       } else if (errorMessage.includes('网络')) {
         userMessage += '\n\n建议：检查网络连接后重试';
       }
-      
+
       alert(userMessage);
-      
+
     } finally {
       // 清理下载状态
       setDownloadingIds(prev => {
@@ -230,7 +230,7 @@ export default function NovelPage() {
 
       try {
         const resp = await fetch(buildApiUrl('/api/optimized/download/progress', { task_id: taskId }));
-        
+
         // 重置连续错误计数
         consecutiveErrors = 0;
 
@@ -245,7 +245,7 @@ export default function NovelPage() {
         const progressValue =
           typeof json?.data?.progress_percentage === 'number' ? json.data.progress_percentage :
             typeof json?.data?.progress === 'number' ? json.data.progress :
-            typeof json?.progress === 'number' ? json.progress : undefined;
+              typeof json?.progress === 'number' ? json.progress : undefined;
 
         // 读取章节信息
         const completedChapters = json?.data?.completed_chapters || json?.completed_chapters;
@@ -294,12 +294,12 @@ export default function NovelPage() {
       } catch (e) {
         consecutiveErrors++;
         console.warn(`进度查询失败 (${consecutiveErrors}/${maxConsecutiveErrors}):`, e);
-        
+
         // 如果连续错误过多，抛出异常
         if (consecutiveErrors >= maxConsecutiveErrors) {
           throw new Error(`进度查询连续失败 ${maxConsecutiveErrors} 次: ${e instanceof Error ? e.message : '未知错误'}`);
         }
-        
+
         // 连续错误时增加等待时间
         await delay(2000 * consecutiveErrors);
         continue;
@@ -318,7 +318,7 @@ export default function NovelPage() {
     while (attempt < maxRetries) {
       try {
         console.log(`尝试获取结果文件 (尝试 ${attempt + 1}/${maxRetries}): ${taskId}`);
-        
+
         // 浏览器 fetch 默认跟随跳转，等同于 curl -L
         const response = await fetch(buildApiUrl('/api/optimized/download/result', { task_id: taskId }), {
           method: 'GET',
@@ -335,7 +335,7 @@ export default function NovelPage() {
         // 检查响应内容类型
         const contentType = response.headers.get('content-type') || '';
         const contentLength = response.headers.get('content-length');
-        
+
         console.log(`结果文件信息: Content-Type=${contentType}, Content-Length=${contentLength}`);
 
         // 如果返回的是JSON错误信息而不是文件
@@ -346,7 +346,7 @@ export default function NovelPage() {
 
         const filename = getFilenameFromResponse(response, novel, format);
         const blob = await response.blob();
-        
+
         // 验证文件大小
         if (blob.size === 0) {
           throw new Error('下载的文件为空');
@@ -354,17 +354,17 @@ export default function NovelPage() {
 
         console.log(`准备下载文件: ${filename} (${blob.size} bytes)`);
         downloadFile(blob, filename);
-        
+
         return; // 成功，退出重试循环
-        
+
       } catch (error) {
         attempt++;
         console.warn(`获取结果文件失败 (尝试 ${attempt}/${maxRetries}):`, error);
-        
+
         if (attempt >= maxRetries) {
           throw new Error(`获取结果文件失败，已重试 ${maxRetries} 次: ${error instanceof Error ? error.message : '未知错误'}`);
         }
-        
+
         // 等待后重试
         await delay(2000 * attempt);
       }
@@ -540,7 +540,7 @@ export default function NovelPage() {
                   const downloadStates = isTxt ? txtDownloadStates : epubDownloadStates;
                   const isDownloading = downloadingIds.has(idx);
                   const currentState = downloadStates[idx];
-                  
+
                   return (
                     <button
                       key={format}
@@ -548,7 +548,7 @@ export default function NovelPage() {
                       disabled={isDownloading || !novel.url}
                       className={`px-3 py-1 text-sm rounded transition ${isDownloading
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : currentState?.status === 'completed' 
+                        : currentState?.status === 'completed'
                           ? 'bg-green-200 text-green-800'
                           : currentState?.status === 'failed'
                             ? 'bg-red-100 text-red-700 hover:bg-red-200'
@@ -571,83 +571,86 @@ export default function NovelPage() {
                   <div className="text-xs text-gray-600 ml-1 flex flex-col gap-1">
                     {/* TXT 进度 */}
                     {downloadingTxtIds.has(idx) && txtDownloadStates[idx] && (
-                      <div className="flex items-center gap-1">
-                        <span className="text-blue-600 font-semibold">TXT:</span>
-                        {txtDownloadStates[idx]?.status === 'starting' && (
-                          <>
-                            <span className="animate-pulse">⏳</span>
-                            <span>启动中</span>
-                          </>
-                        )}
-                        {txtDownloadStates[idx]?.status === 'running' && (
-                          <>
-                            <span className="animate-spin">⚙️</span>
-                            <span>任务中</span>
-                          </>
-                        )}
-                        {txtDownloadStates[idx]?.status === 'polling' && (
-                          <>
-                            <span className="animate-pulse">🔄</span>
-                            <span>进度{txtDownloadStates[idx]?.progress ?? 0}%</span>
-                          </>
-                        )}
-                        {txtDownloadStates[idx]?.status === 'downloading' && (
-                          <>
-                            <span className="animate-bounce">⬇️</span>
-                            <span>拉取中</span>
-                          </>
-                        )}
-                        {txtDownloadStates[idx]?.status === 'failed' && (
-                          <>
-                            <span>❌</span>
-                            <span className="text-red-600">{txtDownloadStates[idx]?.error || '失败'}</span>
-                          </>
-                        )}
+                      <div className="text-xs text-gray-600 flex flex-col">
+                        <div className="flex items-center">
+                          {txtDownloadStates[idx]?.status === 'starting' && (
+                            <>
+                              <span className="animate-pulse">⏳</span>
+                              <span>启动中</span>
+                            </>
+                          )}
+                          {txtDownloadStates[idx]?.status === 'running' && (
+                            <>
+                              <span className="animate-spin">⚙️</span>
+                              <span>任务中</span>
+                            </>
+                          )}
+                          {txtDownloadStates[idx]?.status === 'polling' && (
+                            <>
+                              <span className="animate-pulse">🔄</span>
+                              <span>进度{txtDownloadStates[idx]?.progress ?? 0}%</span>
+                            </>
+                          )}
+                          {txtDownloadStates[idx]?.status === 'downloading' && (
+                            <>
+                              <span className="animate-bounce">⬇️</span>
+                              <span>拉取中</span>
+                            </>
+                          )}
+                          {txtDownloadStates[idx]?.status === 'failed' && (
+                            <>
+                              <span>❌</span>
+                              <span className="text-red-600">{txtDownloadStates[idx]?.error || '失败'}</span>
+                            </>
+                          )}
+
+                        </div>
                         {txtDownloadStates[idx]?.status === 'polling' && txtDownloadStates[idx]?.completedChapters && (
                           <span className="text-gray-500">
-                            ({txtDownloadStates[idx]?.completedChapters || 0}/{txtDownloadStates[idx]?.totalChapters || 0})
+                            章节:({txtDownloadStates[idx]?.completedChapters || 0}/{txtDownloadStates[idx]?.totalChapters || 0})
                           </span>
                         )}
                       </div>
                     )}
-                    
+
                     {/* EPUB 进度 */}
                     {downloadingEpubIds.has(idx) && epubDownloadStates[idx] && (
-                      <div className="flex items-center gap-1">
-                        <span className="text-purple-600 font-semibold">EPUB:</span>
-                        {epubDownloadStates[idx]?.status === 'starting' && (
-                          <>
-                            <span className="animate-pulse">⏳</span>
-                            <span>启动中</span>
-                          </>
-                        )}
-                        {epubDownloadStates[idx]?.status === 'running' && (
-                          <>
-                            <span className="animate-spin">⚙️</span>
-                            <span>任务中</span>
-                          </>
-                        )}
-                        {epubDownloadStates[idx]?.status === 'polling' && (
-                          <>
-                            <span className="animate-pulse">🔄</span>
-                            <span>进度{epubDownloadStates[idx]?.progress ?? 0}%</span>
-                          </>
-                        )}
-                        {epubDownloadStates[idx]?.status === 'downloading' && (
-                          <>
-                            <span className="animate-bounce">⬇️</span>
-                            <span>拉取中</span>
-                          </>
-                        )}
-                        {epubDownloadStates[idx]?.status === 'failed' && (
-                          <>
-                            <span>❌</span>
-                            <span className="text-red-600">{epubDownloadStates[idx]?.error || '失败'}</span>
-                          </>
-                        )}
+                      <div className="text-xs text-gray-600 ml-1 flex flex-col">
+                        <div className="flex items-center">
+                          {epubDownloadStates[idx]?.status === 'starting' && (
+                            <>
+                              <span className="animate-pulse">⏳</span>
+                              <span>启动中</span>
+                            </>
+                          )}
+                          {epubDownloadStates[idx]?.status === 'running' && (
+                            <>
+                              <span className="animate-spin">⚙️</span>
+                              <span>任务中</span>
+                            </>
+                          )}
+                          {epubDownloadStates[idx]?.status === 'polling' && (
+                            <>
+                              <span className="animate-pulse">🔄</span>
+                              <span>进度{epubDownloadStates[idx]?.progress ?? 0}%</span>
+                            </>
+                          )}
+                          {epubDownloadStates[idx]?.status === 'downloading' && (
+                            <>
+                              <span className="animate-bounce">⬇️</span>
+                              <span>拉取中</span>
+                            </>
+                          )}
+                          {epubDownloadStates[idx]?.status === 'failed' && (
+                            <>
+                              <span>❌</span>
+                              <span className="text-red-600">{epubDownloadStates[idx]?.error || '失败'}</span>
+                            </>
+                          )}
+                        </div>
                         {epubDownloadStates[idx]?.status === 'polling' && epubDownloadStates[idx]?.completedChapters && (
                           <span className="text-gray-500">
-                            ({epubDownloadStates[idx]?.completedChapters || 0}/{epubDownloadStates[idx]?.totalChapters || 0})
+                            章节:({epubDownloadStates[idx]?.completedChapters || 0}/{epubDownloadStates[idx]?.totalChapters || 0})
                           </span>
                         )}
                       </div>

@@ -547,11 +547,11 @@ export default function NovelPage() {
                       }`}
                   >
                     {downloadStates[idx]?.status === 'starting' && `启动${format.toUpperCase()}...`}
-                    {downloadStates[idx]?.status === 'running' && `任务运行中`}
-                    {downloadStates[idx]?.status === 'polling' && `轮询进度中`}
-                    {downloadStates[idx]?.status === 'downloading' && `拉取文件中`}
-                    {downloadStates[idx]?.status === 'completed' && `✓ 已完成`}
-                    {downloadStates[idx]?.status === 'failed' && `✗ 失败，重试`}
+                    {downloadStates[idx]?.status === 'running' && `任务中`}
+                    {downloadStates[idx]?.status === 'polling' && `轮询中`}
+                    {downloadStates[idx]?.status === 'downloading' && `拉取中`}
+                    {downloadStates[idx]?.status === 'completed' && `已完成`}
+                    {downloadStates[idx]?.status === 'failed' && `✗ 失败`}
                     {downloadStates[idx]?.status === 'cancelled' && `已取消`}
                     {!downloadStates[idx]?.status || downloadStates[idx]?.status === 'idle' ? `下载${format.toUpperCase()}` : null}
                   </button>
@@ -575,31 +575,31 @@ export default function NovelPage() {
                       {downloadStates[idx]?.status === 'starting' && (
                         <>
                           <span className="animate-pulse">⏳</span>
-                          <span>启动任务中...</span>
+                          <span>启动中.</span>
                         </>
                       )}
                       {downloadStates[idx]?.status === 'running' && (
                         <>
                           <span className="animate-spin">⚙️</span>
-                          <span>任务运行中...</span>
+                          <span>任务中.</span>
                         </>
                       )}
                       {downloadStates[idx]?.status === 'polling' && (
                         <>
                           <span className="animate-pulse">🔄</span>
-                          <span>轮询进度中: {downloadStates[idx]?.progress ?? 0}%</span>
+                          <span>进度: {downloadStates[idx]?.progress ?? 0}%</span>
                         </>
                       )}
                       {downloadStates[idx]?.status === 'downloading' && (
                         <>
                           <span className="animate-bounce">⬇️</span>
-                          <span>拉取结果文件中...</span>
+                          <span>拉取中.</span>
                         </>
                       )}
                       {downloadStates[idx]?.status === 'failed' && (
                         <>
                           <span>❌</span>
-                          <span className="text-red-600">{downloadStates[idx]?.error || '下载失败'}</span>
+                          <span className="text-red-600">{downloadStates[idx]?.error || '失败'}</span>
                         </>
                       )}
                       {downloadStates[idx]?.status === 'cancelled' && (

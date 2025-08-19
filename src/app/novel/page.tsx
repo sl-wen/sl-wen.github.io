@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import { pollNovelDownload } from '@/utils/polling';
 
 // 定义小说数据的类型
 interface Novel {
@@ -115,8 +116,39 @@ export default function NovelPage() {
         [index]: { status: 'running', progress: 0, taskId }
       }));
 
-      // 2) 轮询进度
-      await pollUntilDone(taskId, index);
+      // 2) 轮询进度 - 使用新的轮询工具函数
+      await pollNovelDownload(
+        taskId,
+        API_BASE,
+        (progress) => {
+          setDownloadStates(prev => ({
+            ...prev,
+            [index]: {
+              ...(prev[index] || {}),
+              status: 'running',
+              progress: progress.progress,
+              completedChapters: progress.completedChapters,
+              totalChapters: progress.totalChapters
+            }
+          }));
+        },
+        {
+          maxWaitMs: 15 * 60 * 1000, // 15分钟超时
+          intervalMs: 1200, // 1.2秒轮询间隔
+          maxConsecutiveErrors: 5, // 最多5次连续错误
+          onError: (error) => {
+            console.error('轮询失败:', error);
+            setDownloadStates(prev => ({
+              ...prev,
+              [index]: {
+                ...(prev[index] || {}),
+                status: 'failed',
+                error: error.message
+              }
+            }));
+          }
+        }
+      );
 
       // 3) 拉取结果文件
       await fetchAndDownloadResult(taskId, novel, format);
@@ -143,78 +175,7 @@ export default function NovelPage() {
     }
   };
 
-  // 轮询进度直至完成
-  const pollUntilDone = async (taskId: string, index: number) => {
-    const maxWaitMs = 15 * 60 * 1000; // 最长等待15分钟
-    const startTime = Date.now();
-    let lastProgress = 0;
 
-    while (true) {
-      // 超时控制
-      if (Date.now() - startTime > maxWaitMs) {
-        throw new Error('下载任务超时');
-      }
-
-      try {
-        const resp = await fetch(buildApiUrl('/api/optimized/download/progress', { task_id: taskId }));
-        const json = await safeJson(resp);
-
-        // 尝试读取进度/状态字段，兼容多种返回结构
-        const status: string = (json?.data?.status || json?.status || '').toString();
-        const progressValue =
-          typeof json?.data?.progress_percentage === 'number' ? json.data.progress_percentage :
-            typeof json?.data?.progress === 'number' ? json.data.progress : 137
-        typeof json?.progress === 'number' ? json.progress : undefined;
-
-        // 读取章节信息
-        const completedChapters = json?.data?.completed_chapters || json?.completed_chapters;
-        const totalChapters = json?.data?.total_chapters || json?.total_chapters;
-
-        // 更新进度
-        if (typeof progressValue === 'number') {
-          lastProgress = Math.max(lastProgress, Math.min(100, Math.max(0, Math.round(progressValue))));
-          setDownloadStates(prev => ({
-            ...prev,
-            [index]: {
-              ...(prev[index] || {}),
-              status: 'running',
-              progress: lastProgress,
-              completedChapters,
-              totalChapters
-            }
-          }));
-        } else {
-          // 未提供进度时，维持原进度并显示处理中
-          setDownloadStates(prev => ({
-            ...prev,
-            [index]: {
-              ...(prev[index] || {}),
-              status: 'running',
-              progress: lastProgress,
-              completedChapters,
-              totalChapters
-            }
-          }));
-        }
-
-        // 判断完成
-        if (/finish|complete|success|done/i.test(status) || lastProgress >= 100) {
-          return;
-        }
-
-        // 判断失败
-        if (/fail|error|cancel/i.test(status) || (json?.code && json.code >= 400)) {
-          throw new Error(json?.message || '下载任务失败');
-        }
-      } catch (e) {
-        // 进度查询失败，短暂重试
-        console.warn('进度查询失败，将重试:', e);
-      }
-
-      // 等待一会再轮询
-      await delay(1200);
-    }
-  };
 
   // 获取结果并触发下载
   const fetchAndDownloadResult = async (taskId: string, novel: Novel, format: string) => {

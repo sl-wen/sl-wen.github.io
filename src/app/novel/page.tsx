@@ -504,7 +504,7 @@ export default function NovelPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  源站》
+                  源
                 </a>
               )}
 
@@ -536,7 +536,7 @@ export default function NovelPage() {
 
                 {/* 进度提示 */}
                 {downloadingIds.has(idx) && (
-                  <div className="text-xs text-gray-600 ml- flex flex-col">
+                  <div className="text-xs text-gray-600 ml-1 flex flex-col">
                     <div className="flex items-center gap-1">
                       {downloadStates[idx]?.status === 'starting' && (
                         <>

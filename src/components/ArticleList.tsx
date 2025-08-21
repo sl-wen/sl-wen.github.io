@@ -21,12 +21,21 @@ const ArticleList: React.FC = () => {
       }
       setArticles((prev) => (page === 1 ? data : [...prev, ...data]));
       setError(null);
+      
+      // 预加载下一页数据
+      if (data.length === 10 && hasMore) {
+        setTimeout(() => {
+          getArticles(page + 1, 10).catch(() => {
+            // 静默处理预加载失败
+          });
+        }, 100);
+      }
     } catch (err) {
       setError('加载文章列表失败');
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, hasMore]);
 
   useEffect(() => {
     loadArticles();

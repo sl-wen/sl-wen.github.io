@@ -6,10 +6,22 @@ const supabaseKey =
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    persistSession: true
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false
   },
   db: {
     schema: 'public'
+  },
+  global: {
+    headers: {
+      'x-client-info': 'blog-app@1.0.1'
+    }
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
   }
 });
 

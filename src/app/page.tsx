@@ -1,22 +1,20 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import ArticleList from '@/components/ArticleList';
-import { getVisitCount } from '@/utils/stats';
-import { getArticlesCount } from '@/utils/articleService';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
+import { useHomeData } from '@/hooks/useHomeData';
+
+// 懒加载 ArticleList 组件
+const ArticleList = lazy(() => import('@/components/ArticleList'));
 
 export default function HomePage() {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [visitCount, setVisitCount] = useState<number | null>(null);
-  const [ArticlesCount, setArticlesCount] = useState<number | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const { visitCount, articlesCount, loading } = useHomeData();
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-    getVisitCount().then(setVisitCount);
-    getArticlesCount().then(setArticlesCount);
     return () => clearInterval(timer);
   }, []);
 
@@ -117,13 +115,21 @@ export default function HomePage() {
               <div className="grid grid-cols-2 gap-6 pt-8 border-t border-gray-200 dark:border-gray-700">
                 <div className="text-center">
                   <div className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
-                    {ArticlesCount}
+                    {loading ? (
+                      <div className="animate-pulse bg-gray-300 dark:bg-gray-600 h-8 w-16 mx-auto rounded"></div>
+                    ) : (
+                      articlesCount
+                    )}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">技术文章</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400">
-                    {visitCount}
+                    {loading ? (
+                      <div className="animate-pulse bg-gray-300 dark:bg-gray-600 h-8 w-16 mx-auto rounded"></div>
+                    ) : (
+                      visitCount
+                    )}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">阅读量</div>
                 </div>
@@ -166,7 +172,25 @@ export default function HomePage() {
       >
         <div className="container mx-auto px-4">
           <div className="max-w mx-auto">
-            <ArticleList />
+            <Suspense fallback={
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                      <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-3"></div>
+                      <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-full mb-2"></div>
+                      <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-5/6 mb-4"></div>
+                      <div className="flex justify-between items-center">
+                        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/4"></div>
+                        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/6"></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            }>
+              <ArticleList />
+            </Suspense>
           </div>
         </div>
       </section>

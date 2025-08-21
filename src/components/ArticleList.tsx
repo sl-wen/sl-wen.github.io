@@ -105,7 +105,7 @@ const ArticleList: React.FC = () => {
 
   useEffect(() => {
     loadArticles(1);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLoadMore = useCallback(() => {
     if (!loadingMore && hasMore) {

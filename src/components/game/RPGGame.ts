@@ -14,18 +14,22 @@ export class RPGGame {
       parent: container,
       backgroundColor: '#2c3e50',
       scale: {
-        mode: Phaser.Scale.FIT,
+        mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
         width: 800,
         height: 600,
         min: {
-          width: 400,
-          height: 300
+          width: 320,
+          height: 240
         },
         max: {
-          width: 1200,
-          height: 900
-        }
+          width: 2048,
+          height: 1536
+        },
+        // Enable fullscreen on mobile
+        fullscreenTarget: container,
+        expandParent: true,
+        autoRound: true
       },
       physics: {
         default: 'arcade',

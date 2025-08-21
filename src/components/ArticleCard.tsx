@@ -51,23 +51,23 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
 
       {/* 卡片内容 */}
-      <div className="relative z-10 p-6">
+      <div className="relative z-10 p-3">
         {/* 头部 - 作者信息和元数据 */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-3">
             <div className="relative">
               <Image
-                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(article.author || '匿名')}&background=random&size=48`}
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(article.author || '匿名')}&background=random&size=32`}
                 alt={article.author || '匿名'}
-                width={48}
-                height={48}
-                className="w-12 h-12 rounded-full ring-2 ring-white dark:ring-gray-700 shadow-sm group-hover:ring-blue-200 dark:group-hover:ring-blue-800 transition-all duration-300"
+                width={32}
+                height={32}
+                className="w-8 h-8 rounded-full ring-2 ring-white dark:ring-gray-700 shadow-sm group-hover:ring-blue-200 dark:group-hover:ring-blue-800 transition-all duration-300"
               />
               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white dark:border-gray-800 animate-pulse"></div>
             </div>
             <div>
               <div className="font-semibold text-gray-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
-                {article.author || '匿名作者'}
+              ✍️{article.author || '匿名作者'}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
                 <span>{formatDate(article.created_at)}</span>
@@ -94,7 +94,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
         </div>
 
         {/* 文章标题 */}
-        <div className="mb-3">
+        <div className="mb-2">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 leading-tight">
             <Link
               href={`/article/${article.post_id}`}
@@ -107,7 +107,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
 
         {/* 标签区域 */}
         {tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-2 mb-2">
             {tags.map((tag, index) => (
               <span
                 key={index}
@@ -120,7 +120,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
         )}
 
         {/* 底部 - 统计信息和操作 */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
           {/* 统计信息 */}
           <div className="flex items-center gap-5 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-1.5 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
@@ -169,7 +169,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           {/* 阅读更多按钮 */}
           <Link
             href={`/article/${article.post_id}`}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 group/btn"
+            className="inline-flex items-center gap-2 px-4 py-1 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 shadow-sm hover:shadow-md transform hover:scale-105 transition-all duration-200 group/btn"
           >
             <span>阅读全文</span>
             <svg

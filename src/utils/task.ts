@@ -120,12 +120,13 @@ export const updateProfileLevel = async (level: number, userId: string): Promise
 };
 
 // 更新用户登录时间
-export const updateProfileLastLogin = async (userId: string): Promise<void> => {
+export const updateProfileLastLogin = async (userId: string, consecutive_logins: number): Promise<void> => {
   try {
     const { error } = await supabase
       .from('profiles')
       .update({
         last_login: new Date().toISOString(),
+        consecutive_logins: consecutive_logins,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', userId);
@@ -180,7 +181,7 @@ export const isFirstLoginOfWeek = (lastLogin: string | null): boolean => {
 };
 
 /**
- * 更新连续登录天数
+ * 计算连续登录天数
  */
 export const getConsecutiveLogins = (lastLogin: string | null, consecutiveLogins: number): number => {
   if (!lastLogin) {

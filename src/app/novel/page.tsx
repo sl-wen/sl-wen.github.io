@@ -5,11 +5,12 @@ import React, { useState } from 'react';
 interface Novel {
   title: string;
   author: string;
-  source_name: string;
+  intro: string;
   url?: string;
   latest_chapter?: string;
   update_time?: string;
   source_id?: number;
+  source_name: string;
   word_count?: string;
   status?: string;
 }
@@ -509,10 +510,11 @@ export default function NovelPage() {
               <div className="flex-1">
                 <div className="font-semibold text-xl mb-2">
                   {novel.title}
-                  <span className="text-sm text-gray-500 ml-2">by {novel.author}</span>
-                  {novel.word_count}
-                  {novel.status}
+                  <span className="text-sm text-gray-500 ml-1">by {novel.author}</span>
+                  <span className="text-sm text-gray-600 ml-1">{novel.word_count}</span>
+                  <span className="text-sm text-gray-700 ml-1">{novel.status}</span>
                 </div>
+                <div className="text-gray-600 mb-2">简介: {novel.intro.substring(0, 50)}</div>
                 <div className="text-gray-600 mb-2">来源: {novel.source_name}</div>
                 {novel.latest_chapter && (
                   <div className="text-gray-700 mb-2">最新章节：{novel.latest_chapter}</div>

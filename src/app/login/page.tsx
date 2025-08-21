@@ -4,6 +4,19 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabase-config';
 import { useAuth } from '@/utils/auth-context';
+import { updateProfileLastLogin, getConsecutiveLogins } from '@/utils/task';
+
+interface userProfile {
+  user_id?: string;
+  username?: string;
+  avatar_url?: string;
+  email: string;
+  level?: number;
+  coins?: number;
+  experience?: number;
+  consecutive_logins?: number;
+  last_login?: string;
+}
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -37,15 +50,10 @@ export default function LoginPage() {
         if (error) throw error;
 
         if (data.user) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', data.user.id)
-            .single();
-
-          // 保存到localStorage
-          localStorage.setItem('userProfile', JSON.stringify(profileData));
-          localStorage.setItem('userSession', JSON.stringify(data));
+          // 刷新auth context
+          await refreshProfile();
+          const consecutive_login_days = getConsecutiveLogins(userProfile?.last_login, userProfile?.consecutive_logins)
+          await updateProfileLastLogin(data.user.id,consecutive_login_days);
 
           // 刷新auth context
           await refreshProfile();

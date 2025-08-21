@@ -34,7 +34,20 @@ npm run build:clean
 npm run build
 ```
 
-### 3. 已实施的优化
+### 3. Windows 用户特别说明
+如果你使用 Windows PowerShell 或 CMD，请使用以下命令：
+
+```powershell
+# PowerShell 中设置环境变量
+$env:NODE_ENV="production"
+$env:NEXT_TELEMETRY_DISABLED="1"
+npm run build
+
+# 或者使用 cross-env（已安装）
+npm run build:fast
+```
+
+### 4. 已实施的优化
 
 #### Next.js 配置优化
 - ✅ 启用 ESLint 和 TypeScript 错误忽略
@@ -42,13 +55,14 @@ npm run build
 - ✅ 优化 Phaser 包的代码分割
 - ✅ 启用 CSS 优化
 - ✅ 配置 webpack 优化
+- ✅ 跨平台环境变量支持
 
 #### 缓存优化
-- ✅ 自定义缓存处理器
-- ✅ 增量编译支持
 - ✅ 并行工作线程
+- ✅ 代码分割优化
+- ✅ 内存使用优化
 
-### 4. 进一步优化建议
+### 5. 进一步优化建议
 
 #### 代码分割
 - 游戏组件使用动态导入
@@ -68,18 +82,29 @@ npm run dev
 npm run clean
 ```
 
-### 5. 性能监控
+### 6. 性能监控
 构建完成后会显示：
 - 构建时间
 - 包大小分析
 - 性能指标
 
-### 6. 常见问题解决
+### 7. 常见问题解决
+
+#### Windows 环境变量问题
+```powershell
+# 方法1：使用 cross-env（推荐）
+npm run build:fast
+
+# 方法2：手动设置环境变量
+$env:NODE_ENV="production"
+npm run build
+```
 
 #### 内存不足
 ```bash
 # 增加 Node.js 内存限制
-export NODE_OPTIONS="--max-old-space-size=8192"
+set NODE_OPTIONS=--max-old-space-size=8192
+npm run build
 ```
 
 #### 构建卡住
@@ -91,7 +116,8 @@ npm run build:clean
 #### 依赖问题
 ```bash
 # 清理 node_modules 重新安装
-rm -rf node_modules package-lock.json
+Remove-Item -Recurse -Force node_modules
+Remove-Item package-lock.json
 npm install
 ```
 
@@ -100,3 +126,4 @@ npm install
 - 内存使用优化
 - 更好的缓存利用
 - 并行处理提升
+- Windows 兼容性支持

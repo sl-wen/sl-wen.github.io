@@ -54,10 +54,6 @@ const nextConfig = {
   experimental: {
     // 启用服务器组件缓存
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
-    // 启用优化编译
-    optimizeCss: true,
-    // 启用并行构建
-    workerThreads: true,
   },
 
   // Webpack 优化配置

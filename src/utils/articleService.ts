@@ -1,5 +1,7 @@
 import { supabase } from './supabase-config';
 import { marked } from 'marked';
+import { withCache, getCacheKey } from './cache';
+import { QueryBuilder, withQueryPerformance } from './queryOptimizer';
 
 export interface Article {
   post_id: string;
@@ -17,32 +19,30 @@ export interface Article {
 }
 
 export const getArticles = async (page: number = 1, limit: number = 10): Promise<Article[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .range((page - 1) * limit, page * limit - 1);
-
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error('获取文章列表失败:', error);
-    return [];
-  }
+  const cacheKey = getCacheKey('articles', page, limit);
+  
+  return withCache(cacheKey, async () => {
+    return withQueryPerformance(`getArticles-page-${page}`, async () => {
+      // 只查询必要的字段以减少数据传输
+      const columns = 'post_id,title,content,author,user_id,tags,views,likes_count,dislikes_count,comments_count,created_at,updated_at';
+      
+      return new QueryBuilder('posts')
+        .select(columns)
+        .order('created_at', false)
+        .range((page - 1) * limit, page * limit - 1)
+        .execute();
+    });
+  }, 2 * 60 * 1000); // 2分钟缓存
 };
 
 export const getArticlesCount = async (): Promise<number> => {
-  try {
-    const { count, error } = await supabase
-      .from('posts')
-      .select('*', { count: 'exact', head: true }); // 只返回count
-    if (error) throw error;
-    return count || 0;
-  } catch (error) {
-    console.error('获取文章数量失败:', error);
-    return 0;
-  }
+  const cacheKey = getCacheKey('articles', 'count');
+  
+  return withCache(cacheKey, async () => {
+    return withQueryPerformance('getArticlesCount', async () => {
+      return new QueryBuilder('posts').count() || 0;
+    });
+  }, 5 * 60 * 1000); // 5分钟缓存
 };
 
 export const getArticleById = async (post_id: string): Promise<Article | null> => {

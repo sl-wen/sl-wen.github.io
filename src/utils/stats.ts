@@ -1,16 +1,16 @@
 import { supabase } from './supabase-config';
 import { getArticleById } from '../utils/articleService';
+import { withCache, getCacheKey } from './cache';
 
 export const getVisitCount = async (): Promise<number> => {
-  try {
+  const cacheKey = getCacheKey('stats', 'visits');
+  
+  return withCache(cacheKey, async () => {
     const { data, error } = await supabase.from('stats').select('total_views').single();
 
     if (error) throw error;
     return data?.total_views || 0;
-  } catch (error) {
-    console.log('获取访问量失败:', error);
-    return 0;
-  }
+  }, 1 * 60 * 1000); // 1分钟缓存，访问量更新频率较高
 };
 
 export const incrementVisitCount = async (): Promise<void> => {

@@ -45,7 +45,7 @@
     "postcss": "^8.4.32",
     "prettier": "^3.6.1",
     "tailwindcss": "^3.4.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   },
   "description": "[![Language](https://img.shields.io/badge/Jekyll-Theme-blue)](https://github.com/sl-wen/slwen)\r [![license](https://img.shields.io/github/license/slwen/slwen)](https://github.com/sl-wen/slwen)\r [![GitHub stars](https://img.shields.io/github/stars/slwen/?style=social)](https://github.com/sl-wen/)",
   "keywords": [

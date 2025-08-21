@@ -6,6 +6,8 @@ import { useHomeData } from '@/hooks/useHomeData';
 // 懒加载 ArticleList 组件
 const ArticleList = lazy(() => import('@/components/ArticleList'));
 
+
+
 export default function HomePage() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });

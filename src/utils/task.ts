@@ -215,44 +215,63 @@ export const initUserTasks = async (userId: string): Promise<void> => {
     console.log('userTasksData:', userTasksData);
 
     if (!userTasksData || userTasksData.length === 0) {
+      // 首次初始化 - 为用户创建所有可用任务
       const tasksData = await getAllTasks();
       console.log('tasksData:', tasksData);
 
       if (tasksData && tasksData.length > 0) {
         console.log('首次初始化开始');
-        for (const taskData of tasksData) {
-          try {
-            const newUserTask = {
-              user_id: userId,
-              task_id: taskData.task_id,
-              current_count: 0,
-              is_claimed: false,
-              claimed_at: null,
-            };
-            await insertUserTask(newUserTask);
-          } catch (error) {
-            console.log('用户任务进度初期追加失败', error);
-          }
-        }
+        const userTaskPromises = tasksData.map(taskData => {
+          const newUserTask = {
+            user_id: userId,
+            task_id: taskData.task_id,
+            current_count: 0,
+            is_claimed: false,
+            claimed_at: null,
+          };
+          return insertUserTask(newUserTask).catch(error => {
+            console.warn('用户任务进度初期追加失败', error);
+          });
+        });
+        
+        // 并行创建所有任务
+        await Promise.all(userTaskPromises);
+        console.log('首次初始化完成');
       }
     } else {
-      for (const userTaskData of userTasksData) {
-        console.log('进度初始化开始');
+      // 检查并重置需要重置的任务
+      const resetPromises = userTasksData.map(async (userTaskData) => {
         try {
-          if (userTaskData.name === 'daily' && isFirstLoginOfDay(userTaskData.updated_at)) {
-            await resetUserTask(userTaskData.usertask_id);
-            console.log('daily任务进度初期化', userTaskData.usertask_id);
+          let shouldReset = false;
+          let resetReason = '';
+
+          // 检查每日任务重置条件
+          if (userTaskData.reset_frequency === 'daily' && isFirstLoginOfDay(userTaskData.updated_at)) {
+            shouldReset = true;
+            resetReason = 'daily';
           }
-          if (userTaskData.name === 'weekly' && isFirstLoginOfWeek(userTaskData.updated_at)) {
+          
+          // 检查每周任务重置条件
+          if (userTaskData.reset_frequency === 'weekly' && isFirstLoginOfWeek(userTaskData.updated_at)) {
+            shouldReset = true;
+            resetReason = 'weekly';
+          }
+
+          if (shouldReset) {
             await resetUserTask(userTaskData.usertask_id);
+            console.log(`${resetReason}任务进度重置完成:`, userTaskData.task_name, userTaskData.usertask_id);
           }
         } catch (error) {
-          console.log('用户任务进度初期追加失败', error);
+          console.warn('任务重置失败:', userTaskData.task_name, error);
         }
-      }
+      });
+
+      // 并行重置所有需要重置的任务
+      await Promise.all(resetPromises);
+      console.log('任务重置检查完成');
     }
   } catch (error) {
-    console.log('初始化任务进度失败', error);
+    console.error('初始化任务进度失败', error);
     throw error;
   }
 };
@@ -309,6 +328,8 @@ export const resetUserTask = async (userTaskId: string): Promise<void> => {
       .from('user_tasks')
       .update({
         current_count: 0,
+        is_claimed: false,
+        claimed_at: null,
         updated_at: new Date().toISOString()
       })
       .eq('usertask_id', userTaskId);

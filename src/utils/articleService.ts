@@ -24,15 +24,24 @@ export const getArticles = async (page: number = 1, limit: number = 10): Promise
   return withCache(cacheKey, async () => {
     return withQueryPerformance(`getArticles-page-${page}`, async () => {
       // 只查询必要的字段以减少数据传输
+      // 对于列表页面，不需要完整的content内容，只需要摘要
       const columns = 'post_id,title,content,author,user_id,tags,views,likes_count,dislikes_count,comments_count,created_at,updated_at';
       
-      return new QueryBuilder('posts')
+      const articles = await new QueryBuilder('posts')
         .select(columns)
         .order('created_at', false)
         .range((page - 1) * limit, page * limit - 1)
         .execute();
+
+      // 对内容进行截取以减少传输量
+      return articles.map((article: Article) => ({
+        ...article,
+        content: article.content.length > 200 
+          ? article.content.substring(0, 200) + '...' 
+          : article.content
+      }));
     });
-  }, 2 * 60 * 1000); // 2分钟缓存
+  }, 5 * 60 * 1000); // 增加缓存时间到5分钟
 };
 
 export const getArticlesCount = async (): Promise<number> => {

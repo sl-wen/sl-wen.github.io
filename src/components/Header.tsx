@@ -69,7 +69,8 @@ const Header: React.FC = () => {
   // 用户相关导航项
   const userNavItems = [
     { href: '/tools', label: '工具', icon: '🛠️' },
-    { href: '/post', label: '发布', icon: '✏️' }
+    { href: '/post', label: '发布', icon: '✏️' },
+    { href: '/game', label: '游戏', icon: '🎮' }
   ];
 
   // 在mounted之前显示基础导航

@@ -59,9 +59,9 @@ export class PerformanceMonitor {
   // 获取所有指标
   getAllStats(): Record<string, { avg: number; min: number; max: number; count: number }> {
     const stats: Record<string, any> = {};
-    for (const [name] of this.metrics) {
+    this.metrics.forEach((_, name) => {
       stats[name] = this.getStats(name);
-    }
+    });
     return stats;
   }
 
@@ -103,12 +103,12 @@ export const measurePageLoad = () => {
       'page-response': navigation.responseEnd - navigation.responseStart,
       'page-dom': navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
       'page-load': navigation.loadEventEnd - navigation.loadEventStart,
-      'page-total': navigation.loadEventEnd - navigation.navigationStart
+      'page-total': navigation.loadEventEnd - navigation.fetchStart
     };
 
     Object.entries(metrics).forEach(([name, duration]) => {
       if (duration > 0) {
-        performanceMonitor.recordMetric(name, duration);
+        performanceMonitor['recordMetric'](name, duration);
       }
     });
 

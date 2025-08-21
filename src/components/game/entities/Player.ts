@@ -134,7 +134,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     });
     
     // Notify UI
-    (this.scene as any).showNotification(`Level Up! 现在是 ${this.level} 级！`);
+    if ('showNotification' in this.scene) {
+      (this.scene as any).showNotification(`Level Up! 现在是 ${this.level} 级！`);
+    }
   }
 
   private die() {
@@ -147,7 +149,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.respawn();
     });
     
-    (this.scene as any).showNotification('你死了！正在重生...');
+    if ('showNotification' in this.scene) {
+      (this.scene as any).showNotification('你死了！正在重生...');
+    }
   }
 
   private respawn() {
@@ -157,7 +161,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setTint(0x3498db);
     this.setPosition(100, 100); // Respawn at starting position
     
-    (this.scene as any).showNotification('重生成功！');
+    if ('showNotification' in this.scene) {
+      (this.scene as any).showNotification('重生成功！');
+    }
   }
 
   public getStats() {

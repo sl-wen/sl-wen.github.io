@@ -291,7 +291,7 @@ const Header: React.FC = () => {
       </header>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="mobile-nav md:hidden">
+      <nav className="mobile-nav md:hidden fixed bottom-0 left-0 w-full bg-white z-50">
         <div className="flex justify-around items-center px-4 h-full">
           {navItems.slice(0, 6).map((item) => (
             <Link

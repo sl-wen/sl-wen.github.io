@@ -5,8 +5,8 @@ import React, { useState } from 'react';
 interface Novel {
   title: string;
   author: string;
-  intro: string;
   url?: string;
+  intro?: string;
   latest_chapter?: string;
   update_time?: string;
   source_id?: number;
@@ -58,11 +58,12 @@ export default function NovelPage() {
   const normalizeNovel = (item: any): Novel => ({
     title: item.title,
     author: item.author,
-    source_name: item.source_name || item.sourceName || item.source || '',
     url: item.url,
+    intro: item.intro || '',
     latest_chapter: item.latest_chapter || item.latestChapter,
     update_time: item.update_time || item.lastUpdateTime,
     source_id: item.source_id ?? item.sourceId,
+    source_name: item.source_name || item.sourceName || item.source || '',
     word_count: item.word_count || item.wordCount,
     status: item.status,
   });
@@ -216,17 +217,17 @@ export default function NovelPage() {
     completedChapters?: number;
     totalChapters?: number;
   }>>>): Promise<void> => {
-    const maxWaitMs = 15 * 60 * 1000; // 最长等待15分钟
+    const maxWaitMs = 10 * 60 * 1000; // 最长等待10分钟
     const startTime = Date.now();
     let lastProgress = 0;
     let consecutiveErrors = 0;
-    const maxConsecutiveErrors = 5; // 最多连续5次错误
+    const maxConsecutiveErrors = 3; // 最多连续5次错误
 
     while (true) {
 
       // 超时控制
       if (Date.now() - startTime > maxWaitMs) {
-        throw new Error('下载任务超时（15分钟）');
+        throw new Error('下载任务超时（10分钟）');
       }
 
       try {

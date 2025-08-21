@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export class Chest extends Phaser.Physics.Arcade.Sprite {
   private treasure: string;
@@ -7,22 +7,22 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
 
   constructor(scene: Phaser.Scene, x: number, y: number, treasure: string) {
     super(scene, x, y, 'chest');
-    
+
     this.treasure = treasure;
-    
+
     // Add to scene
     scene.add.existing(this);
     scene.physics.add.existing(this, true); // Static body
-    
+
     // Set properties
     this.setSize(28, 28);
     this.setOffset(2, 4);
     this.setDepth(5);
     this.setTint(0xf1c40f);
-    
+
     // Create glow effect
     this.createGlowEffect();
-    
+
     // Add interaction indicator
     this.createInteractionIndicator();
   }
@@ -32,10 +32,10 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
     const glow = this.scene.add.graphics();
     glow.lineStyle(3, 0xffd700, 0.5);
     glow.strokeRect(this.x - 18, this.y - 18, 36, 36);
-    
+
     // Store reference
     (this as any).glow = glow;
-    
+
     // Pulsing glow animation
     this.scene.tweens.add({
       targets: glow,
@@ -54,10 +54,10 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
     });
     indicator.setOrigin(0.5);
     indicator.setVisible(false);
-    
+
     // Store reference
     (this as any).indicator = indicator;
-    
+
     // Floating animation
     this.scene.tweens.add({
       targets: indicator,
@@ -71,20 +71,20 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
 
   public interact() {
     if (this.isOpened || this.interactionCooldown) return;
-    
+
     this.interactionCooldown = true;
-    
+
     // Open chest animation
     this.openChest();
-    
+
     // Show treasure notification
     (this.scene as any).showNotification(`获得了: ${this.treasure}!`);
-    
+
     // Give reward to player
     const gameScene = this.scene;
     if ((gameScene as any).player) {
       (gameScene as any).player.gainExperience(25);
-      
+
       // Give specific rewards based on treasure type
       if (this.treasure.includes('金币')) {
         // Give gold (could implement inventory system)
@@ -94,7 +94,7 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
         (gameScene as any).player.restoreMana(20);
       }
     }
-    
+
     // Reset cooldown
     this.scene.time.delayedCall(1000, () => {
       this.interactionCooldown = false;
@@ -103,18 +103,18 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
 
   private openChest() {
     this.isOpened = true;
-    
+
     // Change appearance to opened chest
     this.setTint(0xd4af37); // Darker gold
-    
+
     // Remove glow effect
     if ((this as any).glow) {
       (this as any).glow.destroy();
     }
-    
+
     // Hide indicator
     this.showIndicator(false);
-    
+
     // Opening animation
     this.scene.tweens.add({
       targets: this,
@@ -123,7 +123,7 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
       yoyo: true,
       ease: 'Back.easeOut'
     });
-    
+
     // Sparkle effect
     this.createSparkleEffect();
   }
@@ -138,7 +138,7 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
       speed: { min: 30, max: 80 },
       gravityY: -50
     });
-    
+
     this.scene.time.delayedCall(1500, () => {
       particles.destroy();
     });
@@ -163,7 +163,7 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
     if ((this as any).indicator) {
       (this as any).indicator.x = this.x;
     }
-    
+
     // Update glow position
     if ((this as any).glow && !this.isOpened) {
       (this as any).glow.x = this.x - 18;

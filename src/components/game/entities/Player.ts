@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private direction: string = 'down';
@@ -11,20 +11,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'player');
-    
+
     // Add to scene
     scene.add.existing(this);
     scene.physics.add.existing(this);
-    
+
     // Set physics properties
     this.setCollideWorldBounds(true);
     this.setSize(24, 24);
     this.setOffset(4, 8);
-    
+
     // Set initial properties
     this.setDepth(10);
     this.setTint(0x3498db);
-    
+
     // Create animations (using tint changes since we have simple sprites)
     this.createAnimations();
   }
@@ -44,7 +44,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public setDirection(direction: string) {
     this.direction = direction;
-    
+
     // Change tint slightly based on direction for visual feedback
     switch (direction) {
       case 'up':
@@ -68,13 +68,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public takeDamage(amount: number) {
     this.health = Math.max(0, this.health - amount);
-    
+
     // Flash red when taking damage
     this.setTint(0xff0000);
     this.scene.time.delayedCall(200, () => {
       this.setTint(0x3498db);
     });
-    
+
     if (this.health <= 0) {
       this.die();
     }
@@ -82,7 +82,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public heal(amount: number) {
     this.health = Math.min(this.maxHealth, this.health + amount);
-    
+
     // Flash green when healing
     this.setTint(0x00ff00);
     this.scene.time.delayedCall(200, () => {
@@ -105,7 +105,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public gainExperience(amount: number) {
     this.experience += amount;
     const expNeeded = this.level * 100;
-    
+
     if (this.experience >= expNeeded) {
       this.levelUp();
     }
@@ -118,7 +118,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.maxMana += 10;
     this.health = this.maxHealth;
     this.mana = this.maxMana;
-    
+
     // Level up effect
     const particles = this.scene.add.particles(this.x, this.y, 'grass', {
       scale: { start: 0.5, end: 0 },
@@ -128,11 +128,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       quantity: 10,
       speed: { min: 50, max: 100 }
     });
-    
+
     this.scene.time.delayedCall(1000, () => {
       particles.destroy();
     });
-    
+
     // Notify UI
     if ('showNotification' in this.scene) {
       (this.scene as any).showNotification(`Level Up! 现在是 ${this.level} 级！`);
@@ -143,12 +143,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Death animation
     this.setTint(0x666666);
     this.setAlpha(0.5);
-    
+
     // Respawn after delay
     this.scene.time.delayedCall(2000, () => {
       this.respawn();
     });
-    
+
     if ('showNotification' in this.scene) {
       (this.scene as any).showNotification('你死了！正在重生...');
     }
@@ -160,7 +160,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setAlpha(1);
     this.setTint(0x3498db);
     this.setPosition(100, 100); // Respawn at starting position
-    
+
     if ('showNotification' in this.scene) {
       (this.scene as any).showNotification('重生成功！');
     }

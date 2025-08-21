@@ -1,7 +1,7 @@
-import Phaser from 'phaser';
-import { Player } from '../entities/Player';
-import { NPC } from '../entities/NPC';
+import * as Phaser from 'phaser';
 import { Chest } from '../entities/Chest';
+import { NPC } from '../entities/NPC';
+import { Player } from '../entities/Player';
 
 export class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -22,24 +22,24 @@ export class GameScene extends Phaser.Scene {
   create() {
     // Create tilemap
     this.createTilemap();
-    
+
     // Create player
     this.player = new Player(this, 100, 100);
-    
+
     // Create NPCs group
     this.npcs = this.add.group();
     this.createNPCs();
-    
+
     // Create chests group
     this.chests = this.add.group();
     this.createChests();
-    
+
     // Setup input
     this.setupInput();
-    
+
     // Setup camera
     this.setupCamera();
-    
+
     // Setup collisions
     this.setupCollisions();
 
@@ -49,7 +49,7 @@ export class GameScene extends Phaser.Scene {
 
   private createTilemap() {
     const mapData = this.registry.get('mapData');
-    
+
     // Create tilemap from data
     this.tilemap = this.make.tilemap({
       data: mapData,
@@ -64,10 +64,10 @@ export class GameScene extends Phaser.Scene {
 
     // Create layers
     this.groundLayer = this.tilemap.createLayer(0, [grassTileset!, stoneTileset!, waterTileset!])!;
-    
+
     // Set tile properties
     this.groundLayer.setCollisionByExclusion([0]); // Everything except grass is collidable
-    
+
     // Add some decorative trees
     this.addTrees();
   }
@@ -120,14 +120,14 @@ export class GameScene extends Phaser.Scene {
   private setupInput() {
     // Setup cursor keys
     this.cursors = this.input.keyboard!.createCursorKeys();
-    
+
     // Setup WASD keys
     this.wasdKeys = this.input.keyboard!.addKeys('W,S,A,D');
-    
+
     // Setup interaction keys
     this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.investigateKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-    
+
     // Setup mobile touch controls
     this.setupMobileControls();
   }
@@ -139,7 +139,7 @@ export class GameScene extends Phaser.Scene {
       const distance = Phaser.Math.Distance.Between(
         this.player.x, this.player.y, worldPoint.x, worldPoint.y
       );
-      
+
       // If clicking close to player, interact instead of move
       if (distance < 50) {
         this.checkInteractions();
@@ -153,12 +153,12 @@ export class GameScene extends Phaser.Scene {
   private movePlayerTowards(targetX: number, targetY: number) {
     const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, targetX, targetY);
     const speed = 160;
-    
+
     this.player.setVelocity(
       Math.cos(angle) * speed,
       Math.sin(angle) * speed
     );
-    
+
     // Set direction based on angle
     if (Math.abs(angle) < Math.PI / 4) {
       this.player.setDirection('right');
@@ -169,7 +169,7 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.player.setDirection('up');
     }
-    
+
     // Stop movement after a short time
     this.time.delayedCall(300, () => {
       this.player.setVelocity(0);
@@ -180,7 +180,7 @@ export class GameScene extends Phaser.Scene {
     // Make camera follow player
     this.cameras.main.startFollow(this.player);
     this.cameras.main.setLerp(0.1, 0.1);
-    
+
     // Set world bounds
     this.cameras.main.setBounds(0, 0, this.tilemap.widthInPixels, this.tilemap.heightInPixels);
   }
@@ -188,7 +188,7 @@ export class GameScene extends Phaser.Scene {
   private setupCollisions() {
     // Player collision with tilemap
     this.physics.add.collider(this.player, this.groundLayer);
-    
+
     // Player collision with trees
     this.physics.world.setBounds(0, 0, this.tilemap.widthInPixels, this.tilemap.heightInPixels);
   }
@@ -204,27 +204,27 @@ export class GameScene extends Phaser.Scene {
       frequency: 2000,
       quantity: 1
     });
-    
+
     particles.setDepth(-1);
   }
 
   update() {
     // Update player
     this.player.update();
-    
+
     // Handle input
     this.handleInput();
-    
+
     // Check interactions
     this.checkInteractions();
   }
 
   private handleInput() {
     const speed = 160;
-    
+
     // Reset velocity
     this.player.setVelocity(0);
-    
+
     // Handle movement with WASD or arrow keys
     if (this.cursors.left?.isDown || this.wasdKeys.A.isDown) {
       this.player.setVelocityX(-speed);
@@ -233,7 +233,7 @@ export class GameScene extends Phaser.Scene {
       this.player.setVelocityX(speed);
       this.player.setDirection('right');
     }
-    
+
     if (this.cursors.up?.isDown || this.wasdKeys.W.isDown) {
       this.player.setVelocityY(-speed);
       this.player.setDirection('up');
@@ -245,26 +245,26 @@ export class GameScene extends Phaser.Scene {
 
   private checkInteractions() {
     // Check if interact key is pressed
-    if (Phaser.Input.Keyboard.JustDown(this.interactKey) || 
-        Phaser.Input.Keyboard.JustDown(this.investigateKey)) {
-      
+    if (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
+      Phaser.Input.Keyboard.JustDown(this.investigateKey)) {
+
       // Check NPC interactions
       this.npcs.children.entries.forEach((npc: any) => {
         const distance = Phaser.Math.Distance.Between(
           this.player.x, this.player.y, npc.x, npc.y
         );
-        
+
         if (distance < 50) {
           npc.interact();
         }
       });
-      
+
       // Check chest interactions
       this.chests.children.entries.forEach((chest: any) => {
         const distance = Phaser.Math.Distance.Between(
           this.player.x, this.player.y, chest.x, chest.y
         );
-        
+
         if (distance < 50) {
           chest.interact();
         }

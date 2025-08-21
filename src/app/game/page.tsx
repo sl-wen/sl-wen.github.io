@@ -1,27 +1,61 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { RPGGame } from '@/components/game/RPGGame';
+
+// Force dynamic rendering to prevent SSR issues
+export const dynamic = 'force-dynamic';
 
 const GamePage: React.FC = () => {
   const gameRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [gameInstance, setGameInstance] = useState<Phaser.Game | null>(null);
+  const [gameInstance, setGameInstance] = useState<any>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    if (gameRef.current && !gameInstance) {
-      const game = new RPGGame(gameRef.current);
-      setGameInstance(game.game);
-      setIsLoading(false);
-    }
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
+    const initGame = async () => {
+      if (gameRef.current && !gameInstance) {
+        try {
+          const { RPGGame: GameClass } = await import('@/components/game/RPGGame');
+          const game = new GameClass(gameRef.current);
+          setGameInstance(game.game);
+          setIsLoading(false);
+        } catch (error) {
+          console.error('Failed to initialize game:', error);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initGame();
 
     return () => {
       if (gameInstance) {
-        gameInstance.destroy(true);
+        try {
+          gameInstance.destroy(true);
+        } catch (error) {
+          console.error('Error destroying game:', error);
+        }
         setGameInstance(null);
       }
     };
-  }, [gameInstance]);
+  }, [isClient, gameInstance]);
+
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <p className="text-white text-lg">正在初始化...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800">
@@ -46,10 +80,10 @@ const GamePage: React.FC = () => {
               </div>
             </div>
           )}
-          
+
           {/* Game Canvas Container */}
-          <div 
-            ref={gameRef} 
+          <div
+            ref={gameRef}
             className="w-full bg-black rounded-lg overflow-hidden shadow-2xl border-2 border-slate-600"
             style={{ aspectRatio: '16/10', minHeight: '400px' }}
           />
@@ -77,7 +111,7 @@ const GamePage: React.FC = () => {
               </ul>
             </div>
           </div>
-          
+
           {/* Mobile Controls Info */}
           <div className="mt-4 md:hidden">
             <h4 className="font-medium text-purple-400 mb-2">移动端控制：</h4>
@@ -106,7 +140,7 @@ const GamePage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Action Buttons */}
               <div className="flex flex-col gap-2">
                 <button className="w-12 h-12 bg-green-600 hover:bg-green-700 rounded-full text-white font-bold">A</button>

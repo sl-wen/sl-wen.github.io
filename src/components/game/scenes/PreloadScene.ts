@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -9,12 +9,12 @@ export class PreloadScene extends Phaser.Scene {
     // Create loading bar
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
-    
+
     const progressBar = this.add.graphics();
     const progressBox = this.add.graphics();
     progressBox.fillStyle(0x222222, 0.8);
     progressBox.fillRect(width / 2 - 160, height / 2 - 25, 320, 50);
-    
+
     const loadingText = this.make.text({
       x: width / 2,
       y: height / 2 - 50,
@@ -25,7 +25,7 @@ export class PreloadScene extends Phaser.Scene {
       }
     });
     loadingText.setOrigin(0.5, 0.5);
-    
+
     const percentText = this.make.text({
       x: width / 2,
       y: height / 2 - 5,
@@ -54,7 +54,7 @@ export class PreloadScene extends Phaser.Scene {
 
     // Create simple colored rectangles as placeholders for sprites
     this.createColoredTextures();
-    
+
     // Create tilemap data
     this.createTilemapData();
   }

@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 // Extended scene interface for game methods
 export interface GameSceneInterface extends Phaser.Scene {

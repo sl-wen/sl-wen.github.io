@@ -10,7 +10,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private experience: number = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, 'player');
+    super(scene, x, y, 'player_walk', 0);
 
     // Add to scene
     scene.add.existing(this);
@@ -23,42 +23,94 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Set initial properties
     this.setDepth(10);
-    this.setTint(0x3498db);
 
-    // Create animations (using tint changes since we have simple sprites)
+    // Create animations
     this.createAnimations();
+    
+    // Start with idle animation
+    this.play('player_idle_down');
   }
 
   private createAnimations() {
-    // Since we're using simple colored rectangles, we'll simulate animations with tint changes
-    this.scene.tweens.add({
-      targets: this,
-      scaleX: 1.1,
-      scaleY: 0.9,
-      duration: 200,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut'
+    const anims = this.scene.anims;
+    
+    // Walking animations for each direction
+    // Down (frames 0-3)
+    anims.create({
+      key: 'player_walk_down',
+      frames: anims.generateFrameNumbers('player_walk', { start: 0, end: 3 }),
+      frameRate: 8,
+      repeat: -1
+    });
+    
+    // Left (frames 4-7)
+    anims.create({
+      key: 'player_walk_left',
+      frames: anims.generateFrameNumbers('player_walk', { start: 4, end: 7 }),
+      frameRate: 8,
+      repeat: -1
+    });
+    
+    // Right (frames 8-11)
+    anims.create({
+      key: 'player_walk_right',
+      frames: anims.generateFrameNumbers('player_walk', { start: 8, end: 11 }),
+      frameRate: 8,
+      repeat: -1
+    });
+    
+    // Up (frames 12-15)
+    anims.create({
+      key: 'player_walk_up',
+      frames: anims.generateFrameNumbers('player_walk', { start: 12, end: 15 }),
+      frameRate: 8,
+      repeat: -1
+    });
+    
+    // Idle animations (first frame of each direction)
+    anims.create({
+      key: 'player_idle_down',
+      frames: [{ key: 'player_walk', frame: 0 }],
+      frameRate: 1
+    });
+    
+    anims.create({
+      key: 'player_idle_left',
+      frames: [{ key: 'player_walk', frame: 4 }],
+      frameRate: 1
+    });
+    
+    anims.create({
+      key: 'player_idle_right',
+      frames: [{ key: 'player_walk', frame: 8 }],
+      frameRate: 1
+    });
+    
+    anims.create({
+      key: 'player_idle_up',
+      frames: [{ key: 'player_walk', frame: 12 }],
+      frameRate: 1
     });
   }
 
   public setDirection(direction: string) {
     this.direction = direction;
+    
+    // Play walking animation based on direction
+    const isMoving = Math.abs(this.body!.velocity.x) > 10 || Math.abs(this.body!.velocity.y) > 10;
+    
+    if (isMoving) {
+      this.play(`player_walk_${direction}`, true);
+    } else {
+      this.play(`player_idle_${direction}`, true);
+    }
+  }
 
-    // Change tint slightly based on direction for visual feedback
-    switch (direction) {
-      case 'up':
-        this.setTint(0x2980b9);
-        break;
-      case 'down':
-        this.setTint(0x3498db);
-        break;
-      case 'left':
-        this.setTint(0x2c3e50);
-        break;
-      case 'right':
-        this.setTint(0x34495e);
-        break;
+  public setMoving(isMoving: boolean) {
+    if (isMoving) {
+      this.play(`player_walk_${this.direction}`, true);
+    } else {
+      this.play(`player_idle_${this.direction}`, true);
     }
   }
 

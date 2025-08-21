@@ -52,86 +52,91 @@ export class PreloadScene extends Phaser.Scene {
       percentText.destroy();
     });
 
-    // Create simple colored rectangles as placeholders for sprites
-    this.createColoredTextures();
+    // Load sprite assets
+    this.loadSpriteAssets();
 
     // Create tilemap data
     this.createTilemapData();
   }
 
-  private createColoredTextures() {
-    // Create player sprite (blue square)
-    const playerGraphics = this.add.graphics();
-    playerGraphics.fillStyle(0x3498db);
-    playerGraphics.fillRect(0, 0, 32, 32);
-    playerGraphics.generateTexture('player', 32, 32);
-    playerGraphics.destroy();
+  private loadSpriteAssets() {
+    // Load character sprites
+    this.load.image('player', '/assets/characters/player.png');
+    this.load.image('npc', '/assets/characters/npc.png');
+    this.load.image('enemy', '/assets/characters/enemy.png');
 
-    // Create NPC sprite (green square)
-    const npcGraphics = this.add.graphics();
-    npcGraphics.fillStyle(0x2ecc71);
-    npcGraphics.fillRect(0, 0, 32, 32);
-    npcGraphics.generateTexture('npc', 32, 32);
-    npcGraphics.destroy();
+    // Load tile sprites
+    this.load.image('grass', '/assets/tiles/grass.png');
+    this.load.image('stone', '/assets/tiles/stone.png');
+    this.load.image('water', '/assets/tiles/water.png');
+    this.load.image('tree', '/assets/tiles/tree.png');
 
-    // Create chest sprite (yellow square)
-    const chestGraphics = this.add.graphics();
-    chestGraphics.fillStyle(0xf1c40f);
-    chestGraphics.fillRect(0, 0, 32, 32);
-    chestGraphics.generateTexture('chest', 32, 32);
-    chestGraphics.destroy();
+    // Load item sprites
+    this.load.image('chest', '/assets/items/chest.png');
+    this.load.image('potion', '/assets/items/potion.png');
+    this.load.image('sword', '/assets/items/sword.png');
 
-    // Create grass tile (green)
-    const grassGraphics = this.add.graphics();
-    grassGraphics.fillStyle(0x27ae60);
-    grassGraphics.fillRect(0, 0, 32, 32);
-    grassGraphics.generateTexture('grass', 32, 32);
-    grassGraphics.destroy();
+    // Load UI sprites
+    this.load.image('button', '/assets/ui/button.png');
+    this.load.image('panel', '/assets/ui/panel.png');
 
-    // Create stone tile (gray)
-    const stoneGraphics = this.add.graphics();
-    stoneGraphics.fillStyle(0x7f8c8d);
-    stoneGraphics.fillRect(0, 0, 32, 32);
-    stoneGraphics.generateTexture('stone', 32, 32);
-    stoneGraphics.destroy();
+    // Load knight sprite (external asset)
+    this.load.image('knight', '/assets/characters/knight.png');
 
-    // Create water tile (blue)
-    const waterGraphics = this.add.graphics();
-    waterGraphics.fillStyle(0x3498db);
-    waterGraphics.fillRect(0, 0, 32, 32);
-    waterGraphics.generateTexture('water', 32, 32);
-    waterGraphics.destroy();
-
-    // Create tree sprite (dark green)
-    const treeGraphics = this.add.graphics();
-    treeGraphics.fillStyle(0x1e8449);
-    treeGraphics.fillRect(0, 0, 32, 48);
-    treeGraphics.generateTexture('tree', 32, 48);
-    treeGraphics.destroy();
+    // Load animated sprite sheets
+    this.load.spritesheet('player_walk', '/assets/animations/player_walk.png', {
+      frameWidth: 32,
+      frameHeight: 32
+    });
+    
+    this.load.spritesheet('npc_walk', '/assets/animations/npc_walk.png', {
+      frameWidth: 32,
+      frameHeight: 32
+    });
+    
+    this.load.spritesheet('enemy_walk', '/assets/animations/enemy_walk.png', {
+      frameWidth: 32,
+      frameHeight: 32
+    });
+    
+    this.load.spritesheet('chest_open', '/assets/animations/chest_open.png', {
+      frameWidth: 32,
+      frameHeight: 32
+    });
+    
+    this.load.spritesheet('water_flow', '/assets/animations/water_flow.png', {
+      frameWidth: 32,
+      frameHeight: 32
+    });
   }
 
   private createTilemapData() {
-    // Create a simple tilemap data
+    // Create a more detailed and varied tilemap
+    // 0 = grass, 1 = stone, 2 = water, 3 = tree (obstacle)
     const mapData = [
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ];
 
     // Store map data in registry for use in GameScene

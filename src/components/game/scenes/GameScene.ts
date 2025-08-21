@@ -14,6 +14,8 @@ export class GameScene extends Phaser.Scene {
   private wasdKeys!: any;
   private interactKey!: Phaser.Input.Keyboard.Key;
   private investigateKey!: Phaser.Input.Keyboard.Key;
+  private virtualControls!: any;
+  private touchStartPos: { x: number; y: number } | null = null;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -36,6 +38,9 @@ export class GameScene extends Phaser.Scene {
 
     // Setup input
     this.setupInput();
+    
+    // Setup mobile controls
+    this.setupMobileControls();
 
     // Setup camera
     this.setupCamera();
@@ -59,32 +64,37 @@ export class GameScene extends Phaser.Scene {
 
     // Add tilesets
     const grassTileset = this.tilemap.addTilesetImage('grass');
-    const stoneTileset = this.tilemap.addTilesetImage('stone');
+    const stoneTileset = this.tilemap.addTilesetImage('stone'); 
     const waterTileset = this.tilemap.addTilesetImage('water');
+    const treeTileset = this.tilemap.addTilesetImage('tree');
 
     // Create layers
-    this.groundLayer = this.tilemap.createLayer(0, [grassTileset!, stoneTileset!, waterTileset!])!;
+    this.groundLayer = this.tilemap.createLayer(0, [grassTileset!, stoneTileset!, waterTileset!, treeTileset!])!;
 
     // Set tile properties
     this.groundLayer.setCollisionByExclusion([0]); // Everything except grass is collidable
+    
+    // Set specific collision properties
+    this.groundLayer.setCollisionBetween(1, 3); // Stone, water, and trees are collidable
 
     // Add some decorative trees
     this.addTrees();
   }
 
   private addTrees() {
-    // Add some trees as obstacles
+    // Add some additional decorative trees as sprites (in addition to tilemap trees)
     const treePositions = [
-      { x: 200, y: 150 },
-      { x: 400, y: 200 },
-      { x: 600, y: 300 },
-      { x: 150, y: 400 },
-      { x: 500, y: 450 }
+      { x: 250, y: 200 },
+      { x: 450, y: 280 },
+      { x: 650, y: 350 },
+      { x: 200, y: 500 },
+      { x: 700, y: 180 }
     ];
 
     treePositions.forEach(pos => {
       const tree = this.add.sprite(pos.x, pos.y, 'tree');
       tree.setOrigin(0.5, 1);
+      tree.setDepth(5); // Trees should be behind player but above ground
       this.physics.add.existing(tree, true); // Static body
     });
   }
@@ -133,8 +143,25 @@ export class GameScene extends Phaser.Scene {
   }
 
   private setupMobileControls() {
-    // Touch/click to move
+    // Initialize virtual controls
+    this.virtualControls = {
+      up: false,
+      down: false,
+      left: false,
+      right: false,
+      interact: false
+    };
+
+    // Create virtual D-pad for mobile
+    this.createVirtualDPad();
+
+    // Touch/click to move (for areas outside virtual controls)
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      // Ignore if touching virtual controls area
+      if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
+        return;
+      }
+
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       const distance = Phaser.Math.Distance.Between(
         this.player.x, this.player.y, worldPoint.x, worldPoint.y
@@ -148,6 +175,121 @@ export class GameScene extends Phaser.Scene {
         this.movePlayerTowards(worldPoint.x, worldPoint.y);
       }
     });
+  }
+
+  private createVirtualDPad() {
+    const padding = 60;
+    const buttonSize = 40;
+    const dpadSize = 140;
+    
+    // D-pad background
+    const dpadBg = this.add.circle(padding + dpadSize/2, this.cameras.main.height - padding - dpadSize/2, dpadSize/2, 0x000000, 0.2);
+    dpadBg.setScrollFactor(0);
+    dpadBg.setDepth(1000);
+
+    // Direction buttons
+    const directions = [
+      { key: 'up', x: 0, y: -buttonSize, angle: 0 },
+      { key: 'down', x: 0, y: buttonSize, angle: 180 },
+      { key: 'left', x: -buttonSize, y: 0, angle: 270 },
+      { key: 'right', x: buttonSize, y: 0, angle: 90 }
+    ];
+
+    directions.forEach(dir => {
+      const button = this.add.circle(
+        dpadBg.x + dir.x,
+        dpadBg.y + dir.y,
+        buttonSize/2,
+        0x4a5568,
+        0.7
+      );
+      button.setScrollFactor(0);
+      button.setDepth(1001);
+      button.setInteractive();
+
+      // Add arrow indicator
+      const arrow = this.add.triangle(
+        button.x,
+        button.y,
+        0, -6, -4, 4, 4, 4,
+        0xffffff
+      );
+      arrow.setScrollFactor(0);
+      arrow.setDepth(1002);
+      arrow.setRotation(Phaser.Math.DegToRad(dir.angle));
+
+      // Touch events
+      button.on('pointerdown', () => {
+        this.virtualControls[dir.key] = true;
+        button.setFillStyle(0x718096, 1);
+      });
+
+      button.on('pointerup', () => {
+        this.virtualControls[dir.key] = false;
+        button.setFillStyle(0x4a5568, 0.7);
+      });
+
+      button.on('pointerout', () => {
+        this.virtualControls[dir.key] = false;
+        button.setFillStyle(0x4a5568, 0.7);
+      });
+    });
+
+    // Action button (interact)
+    const actionButton = this.add.circle(
+      this.cameras.main.width - padding - buttonSize,
+      this.cameras.main.height - padding - buttonSize,
+      buttonSize,
+      0x2563eb,
+      0.7
+    );
+    actionButton.setScrollFactor(0);
+    actionButton.setDepth(1001);
+    actionButton.setInteractive();
+
+    // Action button text
+    const actionText = this.add.text(
+      actionButton.x,
+      actionButton.y,
+      'A',
+      {
+        fontSize: '20px',
+        color: '#ffffff',
+        fontStyle: 'bold'
+      }
+    );
+    actionText.setScrollFactor(0);
+    actionText.setDepth(1002);
+    actionText.setOrigin(0.5);
+
+    actionButton.on('pointerdown', () => {
+      this.virtualControls.interact = true;
+      actionButton.setFillStyle(0x3b82f6, 1);
+      this.checkInteractions();
+    });
+
+    actionButton.on('pointerup', () => {
+      this.virtualControls.interact = false;
+      actionButton.setFillStyle(0x2563eb, 0.7);
+    });
+  }
+
+  private isInVirtualControlsArea(x: number, y: number): boolean {
+    const padding = 60;
+    const dpadSize = 140;
+    const buttonSize = 40;
+    
+    // Check D-pad area
+    const dpadCenterX = padding + dpadSize/2;
+    const dpadCenterY = this.cameras.main.height - padding - dpadSize/2;
+    const dpadDistance = Phaser.Math.Distance.Between(x, y, dpadCenterX, dpadCenterY);
+    
+    // Check action button area
+    const actionX = this.cameras.main.width - padding - buttonSize;
+    const actionY = this.cameras.main.height - padding - buttonSize;
+    const actionDistance = Phaser.Math.Distance.Between(x, y, actionX, actionY);
+    
+    return dpadDistance < dpadSize/2 + 20 || actionDistance < buttonSize + 20;
   }
 
   private movePlayerTowards(targetX: number, targetY: number) {
@@ -225,22 +367,33 @@ export class GameScene extends Phaser.Scene {
     // Reset velocity
     this.player.setVelocity(0);
 
-    // Handle movement with WASD or arrow keys
-    if (this.cursors.left?.isDown || this.wasdKeys.A.isDown) {
+    let isMoving = false;
+    let direction = this.player.getDirection();
+
+    // Handle movement with WASD, arrow keys, or virtual controls
+    if (this.cursors.left?.isDown || this.wasdKeys.A.isDown || this.virtualControls.left) {
       this.player.setVelocityX(-speed);
-      this.player.setDirection('left');
-    } else if (this.cursors.right?.isDown || this.wasdKeys.D.isDown) {
+      direction = 'left';
+      isMoving = true;
+    } else if (this.cursors.right?.isDown || this.wasdKeys.D.isDown || this.virtualControls.right) {
       this.player.setVelocityX(speed);
-      this.player.setDirection('right');
+      direction = 'right';
+      isMoving = true;
     }
 
-    if (this.cursors.up?.isDown || this.wasdKeys.W.isDown) {
+    if (this.cursors.up?.isDown || this.wasdKeys.W.isDown || this.virtualControls.up) {
       this.player.setVelocityY(-speed);
-      this.player.setDirection('up');
-    } else if (this.cursors.down?.isDown || this.wasdKeys.S.isDown) {
+      direction = 'up';
+      isMoving = true;
+    } else if (this.cursors.down?.isDown || this.wasdKeys.S.isDown || this.virtualControls.down) {
       this.player.setVelocityY(speed);
-      this.player.setDirection('down');
+      direction = 'down';
+      isMoving = true;
     }
+
+    // Update player direction and animation
+    this.player.setDirection(direction);
+    this.player.setMoving(isMoving);
   }
 
   private checkInteractions() {

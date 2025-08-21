@@ -64,7 +64,7 @@ const GamePage: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold text-white mb-2">🎮 RPG 冒险世界</h1>
           <p className="text-slate-300">
-            使用 WASD 键移动，空格键交互，探索这个神奇的 2D RPG 世界！
+            使用 WASD 键或虚拟摇杆移动，空格键或触摸交互，探索这个充满精美像素艺术的 2D RPG 世界！
           </p>
         </div>
       </div>
@@ -115,7 +115,7 @@ const GamePage: React.FC = () => {
           {/* Mobile Controls Info */}
           <div className="mt-4 md:hidden">
             <h4 className="font-medium text-purple-400 mb-2">移动端控制：</h4>
-            <p className="text-slate-300">在移动设备上，您可以点击屏幕来移动角色，长按进行交互。</p>
+            <p className="text-slate-300">在移动设备上，使用屏幕左下角的虚拟摇杆移动角色，点击右下角的动作按钮进行交互。也可以直接点击屏幕来移动角色。</p>
           </div>
         </div>
 

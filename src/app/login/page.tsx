@@ -6,17 +6,7 @@ import { supabase } from '@/utils/supabase-config';
 import { useAuth } from '@/utils/auth-context';
 import { updateProfileLastLogin, getConsecutiveLogins } from '@/utils/task';
 
-interface userProfile {
-  user_id?: string;
-  username?: string;
-  avatar_url?: string;
-  email: string;
-  level?: number;
-  coins?: number;
-  experience?: number;
-  consecutive_logins?: number;
-  last_login?: string;
-}
+
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -52,7 +42,7 @@ export default function LoginPage() {
         if (data.user) {
           // 刷新auth context
           await refreshProfile();
-          const consecutive_login_days = getConsecutiveLogins(userProfile?.last_login, userProfile?.consecutive_logins)
+          const consecutive_login_days = getConsecutiveLogins(userProfile?.last_login ?? null, userProfile?.consecutive_logins ?? 0);
           await updateProfileLastLogin(data.user.id,consecutive_login_days);
 
           // 刷新auth context

@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface LoadingProps {
   text?: string;
   size?: 'small' | 'medium' | 'large';
   variant?: 'spinner' | 'dots' | 'pulse' | 'skeleton';
+  className?: string;
+  showBackground?: boolean;
 }
 
-const Loading: React.FC<LoadingProps> = ({
+const Loading: React.FC<LoadingProps> = memo(({
   text = '加载中...',
   size = 'medium',
-  variant = 'spinner'
+  variant = 'spinner',
+  className = '',
+  showBackground = true
 }) => {
   const getSizeClasses = (size: string) => {
     switch (size) {
@@ -77,14 +81,19 @@ const Loading: React.FC<LoadingProps> = ({
     }
   };
 
+  const containerClasses = [
+    'flex flex-col items-center justify-center',
+    size === 'small' ? 'p-4' : size === 'large' ? 'p-12' : 'p-8',
+    'relative',
+    className
+  ].filter(Boolean).join(' ');
+
   return (
-    <div
-      className={`flex flex-col items-center justify-center p-8 ${size === 'small' ? 'p-4' : size === 'large' ? 'p-12' : 'p-8'}`}
-    >
+    <div className={containerClasses}>
       {renderLoadingContent()}
-      {variant !== 'skeleton' && (
+      {variant !== 'skeleton' && text && (
         <p
-          className={`mt-4 text-gray-600 font-medium ${size === 'small' ? 'text-sm' : size === 'large' ? 'text-lg' : 'text-base'}`}
+          className={`mt-4 text-gray-600 dark:text-gray-300 font-medium ${size === 'small' ? 'text-sm' : size === 'large' ? 'text-lg' : 'text-base'}`}
         >
           {text}
           <span className="inline-flex">
@@ -100,34 +109,39 @@ const Loading: React.FC<LoadingProps> = ({
       )}
 
       {/* 装饰性背景 */}
-      <div className="absolute inset-0 -z-10 opacity-20">
-        <div
-          className="absolute top-1/4 left-1/4 w-2 h-2 bg-primary-400 rounded-full animate-bounce"
-          style={{ animationDelay: '0s' }}
-        ></div>
-        <div
-          className="absolute top-1/3 right-1/4 w-1 h-1 bg-primary-500 rounded-full animate-bounce"
-          style={{ animationDelay: '0.5s' }}
-        ></div>
-        <div
-          className="absolute bottom-1/3 left-1/3 w-3 h-3 bg-primary-300 rounded-full animate-bounce"
-          style={{ animationDelay: '1s' }}
-        ></div>
-        <div
-          className="absolute bottom-1/4 right-1/3 w-1 h-1 bg-primary-600 rounded-full animate-bounce"
-          style={{ animationDelay: '1.5s' }}
-        ></div>
-      </div>
+      {showBackground && (
+        <div className="absolute inset-0 -z-10 opacity-20 pointer-events-none">
+          <div
+            className="absolute top-1/4 left-1/4 w-2 h-2 bg-primary-400 rounded-full animate-bounce"
+            style={{ animationDelay: '0s' }}
+          ></div>
+          <div
+            className="absolute top-1/3 right-1/4 w-1 h-1 bg-primary-500 rounded-full animate-bounce"
+            style={{ animationDelay: '0.5s' }}
+          ></div>
+          <div
+            className="absolute bottom-1/3 left-1/3 w-3 h-3 bg-primary-300 rounded-full animate-bounce"
+            style={{ animationDelay: '1s' }}
+          ></div>
+          <div
+            className="absolute bottom-1/4 right-1/3 w-1 h-1 bg-primary-600 rounded-full animate-bounce"
+            style={{ animationDelay: '1.5s' }}
+          ></div>
+        </div>
+      )}
     </div>
   );
-};
+});
 
 // 简单的加载组件，用于保持向后兼容
-export const SimpleLoading: React.FC = () => (
+export const SimpleLoading: React.FC = memo(() => (
   <div className="flex flex-col items-center justify-center p-8">
     <div className="loading-spinner w-8 h-8 mb-4"></div>
-    <p className="text-gray-600 font-medium">加载中...</p>
+    <p className="text-gray-600 dark:text-gray-300 font-medium">加载中...</p>
   </div>
-);
+));
+
+SimpleLoading.displayName = 'SimpleLoading';
+Loading.displayName = 'Loading';
 
 export default Loading;

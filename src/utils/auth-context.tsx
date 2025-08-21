@@ -106,32 +106,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const initializeUserTasks = async (userId: string) => {
+  const initializeUserTasks = useCallback(async (userId: string) => {
     try {
-      // 初始化用户任务
+      // 异步初始化用户任务，不阻塞登录流程
       await initUserTasks(userId);
       console.log('用户任务初始化完成');
+      
+      // 初始化完成后更新登录任务进度
+      await updateTaskProgress(userId, 'login', 1);
+      console.log('登录任务进度更新完成');
+      
+      // 刷新用户资料以反映最新状态
+      await refreshProfile();
     } catch (error) {
       console.error('初始化用户任务失败:', error);
     }
-  };
+  }, [refreshProfile]);
 
   const handleUserLogin = useCallback(async (profile: UserProfile) => {
     try {
-      // 登录任务进度更新（替代直接发放奖励）
       if (profile.user_id) {
-        await updateTaskProgress(profile.user_id, 'login', 1);
+        // 将任务初始化设为异步非阻塞操作
+        // 这样用户可以立即看到登录成功，任务初始化在后台进行
+        initializeUserTasks(profile.user_id).catch(error => {
+          console.error('后台任务初始化失败:', error);
+        });
       }
-      // 初始化用户任务
-      if (profile.user_id) {
-        await initializeUserTasks(profile.user_id);
-      }
-      // 刷新用户资料
-      await refreshProfile();
     } catch (error) {
       console.error('处理用户登录失败:', error);
     }
-  }, [refreshProfile]);
+  }, [initializeUserTasks]);
 
   useEffect(() => {
     let isMounted = true;

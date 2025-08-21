@@ -6,6 +6,33 @@ import { useHomeData } from '@/hooks/useHomeData';
 // 懒加载 ArticleList 组件
 const ArticleList = lazy(() => import('@/components/ArticleList'));
 
+// 加载占位符组件
+const ArticleListSkeleton = () => (
+  <div className="space-y-4">
+    {Array.from({ length: 6 }, (_, index) => (
+      <div key={index} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 animate-pulse">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+          <div className="space-y-2">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+          </div>
+        </div>
+        <div className="space-y-3 mb-4">
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+        </div>
+        <div className="flex items-center space-x-4">
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 export default function HomePage() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });

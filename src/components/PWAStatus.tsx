@@ -17,7 +17,8 @@ export default function PWAStatus() {
         </div>
       )}
 
-      {/* PWA Installed Indicator */}
+      {/* PWA Installed Indicator - 隐藏，因为已安装不需要显示 */}
+      {/* 
       {isInstalled && (
         <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-lg">
           <div className="flex items-center space-x-1">
@@ -28,6 +29,7 @@ export default function PWAStatus() {
           </div>
         </div>
       )}
+      */}
     </div>
   );
 }

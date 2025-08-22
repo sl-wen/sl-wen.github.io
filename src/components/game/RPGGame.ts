@@ -1,9 +1,9 @@
-  import * as Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { GameScene } from './scenes/GameScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { UIScene } from './scenes/UIScene';
 
-export class RPGGame {
+export class CatFarmGame {
   public game: Phaser.Game;
 
   constructor(container: HTMLElement) {
@@ -12,7 +12,7 @@ export class RPGGame {
       width: 800,
       height: 600,
       parent: container,
-      backgroundColor: '#2c3e50',
+      backgroundColor: '#87CEEB', // Sky blue for farm theme
       scale: {
         mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH,

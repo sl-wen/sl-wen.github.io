@@ -9,6 +9,12 @@ export class RPGGame {
 
   // 构造函数 - 创建并配置Phaser游戏实例
   constructor(container: HTMLElement) {
+    console.log('RPGGame constructor called with container:', container);
+    
+    if (!container) {
+      throw new Error('Game container element is required');
+    }
+    
     // Phaser游戏配置对象 - 定义游戏的各项参数和设置
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO, // 自动选择渲染器（WebGL优先，Canvas备用）
@@ -117,7 +123,14 @@ export class RPGGame {
     };
 
     // 创建Phaser游戏实例
-    this.game = new Phaser.Game(config);
+    try {
+      console.log('Creating Phaser game with config:', config);
+      this.game = new Phaser.Game(config);
+      console.log('Phaser game instance created:', this.game);
+    } catch (error) {
+      console.error('Failed to create Phaser game:', error);
+      throw new Error(`Phaser game creation failed: ${error}`);
+    }
 
     // 添加错误处理
     this.game.events.on('ready', () => {
@@ -126,6 +139,18 @@ export class RPGGame {
 
     this.game.events.on('destroy', () => {
       console.log('Game destroyed');
+    });
+
+    this.game.events.on('boot', () => {
+      console.log('Game boot complete');
+    });
+
+    this.game.events.on('prestep', () => {
+      // Game is running
+    });
+
+    this.game.events.on('step', () => {
+      // Game step
     });
 
     // 监听窗口大小变化，动态调整游戏尺寸

@@ -47,6 +47,7 @@ export class PreloadScene extends Phaser.Scene {
       progressBar.clear();
       progressBar.fillStyle(0x4ecdc4, 1);
       progressBar.fillRect(width / 2 - 150, height / 2 - 15, 300 * value, 30);
+      console.log(`Loading progress: ${Math.floor(value * 100)}%`);
     });
 
     this.load.on('complete', () => {
@@ -58,7 +59,12 @@ export class PreloadScene extends Phaser.Scene {
     });
 
     this.load.on('loaderror', (file: any) => {
-      console.warn('Failed to load asset:', file.src);
+      console.error('Failed to load asset:', file.src || file.key);
+      // Continue loading even if some assets fail
+    });
+
+    this.load.on('fileprogress', (file: any) => {
+      console.log(`Loading file: ${file.key} - ${file.src}`);
     });
 
     // Load sprite assets
@@ -157,8 +163,24 @@ export class PreloadScene extends Phaser.Scene {
 
 
   create() {
-    // Start the main game scene
-    this.scene.start('GameScene');
-    this.scene.start('UIScene');
+    console.log('PreloadScene create() called');
+    
+    try {
+      // Start the main game scene
+      console.log('Starting GameScene...');
+      this.scene.start('GameScene');
+      console.log('Starting UIScene...');
+      this.scene.start('UIScene');
+      console.log('All scenes started successfully');
+    } catch (error) {
+      console.error('Failed to start game scenes:', error);
+      // Try to recover by starting just the GameScene
+      try {
+        this.scene.start('GameScene');
+        console.log('GameScene started in recovery mode');
+      } catch (recoveryError) {
+        console.error('Failed to start GameScene in recovery mode:', recoveryError);
+      }
+    }
   }
 }

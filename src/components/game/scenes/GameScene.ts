@@ -34,12 +34,19 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    // Initialize inventory system
-    this.inventoryManager = new InventoryManager();
-    this.inventoryManager.addTestItems(); // Add some test items
+    console.log('GameScene create() called');
+    
+    try {
+      // Initialize inventory system
+      console.log('Initializing inventory system...');
+      this.inventoryManager = new InventoryManager();
+      this.inventoryManager.addTestItems(); // Add some test items
+      console.log('Inventory system initialized');
 
-    // Create cat player
-    this.cat = new Cat(this, 200, 200);
+      // Create cat player
+      console.log('Creating cat player...');
+      this.cat = new Cat(this, 200, 200);
+      console.log('Cat player created successfully');
 
     // Create farm plots group
     this.farmPlots = this.add.group();
@@ -84,8 +91,18 @@ export class GameScene extends Phaser.Scene {
     // Add enhanced ambient effects
     this.createAmbientEffects();
 
-    // Setup performance monitoring
-    this.setupPerformanceMonitoring();
+      // Setup performance monitoring
+      this.setupPerformanceMonitoring();
+      
+      console.log('GameScene initialization completed successfully');
+    } catch (error) {
+      console.error('GameScene initialization failed:', error);
+      
+      // Create a minimal fallback scene
+      this.add.text(50, 50, '游戏初始化失败', { fontSize: '24px', color: '#ff0000' });
+      this.add.text(50, 80, '请刷新页面重试', { fontSize: '16px', color: '#ffffff' });
+      this.add.text(50, 110, `错误: ${error}`, { fontSize: '12px', color: '#ffff00' });
+    }
   }
 
 

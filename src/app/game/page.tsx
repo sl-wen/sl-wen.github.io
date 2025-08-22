@@ -84,8 +84,16 @@ const GamePage: React.FC = () => {
           {/* Game Canvas Container */}
           <div
             ref={gameRef}
-            className="w-full bg-black rounded-lg overflow-hidden shadow-2xl border-2 border-slate-600"
-            style={{ aspectRatio: '16/10', minHeight: '600px' }}
+            className="w-full bg-black rounded-lg overflow-hidden shadow-2xl border-2 border-slate-600 touch-none select-none"
+            style={{ 
+              aspectRatio: '16/10', 
+              minHeight: '600px',
+              maxHeight: '80vh',
+              touchAction: 'none',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none'
+            }}
           />
         </div>
 
@@ -113,41 +121,27 @@ const GamePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Mobile Controls Info */}
+          {/* Enhanced Mobile Controls Info */}
           <div className="mt-4 md:hidden">
-            <h4 className="font-medium text-purple-400 mb-2">移动端控制：</h4>
-            <p className="text-slate-300">在移动设备上，使用屏幕左下角的虚拟摇杆移动角色，点击右下角的动作按钮进行交互。也可以直接点击屏幕来移动角色。</p>
-          </div>
-        </div>
-
-        {/* Mobile Virtual Controls */}
-        <div className="md:hidden mt-4 w-full max-w-4xl">
-          <div className="bg-slate-800 rounded-lg p-4">
-            <h4 className="text-white font-semibold mb-3">虚拟控制器</h4>
-            <div className="flex justify-between items-center">
-              {/* D-Pad */}
-              <div className="relative w-32 h-32">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="grid grid-cols-3 gap-1">
-                    <div></div>
-                    <button className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded text-white text-xs flex items-center justify-center">↑</button>
-                    <div></div>
-                    <button className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded text-white text-xs flex items-center justify-center">←</button>
-                    <div className="w-8 h-8 bg-slate-600 rounded"></div>
-                    <button className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded text-white text-xs flex items-center justify-center">→</button>
-                    <div></div>
-                    <button className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded text-white text-xs flex items-center justify-center">↓</button>
-                    <div></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col gap-2">
-                <button className="w-12 h-12 bg-green-600 hover:bg-green-700 rounded-full text-white font-bold">A</button>
-                <button className="w-12 h-12 bg-red-600 hover:bg-red-700 rounded-full text-white font-bold">B</button>
-              </div>
+            <h4 className="font-medium text-purple-400 mb-2">📱 移动端控制：</h4>
+            <div className="space-y-2 text-slate-300">
+              <p>• <span className="text-blue-400">虚拟摇杆</span> - 左下角，控制小猫移动方向</p>
+              <p>• <span className="text-green-400">交互按钮</span> - 右下角，进行农场操作</p>
+              <p>• <span className="text-purple-400">背包/烹饪</span> - 右侧辅助按钮</p>
+              <p>• <span className="text-orange-400">工具选择</span> - 左侧工具面板</p>
+              <p>• <span className="text-cyan-400">直接点击</span> - 点击屏幕任意位置移动</p>
             </div>
+          </div>
+
+          {/* Touch Controls Tips */}
+          <div className="mt-4 p-3 bg-slate-700 rounded-lg">
+            <h5 className="text-sm font-semibold text-yellow-400 mb-2">💡 操作技巧：</h5>
+            <ul className="text-xs text-slate-400 space-y-1">
+              <li>• 摇杆支持死区控制，轻推慢走，大力快跑</li>
+              <li>• 长按工具按钮查看工具说明</li>
+              <li>• 靠近可交互物体时会显示提示图标</li>
+              <li>• 支持触觉反馈（需要设备支持）</li>
+            </ul>
           </div>
         </div>
       </div>

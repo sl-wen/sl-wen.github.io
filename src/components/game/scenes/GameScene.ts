@@ -21,6 +21,9 @@ export class GameScene extends Phaser.Scene {
   private virtualControls!: any;
   private touchStartPos: { x: number; y: number } | null = null;
   private currentTool: ToolType | null = null;
+  private actionButtons: any;
+  private toolTooltip: Phaser.GameObjects.Text | null = null;
+  private hapticEnabled: boolean = false;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -220,13 +223,13 @@ export class GameScene extends Phaser.Scene {
   }
 
   private setupMobileControls() {
-    // Create virtual joystick for mobile
-    this.createVirtualJoystick();
+    // Create enhanced virtual joystick for mobile
+    this.createEnhancedVirtualJoystick();
     
-    // Create action buttons
-    this.createActionButtons();
+    // Create improved action buttons with better layout
+    this.createEnhancedActionButtons();
 
-    // Touch input for interactions
+    // Enhanced touch input for interactions with better feedback
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
         return;
@@ -234,38 +237,67 @@ export class GameScene extends Phaser.Scene {
 
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       
-      // Check for interactions with farm objects
-      this.handleTouchInteraction(worldPoint.x, worldPoint.y);
+      // Enhanced touch interaction with visual feedback
+      this.handleEnhancedTouchInteraction(worldPoint.x, worldPoint.y, pointer);
     });
+
+    // Add haptic feedback for supported devices
+    this.setupHapticFeedback();
   }
 
-  private createVirtualJoystick() {
-    const padding = 60;
-    const joystickRadius = 60;
-    const knobRadius = 25;
+  private createEnhancedVirtualJoystick() {
+    const padding = 40;
+    const joystickRadius = 70;
+    const knobRadius = 28;
     
     const joystickX = padding + joystickRadius;
     const joystickY = this.cameras.main.height - padding - joystickRadius;
 
-    const joystickBase = this.add.circle(joystickX, joystickY, joystickRadius, 0x000000, 0.3);
+    // Enhanced joystick base with gradient and glow effect
+    const joystickBase = this.add.circle(joystickX, joystickY, joystickRadius, 0x1a1a1a, 0.4);
     joystickBase.setScrollFactor(0);
     joystickBase.setDepth(1000);
-    joystickBase.setStrokeStyle(3, 0x4a5568, 0.8);
+    joystickBase.setStrokeStyle(4, 0x4a90e2, 0.8);
 
-    const joystickKnob = this.add.circle(joystickX, joystickY, knobRadius, 0x4a5568, 0.8);
+    // Add inner circle for better visual depth
+    const joystickInner = this.add.circle(joystickX, joystickY, joystickRadius - 10, 0x2c3e50, 0.3);
+    joystickInner.setScrollFactor(0);
+    joystickInner.setDepth(1001);
+
+    // Enhanced knob with better visual feedback
+    const joystickKnob = this.add.circle(joystickX, joystickY, knobRadius, 0x4a90e2, 0.9);
     joystickKnob.setScrollFactor(0);
-    joystickKnob.setDepth(1001);
-    joystickKnob.setStrokeStyle(2, 0x718096, 1);
+    joystickKnob.setDepth(1002);
+    joystickKnob.setStrokeStyle(3, 0x74b9ff, 1);
+
+    // Add direction indicator dots
+    const dotPositions = [
+      { x: 0, y: -joystickRadius + 15 }, // Top
+      { x: joystickRadius - 15, y: 0 }, // Right
+      { x: 0, y: joystickRadius - 15 }, // Bottom
+      { x: -joystickRadius + 15, y: 0 } // Left
+    ];
+
+    const directionDots = dotPositions.map(pos => {
+      const dot = this.add.circle(joystickX + pos.x, joystickY + pos.y, 3, 0x74b9ff, 0.6);
+      dot.setScrollFactor(0);
+      dot.setDepth(1001);
+      return dot;
+    });
 
     this.virtualControls = {
       joystickBase,
+      joystickInner,
       joystickKnob,
+      directionDots,
       joystickCenter: { x: joystickX, y: joystickY },
       isDragging: false,
-      joystickVector: { x: 0, y: 0 }
+      joystickVector: { x: 0, y: 0 },
+      deadZone: 0.2, // Add dead zone for better control
+      maxDistance: joystickRadius - knobRadius - 5
     };
 
-    // Joystick input handling
+    // Enhanced joystick input handling
     joystickBase.setInteractive();
     joystickKnob.setInteractive();
 
@@ -274,9 +306,20 @@ export class GameScene extends Phaser.Scene {
         pointer.x, pointer.y, joystickX, joystickY
       );
       
-      if (distance <= joystickRadius + 20) {
+      if (distance <= joystickRadius + 30) {
         this.virtualControls.isDragging = true;
-        joystickKnob.setFillStyle(0x718096, 1);
+        joystickKnob.setFillStyle(0x74b9ff, 1);
+        joystickKnob.setScale(1.1);
+        
+        // Add glow effect
+        const glowTween = this.tweens.add({
+          targets: joystickKnob,
+          scaleX: 1.15,
+          scaleY: 1.15,
+          duration: 100,
+          yoyo: true,
+          repeat: 0
+        });
       }
     });
 
@@ -290,7 +333,7 @@ export class GameScene extends Phaser.Scene {
       let deltaY = pointer.y - centerY;
       
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-      const maxDistance = joystickRadius - knobRadius;
+      const maxDistance = this.virtualControls.maxDistance;
       
       if (distance > maxDistance) {
         deltaX = (deltaX / distance) * maxDistance;
@@ -300,37 +343,97 @@ export class GameScene extends Phaser.Scene {
       joystickKnob.x = centerX + deltaX;
       joystickKnob.y = centerY + deltaY;
       
-      // Update movement vector
-      this.virtualControls.joystickVector.x = deltaX / maxDistance;
-      this.virtualControls.joystickVector.y = deltaY / maxDistance;
+      // Calculate normalized vector with dead zone
+      const normalizedDistance = Math.min(distance / maxDistance, 1);
+      if (normalizedDistance > this.virtualControls.deadZone) {
+        this.virtualControls.joystickVector.x = (deltaX / maxDistance) * normalizedDistance;
+        this.virtualControls.joystickVector.y = (deltaY / maxDistance) * normalizedDistance;
+      } else {
+        this.virtualControls.joystickVector.x = 0;
+        this.virtualControls.joystickVector.y = 0;
+      }
+
+      // Update direction dots opacity based on direction
+      this.updateDirectionIndicators(deltaX, deltaY);
     });
 
     this.input.on('pointerup', () => {
       if (this.virtualControls.isDragging) {
         this.virtualControls.isDragging = false;
-        joystickKnob.setFillStyle(0x4a5568, 0.8);
-        joystickKnob.x = joystickX;
-        joystickKnob.y = joystickY;
-        this.virtualControls.joystickVector.x = 0;
-        this.virtualControls.joystickVector.y = 0;
+        
+        // Smooth return animation
+        this.tweens.add({
+          targets: joystickKnob,
+          x: joystickX,
+          y: joystickY,
+          scaleX: 1,
+          scaleY: 1,
+          duration: 200,
+          ease: 'Back.easeOut'
+        });
+        
+        joystickKnob.setFillStyle(0x4a90e2, 0.9);
+        this.virtualControls.joystickVector = { x: 0, y: 0 };
+        
+        // Reset direction dots
+        directionDots.forEach(dot => dot.setAlpha(0.6));
       }
     });
   }
 
-  private createActionButtons() {
-    const buttonSize = 50;
-    const padding = 20;
+  private updateDirectionIndicators(deltaX: number, deltaY: number) {
+    if (!this.virtualControls.directionDots) return;
+    
+    const angle = Math.atan2(deltaY, deltaX);
+    const directions = [
+      { angle: -Math.PI / 2, index: 0 }, // Top
+      { angle: 0, index: 1 }, // Right
+      { angle: Math.PI / 2, index: 2 }, // Bottom
+      { angle: Math.PI, index: 3 } // Left
+    ];
+
+    directions.forEach(dir => {
+      const angleDiff = Math.abs(Phaser.Math.Angle.ShortestBetween(angle, dir.angle));
+      const alpha = Math.max(0.3, 1 - (angleDiff / (Math.PI / 4)));
+      this.virtualControls.directionDots[dir.index].setAlpha(alpha);
+    });
+  }
+
+  private createEnhancedActionButtons() {
+    const buttonSize = 60;
+    const smallButtonSize = 45;
+    const padding = 30;
     const rightEdge = this.cameras.main.width - padding;
     const bottomEdge = this.cameras.main.height - padding;
 
-    // Interact button
-    const interactButton = this.add.circle(rightEdge - buttonSize, bottomEdge - buttonSize, buttonSize / 2, 0x4CAF50, 0.8);
+    // Create action buttons container for better organization
+    this.actionButtons = {
+      interact: null,
+      inventory: null,
+      cooking: null,
+      tools: []
+    };
+
+    // Main interact button with enhanced visual design
+    const interactButton = this.add.circle(rightEdge - buttonSize/2, bottomEdge - buttonSize/2, buttonSize/2, 0x27ae60, 0.9);
     interactButton.setScrollFactor(0);
     interactButton.setDepth(1000);
     interactButton.setInteractive();
+    interactButton.setStrokeStyle(3, 0x2ecc71, 1);
 
-    const interactText = this.add.text(rightEdge - buttonSize, bottomEdge - buttonSize, '🐾', {
-      fontSize: '24px',
+    // Add pulse animation to interact button
+    this.tweens.add({
+      targets: interactButton,
+      scaleX: 1.05,
+      scaleY: 1.05,
+      duration: 1000,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+
+    const interactText = this.add.text(rightEdge - buttonSize/2, bottomEdge - buttonSize/2, '🐾', {
+      fontSize: '28px',
       color: '#ffffff'
     });
     interactText.setOrigin(0.5);
@@ -338,27 +441,29 @@ export class GameScene extends Phaser.Scene {
     interactText.setDepth(1001);
 
     interactButton.on('pointerdown', () => {
-      this.handleInteraction();
+      this.handleInteractionWithFeedback();
+      this.addButtonPressEffect(interactButton);
     });
 
-    // Tool selection buttons
-    const tools = [
-      { tool: ToolType.HOE, icon: '🔨', color: 0x8B4513 },
-      { tool: ToolType.WATERING_CAN, icon: '💧', color: 0x2196F3 },
-      { tool: ToolType.FERTILIZER, icon: '🌱', color: 0x4CAF50 },
-      { tool: ToolType.SEEDS, icon: '🌰', color: 0xFF9800 }
+    this.actionButtons.interact = { button: interactButton, text: interactText };
+
+    // Secondary action buttons (Inventory and Cooking)
+    const secondaryButtons = [
+      { key: 'inventory', icon: '🎒', color: 0x8e44ad, action: () => this.toggleInventory() },
+      { key: 'cooking', icon: '🍳', color: 0xe67e22, action: () => this.openCookingInterface() }
     ];
 
-    tools.forEach((toolData, index) => {
-      const buttonX = rightEdge - buttonSize;
-      const buttonY = bottomEdge - (buttonSize * 2.5) - (index * (buttonSize + 10));
+    secondaryButtons.forEach((btnData, index) => {
+      const buttonX = rightEdge - smallButtonSize/2;
+      const buttonY = bottomEdge - buttonSize - 20 - (index * (smallButtonSize + 15));
 
-      const button = this.add.circle(buttonX, buttonY, buttonSize / 2, toolData.color, 0.8);
+      const button = this.add.circle(buttonX, buttonY, smallButtonSize/2, btnData.color, 0.9);
       button.setScrollFactor(0);
       button.setDepth(1000);
       button.setInteractive();
+      button.setStrokeStyle(2, btnData.color, 1);
 
-      const text = this.add.text(buttonX, buttonY, toolData.icon, {
+      const text = this.add.text(buttonX, buttonY, btnData.icon, {
         fontSize: '20px',
         color: '#ffffff'
       });
@@ -367,8 +472,422 @@ export class GameScene extends Phaser.Scene {
       text.setDepth(1001);
 
       button.on('pointerdown', () => {
-        this.selectTool(toolData.tool);
+        btnData.action();
+        this.addButtonPressEffect(button);
       });
+
+      this.actionButtons[btnData.key] = { button, text };
+    });
+
+    // Tool selection buttons with improved layout
+    const tools = [
+      { tool: ToolType.HOE, icon: '🔨', color: 0x8B4513, name: '锄头' },
+      { tool: ToolType.WATERING_CAN, icon: '💧', color: 0x2196F3, name: '水壶' },
+      { tool: ToolType.FERTILIZER, icon: '🌱', color: 0x4CAF50, name: '肥料' },
+      { tool: ToolType.SEEDS, icon: '🌰', color: 0xFF9800, name: '种子' }
+    ];
+
+    // Create tool selector panel
+    const toolPanelWidth = 60;
+    const toolPanelHeight = tools.length * (smallButtonSize + 10) + 20;
+    const toolPanelX = rightEdge - buttonSize - toolPanelWidth - 20;
+    const toolPanelY = bottomEdge - toolPanelHeight/2;
+
+    // Tool panel background
+    const toolPanel = this.add.graphics();
+    toolPanel.fillStyle(0x2c3e50, 0.8);
+    toolPanel.fillRoundedRect(toolPanelX - toolPanelWidth/2, toolPanelY - toolPanelHeight/2, toolPanelWidth, toolPanelHeight, 10);
+    toolPanel.lineStyle(2, 0x34495e, 1);
+    toolPanel.strokeRoundedRect(toolPanelX - toolPanelWidth/2, toolPanelY - toolPanelHeight/2, toolPanelWidth, toolPanelHeight, 10);
+    toolPanel.setScrollFactor(0);
+    toolPanel.setDepth(999);
+
+    tools.forEach((toolData, index) => {
+      const buttonX = toolPanelX;
+      const buttonY = toolPanelY - toolPanelHeight/2 + 30 + (index * (smallButtonSize + 10));
+
+      const button = this.add.circle(buttonX, buttonY, (smallButtonSize-10)/2, toolData.color, 0.9);
+      button.setScrollFactor(0);
+      button.setDepth(1000);
+      button.setInteractive();
+      button.setStrokeStyle(2, toolData.color, 1);
+
+      const text = this.add.text(buttonX, buttonY, toolData.icon, {
+        fontSize: '16px',
+        color: '#ffffff'
+      });
+      text.setOrigin(0.5);
+      text.setScrollFactor(0);
+      text.setDepth(1001);
+
+      // Tool selection feedback
+      button.on('pointerdown', () => {
+        this.selectToolWithFeedback(toolData.tool, toolData.name);
+        this.addButtonPressEffect(button);
+        this.highlightSelectedTool(button, index);
+      });
+
+      // Add hover effects
+      button.on('pointerover', () => {
+        button.setScale(1.1);
+        this.showToolTooltip(toolData.name, buttonX, buttonY);
+      });
+
+      button.on('pointerout', () => {
+        button.setScale(1);
+        this.hideToolTooltip();
+      });
+
+      this.actionButtons.tools.push({ button, text, tool: toolData.tool });
+    });
+  }
+
+  private addButtonPressEffect(button: Phaser.GameObjects.GameObject) {
+    if (button instanceof Phaser.GameObjects.Shape) {
+      // Scale down and back up for press effect
+      this.tweens.add({
+        targets: button,
+        scaleX: 0.9,
+        scaleY: 0.9,
+        duration: 100,
+        yoyo: true,
+        ease: 'Power2'
+      });
+
+      // Add color flash effect
+      const originalColor = button.fillColor;
+      button.setFillStyle(0xffffff, 0.8);
+      this.time.delayedCall(100, () => {
+        button.setFillStyle(originalColor, 0.9);
+      });
+    }
+  }
+
+  private handleInteractionWithFeedback() {
+    // Add visual feedback for interaction
+    const feedback = this.add.text(this.cat.x, this.cat.y - 40, '✨', {
+      fontSize: '24px',
+      color: '#f1c40f'
+    });
+    feedback.setOrigin(0.5);
+    feedback.setDepth(1000);
+
+    // Animate feedback
+    this.tweens.add({
+      targets: feedback,
+      y: feedback.y - 30,
+      alpha: 0,
+      duration: 800,
+      ease: 'Power2',
+      onComplete: () => feedback.destroy()
+    });
+
+    this.handleInteraction();
+  }
+
+  private selectToolWithFeedback(tool: ToolType, toolName: string) {
+    this.selectTool(tool);
+    
+    // Show tool selection notification
+    this.showNotification(`🔧 选择了${toolName}`);
+    
+    // Add sparkle effect around cat
+    this.createSparkleEffect(this.cat.x, this.cat.y);
+  }
+
+  private highlightSelectedTool(selectedButton: Phaser.GameObjects.Shape, selectedIndex: number) {
+    // Reset all tool buttons
+    this.actionButtons.tools.forEach((toolBtn, index) => {
+      if (index === selectedIndex) {
+        // Highlight selected tool
+        toolBtn.button.setStrokeStyle(3, 0xf1c40f, 1);
+        toolBtn.button.setScale(1.1);
+      } else {
+        // Reset other tools
+        toolBtn.button.setStrokeStyle(2, toolBtn.button.fillColor, 1);
+        toolBtn.button.setScale(1);
+      }
+    });
+  }
+
+  private showToolTooltip(toolName: string, x: number, y: number) {
+    this.toolTooltip = this.add.text(x - 80, y, toolName, {
+      fontSize: '12px',
+      color: '#ffffff',
+      backgroundColor: 'rgba(0,0,0,0.8)',
+      padding: { x: 8, y: 4 }
+    });
+    this.toolTooltip.setOrigin(0.5);
+    this.toolTooltip.setScrollFactor(0);
+    this.toolTooltip.setDepth(1002);
+  }
+
+  private hideToolTooltip() {
+    if (this.toolTooltip) {
+      this.toolTooltip.destroy();
+      this.toolTooltip = null;
+    }
+  }
+
+  private createSparkleEffect(x: number, y: number) {
+    const sparkles = this.add.particles(x, y, 'sparkle', {
+      scale: { start: 0.3, end: 0 },
+      speed: { min: 50, max: 100 },
+      lifespan: 600,
+      quantity: 8
+    });
+
+    this.time.delayedCall(800, () => {
+      sparkles.destroy();
+    });
+  }
+
+  private handleEnhancedTouchInteraction(worldX: number, worldY: number, pointer: Phaser.Input.Pointer) {
+    // Create touch ripple effect
+    const ripple = this.add.circle(pointer.x, pointer.y, 5, 0x74b9ff, 0.6);
+    ripple.setScrollFactor(0);
+    ripple.setDepth(999);
+
+    this.tweens.add({
+      targets: ripple,
+      scaleX: 4,
+      scaleY: 4,
+      alpha: 0,
+      duration: 300,
+      ease: 'Power2',
+      onComplete: () => ripple.destroy()
+    });
+
+    // Check for interactions with farm objects
+    this.handleTouchInteraction(worldX, worldY);
+  }
+
+  private setupHapticFeedback() {
+    // Setup haptic feedback for supported devices
+    if ('vibrate' in navigator) {
+      this.hapticEnabled = true;
+    }
+  }
+
+  private triggerHapticFeedback(pattern: number | number[] = 50) {
+    if (this.hapticEnabled && 'vibrate' in navigator) {
+      navigator.vibrate(pattern);
+    }
+  }
+
+  private updateResponsiveUI() {
+    // Update UI elements based on screen size changes
+    const currentWidth = this.cameras.main.width;
+    const currentHeight = this.cameras.main.height;
+
+    // Update virtual controls position if screen size changed
+    if (this.virtualControls) {
+      const padding = 40;
+      const joystickRadius = 70;
+      const newJoystickX = padding + joystickRadius;
+      const newJoystickY = currentHeight - padding - joystickRadius;
+
+      // Update joystick position smoothly
+      if (this.virtualControls.joystickCenter.x !== newJoystickX || 
+          this.virtualControls.joystickCenter.y !== newJoystickY) {
+        
+        this.virtualControls.joystickCenter.x = newJoystickX;
+        this.virtualControls.joystickCenter.y = newJoystickY;
+        
+        // Update all joystick elements
+        this.virtualControls.joystickBase.x = newJoystickX;
+        this.virtualControls.joystickBase.y = newJoystickY;
+        this.virtualControls.joystickInner.x = newJoystickX;
+        this.virtualControls.joystickInner.y = newJoystickY;
+        
+        if (!this.virtualControls.isDragging) {
+          this.virtualControls.joystickKnob.x = newJoystickX;
+          this.virtualControls.joystickKnob.y = newJoystickY;
+        }
+
+        // Update direction dots
+        const dotPositions = [
+          { x: 0, y: -joystickRadius + 15 },
+          { x: joystickRadius - 15, y: 0 },
+          { x: 0, y: joystickRadius - 15 },
+          { x: -joystickRadius + 15, y: 0 }
+        ];
+
+        this.virtualControls.directionDots.forEach((dot: any, index: number) => {
+          dot.x = newJoystickX + dotPositions[index].x;
+          dot.y = newJoystickY + dotPositions[index].y;
+        });
+      }
+    }
+
+    // Update action buttons position
+    if (this.actionButtons) {
+      const padding = 30;
+      const rightEdge = currentWidth - padding;
+      const bottomEdge = currentHeight - padding;
+      const buttonSize = 60;
+      const smallButtonSize = 45;
+
+      // Update main interact button
+      if (this.actionButtons.interact) {
+        this.actionButtons.interact.button.x = rightEdge - buttonSize/2;
+        this.actionButtons.interact.button.y = bottomEdge - buttonSize/2;
+        this.actionButtons.interact.text.x = rightEdge - buttonSize/2;
+        this.actionButtons.interact.text.y = bottomEdge - buttonSize/2;
+      }
+
+      // Update secondary buttons
+      ['inventory', 'cooking'].forEach((key, index) => {
+        if (this.actionButtons[key]) {
+          const buttonX = rightEdge - smallButtonSize/2;
+          const buttonY = bottomEdge - buttonSize - 20 - (index * (smallButtonSize + 15));
+          
+          this.actionButtons[key].button.x = buttonX;
+          this.actionButtons[key].button.y = buttonY;
+          this.actionButtons[key].text.x = buttonX;
+          this.actionButtons[key].text.y = buttonY;
+        }
+      });
+    }
+  }
+
+  // Enhanced interaction system with better feedback
+  private handleInteraction() {
+    const interactionRange = 80;
+    const catPosition = { x: this.cat.x, y: this.cat.y };
+    let interactionFound = false;
+
+    // Check for farm plot interactions
+    this.farmPlots.children.entries.forEach((plot: any) => {
+      const distance = Phaser.Math.Distance.Between(
+        catPosition.x, catPosition.y, plot.x, plot.y
+      );
+      
+      if (distance <= interactionRange) {
+        this.handleFarmPlotInteractionWithFeedback(plot);
+        interactionFound = true;
+      }
+    });
+
+    // Check for cooking station interactions
+    if (!interactionFound) {
+      this.cookingStations.children.entries.forEach((station: any) => {
+        const distance = Phaser.Math.Distance.Between(
+          catPosition.x, catPosition.y, station.x, station.y
+        );
+        
+        if (distance <= interactionRange) {
+          this.handleCookingStationInteractionWithFeedback(station);
+          interactionFound = true;
+        }
+      });
+    }
+
+    // If no specific interaction, show general feedback
+    if (!interactionFound) {
+      this.showInteractionHint();
+    }
+
+    // Add haptic feedback for interactions
+    if (interactionFound) {
+      this.triggerHapticFeedback([50, 50, 100]);
+    }
+  }
+
+  private handleFarmPlotInteractionWithFeedback(plot: any) {
+    // Create interaction indicator
+    const indicator = this.add.text(plot.x, plot.y - 50, '🌱', {
+      fontSize: '32px',
+      color: '#2ecc71'
+    });
+    indicator.setOrigin(0.5);
+    indicator.setDepth(1000);
+
+    // Animate indicator
+    this.tweens.add({
+      targets: indicator,
+      y: indicator.y - 20,
+      scaleX: 1.5,
+      scaleY: 1.5,
+      alpha: 0,
+      duration: 1000,
+      ease: 'Power2',
+      onComplete: () => indicator.destroy()
+    });
+
+    // Emit the actual interaction event
+    this.events.emit('farm-plot-interaction', {
+      plot: plot,
+      plotData: plot.plotData,
+      crop: plot.crop
+    });
+  }
+
+  private handleCookingStationInteractionWithFeedback(station: any) {
+    // Create cooking indicator
+    const indicator = this.add.text(station.x, station.y - 50, '🍳', {
+      fontSize: '32px',
+      color: '#e67e22'
+    });
+    indicator.setOrigin(0.5);
+    indicator.setDepth(1000);
+
+    // Animate indicator with cooking steam effect
+    this.tweens.add({
+      targets: indicator,
+      y: indicator.y - 30,
+      scaleX: 1.2,
+      scaleY: 1.2,
+      alpha: 0,
+      duration: 1200,
+      ease: 'Power2',
+      onComplete: () => indicator.destroy()
+    });
+
+    // Add steam particles
+    const steam = this.add.particles(station.x, station.y - 20, 'sparkle', {
+      scale: { start: 0.1, end: 0.3 },
+      alpha: { start: 0.8, end: 0 },
+      speed: { min: 20, max: 40 },
+      lifespan: 1000,
+      quantity: 3,
+      frequency: 200
+    });
+
+    this.time.delayedCall(1500, () => {
+      steam.destroy();
+    });
+
+    // Emit the actual cooking interaction event
+    this.events.emit('cooking-station-interaction', station);
+  }
+
+  private showInteractionHint() {
+    const hints = [
+      '🌱 靠近农田进行种植',
+      '💧 给作物浇水让它们成长',
+      '🍳 在烹饪台制作美食',
+      '🏃‍♀️ 探索农场发现更多秘密'
+    ];
+
+    const randomHint = hints[Math.floor(Math.random() * hints.length)];
+    this.showNotification(randomHint);
+
+    // Create floating hint near the cat
+    const hint = this.add.text(this.cat.x, this.cat.y - 60, '❓', {
+      fontSize: '24px',
+      color: '#3498db'
+    });
+    hint.setOrigin(0.5);
+    hint.setDepth(1000);
+
+    this.tweens.add({
+      targets: hint,
+      y: hint.y - 20,
+      alpha: 0,
+      duration: 1500,
+      ease: 'Power2',
+      onComplete: () => hint.destroy()
     });
   }
 
@@ -635,11 +1154,29 @@ export class GameScene extends Phaser.Scene {
   }
 
   private isInVirtualControlsArea(x: number, y: number): boolean {
-    const padding = 120;
-    const rightEdge = this.cameras.main.width - padding;
-    const bottomEdge = this.cameras.main.height - padding;
+    // Check if touch is in virtual joystick area (left side)
+    if (this.virtualControls) {
+      const joystickDistance = Phaser.Math.Distance.Between(
+        x, y, this.virtualControls.joystickCenter.x, this.virtualControls.joystickCenter.y
+      );
+      if (joystickDistance <= 120) return true; // Increased area for better touch detection
+    }
+
+    // Check if touch is in action buttons area (right side)
+    const rightEdge = this.cameras.main.width;
+    const bottomEdge = this.cameras.main.height;
     
-    return (x < padding && y > bottomEdge) || (x > rightEdge && y > bottomEdge);
+    // Main action buttons area
+    if (x > rightEdge - 150 && y > bottomEdge - 400) {
+      return true;
+    }
+
+    // Tool panel area (left side of action buttons)
+    if (x > rightEdge - 280 && x < rightEdge - 150 && y > bottomEdge - 300) {
+      return true;
+    }
+
+    return false;
   }
 
   private toggleInventory() {
@@ -684,10 +1221,24 @@ export class GameScene extends Phaser.Scene {
       moveY = 1;
     }
 
-    // Virtual joystick input
-    if (this.virtualControls && (Math.abs(this.virtualControls.joystickVector.x) > 0.1 || Math.abs(this.virtualControls.joystickVector.y) > 0.1)) {
-      moveX = this.virtualControls.joystickVector.x;
-      moveY = this.virtualControls.joystickVector.y;
+    // Enhanced virtual joystick input with smooth movement
+    if (this.virtualControls && this.virtualControls.joystickVector) {
+      const joystickStrength = Math.sqrt(
+        this.virtualControls.joystickVector.x ** 2 + this.virtualControls.joystickVector.y ** 2
+      );
+      
+      if (joystickStrength > this.virtualControls.deadZone) {
+        // Use smooth movement based on joystick distance
+        moveX = this.virtualControls.joystickVector.x;
+        moveY = this.virtualControls.joystickVector.y;
+        
+        // Add subtle haptic feedback during movement
+        if (this.hapticEnabled && joystickStrength > 0.8) {
+          if (Math.random() < 0.05) { // Occasional feedback to avoid spam
+            this.triggerHapticFeedback(10);
+          }
+        }
+      }
     }
 
     // Apply movement
@@ -718,5 +1269,8 @@ export class GameScene extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {
       this.handleInteraction();
     }
+
+    // Update responsive UI elements
+    this.updateResponsiveUI();
   }
 }

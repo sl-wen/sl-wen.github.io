@@ -17,6 +17,9 @@ export class UIScene extends Phaser.Scene {
   private currentToolText!: Phaser.GameObjects.Text;
   private isInventoryOpen: boolean = false;
   private isCookingOpen: boolean = false;
+  private interactionIndicators!: Phaser.GameObjects.Container;
+  private proximityIndicator!: Phaser.GameObjects.Graphics;
+  private characterPortrait!: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: 'UIScene' });
@@ -31,6 +34,7 @@ export class UIScene extends Phaser.Scene {
     this.createInventoryInterface();
     this.createCookingInterface();
     this.createMiniMap();
+    this.createInteractionIndicators();
 
     // Listen for events from GameScene
     this.events.on('show-dialogue', this.showDialogue, this);
@@ -39,6 +43,8 @@ export class UIScene extends Phaser.Scene {
     this.events.on('toggle-inventory', this.toggleInventory, this);
     this.events.on('open-cooking', this.openCookingInterface, this);
     this.events.on('tool-selected', this.onToolSelected, this);
+    this.events.on('show-interaction-hint', this.showInteractionHint, this);
+    this.events.on('highlight-interactable', this.highlightInteractable, this);
   }
 
   private createDialogueBox() {
@@ -558,8 +564,222 @@ export class UIScene extends Phaser.Scene {
     return icons[item.id] || '📦';
   }
 
+  private createInteractionIndicators() {
+    // Create a container for interaction indicators
+    this.interactionIndicators = this.add.container(0, 0);
+    this.interactionIndicators.setDepth(500);
+    
+    // Create proximity indicator
+    this.proximityIndicator = this.add.graphics();
+    this.proximityIndicator.setScrollFactor(1);
+    this.proximityIndicator.setDepth(499);
+    this.proximityIndicator.setVisible(false);
+  }
+
+  private showInteractionHint(data: { x: number, y: number, type: string, message?: string }) {
+    // Create floating interaction hint
+    const hintIcon = this.getInteractionIcon(data.type);
+    const hintText = this.add.text(data.x, data.y - 60, hintIcon, {
+      fontSize: '32px',
+      color: '#f1c40f'
+    });
+    hintText.setOrigin(0.5);
+    hintText.setDepth(1000);
+
+    // Add pulsing animation
+    this.tweens.add({
+      targets: hintText,
+      scaleX: 1.2,
+      scaleY: 1.2,
+      duration: 500,
+      yoyo: true,
+      repeat: 2,
+      ease: 'Sine.easeInOut'
+    });
+
+    // Fade out after animation
+    this.time.delayedCall(2000, () => {
+      this.tweens.add({
+        targets: hintText,
+        alpha: 0,
+        y: hintText.y - 30,
+        duration: 800,
+        ease: 'Power2',
+        onComplete: () => hintText.destroy()
+      });
+    });
+
+    // Show message if provided
+    if (data.message) {
+      this.showNotification(data.message);
+    }
+  }
+
+  private highlightInteractable(data: { x: number, y: number, type: string, range: number }) {
+    // Clear existing proximity indicator
+    this.proximityIndicator.clear();
+    
+    // Draw interaction range circle
+    this.proximityIndicator.lineStyle(3, 0x74b9ff, 0.6);
+    this.proximityIndicator.strokeCircle(data.x, data.y, data.range);
+    
+    // Add inner glow effect
+    this.proximityIndicator.lineStyle(1, 0x74b9ff, 0.3);
+    this.proximityIndicator.strokeCircle(data.x, data.y, data.range - 5);
+    
+    this.proximityIndicator.setVisible(true);
+
+    // Create pulsing effect
+    this.tweens.add({
+      targets: this.proximityIndicator,
+      alpha: 0.3,
+      duration: 1000,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+
+    // Auto-hide after 3 seconds
+    this.time.delayedCall(3000, () => {
+      this.proximityIndicator.setVisible(false);
+      this.tweens.killTweensOf(this.proximityIndicator);
+      this.proximityIndicator.setAlpha(1);
+    });
+  }
+
+  private getInteractionIcon(type: string): string {
+    const icons: { [key: string]: string } = {
+      'farm_plot': '🌱',
+      'cooking_station': '🍳',
+      'decoration': '✨',
+      'harvest': '🌾',
+      'plant': '🌰',
+      'water': '💧',
+      'fertilize': '🌿',
+      'cook': '👨‍🍳',
+      'default': '💫'
+    };
+    
+    return icons[type] || icons['default'];
+  }
+
+  // Enhanced notification system with categories
+  private showNotification(text: string, category: string = 'info') {
+    // Clear existing notification
+    if (this.notificationText.visible) {
+      this.tweens.killTweensOf(this.notificationText);
+    }
+
+    // Set notification style based on category
+    const styles = {
+      info: { color: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.1)' },
+      success: { color: '#2ecc71', backgroundColor: 'rgba(46, 204, 113, 0.1)' },
+      warning: { color: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.1)' },
+      error: { color: '#e74c3c', backgroundColor: 'rgba(231, 76, 60, 0.1)' },
+      achievement: { color: '#9b59b6', backgroundColor: 'rgba(155, 89, 182, 0.1)' }
+    };
+
+    const style = styles[category as keyof typeof styles] || styles.info;
+    
+    this.notificationText.setText(text);
+    this.notificationText.setStyle({
+      fontSize: '18px',
+      color: style.color,
+      align: 'center',
+      backgroundColor: style.backgroundColor,
+      padding: { x: 20, y: 10 }
+    });
+
+    this.notificationText.setVisible(true);
+    this.notificationText.setAlpha(0);
+
+    // Slide in animation
+    this.tweens.add({
+      targets: this.notificationText,
+      alpha: 1,
+      y: this.notificationText.y + 10,
+      duration: 300,
+      ease: 'Back.easeOut'
+    });
+
+    // Auto-hide after delay
+    this.time.delayedCall(3000, () => {
+      this.tweens.add({
+        targets: this.notificationText,
+        alpha: 0,
+        y: this.notificationText.y - 10,
+        duration: 500,
+        ease: 'Power2',
+        onComplete: () => {
+          this.notificationText.setVisible(false);
+          this.notificationText.y = 50; // Reset position
+        }
+      });
+    });
+  }
+
+  // Enhanced dialogue system with character portraits
+  private showDialogue(data: { text: string, character?: string, portrait?: string }) {
+    this.dialogueText.setText(data.text);
+    
+    // Add character portrait if provided
+    if (data.character && data.portrait) {
+      // Create or update character portrait
+      if (!this.characterPortrait) {
+        this.characterPortrait = this.add.text(-280, 0, data.portrait, {
+          fontSize: '32px'
+        });
+        this.characterPortrait.setOrigin(0.5);
+        this.dialogueBox.add(this.characterPortrait);
+      } else {
+        this.characterPortrait.setText(data.portrait);
+      }
+    }
+
+    this.dialogueBox.setVisible(true);
+    this.dialogueBox.setAlpha(0);
+
+    // Slide up animation
+    this.tweens.add({
+      targets: this.dialogueBox,
+      alpha: 1,
+      y: this.dialogueBox.y - 10,
+      duration: 400,
+      ease: 'Back.easeOut'
+    });
+
+    // Auto-hide after reading time (based on text length)
+    const readingTime = Math.max(2000, data.text.length * 50);
+    this.time.delayedCall(readingTime, () => {
+      this.hideDialogue();
+    });
+  }
+
+  private hideDialogue() {
+    this.tweens.add({
+      targets: this.dialogueBox,
+      alpha: 0,
+      y: this.dialogueBox.y + 10,
+      duration: 300,
+      ease: 'Power2',
+      onComplete: () => {
+        this.dialogueBox.setVisible(false);
+        // Reset position
+        this.dialogueBox.y = this.cameras.main.height - 100;
+      }
+    });
+  }
+
   update() {
     // Update UI elements if needed
     // For example, update mini-map or other dynamic UI elements
+    
+    // Update interaction indicators based on game state
+    this.updateInteractionIndicators();
+  }
+
+  private updateInteractionIndicators() {
+    // This could be expanded to show context-sensitive interaction hints
+    // based on what the player is near or what tool they have selected
   }
 }

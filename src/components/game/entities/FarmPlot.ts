@@ -261,7 +261,7 @@ export class FarmPlot extends Phaser.GameObjects.Sprite {
   }
 
   private getStageDisplayName(stage: string): string {
-    const stages = {
+    const stages: Record<string, string> = {
       'seed': '种子',
       'sprout': '发芽',
       'growing': '成长中',

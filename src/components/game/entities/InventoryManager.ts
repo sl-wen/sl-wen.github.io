@@ -1,99 +1,119 @@
 import { InventoryItem, CropType } from '../types/GameTypes';
 
+// 背包管理器类 - 负责管理玩家的物品存储和操作
 export class InventoryManager {
-  private items: InventoryItem[] = [];
-  private maxSlots: number = 50;
+  private items: InventoryItem[] = []; // 存储所有背包物品的数组
+  private maxSlots: number = 50; // 背包最大容量（物品种类数量）
 
+  // 构造函数 - 创建背包管理器并初始化默认物品
   constructor() {
     this.initializeDefaultItems();
   }
 
+  // 初始化默认物品 - 给玩家一些基础的必需品
   private initializeDefaultItems() {
-    // Add basic water item
+    // 添加基础水源物品，用于烹饪
     this.items.push({
       id: 'water',
       name: '水',
-      type: 'ingredient',
-      quantity: 10,
+      type: 'ingredient', // 烹饪原料类型
+      quantity: 10, // 初始数量10个
       icon: 'water_bottle',
       description: '清澈的水，烹饪必需品'
     });
 
-    // Add starting tools and seeds (already handled in Cat class)
+    // 其他基础工具和种子由Cat类处理，避免重复初始化
   }
 
+  // 添加物品到背包 - 支持物品叠加和容量检查
   public addItem(item: InventoryItem): boolean {
-    // Check if inventory is full (for new items)
+    // 检查是否已存在相同物品
     const existingItem = this.items.find(i => i.id === item.id);
     
     if (existingItem) {
+      // 相同物品直接叠加数量
       existingItem.quantity += item.quantity;
       return true;
     } else {
-      // Check if we have space for new item
+      // 新物品需要检查背包空间
       if (this.items.length >= this.maxSlots) {
-        return false; // Inventory full
+        return false; // 背包已满，添加失败
       }
       
+      // 创建物品副本并添加到背包
       this.items.push({ ...item });
       return true;
     }
   }
 
+  // 从背包移除物品 - 支持部分移除和自动清理
   public removeItem(itemId: string, quantity: number = 1): boolean {
     const item = this.items.find(i => i.id === itemId);
     
+    // 检查物品是否存在且数量足够
     if (!item || item.quantity < quantity) {
-      return false;
+      return false; // 物品不存在或数量不足
     }
 
+    // 减少物品数量
     item.quantity -= quantity;
     
+    // 如果数量为0，从背包中完全移除该物品
     if (item.quantity === 0) {
       this.items = this.items.filter(i => i.id !== itemId);
     }
     
-    return true;
+    return true; // 移除成功
   }
 
+  // 检查是否拥有指定物品和数量
   public hasItem(itemId: string, quantity: number = 1): boolean {
     const item = this.items.find(i => i.id === itemId);
     return item !== undefined && item.quantity >= quantity;
   }
 
+  // 获取指定物品的详细信息
   public getItem(itemId: string): InventoryItem | undefined {
     return this.items.find(i => i.id === itemId);
   }
 
+  // 获取所有物品的副本（防止外部直接修改）
   public getAllItems(): InventoryItem[] {
     return [...this.items];
   }
 
+  // 根据物品类型筛选物品 - 用于分类显示
   public getItemsByType(type: InventoryItem['type']): InventoryItem[] {
     return this.items.filter(item => item.type === type);
   }
 
+  // 获取指定物品的数量
   public getItemCount(itemId: string): number {
     const item = this.items.find(i => i.id === itemId);
-    return item ? item.quantity : 0;
+    return item ? item.quantity : 0; // 不存在则返回0
   }
 
+  // 获取背包总容量
   public getTotalSlots(): number {
     return this.maxSlots;
   }
 
+  // 获取已使用的格子数量
   public getUsedSlots(): number {
     return this.items.length;
   }
 
+  // 获取剩余空闲格子数量
   public getFreeSlots(): number {
     return this.maxSlots - this.items.length;
   }
 
+  // 检查背包是否已满
   public isFull(): boolean {
     return this.items.length >= this.maxSlots;
   }
 
+  // 检查背包是否为空
   public isEmpty(): boolean {
     return this.items.length === 0;
   }

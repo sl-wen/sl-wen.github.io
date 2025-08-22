@@ -51,27 +51,56 @@ export class UIScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
 
-    // Create dialogue container
-    this.dialogueBox = this.add.container(width / 2, height - 100);
+    // Create modern dialogue container
+    this.dialogueBox = this.add.container(width / 2, height - 120);
 
-    // Background
+    // Modern glassmorphism background
     const dialogueBg = this.add.graphics();
-    dialogueBg.fillStyle(0x000000, 0.8);
-    dialogueBg.fillRoundedRect(-300, -40, 600, 80, 10);
-    dialogueBg.lineStyle(2, 0x4ecdc4);
-    dialogueBg.strokeRoundedRect(-300, -40, 600, 80, 10);
+    dialogueBg.fillStyle(0x1a1a2e, 0.85);
+    dialogueBg.lineStyle(2, 0x6c5ce7, 0.8);
+    dialogueBg.fillRoundedRect(-320, -50, 640, 100, 15);
+    dialogueBg.strokeRoundedRect(-320, -50, 640, 100, 15);
 
-    // Text
+    // Add subtle glow effect
+    dialogueBg.lineStyle(4, 0x6c5ce7, 0.3);
+    dialogueBg.strokeRoundedRect(-324, -54, 648, 108, 18);
+
+    // Modern text with better typography
     this.dialogueText = this.add.text(0, 0, '', {
       fontSize: '16px',
       color: '#ffffff',
       align: 'center',
-      wordWrap: { width: 580 }
+      wordWrap: { width: 600 },
+      fontFamily: 'Arial, sans-serif',
+      lineSpacing: 4
     });
     this.dialogueText.setOrigin(0.5);
 
+    // Add character portrait placeholder
+    this.characterPortrait = this.add.text(-280, 0, '🐱', {
+      fontSize: '32px'
+    });
+    this.characterPortrait.setOrigin(0.5);
+
+    // Continue indicator
+    const continueIndicator = this.add.text(280, 20, '👆', {
+      fontSize: '16px',
+      color: '#74b9ff'
+    });
+    continueIndicator.setOrigin(0.5);
+
+    // Pulsing animation for continue indicator
+    this.tweens.add({
+      targets: continueIndicator,
+      alpha: 0.5,
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+
     // Add to container
-    this.dialogueBox.add([dialogueBg, this.dialogueText]);
+    this.dialogueBox.add([dialogueBg, this.dialogueText, this.characterPortrait, continueIndicator]);
     this.dialogueBox.setVisible(false);
     this.dialogueBox.setScrollFactor(0);
     this.dialogueBox.setDepth(1000);
@@ -80,81 +109,111 @@ export class UIScene extends Phaser.Scene {
   private createNotificationArea() {
     const width = this.cameras.main.width;
 
-    this.notificationText = this.add.text(width / 2, 50, '', {
-      fontSize: '18px',
-      color: '#f1c40f',
+    // Create notification container for better styling
+    const notificationContainer = this.add.container(width / 2, 50);
+    notificationContainer.setScrollFactor(0);
+    notificationContainer.setDepth(1100);
+
+    // Modern notification background with glassmorphism
+    const notificationBg = this.add.graphics();
+    notificationBg.fillStyle(0x000000, 0.6);
+    notificationBg.lineStyle(2, 0x4a90e2, 0.8);
+    notificationBg.fillRoundedRect(-120, -20, 240, 40, 20);
+    notificationBg.strokeRoundedRect(-120, -20, 240, 40, 20);
+
+    this.notificationText = this.add.text(0, 0, '', {
+      fontSize: '16px',
+      color: '#ffffff',
       align: 'center',
-      backgroundColor: 'rgba(0,0,0,0.7)',
-      padding: { x: 20, y: 10 }
+      fontFamily: 'Arial, sans-serif',
+      fontStyle: 'bold'
     });
     this.notificationText.setOrigin(0.5);
-    this.notificationText.setScrollFactor(0);
-    this.notificationText.setVisible(false);
-    this.notificationText.setDepth(999);
+
+    notificationContainer.add([notificationBg, this.notificationText]);
+    notificationContainer.setVisible(false);
+    
+    // Store reference
+    (this as any).notificationContainer = notificationContainer;
   }
 
   private createCatStats() {
-    const startY = 20;
-    const barWidth = 150;
-    const barHeight = 16;
-    const spacing = 25;
+    const startY = 25;
+    const barWidth = 160;
+    const barHeight = 18;
+    const spacing = 28;
 
-    // Health bar
+    // Modern health bar with glassmorphism design
+    const healthContainer = this.add.container(25, startY);
+    healthContainer.setScrollFactor(0);
+    healthContainer.setDepth(100);
+
     const healthBg = this.add.graphics();
-    healthBg.fillStyle(0x8b0000, 0.3);
-    healthBg.fillRoundedRect(20, startY, barWidth, barHeight, 8);
-    healthBg.setScrollFactor(0);
-    healthBg.setDepth(100);
+    healthBg.fillStyle(0x000000, 0.4);
+    healthBg.lineStyle(2, 0xe74c3c, 0.6);
+    healthBg.fillRoundedRect(0, 0, barWidth, barHeight, 9);
+    healthBg.strokeRoundedRect(0, 0, barWidth, barHeight, 9);
 
     this.healthBar = this.add.graphics();
-    this.healthBar.setScrollFactor(0);
-    this.healthBar.setDepth(101);
+    this.healthBar.setDepth(1);
 
-    this.healthText = this.add.text(25, startY + 2, '❤️ 100/100', {
-      fontSize: '12px',
+    this.healthText = this.add.text(8, 2, '❤️ 100/100', {
+      fontSize: '11px',
       color: '#ffffff',
-      fontStyle: 'bold'
+      fontStyle: 'bold',
+      fontFamily: 'Arial, sans-serif'
     });
-    this.healthText.setScrollFactor(0);
-    this.healthText.setDepth(102);
+    this.healthText.setDepth(2);
 
-    // Energy bar
+    healthContainer.add([healthBg, this.healthBar, this.healthText]);
+
+    // Modern energy bar
+    const energyContainer = this.add.container(25, startY + spacing);
+    energyContainer.setScrollFactor(0);
+    energyContainer.setDepth(100);
+
     const energyBg = this.add.graphics();
-    energyBg.fillStyle(0x0066cc, 0.3);
-    energyBg.fillRoundedRect(20, startY + spacing, barWidth, barHeight, 8);
-    energyBg.setScrollFactor(0);
-    energyBg.setDepth(100);
+    energyBg.fillStyle(0x000000, 0.4);
+    energyBg.lineStyle(2, 0x74b9ff, 0.6);
+    energyBg.fillRoundedRect(0, 0, barWidth, barHeight, 9);
+    energyBg.strokeRoundedRect(0, 0, barWidth, barHeight, 9);
 
     this.energyBar = this.add.graphics();
-    this.energyBar.setScrollFactor(0);
-    this.energyBar.setDepth(101);
+    this.energyBar.setDepth(1);
 
-    this.energyText = this.add.text(25, startY + spacing + 2, '⚡ 100/100', {
-      fontSize: '12px',
+    this.energyText = this.add.text(8, 2, '⚡ 100/100', {
+      fontSize: '11px',
       color: '#ffffff',
-      fontStyle: 'bold'
+      fontStyle: 'bold',
+      fontFamily: 'Arial, sans-serif'
     });
-    this.energyText.setScrollFactor(0);
-    this.energyText.setDepth(102);
+    this.energyText.setDepth(2);
 
-    // Happiness bar
+    energyContainer.add([energyBg, this.energyBar, this.energyText]);
+
+    // Modern happiness bar
+    const happinessContainer = this.add.container(25, startY + spacing * 2);
+    happinessContainer.setScrollFactor(0);
+    happinessContainer.setDepth(100);
+
     const happinessBg = this.add.graphics();
-    happinessBg.fillStyle(0xff6b9d, 0.3);
-    happinessBg.fillRoundedRect(20, startY + spacing * 2, barWidth, barHeight, 8);
-    happinessBg.setScrollFactor(0);
-    happinessBg.setDepth(100);
+    happinessBg.fillStyle(0x000000, 0.4);
+    happinessBg.lineStyle(2, 0xff6b9d, 0.6);
+    happinessBg.fillRoundedRect(0, 0, barWidth, barHeight, 9);
+    happinessBg.strokeRoundedRect(0, 0, barWidth, barHeight, 9);
 
     this.happinessBar = this.add.graphics();
-    this.happinessBar.setScrollFactor(0);
-    this.happinessBar.setDepth(101);
+    this.happinessBar.setDepth(1);
 
-    this.happinessText = this.add.text(25, startY + spacing * 2 + 2, '😸 100/100', {
-      fontSize: '12px',
+    this.happinessText = this.add.text(8, 2, '😸 100/100', {
+      fontSize: '11px',
       color: '#ffffff',
-      fontStyle: 'bold'
+      fontStyle: 'bold',
+      fontFamily: 'Arial, sans-serif'
     });
-    this.happinessText.setScrollFactor(0);
-    this.happinessText.setDepth(102);
+    this.happinessText.setDepth(2);
+
+    happinessContainer.add([happinessBg, this.happinessBar, this.happinessText]);
 
     // Level text
     this.levelText = this.add.text(20, startY + spacing * 3 + 5, '🐱 等级: 1', {
@@ -256,23 +315,65 @@ export class UIScene extends Phaser.Scene {
   }
 
   private createMiniMap() {
-    // Simple mini-map placeholder
-    const miniMapBg = this.add.graphics();
-    miniMapBg.fillStyle(0x000000, 0.5);
-    miniMapBg.fillRoundedRect(this.cameras.main.width - 120, 20, 100, 80, 5);
-    miniMapBg.lineStyle(2, 0x4ecdc4);
-    miniMapBg.strokeRoundedRect(this.cameras.main.width - 120, 20, 100, 80, 5);
-    miniMapBg.setScrollFactor(0);
-    miniMapBg.setDepth(90);
+    // Modern mini-map with enhanced design
+    const mapWidth = 120;
+    const mapHeight = 90;
+    const mapX = this.cameras.main.width - mapWidth - 20;
+    const mapY = 25;
 
-    const miniMapText = this.add.text(this.cameras.main.width - 70, 60, '🗺️\n农场', {
+    // Create mini-map container
+    const miniMapContainer = this.add.container(mapX + mapWidth/2, mapY + mapHeight/2);
+    miniMapContainer.setScrollFactor(0);
+    miniMapContainer.setDepth(90);
+
+    // Modern background with glassmorphism
+    const miniMapBg = this.add.graphics();
+    miniMapBg.fillStyle(0x000000, 0.6);
+    miniMapBg.lineStyle(2, 0x4ecdc4, 0.8);
+    miniMapBg.fillRoundedRect(-mapWidth/2, -mapHeight/2, mapWidth, mapHeight, 8);
+    miniMapBg.strokeRoundedRect(-mapWidth/2, -mapHeight/2, mapWidth, mapHeight, 8);
+
+    // Add subtle glow
+    miniMapBg.lineStyle(4, 0x4ecdc4, 0.3);
+    miniMapBg.strokeRoundedRect(-mapWidth/2 - 2, -mapHeight/2 - 2, mapWidth + 4, mapHeight + 4, 10);
+
+    // Map content area
+    const mapContent = this.add.graphics();
+    mapContent.fillStyle(0x27ae60, 0.3); // Green for farm area
+    mapContent.fillRoundedRect(-50, -35, 100, 70, 5);
+
+    // Player indicator (pulsing dot)
+    const playerDot = this.add.circle(0, 0, 3, 0xff6b9d, 1);
+    this.tweens.add({
+      targets: playerDot,
+      scaleX: 1.5,
+      scaleY: 1.5,
+      duration: 1000,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+
+    // Map title
+    const mapTitle = this.add.text(0, -30, '🗺️', {
+      fontSize: '16px',
+      color: '#4ecdc4'
+    });
+    mapTitle.setOrigin(0.5);
+
+    const mapLabel = this.add.text(0, 25, '农场', {
       fontSize: '10px',
       color: '#ffffff',
-      align: 'center'
+      fontStyle: 'bold'
     });
-    miniMapText.setOrigin(0.5);
-    miniMapText.setScrollFactor(0);
-    miniMapText.setDepth(91);
+    mapLabel.setOrigin(0.5);
+
+    // Add all elements to container
+    miniMapContainer.add([miniMapBg, mapContent, playerDot, mapTitle, mapLabel]);
+
+    // Store reference for updates
+    (this as any).miniMapContainer = miniMapContainer;
+    (this as any).playerDot = playerDot;
   }
 
   private showDialogue(text: string) {
@@ -303,29 +404,68 @@ export class UIScene extends Phaser.Scene {
   }
 
   private onCatStatsChanged(stats: CatStats) {
-    // Update health bar
+    const barWidth = 160;
+    const barHeight = 18;
+
+    // Update health bar with animation
     this.healthBar.clear();
     const healthPercent = stats.health / stats.maxHealth;
-    this.healthBar.fillStyle(0xe74c3c);
-    this.healthBar.fillRoundedRect(20, 20, 150 * healthPercent, 16, 8);
+    
+    // Create gradient health bar
+    const healthGradient = healthPercent > 0.5 ? 0xe74c3c : (healthPercent > 0.25 ? 0xf39c12 : 0x8b0000);
+    this.healthBar.fillStyle(healthGradient, 0.8);
+    this.healthBar.fillRoundedRect(3, 3, (barWidth - 6) * healthPercent, barHeight - 6, 6);
+    
+    // Add glow effect for low health
+    if (healthPercent < 0.3) {
+      this.healthBar.lineStyle(2, 0xff0000, 0.6);
+      this.healthBar.strokeRoundedRect(1, 1, barWidth - 2, barHeight - 2, 8);
+    }
+    
     this.healthText.setText(`❤️ ${Math.floor(stats.health)}/${stats.maxHealth}`);
 
-    // Update energy bar
+    // Update energy bar with animation
     this.energyBar.clear();
     const energyPercent = stats.energy / stats.maxEnergy;
-    this.energyBar.fillStyle(0x3498db);
-    this.energyBar.fillRoundedRect(20, 45, 150 * energyPercent, 16, 8);
+    this.energyBar.fillStyle(0x74b9ff, 0.8);
+    this.energyBar.fillRoundedRect(3, 3, (barWidth - 6) * energyPercent, barHeight - 6, 6);
+    
+    // Add sparkle effect for full energy
+    if (energyPercent > 0.9) {
+      this.energyBar.lineStyle(2, 0x00cec9, 0.7);
+      this.energyBar.strokeRoundedRect(1, 1, barWidth - 2, barHeight - 2, 8);
+    }
+    
     this.energyText.setText(`⚡ ${Math.floor(stats.energy)}/${stats.maxEnergy}`);
 
-    // Update happiness bar
+    // Update happiness bar with animation
     this.happinessBar.clear();
     const happinessPercent = stats.happiness / stats.maxHappiness;
-    this.happinessBar.fillStyle(0xff6b9d);
-    this.happinessBar.fillRoundedRect(20, 70, 150 * happinessPercent, 16, 8);
+    this.happinessBar.fillStyle(0xff6b9d, 0.8);
+    this.happinessBar.fillRoundedRect(3, 3, (barWidth - 6) * happinessPercent, barHeight - 6, 6);
+    
+    // Add heart effect for high happiness
+    if (happinessPercent > 0.8) {
+      this.happinessBar.lineStyle(2, 0xff7675, 0.7);
+      this.happinessBar.strokeRoundedRect(1, 1, barWidth - 2, barHeight - 2, 8);
+    }
+    
     this.happinessText.setText(`😸 ${Math.floor(stats.happiness)}/${stats.maxHappiness}`);
 
-    // Update level
-    this.levelText.setText(`🐱 等级: ${stats.level}`);
+    // Update level with celebration effect for level up
+    const newLevelText = `🐱 等级: ${stats.level}`;
+    if (this.levelText.text !== newLevelText) {
+      this.levelText.setText(newLevelText);
+      // Level up celebration
+      this.tweens.add({
+        targets: this.levelText,
+        scaleX: 1.2,
+        scaleY: 1.2,
+        duration: 300,
+        yoyo: true,
+        ease: 'Back.easeOut'
+      });
+    }
   }
 
   private onToolSelected(toolName: string) {
@@ -663,42 +803,60 @@ export class UIScene extends Phaser.Scene {
     return icons[type] || icons['default'];
   }
 
-  // Enhanced notification system with categories
+  // Enhanced notification system with modern design
   private showNotification(text: string, category: string = 'info') {
+    const container = (this as any).notificationContainer;
+    if (!container) return;
+
     // Clear existing notification
-    if (this.notificationText.visible) {
-      this.tweens.killTweensOf(this.notificationText);
+    if (container.visible) {
+      this.tweens.killTweensOf(container);
     }
 
     // Set notification style based on category
     const styles = {
-      info: { color: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.1)' },
-      success: { color: '#2ecc71', backgroundColor: 'rgba(46, 204, 113, 0.1)' },
-      warning: { color: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.1)' },
-      error: { color: '#e74c3c', backgroundColor: 'rgba(231, 76, 60, 0.1)' },
-      achievement: { color: '#9b59b6', backgroundColor: 'rgba(155, 89, 182, 0.1)' }
+      info: { color: '#74b9ff', bgColor: 0x2d3436, borderColor: 0x74b9ff },
+      success: { color: '#00b894', bgColor: 0x2d3436, borderColor: 0x00b894 },
+      warning: { color: '#fdcb6e', bgColor: 0x2d3436, borderColor: 0xfdcb6e },
+      error: { color: '#e17055', bgColor: 0x2d3436, borderColor: 0xe17055 },
+      achievement: { color: '#a29bfe', bgColor: 0x2d3436, borderColor: 0xa29bfe }
     };
 
     const style = styles[category as keyof typeof styles] || styles.info;
     
+    // Update notification background
+    const bg = container.list[0] as Phaser.GameObjects.Graphics;
+    bg.clear();
+    bg.fillStyle(style.bgColor, 0.9);
+    bg.lineStyle(2, style.borderColor, 0.8);
+    bg.fillRoundedRect(-120, -20, 240, 40, 20);
+    bg.strokeRoundedRect(-120, -20, 240, 40, 20);
+
+    // Add subtle glow effect
+    bg.lineStyle(4, style.borderColor, 0.3);
+    bg.strokeRoundedRect(-124, -24, 248, 48, 24);
+    
     this.notificationText.setText(text);
     this.notificationText.setStyle({
-      fontSize: '18px',
+      fontSize: '16px',
       color: style.color,
       align: 'center',
-      backgroundColor: style.backgroundColor,
-      padding: { x: 20, y: 10 }
+      fontFamily: 'Arial, sans-serif',
+      fontStyle: 'bold'
     });
 
-    this.notificationText.setVisible(true);
-    this.notificationText.setAlpha(0);
+    container.setVisible(true);
+    container.setAlpha(0);
+    container.setScale(0.8);
 
-    // Slide in animation
+    // Modern slide-in animation with bounce
     this.tweens.add({
-      targets: this.notificationText,
+      targets: container,
       alpha: 1,
-      y: this.notificationText.y + 10,
-      duration: 300,
+      scaleX: 1,
+      scaleY: 1,
+      y: container.y + 5,
+      duration: 400,
       ease: 'Back.easeOut'
     });
 

@@ -193,14 +193,23 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   public move(x: number, y: number) {
     if (this.isActing) return; // 执行动作时无法移动
     
-    const speed = 120; // 移动速度
-    this.setVelocity(x * speed, y * speed);
+    const baseSpeed = 120;
+    // 根据输入强度调整速度（支持摇杆的精确控制）
+    const inputStrength = Math.sqrt(x * x + y * y);
+    const adjustedSpeed = baseSpeed * Math.min(inputStrength, 1);
+    
+    this.setVelocity(x * adjustedSpeed, y * adjustedSpeed);
 
     // 根据移动方向确定朝向
     if (Math.abs(x) > Math.abs(y)) {
       this.setDirection(x > 0 ? 'right' : 'left');
     } else if (y !== 0) {
       this.setDirection(y > 0 ? 'down' : 'up');
+    }
+
+    // 添加移动时的微粒效果（快速移动时）
+    if (inputStrength > 0.7) {
+      this.createMovementParticles();
     }
   }
 
@@ -243,6 +252,9 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     }
 
     this.play(animationKey);
+    
+    // 添加动作特效
+    this.createInteractionEffect();
     
     // 动作完成后返回静止状态
     this.scene.time.delayedCall(duration, () => {
@@ -351,6 +363,64 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   // 检查是否可以执行动作 - 不在动作中且有体力
   public canPerformAction(): boolean {
     return !this.isActing && this.stats.energy > 0;
+  }
+
+  // 创建移动时的微粒效果
+  private createMovementParticles() {
+    // 避免过度创建粒子效果
+    if (Math.random() < 0.3) {
+      const particles = this.scene.add.particles(this.x, this.y + 10, 'grass', {
+        scale: { start: 0.1, end: 0 },
+        alpha: { start: 0.6, end: 0 },
+        tint: [0x27ae60, 0x2ecc71, 0x58d68d],
+        lifespan: 300,
+        quantity: 2,
+        speed: { min: 10, max: 30 },
+        gravityY: 50
+      });
+      
+      this.scene.time.delayedCall(300, () => {
+        particles.destroy();
+      });
+    }
+  }
+
+  // 创建交互时的特效
+  private createInteractionEffect() {
+    // 创建交互光环效果
+    const ring = this.scene.add.circle(this.x, this.y, 5, 0xffffff, 0);
+    ring.setStrokeStyle(3, 0x74b9ff, 0.8);
+    ring.setDepth(15);
+    
+    this.scene.tweens.add({
+      targets: ring,
+      scaleX: 3,
+      scaleY: 3,
+      alpha: 0,
+      duration: 400,
+      ease: 'Power2',
+      onComplete: () => ring.destroy()
+    });
+
+    // 添加上升的光点
+    for (let i = 0; i < 3; i++) {
+      const sparkle = this.scene.add.text(
+        this.x + (Math.random() - 0.5) * 30, 
+        this.y - 10, 
+        '✨', 
+        { fontSize: '12px' }
+      );
+      sparkle.setDepth(15);
+      
+      this.scene.tweens.add({
+        targets: sparkle,
+        y: sparkle.y - 40,
+        alpha: 0,
+        duration: 800 + (i * 200),
+        ease: 'Power2',
+        onComplete: () => sparkle.destroy()
+      });
+    }
   }
 
   // 每帧更新 - 处理体力恢复和快乐值变化

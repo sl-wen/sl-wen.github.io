@@ -24,6 +24,11 @@ export class GameScene extends Phaser.Scene {
   private actionButtons: any;
   private toolTooltip: Phaser.GameObjects.Text | null = null;
   private hapticEnabled: boolean = false;
+  private useSimpleTouch: boolean = false; // Toggle for simple touch controls like original RPG
+  private particlePool: Phaser.GameObjects.Particles.ParticleEmitter[] = []; // Particle effect pool for performance
+  private performanceMode: 'high' | 'medium' | 'low' = 'high'; // Performance mode
+  private frameCounter: number = 0;
+  private lastFPSCheck: number = 0;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -55,8 +60,18 @@ export class GameScene extends Phaser.Scene {
     // Setup input
     this.setupInput();
     
-    // Setup mobile controls
-    this.setupMobileControls();
+    // Setup mobile controls with error handling
+    try {
+      this.setupMobileControls();
+      // Test joystick functionality after a short delay
+      this.time.delayedCall(1000, () => {
+        this.testJoystickFunctionality();
+      });
+    } catch (error) {
+      console.warn('Virtual joystick failed, falling back to simple touch controls:', error);
+      this.useSimpleTouch = true;
+      this.setupSimpleTouchControls();
+    }
 
     // Setup camera
     this.setupCamera();
@@ -69,6 +84,12 @@ export class GameScene extends Phaser.Scene {
 
     // Add atmospheric effects
     this.createAtmosphere();
+
+    // Add enhanced ambient effects
+    this.createAmbientEffects();
+
+    // Setup performance monitoring
+    this.setupPerformanceMonitoring();
   }
 
   private createFarmTilemap() {
@@ -223,16 +244,26 @@ export class GameScene extends Phaser.Scene {
   }
 
   private setupMobileControls() {
+    // Check if we should use simple touch controls (fallback mode)
+    if (this.useSimpleTouch) {
+      this.setupSimpleTouchControls();
+      return;
+    }
+
     // Create enhanced virtual joystick for mobile
     this.createEnhancedVirtualJoystick();
     
     // Create improved action buttons with better layout
     this.createEnhancedActionButtons();
 
+    // Add control mode toggle button
+    this.createControlModeToggle();
+
     // Enhanced touch input for interactions with better feedback
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      // Check if touch is in virtual controls area first
       if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
-        return;
+        return; // Don't handle world interaction if touching controls
       }
 
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
@@ -245,6 +276,209 @@ export class GameScene extends Phaser.Scene {
     this.setupHapticFeedback();
   }
 
+  // Simple touch controls similar to original RPG version
+  private setupSimpleTouchControls() {
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+      const distance = Phaser.Math.Distance.Between(
+        this.cat.x, this.cat.y, worldPoint.x, worldPoint.y
+      );
+      
+      // If clicking close to player, interact instead of move
+      if (distance < 50) {
+        this.checkInteractions();
+      } else {
+        // Move towards clicked position
+        this.movePlayerTowards(worldPoint.x, worldPoint.y);
+      }
+    });
+  }
+
+  private movePlayerTowards(targetX: number, targetY: number) {
+    const angle = Phaser.Math.Angle.Between(this.cat.x, this.cat.y, targetX, targetY);
+    const speed = 160;
+    
+    // Set velocity towards target
+    this.cat.setVelocity(
+      Math.cos(angle) * speed,
+      Math.sin(angle) * speed
+    );
+    
+    // Stop movement after a short time
+    this.time.delayedCall(300, () => {
+      this.cat.setVelocity(0, 0);
+    });
+  }
+
+  // Test if joystick is working properly
+  private testJoystickFunctionality() {
+    if (!this.virtualControls || !this.virtualControls.joystickKnob) {
+      console.warn('Joystick elements not found, switching to simple touch controls');
+      this.switchToSimpleTouch();
+      return;
+    }
+
+    // Check if joystick elements are properly positioned
+    const knob = this.virtualControls.joystickKnob;
+    const center = this.virtualControls.joystickCenter;
+    
+    if (!knob.x || !knob.y || !center.x || !center.y) {
+      console.warn('Joystick positioning issue detected, switching to simple touch controls');
+      this.switchToSimpleTouch();
+      return;
+    }
+
+    // Test touch detection
+    const testDistance = Phaser.Math.Distance.Between(
+      center.x, center.y, center.x + 50, center.y + 50
+    );
+    
+    if (testDistance === 0) {
+      console.warn('Joystick distance calculation issue, switching to simple touch controls');
+      this.switchToSimpleTouch();
+      return;
+    }
+
+    console.log('Joystick functionality test passed');
+  }
+
+  // Switch to simple touch controls as fallback
+  private switchToSimpleTouch() {
+    this.useSimpleTouch = true;
+    
+    // Clean up existing virtual controls
+    if (this.virtualControls) {
+      Object.values(this.virtualControls).forEach((element: any) => {
+        if (element && element.destroy) {
+          element.destroy();
+        } else if (Array.isArray(element)) {
+          element.forEach((item: any) => {
+            if (item && item.destroy) item.destroy();
+          });
+        }
+      });
+      this.virtualControls = null;
+    }
+    
+    // Setup simple touch controls
+    this.setupSimpleTouchControls();
+    
+         // Show notification to user
+     this.showNotification('已切换到简单触摸控制模式');
+   }
+
+   // Create modern control mode toggle button
+   private createControlModeToggle() {
+     // Create settings panel container
+     const settingsPanel = this.add.container(60, 60);
+     settingsPanel.setScrollFactor(0);
+     settingsPanel.setDepth(1000);
+
+     // Modern toggle button with glassmorphism
+     const toggleButtonShadow = this.add.circle(2, 2, 28, 0x000000, 0.3);
+     const toggleButton = this.add.circle(0, 0, 28, 0x6c5ce7, 0.85);
+     toggleButton.setInteractive();
+     toggleButton.setStrokeStyle(2, 0x74b9ff, 0.8);
+
+     // Inner gradient ring
+     const toggleInner = this.add.circle(0, 0, 20, 0x74b9ff, 0.3);
+
+     const toggleText = this.add.text(0, 0, '🎮', {
+       fontSize: '18px',
+       color: '#ffffff'
+     });
+     toggleText.setOrigin(0.5);
+
+     // Add subtle breathing animation
+     this.tweens.add({
+       targets: [toggleButton, toggleInner],
+       scaleX: 1.05,
+       scaleY: 1.05,
+       duration: 2000,
+       yoyo: true,
+       repeat: -1,
+       ease: 'Sine.easeInOut'
+     });
+
+     // Toggle functionality with enhanced feedback
+     toggleButton.on('pointerdown', () => {
+       this.useSimpleTouch = !this.useSimpleTouch;
+       
+       // Enhanced visual feedback
+       this.triggerActionHaptic('button_press');
+       
+       if (this.useSimpleTouch) {
+         toggleText.setText('👆');
+         toggleButton.setFillStyle(0xe17055, 0.85);
+         toggleInner.setFillStyle(0xff7675, 0.3);
+         this.switchToSimpleTouch();
+       } else {
+         toggleText.setText('🎮');
+         toggleButton.setFillStyle(0x6c5ce7, 0.85);
+         toggleInner.setFillStyle(0x74b9ff, 0.3);
+         this.switchToJoystickMode();
+       }
+       
+       // Enhanced press animation
+       this.tweens.add({
+         targets: [toggleButton, toggleInner, toggleText],
+         scaleX: 0.9,
+         scaleY: 0.9,
+         duration: 100,
+         yoyo: true,
+         ease: 'Back.easeOut'
+       });
+
+       // Create ripple effect
+       const ripple = this.add.circle(0, 0, 10, 0xffffff, 0.6);
+       ripple.setDepth(1005);
+       settingsPanel.add(ripple);
+       
+       this.tweens.add({
+         targets: ripple,
+         scaleX: 3,
+         scaleY: 3,
+         alpha: 0,
+         duration: 300,
+         ease: 'Power2',
+         onComplete: () => ripple.destroy()
+       });
+     });
+
+     // Add all elements to panel
+     settingsPanel.add([toggleButtonShadow, toggleButton, toggleInner, toggleText]);
+
+     // Store reference for cleanup
+     if (!this.actionButtons) this.actionButtons = {};
+     this.actionButtons.modeToggle = { 
+       panel: settingsPanel,
+       button: toggleButton, 
+       text: toggleText,
+       inner: toggleInner
+     };
+   }
+
+   // Switch to joystick mode
+   private switchToJoystickMode() {
+     // Clean up simple touch handlers
+     this.input.removeAllListeners('pointerdown');
+     
+     // Recreate virtual joystick
+     this.createEnhancedVirtualJoystick();
+     this.createEnhancedActionButtons();
+     
+     // Restore enhanced touch input
+     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+       if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
+         return;
+       }
+       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+       this.handleEnhancedTouchInteraction(worldPoint.x, worldPoint.y, pointer);
+     });
+     
+     this.showNotification('已切换到虚拟摇杆模式');
+   }
+
   private createEnhancedVirtualJoystick() {
     const padding = 60; // Increased padding for better visibility
     const joystickRadius = 70;
@@ -254,22 +488,28 @@ export class GameScene extends Phaser.Scene {
     const joystickX = Math.max(padding + joystickRadius, joystickRadius + 20);
     const joystickY = Math.min(this.cameras.main.height - padding - joystickRadius, this.cameras.main.height - joystickRadius - 20);
 
-    // Enhanced joystick base with gradient and glow effect
-    const joystickBase = this.add.circle(joystickX, joystickY, joystickRadius, 0x1a1a1a, 0.4);
+    // Modern joystick base with gradient effect
+    const joystickBase = this.add.circle(joystickX, joystickY, joystickRadius, 0x000000, 0.3);
     joystickBase.setScrollFactor(0);
     joystickBase.setDepth(1000);
-    joystickBase.setStrokeStyle(4, 0x4a90e2, 0.8);
+    joystickBase.setStrokeStyle(3, 0x4a90e2, 0.6);
 
-    // Add inner circle for better visual depth
-    const joystickInner = this.add.circle(joystickX, joystickY, joystickRadius - 10, 0x2c3e50, 0.3);
+    // Add gradient inner ring for depth
+    const joystickInner = this.add.circle(joystickX, joystickY, joystickRadius - 8, 0x1a1a2e, 0.4);
     joystickInner.setScrollFactor(0);
     joystickInner.setDepth(1001);
+    joystickInner.setStrokeStyle(2, 0x6c5ce7, 0.5);
 
-    // Enhanced knob with better visual feedback
-    const joystickKnob = this.add.circle(joystickX, joystickY, knobRadius, 0x4a90e2, 0.9);
+    // Modern knob with glassmorphism effect
+    const joystickKnob = this.add.circle(joystickX, joystickY, knobRadius, 0x4a90e2, 0.85);
     joystickKnob.setScrollFactor(0);
     joystickKnob.setDepth(1002);
-    joystickKnob.setStrokeStyle(3, 0x74b9ff, 1);
+    joystickKnob.setStrokeStyle(2, 0x74b9ff, 0.9);
+
+    // Add subtle shadow effect
+    const knobShadow = this.add.circle(joystickX + 2, joystickY + 2, knobRadius, 0x000000, 0.2);
+    knobShadow.setScrollFactor(0);
+    knobShadow.setDepth(999);
 
     // Add direction indicator dots
     const dotPositions = [
@@ -279,10 +519,22 @@ export class GameScene extends Phaser.Scene {
       { x: -joystickRadius + 15, y: 0 } // Left
     ];
 
-    const directionDots = dotPositions.map(pos => {
-      const dot = this.add.circle(joystickX + pos.x, joystickY + pos.y, 3, 0x74b9ff, 0.6);
+    const directionDots = dotPositions.map((pos, index) => {
+      const dot = this.add.circle(joystickX + pos.x, joystickY + pos.y, 4, 0x74b9ff, 0.7);
       dot.setScrollFactor(0);
       dot.setDepth(1001);
+      dot.setStrokeStyle(1, 0x ffffff, 0.8);
+      
+      // Add subtle pulsing animation
+      this.tweens.add({
+        targets: dot,
+        alpha: 0.4,
+        duration: 1000 + (index * 250),
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+      
       return dot;
     });
 
@@ -290,32 +542,34 @@ export class GameScene extends Phaser.Scene {
       joystickBase,
       joystickInner,
       joystickKnob,
+      knobShadow,
       directionDots,
       joystickCenter: { x: joystickX, y: joystickY },
       isDragging: false,
       joystickVector: { x: 0, y: 0 },
-      deadZone: 0.2, // Add dead zone for better control
+      deadZone: 0.15, // Reduced dead zone for more responsive control
       maxDistance: joystickRadius - knobRadius - 5,
       lastInputTime: 0 // Track last input time to prevent stuck movement
     };
 
-    // Enhanced joystick input handling
+    // Enhanced joystick input handling with proper event management
     joystickBase.setInteractive();
     joystickKnob.setInteractive();
 
-    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+    // Use dedicated joystick event handlers to avoid conflicts
+    const handleJoystickStart = (pointer: Phaser.Input.Pointer) => {
       const distance = Phaser.Math.Distance.Between(
         pointer.x, pointer.y, joystickX, joystickY
       );
       
       if (distance <= joystickRadius + 30) {
         this.virtualControls.isDragging = true;
-        this.virtualControls.lastInputTime = this.time.now; // Update input time
+        this.virtualControls.lastInputTime = this.time.now;
         joystickKnob.setFillStyle(0x74b9ff, 1);
         joystickKnob.setScale(1.1);
         
         // Add glow effect
-        const glowTween = this.tweens.add({
+        this.tweens.add({
           targets: joystickKnob,
           scaleX: 1.15,
           scaleY: 1.15,
@@ -324,12 +578,16 @@ export class GameScene extends Phaser.Scene {
           repeat: 0
         });
       }
-    });
+    };
+
+    // Attach to both joystick elements for better touch detection
+    joystickBase.on('pointerdown', handleJoystickStart);
+    joystickKnob.on('pointerdown', handleJoystickStart);
 
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
-      if (!this.virtualControls.isDragging) return;
+      if (!this.virtualControls || !this.virtualControls.isDragging) return;
 
-      this.virtualControls.lastInputTime = this.time.now; // Update input time
+      this.virtualControls.lastInputTime = this.time.now;
       
       const centerX = this.virtualControls.joystickCenter.x;
       const centerY = this.virtualControls.joystickCenter.y;
@@ -340,19 +598,23 @@ export class GameScene extends Phaser.Scene {
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
       const maxDistance = this.virtualControls.maxDistance;
       
+      // Constrain movement within joystick bounds
       if (distance > maxDistance) {
         deltaX = (deltaX / distance) * maxDistance;
         deltaY = (deltaY / distance) * maxDistance;
       }
       
+      // Update knob position
       joystickKnob.x = centerX + deltaX;
       joystickKnob.y = centerY + deltaY;
       
-      // Calculate normalized vector with dead zone
+      // Calculate normalized vector with improved dead zone handling
       const normalizedDistance = Math.min(distance / maxDistance, 1);
       if (normalizedDistance > this.virtualControls.deadZone) {
-        this.virtualControls.joystickVector.x = (deltaX / maxDistance) * normalizedDistance;
-        this.virtualControls.joystickVector.y = (deltaY / maxDistance) * normalizedDistance;
+        // Apply smooth scaling for better control
+        const smoothFactor = (normalizedDistance - this.virtualControls.deadZone) / (1 - this.virtualControls.deadZone);
+        this.virtualControls.joystickVector.x = (deltaX / maxDistance) * smoothFactor;
+        this.virtualControls.joystickVector.y = (deltaY / maxDistance) * smoothFactor;
       } else {
         this.virtualControls.joystickVector.x = 0;
         this.virtualControls.joystickVector.y = 0;
@@ -373,7 +635,7 @@ export class GameScene extends Phaser.Scene {
         // Stop any existing tweens to prevent conflicts
         this.tweens.killTweensOf(joystickKnob);
         
-        // Smooth return animation
+        // Smooth return animation with completion callback
         this.tweens.add({
           targets: joystickKnob,
           x: joystickX,
@@ -381,7 +643,13 @@ export class GameScene extends Phaser.Scene {
           scaleX: 1,
           scaleY: 1,
           duration: 200,
-          ease: 'Back.easeOut'
+          ease: 'Back.easeOut',
+          onComplete: () => {
+            // Ensure final state is correct
+            joystickKnob.x = joystickX;
+            joystickKnob.y = joystickY;
+            joystickKnob.setScale(1);
+          }
         });
         
         joystickKnob.setFillStyle(0x4a90e2, 0.9);
@@ -432,18 +700,28 @@ export class GameScene extends Phaser.Scene {
     const interactButtonX = Math.min(rightEdge - buttonSize/2, this.cameras.main.width - buttonSize/2 - 10);
     const interactButtonY = Math.min(bottomEdge - buttonSize/2, this.cameras.main.height - buttonSize/2 - 10);
     
-    const interactButton = this.add.circle(interactButtonX, interactButtonY, buttonSize/2, 0x27ae60, 0.9);
+    // Modern glassmorphism interact button
+    const interactButtonShadow = this.add.circle(interactButtonX + 3, interactButtonY + 3, buttonSize/2, 0x000000, 0.3);
+    interactButtonShadow.setScrollFactor(0);
+    interactButtonShadow.setDepth(999);
+
+    const interactButton = this.add.circle(interactButtonX, interactButtonY, buttonSize/2, 0x27ae60, 0.85);
     interactButton.setScrollFactor(0);
     interactButton.setDepth(1000);
     interactButton.setInteractive();
-    interactButton.setStrokeStyle(3, 0x2ecc71, 1);
+    interactButton.setStrokeStyle(2, 0x2ecc71, 0.8);
 
-    // Add pulse animation to interact button
+    // Add gradient inner ring
+    const interactInner = this.add.circle(interactButtonX, interactButtonY, buttonSize/2 - 8, 0x2ecc71, 0.3);
+    interactInner.setScrollFactor(0);
+    interactInner.setDepth(1000);
+
+    // Add subtle pulse animation to interact button
     this.tweens.add({
-      targets: interactButton,
-      scaleX: 1.05,
-      scaleY: 1.05,
-      duration: 1000,
+      targets: [interactButton, interactInner],
+      scaleX: 1.03,
+      scaleY: 1.03,
+      duration: 1500,
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut'
@@ -459,10 +737,15 @@ export class GameScene extends Phaser.Scene {
 
     interactButton.on('pointerdown', () => {
       this.handleInteractionWithFeedback();
-      this.addButtonPressEffect(interactButton);
+      this.addButtonPressEffect(interactButton, interactInner);
     });
 
-    this.actionButtons.interact = { button: interactButton, text: interactText };
+    this.actionButtons.interact = { 
+      button: interactButton, 
+      text: interactText, 
+      shadow: interactButtonShadow,
+      inner: interactInner 
+    };
 
     // Secondary action buttons (Inventory and Cooking)
     const secondaryButtons = [
@@ -562,45 +845,92 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private addButtonPressEffect(button: Phaser.GameObjects.GameObject) {
+  private addButtonPressEffect(button: Phaser.GameObjects.GameObject, innerElement?: Phaser.GameObjects.GameObject) {
     if (button instanceof Phaser.GameObjects.Shape) {
+      // Enhanced press effect with multiple elements
+      const targets = innerElement ? [button, innerElement] : [button];
+      
       // Scale down and back up for press effect
       this.tweens.add({
-        targets: button,
-        scaleX: 0.9,
-        scaleY: 0.9,
-        duration: 100,
+        targets: targets,
+        scaleX: 0.85,
+        scaleY: 0.85,
+        duration: 120,
         yoyo: true,
-        ease: 'Power2'
+        ease: 'Back.easeOut'
       });
 
-      // Add color flash effect
-      const originalColor = button.fillColor;
-      button.setFillStyle(0xffffff, 0.8);
-      this.time.delayedCall(100, () => {
-        button.setFillStyle(originalColor, 0.9);
+      // Add ripple effect
+      const ripple = this.add.circle(button.x, button.y, 10, 0xffffff, 0.6);
+      ripple.setScrollFactor(0);
+      ripple.setDepth(1005);
+      
+      this.tweens.add({
+        targets: ripple,
+        scaleX: 3,
+        scaleY: 3,
+        alpha: 0,
+        duration: 300,
+        ease: 'Power2',
+        onComplete: () => ripple.destroy()
       });
+
+      // Enhanced color flash effect
+      const originalColor = button.fillColor;
+      const originalAlpha = button.alpha;
+      button.setFillStyle(0xffffff, 0.9);
+      
+      this.time.delayedCall(120, () => {
+        button.setFillStyle(originalColor, originalAlpha);
+      });
+
+      // Haptic feedback if available
+      if (this.hapticEnabled) {
+        this.triggerHapticFeedback(25);
+      }
     }
   }
 
   private handleInteractionWithFeedback() {
-    // Add visual feedback for interaction
-    const feedback = this.add.text(this.cat.x, this.cat.y - 40, '✨', {
-      fontSize: '24px',
+    // Enhanced visual feedback for interaction
+    const feedbackIcons = ['✨', '💫', '🌟'];
+    const randomIcon = feedbackIcons[Math.floor(Math.random() * feedbackIcons.length)];
+    
+    const feedback = this.add.text(this.cat.x, this.cat.y - 40, randomIcon, {
+      fontSize: '28px',
       color: '#f1c40f'
     });
     feedback.setOrigin(0.5);
     feedback.setDepth(1000);
 
-    // Animate feedback
+    // Create interaction ripple effect
+    const ripple = this.add.circle(this.cat.x, this.cat.y, 5, 0xf1c40f, 0.7);
+    ripple.setDepth(999);
+    
+    this.tweens.add({
+      targets: ripple,
+      scaleX: 4,
+      scaleY: 4,
+      alpha: 0,
+      duration: 500,
+      ease: 'Power2',
+      onComplete: () => ripple.destroy()
+    });
+
+    // Enhanced feedback animation with bounce
     this.tweens.add({
       targets: feedback,
-      y: feedback.y - 30,
+      y: feedback.y - 40,
       alpha: 0,
-      duration: 800,
-      ease: 'Power2',
+      scaleX: 1.5,
+      scaleY: 1.5,
+      duration: 1000,
+      ease: 'Back.easeOut',
       onComplete: () => feedback.destroy()
     });
+
+    // Add screen shake for impactful interactions
+    this.cameras.main.shake(100, 0.005);
 
     this.handleInteraction();
   }
@@ -663,29 +993,77 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handleEnhancedTouchInteraction(worldX: number, worldY: number, pointer: Phaser.Input.Pointer) {
-    // Create touch ripple effect
-    const ripple = this.add.circle(pointer.x, pointer.y, 5, 0x74b9ff, 0.6);
+    // Create enhanced touch ripple effect
+    const ripple = this.add.circle(pointer.x, pointer.y, 8, 0x74b9ff, 0.7);
     ripple.setScrollFactor(0);
     ripple.setDepth(999);
 
+    // Create secondary ripple for depth
+    const ripple2 = this.add.circle(pointer.x, pointer.y, 5, 0xffffff, 0.8);
+    ripple2.setScrollFactor(0);
+    ripple2.setDepth(1000);
+
     this.tweens.add({
       targets: ripple,
-      scaleX: 4,
-      scaleY: 4,
+      scaleX: 5,
+      scaleY: 5,
       alpha: 0,
-      duration: 300,
+      duration: 400,
       ease: 'Power2',
       onComplete: () => ripple.destroy()
     });
+
+    this.tweens.add({
+      targets: ripple2,
+      scaleX: 3,
+      scaleY: 3,
+      alpha: 0,
+      duration: 250,
+      ease: 'Power2',
+      onComplete: () => ripple2.destroy()
+    });
+
+    // Add movement trail effect
+    this.createMovementTrail(worldX, worldY);
 
     // Check for interactions with farm objects
     this.handleTouchInteraction(worldX, worldY);
   }
 
+  // Create movement trail effect
+  private createMovementTrail(targetX: number, targetY: number) {
+    const distance = Phaser.Math.Distance.Between(this.cat.x, this.cat.y, targetX, targetY);
+    
+    if (distance > 50) {
+      // Create dotted line trail
+      const steps = Math.min(Math.floor(distance / 30), 8);
+      
+      for (let i = 1; i <= steps; i++) {
+        const progress = i / steps;
+        const trailX = this.cat.x + (targetX - this.cat.x) * progress;
+        const trailY = this.cat.y + (targetY - this.cat.y) * progress;
+        
+        const dot = this.add.circle(trailX, trailY, 3, 0x74b9ff, 0.5);
+        dot.setDepth(5);
+        
+        this.tweens.add({
+          targets: dot,
+          alpha: 0,
+          scaleX: 0,
+          scaleY: 0,
+          duration: 1000 + (i * 100),
+          ease: 'Power2',
+          onComplete: () => dot.destroy()
+        });
+      }
+    }
+  }
+
   private setupHapticFeedback() {
-    // Setup haptic feedback for supported devices
+    // Enhanced haptic feedback setup for supported devices
     if ('vibrate' in navigator) {
       this.hapticEnabled = true;
+      console.log('Haptic feedback enabled');
     }
   }
 
@@ -695,7 +1073,128 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private updateResponsiveUI() {
+  // Enhanced haptic patterns for different actions
+  private triggerActionHaptic(action: string) {
+    if (!this.hapticEnabled) return;
+    
+    const patterns = {
+      'interact': [30],
+      'move': [10],
+      'button_press': [25],
+      'success': [50, 50, 50],
+      'error': [100, 50, 100],
+      'level_up': [200, 100, 200, 100, 200]
+    };
+    
+    const pattern = patterns[action as keyof typeof patterns] || [50];
+         navigator.vibrate(pattern);
+   }
+
+   // Particle effect management for better performance
+   private createManagedParticles(x: number, y: number, config: any) {
+     // Limit active particles for performance
+     if (this.particlePool.length > 5) {
+       const oldParticles = this.particlePool.shift();
+       if (oldParticles) {
+         oldParticles.destroy();
+       }
+     }
+
+     const particles = this.add.particles(x, y, 'grass', config);
+     this.particlePool.push(particles);
+
+     // Auto-cleanup after lifespan
+     this.time.delayedCall(config.lifespan || 1000, () => {
+       const index = this.particlePool.indexOf(particles);
+       if (index > -1) {
+         this.particlePool.splice(index, 1);
+         particles.destroy();
+       }
+     });
+
+     return particles;
+   }
+
+   // Enhanced ambient effects for atmosphere
+   private createAmbientEffects() {
+     // Floating sparkles
+     this.time.addEvent({
+       delay: 3000,
+       callback: () => {
+         if (Math.random() < 0.3) {
+           const x = this.cat.x + (Math.random() - 0.5) * 200;
+           const y = this.cat.y + (Math.random() - 0.5) * 200;
+           
+           this.createManagedParticles(x, y, {
+             scale: { start: 0.2, end: 0 },
+             alpha: { start: 0.8, end: 0 },
+             tint: [0xffd700, 0xffffff, 0x74b9ff],
+             lifespan: 2000,
+             quantity: 1,
+             speed: { min: 20, max: 40 },
+             gravityY: -20
+           });
+         }
+       },
+       loop: true
+     });
+   }
+
+   // Performance monitoring and optimization
+   private setupPerformanceMonitoring() {
+     // Monitor FPS and adjust performance accordingly
+     this.time.addEvent({
+       delay: 1000,
+       callback: () => {
+         this.frameCounter++;
+         const currentTime = this.time.now;
+         
+         if (currentTime - this.lastFPSCheck > 5000) { // Check every 5 seconds
+           const fps = this.game.loop.actualFps;
+           this.adjustPerformanceMode(fps);
+           this.lastFPSCheck = currentTime;
+         }
+       },
+       loop: true
+     });
+   }
+
+   private adjustPerformanceMode(fps: number) {
+     let newMode: 'high' | 'medium' | 'low' = 'high';
+     
+     if (fps < 30) {
+       newMode = 'low';
+     } else if (fps < 45) {
+       newMode = 'medium';
+     }
+
+     if (newMode !== this.performanceMode) {
+       this.performanceMode = newMode;
+       this.applyPerformanceSettings();
+       console.log(`Performance mode adjusted to: ${newMode} (FPS: ${fps.toFixed(1)})`);
+     }
+   }
+
+   private applyPerformanceSettings() {
+     switch (this.performanceMode) {
+       case 'low':
+         // Reduce particle effects
+         this.particlePool.forEach(particles => particles.setQuantity(1));
+         // Reduce animation quality
+         this.tweens.timeScale = 0.5;
+         break;
+       case 'medium':
+         this.particlePool.forEach(particles => particles.setQuantity(2));
+         this.tweens.timeScale = 0.8;
+         break;
+       case 'high':
+         // Full quality
+         this.tweens.timeScale = 1;
+         break;
+     }
+   }
+
+   private updateResponsiveUI() {
     // Update UI elements based on screen size changes
     const currentWidth = this.cameras.main.width;
     const currentHeight = this.cameras.main.height;
@@ -724,6 +1223,9 @@ export class GameScene extends Phaser.Scene {
         if (!this.virtualControls.isDragging) {
           this.virtualControls.joystickKnob.x = newJoystickX;
           this.virtualControls.joystickKnob.y = newJoystickY;
+          // Reset any stuck movement when repositioning
+          this.virtualControls.joystickVector = { x: 0, y: 0 };
+          this.virtualControls.lastInputTime = 0;
         }
 
         // Update direction dots
@@ -1247,11 +1749,11 @@ export class GameScene extends Phaser.Scene {
       moveY = 1;
     }
 
-    // Enhanced virtual joystick input with smooth movement
+    // Enhanced virtual joystick input with improved stability
     if (this.virtualControls && this.virtualControls.joystickVector) {
       // Check for stuck movement - reset if no input for too long
       const timeSinceLastInput = this.time.now - this.virtualControls.lastInputTime;
-      if (timeSinceLastInput > 100 && !this.virtualControls.isDragging) {
+      if (timeSinceLastInput > 200 && !this.virtualControls.isDragging) {
         this.virtualControls.joystickVector.x = 0;
         this.virtualControls.joystickVector.y = 0;
       }
@@ -1260,19 +1762,22 @@ export class GameScene extends Phaser.Scene {
         this.virtualControls.joystickVector.x ** 2 + this.virtualControls.joystickVector.y ** 2
       );
       
-      if (joystickStrength > this.virtualControls.deadZone) {
-        // Use smooth movement based on joystick distance
-        moveX = this.virtualControls.joystickVector.x;
-        moveY = this.virtualControls.joystickVector.y;
-        
-        // Add subtle haptic feedback during movement
-        if (this.hapticEnabled && joystickStrength > 0.8) {
-          if (Math.random() < 0.05) { // Occasional feedback to avoid spam
-            this.triggerHapticFeedback(10);
+      // Only apply joystick input if actively dragging or recent input
+      if (this.virtualControls.isDragging || timeSinceLastInput < 100) {
+        if (joystickStrength > this.virtualControls.deadZone) {
+          // Use smooth movement based on joystick distance
+          moveX = this.virtualControls.joystickVector.x;
+          moveY = this.virtualControls.joystickVector.y;
+          
+          // Add subtle haptic feedback during movement
+          if (this.hapticEnabled && joystickStrength > 0.8) {
+            if (Math.random() < 0.05) { // Occasional feedback to avoid spam
+              this.triggerHapticFeedback(10);
+            }
           }
         }
       } else {
-        // Ensure movement is completely stopped when in dead zone
+        // Ensure movement is completely stopped when not actively using joystick
         this.virtualControls.joystickVector.x = 0;
         this.virtualControls.joystickVector.y = 0;
       }

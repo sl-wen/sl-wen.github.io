@@ -114,11 +114,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createChests() {
-    // Create some treasure chests
+    // Create treasure chests with various rewards
     const chestData = [
       { x: 250, y: 400, treasure: '金币 x50' },
       { x: 550, y: 250, treasure: '生命药水' },
-      { x: 350, y: 450, treasure: '魔法卷轴' }
+      { x: 350, y: 450, treasure: '魔法卷轴' },
+      { x: 150, y: 200, treasure: '生命药水' },
+      { x: 650, y: 400, treasure: '魔法卷轴' },
+      { x: 450, y: 150, treasure: '金币 x100' }
     ];
 
     chestData.forEach(data => {
@@ -155,7 +158,7 @@ export class GameScene extends Phaser.Scene {
     // Create virtual D-pad for mobile
     this.createVirtualDPad();
 
-    // Touch/click to move (for areas outside virtual controls)
+    // Enhanced touch/click to move and interact
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       // Ignore if touching virtual controls area
       if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
@@ -163,16 +166,69 @@ export class GameScene extends Phaser.Scene {
       }
 
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-      const distance = Phaser.Math.Distance.Between(
-        this.player.x, this.player.y, worldPoint.x, worldPoint.y
-      );
+      
+      // Check if touching a chest directly
+      let chestTouched = false;
+      this.chests.children.entries.forEach((chest: any) => {
+        const chestDistance = Phaser.Math.Distance.Between(
+          worldPoint.x, worldPoint.y, chest.x, chest.y
+        );
+        
+        if (chestDistance < 40 && !chest.isChestOpened()) {
+          chest.interact();
+          chestTouched = true;
+        }
+      });
 
-      // If clicking close to player, interact instead of move
-      if (distance < 50) {
-        this.checkInteractions();
-      } else {
-        // Move towards clicked position
-        this.movePlayerTowards(worldPoint.x, worldPoint.y);
+      // Check if touching an NPC directly
+      let npcTouched = false;
+      this.npcs.children.entries.forEach((npc: any) => {
+        const npcDistance = Phaser.Math.Distance.Between(
+          worldPoint.x, worldPoint.y, npc.x, npc.y
+        );
+        
+        if (npcDistance < 40) {
+          npc.interact();
+          npcTouched = true;
+        }
+      });
+
+      // If no direct interaction, handle movement
+      if (!chestTouched && !npcTouched) {
+        const distance = Phaser.Math.Distance.Between(
+          this.player.x, this.player.y, worldPoint.x, worldPoint.y
+        );
+
+        // If clicking close to player, try to interact with nearby objects
+        if (distance < 50) {
+          this.checkInteractions();
+        } else {
+          // Move towards clicked position
+          this.movePlayerTowards(worldPoint.x, worldPoint.y);
+        }
+      }
+    });
+
+    // Add long press support for mobile interaction
+    let longPressTimer: Phaser.Time.TimerEvent | null = null;
+    
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
+        return;
+      }
+
+      // Start long press timer
+      longPressTimer = this.time.delayedCall(500, () => {
+        // Long press detected - show nearby interactables
+        this.highlightNearbyInteractables();
+      });
+    });
+
+    this.input.on('pointerup', () => {
+      // Cancel long press timer
+      if (longPressTimer) {
+        longPressTimer.destroy();
+        longPressTimer = null;
       }
     });
   }
@@ -354,11 +410,20 @@ export class GameScene extends Phaser.Scene {
     // Update player
     this.player.update();
 
+    // Update chests with player proximity
+    this.chests.children.entries.forEach((chest: any) => {
+      chest.update();
+      chest.checkPlayerProximity(this.player.x, this.player.y);
+    });
+
     // Handle input
     this.handleInput();
 
-    // Check interactions
-    this.checkInteractions();
+    // Check interactions only when keys are pressed
+    if (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
+        Phaser.Input.Keyboard.JustDown(this.investigateKey)) {
+      this.checkInteractions();
+    }
   }
 
   private handleInput() {
@@ -397,32 +462,66 @@ export class GameScene extends Phaser.Scene {
   }
 
   private checkInteractions() {
-    // Check if interact key is pressed
-    if (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
-      Phaser.Input.Keyboard.JustDown(this.investigateKey)) {
+    // Check NPC interactions
+    this.npcs.children.entries.forEach((npc: any) => {
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x, this.player.y, npc.x, npc.y
+      );
 
-      // Check NPC interactions
-      this.npcs.children.entries.forEach((npc: any) => {
-        const distance = Phaser.Math.Distance.Between(
-          this.player.x, this.player.y, npc.x, npc.y
-        );
+      if (distance < 50) {
+        npc.interact();
+      }
+    });
 
-        if (distance < 50) {
-          npc.interact();
-        }
-      });
+    // Check chest interactions
+    this.chests.children.entries.forEach((chest: any) => {
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x, this.player.y, chest.x, chest.y
+      );
 
-      // Check chest interactions
-      this.chests.children.entries.forEach((chest: any) => {
-        const distance = Phaser.Math.Distance.Between(
-          this.player.x, this.player.y, chest.x, chest.y
-        );
+      if (distance < 60 && !chest.isChestOpened()) {
+        chest.interact();
+      }
+    });
+  }
 
-        if (distance < 50) {
-          chest.interact();
-        }
-      });
-    }
+  private highlightNearbyInteractables() {
+    // Highlight all chests and NPCs within interaction range
+    this.chests.children.entries.forEach((chest: any) => {
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x, this.player.y, chest.x, chest.y
+      );
+      
+      if (distance < 100 && !chest.isChestOpened()) {
+        chest.showRangeIndicator(true);
+        chest.showIndicator(true);
+        
+        // Auto-hide after 3 seconds
+        this.time.delayedCall(3000, () => {
+          if (distance > 60) {
+            chest.showRangeIndicator(false);
+            chest.showIndicator(false);
+          }
+        });
+      }
+    });
+
+    this.npcs.children.entries.forEach((npc: any) => {
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x, this.player.y, npc.x, npc.y
+      );
+      
+      if (distance < 100) {
+        npc.showIndicator(true);
+        
+        // Auto-hide after 3 seconds
+        this.time.delayedCall(3000, () => {
+          if (distance > 50) {
+            npc.showIndicator(false);
+          }
+        });
+      }
+    });
   }
 
   // Public method to show dialogue

@@ -525,11 +525,15 @@ export class GameScene extends Phaser.Scene {
     };
 
     // Enhanced joystick input handling with proper event management
-    joystickBase.setInteractive();
-    joystickKnob.setInteractive();
+    joystickBase.setInteractive({ useHandCursor: false });
+    joystickKnob.setInteractive({ useHandCursor: false });
 
     // Use dedicated joystick event handlers to avoid conflicts
     const handleJoystickStart = (pointer: Phaser.Input.Pointer) => {
+      // Prevent event propagation to avoid conflicts
+      pointer.event?.preventDefault();
+      pointer.event?.stopPropagation();
+      
       const distance = Phaser.Math.Distance.Between(
         pointer.x, pointer.y, joystickX, joystickY
       );
@@ -539,6 +543,9 @@ export class GameScene extends Phaser.Scene {
         this.virtualControls.lastInputTime = this.time.now;
         joystickKnob.setFillStyle(0x74b9ff, 1);
         joystickKnob.setScale(1.1);
+        
+        // Add haptic feedback for mobile devices
+        this.triggerActionHaptic('joystick_start');
         
         // Add glow effect
         this.tweens.add({
@@ -559,6 +566,9 @@ export class GameScene extends Phaser.Scene {
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (!this.virtualControls || !this.virtualControls.isDragging) return;
 
+      // Prevent default touch behavior
+      pointer.event?.preventDefault();
+      
       this.virtualControls.lastInputTime = this.time.now;
       
       const centerX = this.virtualControls.joystickCenter.x;
@@ -576,17 +586,20 @@ export class GameScene extends Phaser.Scene {
         deltaY = (deltaY / distance) * maxDistance;
       }
       
-      // Update knob position
-      joystickKnob.x = centerX + deltaX;
-      joystickKnob.y = centerY + deltaY;
+      // Update knob position with smooth interpolation
+      const lerpFactor = 0.8; // Smooth movement factor
+      joystickKnob.x = Phaser.Math.Linear(joystickKnob.x, centerX + deltaX, lerpFactor);
+      joystickKnob.y = Phaser.Math.Linear(joystickKnob.y, centerY + deltaY, lerpFactor);
       
       // Calculate normalized vector with improved dead zone handling
       const normalizedDistance = Math.min(distance / maxDistance, 1);
       if (normalizedDistance > this.virtualControls.deadZone) {
-        // Apply smooth scaling for better control
+        // Apply smooth scaling for better control with easing
         const smoothFactor = (normalizedDistance - this.virtualControls.deadZone) / (1 - this.virtualControls.deadZone);
-        this.virtualControls.joystickVector.x = (deltaX / maxDistance) * smoothFactor;
-        this.virtualControls.joystickVector.y = (deltaY / maxDistance) * smoothFactor;
+        const easedFactor = this.easeInOutQuad(smoothFactor);
+        
+        this.virtualControls.joystickVector.x = (deltaX / maxDistance) * easedFactor;
+        this.virtualControls.joystickVector.y = (deltaY / maxDistance) * easedFactor;
       } else {
         this.virtualControls.joystickVector.x = 0;
         this.virtualControls.joystickVector.y = 0;
@@ -596,13 +609,19 @@ export class GameScene extends Phaser.Scene {
       this.updateDirectionIndicators(deltaX, deltaY);
     });
 
-    const resetJoystick = () => {
+    const resetJoystick = (pointer?: Phaser.Input.Pointer) => {
       if (this.virtualControls.isDragging) {
         this.virtualControls.isDragging = false;
         
         // Immediately reset vector to prevent stuck movement
         this.virtualControls.joystickVector = { x: 0, y: 0 };
         this.virtualControls.lastInputTime = 0;
+        
+        // Prevent default behavior if pointer event exists
+        if (pointer?.event) {
+          pointer.event.preventDefault();
+          pointer.event.stopPropagation();
+        }
         
         // Stop any existing tweens to prevent conflicts
         this.tweens.killTweensOf(joystickKnob);
@@ -621,18 +640,24 @@ export class GameScene extends Phaser.Scene {
             joystickKnob.x = joystickX;
             joystickKnob.y = joystickY;
             joystickKnob.setScale(1);
+            joystickKnob.setFillStyle(0x4a90e2, 0.85);
           }
         });
         
-        joystickKnob.setFillStyle(0x4a90e2, 0.9);
-        
         // Reset direction dots
         directionDots.forEach(dot => dot.setAlpha(0.6));
+        
+        // Add haptic feedback for release
+        this.triggerActionHaptic('joystick_release');
       }
     };
 
     this.input.on('pointerup', resetJoystick);
     this.input.on('pointerupoutside', resetJoystick); // Handle when pointer leaves game area
+    
+    // Add additional safety reset for touch cancel events
+    this.input.on('pointercancel', resetJoystick);
+    this.input.on('pointerleave', resetJoystick);
   }
 
   private updateDirectionIndicators(deltaX: number, deltaY: number) {
@@ -651,6 +676,11 @@ export class GameScene extends Phaser.Scene {
       const alpha = Math.max(0.3, 1 - (angleDiff / (Math.PI / 4)));
       this.virtualControls.directionDots[dir.index].setAlpha(alpha);
     });
+  }
+
+  // Easing function for smoother joystick control
+  private easeInOutQuad(t: number): number {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
   }
 
   private createEnhancedActionButtons() {
@@ -1112,24 +1142,79 @@ export class GameScene extends Phaser.Scene {
      });
    }
 
-   // Performance monitoring and optimization
-   private setupPerformanceMonitoring() {
-     // Monitor FPS and adjust performance accordingly
-     this.time.addEvent({
-       delay: 1000,
-       callback: () => {
-         this.frameCounter++;
-         const currentTime = this.time.now;
-         
-         if (currentTime - this.lastFPSCheck > 5000) { // Check every 5 seconds
-           const fps = this.game.loop.actualFps;
-           this.adjustPerformanceMode(fps);
-           this.lastFPSCheck = currentTime;
-         }
-       },
-       loop: true
-     });
-   }
+     // Performance monitoring and optimization
+  private setupPerformanceMonitoring() {
+    // Monitor FPS and adjust performance accordingly
+    this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        const currentTime = this.time.now;
+        
+        if (currentTime - this.lastFPSCheck > 5000) { // Check every 5 seconds
+          const fps = this.game.loop.actualFps;
+          this.adjustPerformanceMode(fps);
+          this.lastFPSCheck = currentTime;
+          
+          // Emergency restart mechanism if FPS is critically low
+          if (fps < 10) {
+            console.warn('Critical performance detected, implementing emergency optimizations');
+            this.emergencyPerformanceOptimization();
+          }
+        }
+      },
+      loop: true
+    });
+    
+    // Memory cleanup timer
+    this.time.addEvent({
+      delay: 30000, // Every 30 seconds
+      callback: () => {
+        this.cleanupResources();
+      },
+      loop: true
+    });
+  }
+
+  // Emergency performance optimization
+  private emergencyPerformanceOptimization() {
+    // Disable all particle effects
+    this.particlePool.forEach(particles => {
+      if (particles && particles.destroy) {
+        particles.destroy();
+      }
+    });
+    this.particlePool = [];
+    
+    // Reduce animation quality
+    this.tweens.timeScale = 0.3;
+    
+    // Switch to simple touch controls to reduce complexity
+    if (!this.useSimpleTouch) {
+      this.switchToSimpleTouch();
+    }
+    
+    this.showNotification('已启用紧急性能优化模式', 'warning');
+  }
+
+  // Resource cleanup
+  private cleanupResources() {
+    // Clean up old particles
+    this.particlePool = this.particlePool.filter(particles => {
+      if (particles && particles.active) {
+        return true;
+      } else {
+        if (particles && particles.destroy) {
+          particles.destroy();
+        }
+        return false;
+      }
+    });
+    
+    // Force garbage collection if available
+    if (window.gc) {
+      window.gc();
+    }
+  }
 
    private adjustPerformanceMode(fps: number) {
      let newMode: 'high' | 'medium' | 'low' = 'high';
@@ -1665,6 +1750,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   update() {
+    // Performance monitoring - limit update frequency for heavy operations
+    this.frameCounter++;
+    
     // Handle player movement
     let moveX = 0;
     let moveY = 0;
@@ -1698,15 +1786,16 @@ export class GameScene extends Phaser.Scene {
       // Only apply joystick input if actively dragging or recent input
       if (this.virtualControls.isDragging || timeSinceLastInput < 100) {
         if (joystickStrength > this.virtualControls.deadZone) {
-          // Use smooth movement based on joystick distance
-          moveX = this.virtualControls.joystickVector.x;
-          moveY = this.virtualControls.joystickVector.y;
+          // Use smooth movement based on joystick distance with performance optimization
+          const smoothedX = this.virtualControls.joystickVector.x * 0.9; // Slight damping for smoother movement
+          const smoothedY = this.virtualControls.joystickVector.y * 0.9;
           
-          // Add subtle haptic feedback during movement
-          if (this.hapticEnabled && joystickStrength > 0.8) {
-            if (Math.random() < 0.05) { // Occasional feedback to avoid spam
-              this.triggerHapticFeedback(10);
-            }
+          moveX = smoothedX;
+          moveY = smoothedY;
+          
+          // Add subtle haptic feedback during movement (throttled for performance)
+          if (this.hapticEnabled && joystickStrength > 0.8 && this.frameCounter % 30 === 0) {
+            this.triggerHapticFeedback(8);
           }
         }
       } else {
@@ -1716,8 +1805,8 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // Apply movement
-    if (moveX !== 0 || moveY !== 0) {
+    // Apply movement with performance optimization
+    if (Math.abs(moveX) > 0.01 || Math.abs(moveY) > 0.01) {
       this.cat.move(moveX, moveY);
     } else {
       this.cat.stop();
@@ -1726,19 +1815,24 @@ export class GameScene extends Phaser.Scene {
     // Update cat
     this.cat.update();
 
-    // Update farm plots
-    this.farmPlots.children.entries.forEach((plot: any) => {
-      if (plot.update) {
-        plot.update();
-      }
-    });
+    // Performance optimized updates - only update every few frames for non-critical elements
+    if (this.frameCounter % 3 === 0) {
+      // Update farm plots (less frequent for performance)
+      this.farmPlots.children.entries.forEach((plot: any) => {
+        if (plot.update) {
+          plot.update();
+        }
+      });
+    }
 
-    // Update cooking stations
-    this.cookingStations.children.entries.forEach((station: any) => {
-      if (station.update) {
-        station.update();
-      }
-    });
+    if (this.frameCounter % 5 === 0) {
+      // Update cooking stations (even less frequent)
+      this.cookingStations.children.entries.forEach((station: any) => {
+        if (station.update) {
+          station.update();
+        }
+      });
+    }
 
     // Handle interaction key
     if (Phaser.Input.Keyboard.JustDown(this.interactKey)) {

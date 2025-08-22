@@ -8,23 +8,34 @@ import { useAuth } from '@/utils/auth-context';
 import { supabase } from '@/utils/supabase-config';
 import { incrementVisitCount } from '@/utils/stats';
 
+// Header组件 - 网站顶部导航栏，包含logo、导航菜单和用户功能
 const Header: React.FC = () => {
+  // 获取用户认证信息
   const { userProfile } = useAuth();
+  // 移动端菜单展开状态
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // 用户下拉菜单展开状态
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  // 组件挂载状态，用于避免SSR和客户端不一致问题
   const [mounted, setMounted] = useState(false);
+  // 下拉菜单DOM引用，用于点击外部关闭功能
   const dropdownRef = useRef<HTMLDivElement>(null);
+  // 路由导航钩子
   const router = useRouter();
+  // 当前路径钩子
   const pathname = usePathname();
+  // 默认logo图片URL
   const defaultLogoUrl =
     'https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg';
 
-  // 确保组件已挂载，避免SSR/Client不一致
+  // 确保组件已挂载，避免SSR/Client不一致 - 解决水合问题
   useEffect(() => {
     setMounted(true);
+    // 增加访问统计
     incrementVisitCount();
   }, []);
 
+  // 点击外部关闭下拉菜单的事件监听
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -38,6 +49,7 @@ const Header: React.FC = () => {
     };
   }, []);
 
+  // 用户登出处理函数 - 清除认证状态并跳转到登录页
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
@@ -49,6 +61,7 @@ const Header: React.FC = () => {
     }
   };
 
+  // 判断当前路径是否为活跃状态 - 用于高亮当前页面导航
   const isActive = (path: string) => {
     // 处理根路径的特殊情况
     if (path === '/') {
@@ -58,7 +71,7 @@ const Header: React.FC = () => {
     return pathname.startsWith(path);
   };
 
-  // 基础导航项
+  // 基础导航项配置 - 所有用户都可见的导航选项
   const baseNavItems = [
     { href: '/', label: '首页', icon: '🏠' },
     { href: '/category', label: '分类', icon: '📁' },
@@ -66,26 +79,26 @@ const Header: React.FC = () => {
     { href: '/about', label: '关于', icon: 'ℹ️' }
   ];
 
-  // 用户相关导航项
+  // 用户专属导航项 - 仅登录用户可见的功能
   const userNavItems = [
     { href: '/tools', label: '工具', icon: '🛠️' },
     { href: '/post', label: '发布', icon: '✏️' },
     { href: '/game', label: '游戏', icon: '🎮' }
   ];
 
-  // 在mounted之前显示基础导航
+  // 根据用户状态动态组合导航项
   const navItems =
     mounted && userProfile
       ? [...baseNavItems.slice(0, 3), ...userNavItems, baseNavItems[3]]
       : baseNavItems;
 
-  // 在组件挂载之前返回占位内容
+  // 在组件挂载之前返回占位内容 - 避免布局偏移
   if (!mounted) {
     return (
       <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
+            {/* Logo区域 */}
             <Link
               href="/"
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
@@ -96,7 +109,7 @@ const Header: React.FC = () => {
               <span className="text-xl font-bold text-gray-900">鱼鱼的博客</span>
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* 桌面端导航菜单 */}
             <nav className="hidden md:flex items-center space-x-4">
               {baseNavItems.map((item) => (
                 <Link
@@ -109,7 +122,7 @@ const Header: React.FC = () => {
               ))}
             </nav>
 
-            {/* Login Button Placeholder */}
+            {/* 登录按钮占位符 */}
             <div className="flex items-center space-x-4">
               <Link href="/login" className="btn-primary">
                 登录
@@ -134,11 +147,11 @@ const Header: React.FC = () => {
 
   return (
     <>
-      {/* Desktop Header */}
+      {/* 桌面端头部导航 */}
       <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 pwa-safe-header">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between pwa-header-content">
-            {/* Logo */}
+            {/* Logo和网站标题 */}
             <Link
               href="/"
               className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
@@ -152,6 +165,7 @@ const Header: React.FC = () => {
                   fill
                   className="object-cover"
                   onError={(e) => {
+                    // 图片加载失败时使用默认图片
                     const target = e.target as HTMLImageElement;
                     target.src = defaultLogoUrl;
                   }}
@@ -160,7 +174,7 @@ const Header: React.FC = () => {
               <span className="text-xl font-bold text-gray-900">鱼鱼的博客</span>
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* 桌面端导航菜单 */}
             <nav className="hidden md:flex items-center space-x-4">
               {navItems.map((item) => (
                 <Link
@@ -173,9 +187,10 @@ const Header: React.FC = () => {
               ))}
             </nav>
 
-            {/* User Menu / Login Button */}
+            {/* 用户菜单或登录按钮区域 */}
             <div className="flex items-center space-x-4">
               {userProfile ? (
+                // 已登录用户的下拉菜单
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -197,6 +212,7 @@ const Header: React.FC = () => {
                     </svg>
                   </button>
 
+                  {/* 用户下拉菜单内容 */}
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <Link
@@ -226,17 +242,19 @@ const Header: React.FC = () => {
                   )}
                 </div>
               ) : (
+                // 未登录用户的登录按钮
                 <Link href="/login" className="btn-primary">
                   登录
                 </Link>
               )}
 
-              {/* Mobile Menu Button */}
+              {/* 移动端菜单按钮 */}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="md:hidden rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
               >
                 <span className="sr-only">打开菜单</span>
+                {/* 汉堡菜单图标 */}
                 <svg
                   className={`h-6 w-6 ${isMenuOpen ? 'hidden' : 'block'}`}
                   fill="none"
@@ -250,6 +268,7 @@ const Header: React.FC = () => {
                     d="M4 6h16M4 12h16M4 18h16"
                   />
                 </svg>
+                {/* 关闭菜单图标 */}
                 <svg
                   className={`h-6 w-6 ${isMenuOpen ? 'block' : 'hidden'}`}
                   fill="none"
@@ -268,7 +287,7 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* 移动端展开菜单 */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white">
             <div className="space-y-1 px-4 pb-3 pt-2">
@@ -291,7 +310,7 @@ const Header: React.FC = () => {
         )}
       </header>
 
-      {/* Mobile Bottom Navigation */}
+      {/* 移动端底部导航栏 */}
       <nav className="mobile-nav md:hidden fixed bottom-0 left-0 w-full bg-white z-50">
         <div className="flex justify-around items-center px-4 h-full">
           {navItems.slice(0, 6).map((item) => (

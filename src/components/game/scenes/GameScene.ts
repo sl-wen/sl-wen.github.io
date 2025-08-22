@@ -30,6 +30,7 @@ export class GameScene extends Phaser.Scene {
   private lastFPSCheck: number = 0;
   private lastTapTime: number = 0; // For double-tap emergency reset
   private emergencyResetEnabled: boolean = true;
+  private orientationHandlers: any = null; // Store orientation change handlers
 
   constructor() {
     super({ key: 'GameScene' });
@@ -78,8 +79,11 @@ export class GameScene extends Phaser.Scene {
       this.setupSimpleTouchControls();
     }
 
-    // Setup camera
+    // Setup camera with improved responsive behavior
     this.setupCamera();
+    
+    // Add orientation change handling
+    this.setupOrientationHandling();
 
     // Setup collisions
     this.setupCollisions();
@@ -110,28 +114,124 @@ export class GameScene extends Phaser.Scene {
 
 
   private createFarmPlots() {
-    // Create farm plots in a simple grid layout
-    const plotPositions = [
-      { x: 200, y: 200 }, { x: 250, y: 200 }, { x: 300, y: 200 },
-      { x: 200, y: 250 }, { x: 250, y: 250 }, { x: 300, y: 250 },
-      { x: 200, y: 300 }, { x: 250, y: 300 }, { x: 300, y: 300 },
-      { x: 500, y: 350 }, { x: 550, y: 350 }, { x: 600, y: 350 },
-      { x: 500, y: 400 }, { x: 550, y: 400 }, { x: 600, y: 400 }
+    // Create farm plots with improved layout that avoids UI conflicts
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    
+    // Calculate safe areas for farm plots (avoiding UI elements)
+    const uiSafeMargin = 120; // Margin to avoid UI elements
+    const plotSize = 40;
+    const plotSpacing = 60;
+    
+    // Define farming areas that don't conflict with UI
+    const farmingAreas = [
+      // Main farming area (center-left)
+      {
+        startX: 180,
+        startY: 160,
+        cols: 4,
+        rows: 3,
+        name: 'main_farm'
+      },
+      // Secondary farming area (center-right, avoiding action buttons)
+      {
+        startX: Math.min(450, screenWidth - uiSafeMargin - plotSpacing * 3),
+        startY: 180,
+        cols: 3,
+        rows: 3,
+        name: 'secondary_farm'
+      },
+      // Upper farming area (if screen is tall enough)
+      {
+        startX: 300,
+        startY: 80,
+        cols: 3,
+        rows: 2,
+        name: 'upper_farm'
+      }
     ];
     
-    plotPositions.forEach(pos => {
-      const plot = new FarmPlot(this, pos.x, pos.y);
-      this.farmPlots.add(plot);
+    farmingAreas.forEach(area => {
+      // Only create area if it fits within screen bounds
+      const areaWidth = area.cols * plotSpacing;
+      const areaHeight = area.rows * plotSpacing;
+      
+      if (area.startX + areaWidth < screenWidth - uiSafeMargin && 
+          area.startY + areaHeight < screenHeight - uiSafeMargin) {
+        
+        for (let row = 0; row < area.rows; row++) {
+          for (let col = 0; col < area.cols; col++) {
+            const x = area.startX + (col * plotSpacing);
+            const y = area.startY + (row * plotSpacing);
+            
+            // Ensure plot doesn't conflict with UI areas
+            if (this.isValidPlotPosition(x, y, screenWidth, screenHeight)) {
+              const plot = new FarmPlot(this, x, y);
+              this.farmPlots.add(plot);
+            }
+          }
+        }
+      }
     });
   }
 
-  private createCookingStations() {
-    // Add cooking stations around the farm
-    const cookingStation1 = new CookingStation(this, 150, 300);
-    this.cookingStations.add(cookingStation1);
+  // Helper function to validate plot positions
+  private isValidPlotPosition(x: number, y: number, screenWidth: number, screenHeight: number): boolean {
+    const margin = 100; // Safety margin from UI elements
+    
+    // Check distance from likely joystick position (bottom-left)
+    const joystickArea = { x: 0, y: screenHeight - 150, width: 200, height: 150 };
+    if (x < joystickArea.x + joystickArea.width && y > joystickArea.y) {
+      return false;
+    }
+    
+    // Check distance from likely action button area (bottom-right)
+    const buttonArea = { x: screenWidth - 200, y: screenHeight - 200, width: 200, height: 200 };
+    if (x > buttonArea.x && y > buttonArea.y) {
+      return false;
+    }
+    
+    // Ensure minimum distance from screen edges
+    return x > margin && y > margin && 
+           x < screenWidth - margin && y < screenHeight - margin;
+  }
 
-    const cookingStation2 = new CookingStation(this, 650, 400);
-    this.cookingStations.add(cookingStation2);
+  private createCookingStations() {
+    // Add cooking stations with improved positioning to avoid UI conflicts
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    const uiSafeMargin = 120;
+    
+    // Position cooking stations in safe areas
+    const stationPositions = [
+      // Station 1: Upper-left area
+      {
+        x: Math.max(150, uiSafeMargin),
+        y: Math.max(120, 80)
+      },
+      // Station 2: Center area, avoiding both joystick and action buttons
+      {
+        x: Math.min(screenWidth / 2, screenWidth - uiSafeMargin - 50),
+        y: Math.max(screenHeight / 2 - 100, 150)
+      }
+    ];
+    
+    // Only add stations that fit within safe boundaries
+    stationPositions.forEach((pos, index) => {
+      if (this.isValidPlotPosition(pos.x, pos.y, screenWidth, screenHeight)) {
+        const station = new CookingStation(this, pos.x, pos.y);
+        this.cookingStations.add(station);
+      }
+    });
+    
+    // Ensure we have at least one cooking station
+    if (this.cookingStations.children.size === 0) {
+      // Fallback position in center of screen
+      const fallbackX = screenWidth / 2;
+      const fallbackY = Math.max(200, screenHeight / 3);
+      const fallbackStation = new CookingStation(this, fallbackX, fallbackY);
+      this.cookingStations.add(fallbackStation);
+    }
   }
 
   private createFarmDecorations() {
@@ -534,56 +634,85 @@ export class GameScene extends Phaser.Scene {
     // Clean up any existing joystick to prevent conflicts
     this.cleanupExistingJoystick();
     
-    const padding = 60; // Increased padding for better visibility
-    const joystickRadius = 70;
-    const knobRadius = 28;
+    // Improved responsive positioning logic
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    const isLandscape = screenWidth > screenHeight;
+    const isMobile = screenWidth < 768; // Mobile breakpoint
     
-    // Ensure joystick is fully visible with safe area consideration
-    const joystickX = Math.max(padding + joystickRadius, joystickRadius + 20);
-    const joystickY = Math.min(this.cameras.main.height - padding - joystickRadius, this.cameras.main.height - joystickRadius - 20);
+    // Dynamic sizing based on screen size
+    const baseSize = Math.min(screenWidth, screenHeight);
+    const joystickRadius = Math.max(50, Math.min(80, baseSize * 0.08)); // 8% of smaller dimension
+    const knobRadius = joystickRadius * 0.4; // 40% of joystick radius
+    
+    // Smart positioning to avoid conflicts
+    const minPadding = 20;
+    const safePadding = isMobile ? 40 : 60;
+    
+    // Calculate optimal joystick position
+    let joystickX, joystickY;
+    
+    if (isLandscape) {
+      // Landscape: position in bottom-left with more space from edges
+      joystickX = Math.max(safePadding + joystickRadius, joystickRadius + minPadding);
+      joystickY = screenHeight - safePadding - joystickRadius;
+    } else {
+      // Portrait: position lower and more centered to avoid thumb reach issues
+      joystickX = Math.max(safePadding + joystickRadius, screenWidth * 0.2);
+      joystickY = Math.min(screenHeight - safePadding - joystickRadius, screenHeight * 0.85);
+    }
+    
+    // Ensure joystick doesn't go off-screen
+    joystickX = Math.min(joystickX, screenWidth - joystickRadius - minPadding);
+    joystickY = Math.max(joystickY, joystickRadius + minPadding);
 
-    // Modern joystick base with gradient effect
-    const joystickBase = this.add.circle(joystickX, joystickY, joystickRadius, 0x000000, 0.3);
+    // Modern joystick base with improved visual design
+    const joystickBase = this.add.circle(joystickX, joystickY, joystickRadius, 0x000000, 0.25);
     joystickBase.setScrollFactor(0);
     joystickBase.setDepth(1000);
-    joystickBase.setStrokeStyle(3, 0x4a90e2, 0.6);
+    joystickBase.setStrokeStyle(2, 0x4a90e2, 0.5);
 
     // Add gradient inner ring for depth
-    const joystickInner = this.add.circle(joystickX, joystickY, joystickRadius - 8, 0x1a1a2e, 0.4);
+    const joystickInner = this.add.circle(joystickX, joystickY, joystickRadius - 6, 0x1a1a2e, 0.3);
     joystickInner.setScrollFactor(0);
     joystickInner.setDepth(1001);
-    joystickInner.setStrokeStyle(2, 0x6c5ce7, 0.5);
+    joystickInner.setStrokeStyle(1, 0x6c5ce7, 0.4);
 
-    // Modern knob with glassmorphism effect
-    const joystickKnob = this.add.circle(joystickX, joystickY, knobRadius, 0x4a90e2, 0.85);
+    // Enhanced joystick knob with better visual feedback
+    const joystickKnob = this.add.circle(joystickX, joystickY, knobRadius, 0x4a90e2, 0.8);
     joystickKnob.setScrollFactor(0);
     joystickKnob.setDepth(1002);
     joystickKnob.setStrokeStyle(2, 0x74b9ff, 0.9);
 
-    // Add subtle shadow effect
-    const knobShadow = this.add.circle(joystickX + 2, joystickY + 2, knobRadius, 0x000000, 0.2);
+    // Subtle shadow for depth
+    const knobShadow = this.add.circle(joystickX + 1, joystickY + 1, knobRadius, 0x000000, 0.15);
     knobShadow.setScrollFactor(0);
     knobShadow.setDepth(999);
 
-    // Add direction indicator dots
+    // Direction indicator dots with improved positioning
+    const dotRadius = Math.max(3, joystickRadius * 0.06);
+    const dotDistance = joystickRadius - 12;
     const dotPositions = [
-      { x: 0, y: -joystickRadius + 15 }, // Top
-      { x: joystickRadius - 15, y: 0 }, // Right
-      { x: 0, y: joystickRadius - 15 }, // Bottom
-      { x: -joystickRadius + 15, y: 0 } // Left
+      { x: 0, y: -dotDistance }, // Top
+      { x: dotDistance * 0.7, y: -dotDistance * 0.7 }, // Top-right
+      { x: dotDistance, y: 0 }, // Right
+      { x: dotDistance * 0.7, y: dotDistance * 0.7 }, // Bottom-right
+      { x: 0, y: dotDistance }, // Bottom
+      { x: -dotDistance * 0.7, y: dotDistance * 0.7 }, // Bottom-left
+      { x: -dotDistance, y: 0 }, // Left
+      { x: -dotDistance * 0.7, y: -dotDistance * 0.7 } // Top-left
     ];
 
     const directionDots = dotPositions.map((pos, index) => {
-      const dot = this.add.circle(joystickX + pos.x, joystickY + pos.y, 4, 0x74b9ff, 0.7);
+      const dot = this.add.circle(joystickX + pos.x, joystickY + pos.y, dotRadius, 0x74b9ff, 0.4);
       dot.setScrollFactor(0);
-      dot.setDepth(1001);
-      dot.setStrokeStyle(1, 0xffffff, 0.8);
+      dot.setDepth(998);
       
-      // Add subtle pulsing animation
+      // Subtle pulsing animation
       this.tweens.add({
         targets: dot,
-        alpha: 0.4,
-        duration: 1000 + (index * 250),
+        alpha: 0.2,
+        duration: 1500 + (index * 100),
         yoyo: true,
         repeat: -1,
         ease: 'Sine.easeInOut'
@@ -592,6 +721,7 @@ export class GameScene extends Phaser.Scene {
       return dot;
     });
 
+    // Store virtual controls with improved configuration
     this.virtualControls = {
       joystickBase,
       joystickInner,
@@ -601,21 +731,27 @@ export class GameScene extends Phaser.Scene {
       joystickCenter: { x: joystickX, y: joystickY },
       isDragging: false,
       joystickVector: { x: 0, y: 0 },
-      deadZone: 0.15, // Reduced dead zone for more responsive control
-      maxDistance: joystickRadius - knobRadius - 5,
-      lastInputTime: 0, // Track last input time to prevent stuck movement
-      activePointerId: null, // Track which pointer is controlling the joystick
-      isStuck: false, // Flag to detect stuck state
-      stuckCheckTimer: null // Timer to check for stuck state
+      deadZone: 0.12, // Optimized dead zone
+      maxDistance: joystickRadius - knobRadius - 3,
+      lastInputTime: 0,
+      isStuck: false,
+      activePointerId: null,
+      stuckDetectionTimer: null,
+      // New properties for better conflict resolution
+      touchArea: {
+        x: joystickX - joystickRadius - 20,
+        y: joystickY - joystickRadius - 20,
+        width: (joystickRadius + 20) * 2,
+        height: (joystickRadius + 20) * 2
+      }
     };
 
-    // Enhanced joystick input handling with proper event management
+    // Enhanced joystick input handling with better conflict prevention
     joystickBase.setInteractive({ useHandCursor: false });
     joystickKnob.setInteractive({ useHandCursor: false });
 
-    // Use dedicated joystick event handlers to avoid conflicts
     const handleJoystickStart = (pointer: Phaser.Input.Pointer) => {
-      // Prevent event propagation to avoid conflicts
+      // Prevent event bubbling
       pointer.event?.preventDefault();
       pointer.event?.stopPropagation();
       
@@ -623,35 +759,38 @@ export class GameScene extends Phaser.Scene {
         pointer.x, pointer.y, joystickX, joystickY
       );
       
-      if (distance <= joystickRadius + 30) {
-        // Only allow one pointer to control joystick at a time
+      // Improved touch detection area with better boundaries
+      if (distance <= joystickRadius + 25) {
+        // Prevent multiple pointers from controlling the same joystick
         if (this.virtualControls.activePointerId !== null && 
             this.virtualControls.activePointerId !== pointer.id) {
           return;
         }
         
+        // Immediate state update to prevent conflicts
         this.virtualControls.isDragging = true;
         this.virtualControls.activePointerId = pointer.id;
         this.virtualControls.lastInputTime = this.time.now;
         this.virtualControls.isStuck = false;
         
+        // Visual feedback
         joystickKnob.setFillStyle(0x74b9ff, 1);
-        joystickKnob.setScale(1.1);
+        joystickKnob.setScale(1.05); // Reduced scale for subtler feedback
         
-        // Add haptic feedback for mobile devices
+        // Haptic feedback
         this.triggerActionHaptic('joystick_start');
         
-        // Add glow effect
+        // Smooth activation animation
         this.tweens.add({
           targets: joystickKnob,
-          scaleX: 1.15,
-          scaleY: 1.15,
-          duration: 100,
-          yoyo: true,
-          repeat: 0
+          scaleX: 1.1,
+          scaleY: 1.1,
+          duration: 150,
+          ease: 'Back.easeOut'
         });
         
-        // Start stuck detection timer
+        // Clear any existing stuck detection
+        this.clearStuckDetection();
         this.startStuckDetection();
       }
     };
@@ -660,7 +799,7 @@ export class GameScene extends Phaser.Scene {
     joystickBase.on('pointerdown', handleJoystickStart);
     joystickKnob.on('pointerdown', handleJoystickStart);
 
-    // Enhanced pointer move handler with better validation
+    // Enhanced pointer move handler with improved stability
     const handlePointerMove = (pointer: Phaser.Input.Pointer) => {
       if (!this.virtualControls || 
           !this.virtualControls.isDragging || 
@@ -671,6 +810,7 @@ export class GameScene extends Phaser.Scene {
       // Prevent default touch behavior
       pointer.event?.preventDefault();
       
+      // Update input tracking
       this.virtualControls.lastInputTime = this.time.now;
       this.virtualControls.isStuck = false;
       
@@ -685,35 +825,36 @@ export class GameScene extends Phaser.Scene {
       
       // Constrain movement within joystick bounds
       if (distance > maxDistance) {
-        deltaX = (deltaX / distance) * maxDistance;
-        deltaY = (deltaY / distance) * maxDistance;
+        const ratio = maxDistance / distance;
+        deltaX *= ratio;
+        deltaY *= ratio;
       }
       
-      // Update knob position with smooth interpolation
-      const lerpFactor = 0.8; // Smooth movement factor
+      // Smooth knob movement with improved interpolation
+      const lerpFactor = 0.85; // Faster response
       joystickKnob.x = Phaser.Math.Linear(joystickKnob.x, centerX + deltaX, lerpFactor);
       joystickKnob.y = Phaser.Math.Linear(joystickKnob.y, centerY + deltaY, lerpFactor);
       
-      // Calculate normalized vector with improved dead zone handling
+      // Calculate normalized vector with improved responsiveness
       const normalizedDistance = Math.min(distance / maxDistance, 1);
       if (normalizedDistance > this.virtualControls.deadZone) {
-        // Apply smooth scaling for better control with easing
-        const smoothFactor = (normalizedDistance - this.virtualControls.deadZone) / (1 - this.virtualControls.deadZone);
-        const easedFactor = this.easeInOutQuad(smoothFactor);
+        // Improved control curve for better feel
+        const controlFactor = Math.pow(normalizedDistance, 0.8); // Slight curve for natural feel
         
-        this.virtualControls.joystickVector.x = (deltaX / maxDistance) * easedFactor;
-        this.virtualControls.joystickVector.y = (deltaY / maxDistance) * easedFactor;
+        this.virtualControls.joystickVector.x = (deltaX / maxDistance) * controlFactor;
+        this.virtualControls.joystickVector.y = (deltaY / maxDistance) * controlFactor;
       } else {
         this.virtualControls.joystickVector.x = 0;
         this.virtualControls.joystickVector.y = 0;
       }
 
-      // Update direction dots opacity based on direction
+      // Update direction indicators
       this.updateDirectionIndicators(deltaX, deltaY);
     };
 
     this.input.on('pointermove', handlePointerMove);
 
+    // Improved pointer up handler with better reset logic
     const resetJoystick = (pointer?: Phaser.Input.Pointer) => {
       // Only reset if it's the active pointer or no specific pointer
       if (pointer && this.virtualControls.activePointerId !== null && 
@@ -722,27 +863,20 @@ export class GameScene extends Phaser.Scene {
       }
       
       if (this.virtualControls.isDragging || this.virtualControls.isStuck) {
+        // Immediate state reset
         this.virtualControls.isDragging = false;
         this.virtualControls.activePointerId = null;
         this.virtualControls.isStuck = false;
         
-        // Immediately reset vector to prevent stuck movement
+        // Immediately stop movement
         this.virtualControls.joystickVector = { x: 0, y: 0 };
         this.virtualControls.lastInputTime = 0;
         
-        // Clear stuck detection timer
+        // Clear stuck detection
         this.clearStuckDetection();
         
-        // Prevent default behavior if pointer event exists
-        if (pointer?.event) {
-          pointer.event.preventDefault();
-          pointer.event.stopPropagation();
-        }
-        
-        // Stop any existing tweens to prevent conflicts
+        // Smooth return animation
         this.tweens.killTweensOf(joystickKnob);
-        
-        // Smooth return animation with completion callback
         this.tweens.add({
           targets: joystickKnob,
           x: joystickX,
@@ -756,431 +890,418 @@ export class GameScene extends Phaser.Scene {
             joystickKnob.x = joystickX;
             joystickKnob.y = joystickY;
             joystickKnob.setScale(1);
-            joystickKnob.setFillStyle(0x4a90e2, 0.85);
+            joystickKnob.setFillStyle(0x4a90e2, 0.8);
             
-            // Final safety check - ensure movement is stopped
+            // Final safety check
             if (this.virtualControls) {
               this.virtualControls.joystickVector = { x: 0, y: 0 };
-              this.cat.setVelocity(0, 0);
             }
           }
         });
         
-        // Reset direction dots
-        directionDots.forEach(dot => dot.setAlpha(0.6));
+        // Reset visual state
+        joystickKnob.setFillStyle(0x4a90e2, 0.8);
         
-        // Add haptic feedback for release
+        // Haptic feedback
         this.triggerActionHaptic('joystick_release');
+        
+        // Reset direction indicators
+        this.resetDirectionIndicators();
       }
     };
 
-    // Enhanced event binding with better cleanup
-    const pointerUpHandler = (pointer: Phaser.Input.Pointer) => resetJoystick(pointer);
-    const pointerUpOutsideHandler = (pointer: Phaser.Input.Pointer) => resetJoystick(pointer);
-    const pointerCancelHandler = (pointer: Phaser.Input.Pointer) => resetJoystick(pointer);
+    this.input.on('pointerup', resetJoystick);
+    this.input.on('pointerupoutside', resetJoystick);
     
-    this.input.on('pointerup', pointerUpHandler);
-    this.input.on('pointerupoutside', pointerUpOutsideHandler);
-    this.input.on('pointercancel', pointerCancelHandler);
-    this.input.on('pointerleave', pointerCancelHandler);
-    
-    // Store event handlers for cleanup
-    this.virtualControls.eventHandlers = {
-      pointerMove: handlePointerMove,
-      pointerUp: pointerUpHandler,
-      pointerUpOutside: pointerUpOutsideHandler,
-      pointerCancel: pointerCancelHandler
-    };
+    // Add window focus/blur handlers to prevent stuck state
+    window.addEventListener('blur', () => resetJoystick());
+    window.addEventListener('focus', () => resetJoystick());
   }
 
-  private updateDirectionIndicators(deltaX: number, deltaY: number) {
-    if (!this.virtualControls.directionDots) return;
-    
-    const angle = Math.atan2(deltaY, deltaX);
-    const directions = [
-      { angle: -Math.PI / 2, index: 0 }, // Top
-      { angle: 0, index: 1 }, // Right
-      { angle: Math.PI / 2, index: 2 }, // Bottom
-      { angle: Math.PI, index: 3 } // Left
-    ];
-
-    directions.forEach(dir => {
-      const angleDiff = Math.abs(Phaser.Math.Angle.ShortestBetween(angle, dir.angle));
-      const alpha = Math.max(0.3, 1 - (angleDiff / (Math.PI / 4)));
-      this.virtualControls.directionDots[dir.index].setAlpha(alpha);
-    });
-  }
-
-  // Easing function for smoother joystick control
-  private easeInOutQuad(t: number): number {
-    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-  }
-
-  // Clean up existing joystick to prevent conflicts
-  private cleanupExistingJoystick() {
-    if (this.virtualControls) {
-      // Clear stuck detection timer
-      this.clearStuckDetection();
-      
-      // Remove event handlers to prevent memory leaks
-      if (this.virtualControls.eventHandlers) {
-        this.input.off('pointermove', this.virtualControls.eventHandlers.pointerMove);
-        this.input.off('pointerup', this.virtualControls.eventHandlers.pointerUp);
-        this.input.off('pointerupoutside', this.virtualControls.eventHandlers.pointerUpOutside);
-        this.input.off('pointercancel', this.virtualControls.eventHandlers.pointerCancel);
-        this.input.off('pointerleave', this.virtualControls.eventHandlers.pointerCancel);
-      }
-      
-      // Destroy visual elements
-      Object.values(this.virtualControls).forEach((element: any) => {
-        if (element && element.destroy) {
-          element.destroy();
-        } else if (Array.isArray(element)) {
-          element.forEach((item: any) => {
-            if (item && item.destroy) item.destroy();
-          });
-        }
+  // Helper function to reset direction indicators
+  private resetDirectionIndicators() {
+    if (this.virtualControls && this.virtualControls.directionDots) {
+      this.virtualControls.directionDots.forEach((dot: any) => {
+        dot.setAlpha(0.4);
+        dot.setScale(1);
       });
-      
-      this.virtualControls = null;
     }
   }
 
-  // Start stuck detection timer
+  // Improved direction indicator updates with better visual feedback
+  private updateDirectionIndicators(deltaX: number, deltaY: number) {
+    if (!this.virtualControls || !this.virtualControls.directionDots) return;
+    
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    const maxDistance = this.virtualControls.maxDistance;
+    const normalizedDistance = Math.min(distance / maxDistance, 1);
+    
+    // Calculate angle for directional highlighting
+    const angle = Math.atan2(deltaY, deltaX);
+    const directions = [
+      -Math.PI/2,        // Top (0)
+      -Math.PI/4,        // Top-right (1)
+      0,                 // Right (2)
+      Math.PI/4,         // Bottom-right (3)
+      Math.PI/2,         // Bottom (4)
+      3*Math.PI/4,       // Bottom-left (5)
+      Math.PI,           // Left (6)
+      -3*Math.PI/4       // Top-left (7)
+    ];
+    
+    this.virtualControls.directionDots.forEach((dot: any, index: number) => {
+      // Calculate how close this direction is to the current angle
+      let angleDiff = Math.abs(angle - directions[index]);
+      if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
+      
+      // Highlight dots based on direction and intensity
+      const maxAngleDiff = Math.PI / 3; // 60 degrees
+      const intensity = Math.max(0, 1 - (angleDiff / maxAngleDiff)) * normalizedDistance;
+      
+      dot.setAlpha(0.2 + intensity * 0.8);
+      dot.setScale(1 + intensity * 0.3);
+    });
+  }
+
+  // Enhanced conflict detection for virtual controls area
+  private isInVirtualControlsArea(x: number, y: number): boolean {
+    if (!this.virtualControls) return false;
+    
+    // Check joystick area with improved bounds
+    if (this.virtualControls.touchArea) {
+      const area = this.virtualControls.touchArea;
+      if (x >= area.x && x <= area.x + area.width &&
+          y >= area.y && y <= area.y + area.height) {
+        return true;
+      }
+    }
+    
+    // Check action buttons area
+    if (this.actionButtons && this.actionButtons.layout) {
+      const layout = this.actionButtons.layout;
+      const buttonMargin = 30; // Extra margin for button area
+      
+      // Primary button area
+      const primaryArea = {
+        x: layout.primaryX - layout.buttonSize/2 - buttonMargin,
+        y: layout.primaryY - layout.buttonSize/2 - buttonMargin,
+        width: layout.buttonSize + buttonMargin * 2,
+        height: layout.buttonSize + buttonMargin * 2
+      };
+      
+      if (x >= primaryArea.x && x <= primaryArea.x + primaryArea.width &&
+          y >= primaryArea.y && y <= primaryArea.y + primaryArea.height) {
+        return true;
+      }
+      
+      // Secondary buttons area
+      const secondaryArea = {
+        x: layout.secondaryX - layout.smallButtonSize - buttonMargin,
+        y: layout.secondaryY - layout.smallButtonSize - buttonMargin,
+        width: layout.smallButtonSize * 3 + buttonMargin * 2,
+        height: layout.smallButtonSize * 2 + buttonMargin * 2
+      };
+      
+      if (x >= secondaryArea.x && x <= secondaryArea.x + secondaryArea.width &&
+          y >= secondaryArea.y && y <= secondaryArea.y + secondaryArea.height) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  // Improved stuck detection with better timing
   private startStuckDetection() {
     this.clearStuckDetection(); // Clear any existing timer
     
-    this.virtualControls.stuckCheckTimer = this.time.addEvent({
-      delay: 500, // Check every 500ms
+    this.virtualControls.stuckDetectionTimer = this.time.addEvent({
+      delay: 800, // Increased delay to reduce false positives
       callback: () => {
-        if (!this.virtualControls) return;
+        if (!this.virtualControls || !this.virtualControls.isDragging) return;
         
         const timeSinceLastInput = this.time.now - this.virtualControls.lastInputTime;
         
-        // If dragging but no input for 1 second, force reset
-        if (this.virtualControls.isDragging && timeSinceLastInput > 1000) {
-          console.warn('Joystick stuck detected, forcing reset');
+        // More lenient stuck detection - only trigger if truly stuck
+        if (timeSinceLastInput > 1000 && this.virtualControls.isDragging) {
+          console.warn('Joystick appears to be stuck, performing emergency reset');
           this.virtualControls.isStuck = true;
-          this.forceResetJoystick();
+          this.emergencyJoystickReset('stuck_detection');
         }
       },
       loop: true
     });
   }
 
-  // Clear stuck detection timer
-  private clearStuckDetection() {
-    if (this.virtualControls && this.virtualControls.stuckCheckTimer) {
-      this.virtualControls.stuckCheckTimer.destroy();
-      this.virtualControls.stuckCheckTimer = null;
-    }
-  }
-
-  // Force reset joystick when stuck
-  private forceResetJoystick() {
-    if (!this.virtualControls) return;
-    
-    console.log('Force resetting joystick');
-    
-    // Immediately stop all movement
-    this.virtualControls.isDragging = false;
-    this.virtualControls.activePointerId = null;
-    this.virtualControls.isStuck = false;
-    this.virtualControls.joystickVector = { x: 0, y: 0 };
-    this.virtualControls.lastInputTime = 0;
-    
-    // Stop cat movement immediately
-    this.cat.setVelocity(0, 0);
-    
-    // Clear stuck detection timer
-    this.clearStuckDetection();
-    
-    // Stop any existing tweens
-    this.tweens.killTweensOf(this.virtualControls.joystickKnob);
-    
-    // Reset knob position immediately
-    const centerX = this.virtualControls.joystickCenter.x;
-    const centerY = this.virtualControls.joystickCenter.y;
-    
-    this.virtualControls.joystickKnob.x = centerX;
-    this.virtualControls.joystickKnob.y = centerY;
-    this.virtualControls.joystickKnob.setScale(1);
-    this.virtualControls.joystickKnob.setFillStyle(0x4a90e2, 0.85);
-    
-    // Reset direction dots
-    if (this.virtualControls.directionDots) {
-      this.virtualControls.directionDots.forEach((dot: any) => dot.setAlpha(0.6));
-    }
-    
-    // Show notification to user
-    this.showNotification('🔄 操控杆已重置');
-    
-    // Restart stuck detection
-    this.startStuckDetection();
-  }
-
-  // Check for double-tap emergency reset
-  private checkForEmergencyReset(pointer: Phaser.Input.Pointer): boolean {
-    if (!this.emergencyResetEnabled) return false;
-    
-    const currentTime = this.time.now;
-    const timeSinceLastTap = currentTime - this.lastTapTime;
-    
-    // Double-tap detection (within 500ms)
-    if (timeSinceLastTap < 500 && timeSinceLastTap > 50) {
-      // Check if tap is in a safe area (not on UI elements)
-      const centerX = this.cameras.main.width / 2;
-      const centerY = this.cameras.main.height / 2;
-      const tapDistance = Phaser.Math.Distance.Between(pointer.x, pointer.y, centerX, centerY);
-      
-      // Only trigger if tapping in center area of screen
-      if (tapDistance < 150) {
-        console.log('Emergency reset triggered by double-tap');
-        
-        // Execute unified emergency reset
-        this.executeEmergencyReset('双击屏幕');
-        
-        // Temporarily disable emergency reset to prevent spam
-        this.emergencyResetEnabled = false;
-        this.time.delayedCall(2000, () => {
-          this.emergencyResetEnabled = true;
-        });
-        
-        this.lastTapTime = 0; // Reset tap time
-        return true;
-      }
-    }
-    
-    this.lastTapTime = currentTime;
-    return false;
-  }
-
-  // Unified emergency reset method
-  private executeEmergencyReset(trigger: string) {
-    console.log(`Emergency reset executed via ${trigger}`);
-    
-    // Force reset joystick
-    this.forceResetJoystick();
-    
-    // Stop all movement immediately
-    this.cat.setVelocity(0, 0);
-    
-    // Clear any stuck states
-    if (this.virtualControls) {
-      this.virtualControls.isDragging = false;
-      this.virtualControls.activePointerId = null;
-      this.virtualControls.isStuck = false;
-      this.virtualControls.joystickVector = { x: 0, y: 0 };
-      this.virtualControls.lastInputTime = 0;
-    }
-    
-    // Show visual feedback
-    const centerX = this.cameras.main.width / 2;
-    const centerY = this.cameras.main.height / 2;
-    
-    const emergencyText = this.add.text(centerX, centerY - 50, `🚨 ${trigger}紧急重置`, {
-      fontSize: '24px',
-      color: '#e74c3c',
-      backgroundColor: 'rgba(0,0,0,0.9)',
-      padding: { x: 15, y: 8 }
-    });
-    emergencyText.setOrigin(0.5);
-    emergencyText.setScrollFactor(0);
-    emergencyText.setDepth(2000);
-    
-    // Success message
-    const successText = this.add.text(centerX, centerY + 20, '✅ 操控杆已重置', {
-      fontSize: '18px',
-      color: '#27ae60',
-      backgroundColor: 'rgba(0,0,0,0.8)',
-      padding: { x: 12, y: 6 }
-    });
-    successText.setOrigin(0.5);
-    successText.setScrollFactor(0);
-    successText.setDepth(2000);
-    
-    // Animate both texts
-    this.tweens.add({
-      targets: [emergencyText, successText],
-      scaleX: 1.1,
-      scaleY: 1.1,
-      alpha: 0,
-      duration: 2000,
-      ease: 'Power2',
-      onComplete: () => {
-        emergencyText.destroy();
-        successText.destroy();
-      }
-    });
-    
-    // Haptic feedback
-    this.triggerActionHaptic('success');
-    
-    // Show notification
-    this.showNotification(`🚨 ${trigger}紧急重置已执行`);
+  // Helper function to get tool icons
+  private getToolIcon(tool: ToolType): string {
+    const icons = {
+      [ToolType.HOE]: '🔨',
+      [ToolType.WATERING_CAN]: '💧',
+      [ToolType.FERTILIZER]: '🌱',
+      [ToolType.SEEDS]: '🌰'
+    };
+    return icons[tool] || '🔧';
   }
 
   private createEnhancedActionButtons() {
-    const buttonSize = 60;
-    const smallButtonSize = 45;
-    const padding = 50; // Increased padding to ensure buttons are in safe area
-    const rightEdge = this.cameras.main.width - padding;
-    const bottomEdge = this.cameras.main.height - padding;
+    // Dynamic sizing based on screen size
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    const isLandscape = screenWidth > screenHeight;
+    const isMobile = screenWidth < 768;
+    
+    // Responsive button sizing
+    const baseSize = Math.min(screenWidth, screenHeight);
+    const buttonSize = Math.max(45, Math.min(65, baseSize * 0.08));
+    const smallButtonSize = buttonSize * 0.75;
+    
+    // Smart positioning to avoid joystick conflicts
+    const minPadding = 15;
+    const safePadding = isMobile ? 35 : 50;
+    
+    // Calculate button positions based on layout
+    let primaryButtonX, primaryButtonY;
+    let secondaryStartX, secondaryStartY;
+    
+    if (isLandscape) {
+      // Landscape: buttons on right side, avoiding joystick area
+      primaryButtonX = screenWidth - safePadding - buttonSize/2;
+      primaryButtonY = screenHeight - safePadding - buttonSize/2;
+      
+      // Secondary buttons above primary button
+      secondaryStartX = primaryButtonX;
+      secondaryStartY = primaryButtonY - buttonSize - 15;
+    } else {
+      // Portrait: buttons on right side, lower position
+      primaryButtonX = Math.min(screenWidth - safePadding - buttonSize/2, screenWidth - buttonSize/2 - minPadding);
+      primaryButtonY = Math.min(screenHeight - safePadding - buttonSize/2, screenHeight * 0.8);
+      
+      // Secondary buttons in a compact arrangement
+      secondaryStartX = primaryButtonX - buttonSize - 10;
+      secondaryStartY = primaryButtonY;
+    }
 
     // Create action buttons container for better organization
     this.actionButtons = {
       interact: null,
       inventory: null,
       cooking: null,
-      tools: []
+      tools: [],
+      // Store positioning info for responsive updates
+      layout: {
+        isLandscape,
+        isMobile,
+        buttonSize,
+        smallButtonSize,
+        primaryX: primaryButtonX,
+        primaryY: primaryButtonY,
+        secondaryX: secondaryStartX,
+        secondaryY: secondaryStartY
+      }
     };
 
-    // Main interact button with enhanced visual design - positioned safely in bottom right
-    const interactButtonX = Math.min(rightEdge - buttonSize/2, this.cameras.main.width - buttonSize/2 - 10);
-    const interactButtonY = Math.min(bottomEdge - buttonSize/2, this.cameras.main.height - buttonSize/2 - 10);
-    
-    // Modern glassmorphism interact button
-    const interactButtonShadow = this.add.circle(interactButtonX + 3, interactButtonY + 3, buttonSize/2, 0x000000, 0.3);
+    // Main interact button with enhanced visual design
+    const interactButtonShadow = this.add.circle(primaryButtonX + 2, primaryButtonY + 2, buttonSize/2, 0x000000, 0.25);
     interactButtonShadow.setScrollFactor(0);
-    interactButtonShadow.setDepth(999);
+    interactButtonShadow.setDepth(1009);
 
-    const interactButton = this.add.circle(interactButtonX, interactButtonY, buttonSize/2, 0x27ae60, 0.85);
+    const interactButton = this.add.circle(primaryButtonX, primaryButtonY, buttonSize/2, 0x27ae60, 0.85);
     interactButton.setScrollFactor(0);
-    interactButton.setDepth(1000);
-    interactButton.setInteractive();
+    interactButton.setDepth(1010);
     interactButton.setStrokeStyle(2, 0x2ecc71, 0.8);
+    interactButton.setInteractive();
 
-    // Add gradient inner ring
-    const interactInner = this.add.circle(interactButtonX, interactButtonY, buttonSize/2 - 8, 0x2ecc71, 0.3);
+    // Inner glow effect
+    const interactInner = this.add.circle(primaryButtonX, primaryButtonY, buttonSize/2 - 8, 0x2ecc71, 0.3);
     interactInner.setScrollFactor(0);
-    interactInner.setDepth(1000);
+    interactInner.setDepth(1011);
 
-    // Add subtle pulse animation to interact button
-    this.tweens.add({
-      targets: [interactButton, interactInner],
-      scaleX: 1.03,
-      scaleY: 1.03,
-      duration: 1500,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut'
-    });
-
-    const interactText = this.add.text(interactButtonX, interactButtonY, '🐾', {
-      fontSize: '28px',
+    const interactIcon = this.add.text(primaryButtonX, primaryButtonY, '🐾', {
+      fontSize: `${Math.max(16, buttonSize * 0.35)}px`,
       color: '#ffffff'
     });
-    interactText.setOrigin(0.5);
-    interactText.setScrollFactor(0);
-    interactText.setDepth(1001);
+    interactIcon.setOrigin(0.5);
+    interactIcon.setScrollFactor(0);
+    interactIcon.setDepth(1012);
 
+    // Enhanced interaction feedback
     interactButton.on('pointerdown', () => {
-      this.handleInteractionWithFeedback();
-      this.addButtonPressEffect(interactButton, interactInner);
+      this.handleInteraction();
+      
+      // Visual feedback
+      this.tweens.add({
+        targets: [interactButton, interactInner],
+        scaleX: 0.9,
+        scaleY: 0.9,
+        duration: 100,
+        yoyo: true,
+        ease: 'Power2'
+      });
+      
+      this.triggerActionHaptic('button_press');
     });
 
-    this.actionButtons.interact = { 
-      button: interactButton, 
-      text: interactText, 
+    this.actionButtons.interact = {
+      button: interactButton,
       shadow: interactButtonShadow,
-      inner: interactInner 
+      inner: interactInner,
+      icon: interactIcon
     };
 
-    // Secondary action buttons (Inventory and Cooking)
-    const secondaryButtons = [
-      { key: 'inventory', icon: '🎒', color: 0x8e44ad, action: () => this.toggleInventory() },
-      { key: 'cooking', icon: '🍳', color: 0xe67e22, action: () => this.openCookingInterface() }
-    ];
+    // Inventory button with improved positioning
+    const inventoryButtonX = isLandscape ? secondaryStartX : secondaryStartX;
+    const inventoryButtonY = isLandscape ? secondaryStartY : secondaryStartY;
+    
+    const inventoryButtonShadow = this.add.circle(inventoryButtonX + 2, inventoryButtonY + 2, smallButtonSize/2, 0x000000, 0.25);
+    inventoryButtonShadow.setScrollFactor(0);
+    inventoryButtonShadow.setDepth(1009);
 
-    secondaryButtons.forEach((btnData, index) => {
-      const buttonX = Math.min(rightEdge - smallButtonSize/2, this.cameras.main.width - smallButtonSize/2 - 10);
-      const buttonY = Math.min(bottomEdge - buttonSize - 20 - (index * (smallButtonSize + 15)), 
-                               this.cameras.main.height - buttonSize - 20 - (index * (smallButtonSize + 15)) - 10);
+    const inventoryButton = this.add.circle(inventoryButtonX, inventoryButtonY, smallButtonSize/2, 0x3498db, 0.85);
+    inventoryButton.setScrollFactor(0);
+    inventoryButton.setDepth(1010);
+    inventoryButton.setStrokeStyle(2, 0x74b9ff, 0.8);
+    inventoryButton.setInteractive();
 
-      const button = this.add.circle(buttonX, buttonY, smallButtonSize/2, btnData.color, 0.9);
-      button.setScrollFactor(0);
-      button.setDepth(1000);
-      button.setInteractive();
-      button.setStrokeStyle(2, btnData.color, 1);
+    const inventoryInner = this.add.circle(inventoryButtonX, inventoryButtonY, smallButtonSize/2 - 6, 0x74b9ff, 0.3);
+    inventoryInner.setScrollFactor(0);
+    inventoryInner.setDepth(1011);
 
-      const text = this.add.text(buttonX, buttonY, btnData.icon, {
-        fontSize: '20px',
-        color: '#ffffff'
+    const inventoryIcon = this.add.text(inventoryButtonX, inventoryButtonY, '🎒', {
+      fontSize: `${Math.max(14, smallButtonSize * 0.35)}px`,
+      color: '#ffffff'
+    });
+    inventoryIcon.setOrigin(0.5);
+    inventoryIcon.setScrollFactor(0);
+    inventoryIcon.setDepth(1012);
+
+    inventoryButton.on('pointerdown', () => {
+      this.toggleInventory();
+      
+      this.tweens.add({
+        targets: [inventoryButton, inventoryInner],
+        scaleX: 0.9,
+        scaleY: 0.9,
+        duration: 100,
+        yoyo: true,
+        ease: 'Power2'
       });
-      text.setOrigin(0.5);
-      text.setScrollFactor(0);
-      text.setDepth(1001);
-
-      button.on('pointerdown', () => {
-        btnData.action();
-        this.addButtonPressEffect(button);
-      });
-
-      this.actionButtons[btnData.key] = { button, text };
+      
+      this.triggerActionHaptic('button_press');
     });
 
+    this.actionButtons.inventory = {
+      button: inventoryButton,
+      shadow: inventoryButtonShadow,
+      inner: inventoryInner,
+      icon: inventoryIcon
+    };
+
+    // Cooking button with smart positioning
+    const cookingButtonX = isLandscape ? secondaryStartX : secondaryStartX - smallButtonSize - 10;
+    const cookingButtonY = isLandscape ? secondaryStartY - smallButtonSize - 15 : secondaryStartY;
+    
+    const cookingButtonShadow = this.add.circle(cookingButtonX + 2, cookingButtonY + 2, smallButtonSize/2, 0x000000, 0.25);
+    cookingButtonShadow.setScrollFactor(0);
+    cookingButtonShadow.setDepth(1009);
+
+    const cookingButton = this.add.circle(cookingButtonX, cookingButtonY, smallButtonSize/2, 0xe67e22, 0.85);
+    cookingButton.setScrollFactor(0);
+    cookingButton.setDepth(1010);
+    cookingButton.setStrokeStyle(2, 0xf39c12, 0.8);
+    cookingButton.setInteractive();
+
+    const cookingInner = this.add.circle(cookingButtonX, cookingButtonY, smallButtonSize/2 - 6, 0xf39c12, 0.3);
+    cookingInner.setScrollFactor(0);
+    cookingInner.setDepth(1011);
+
+    const cookingIcon = this.add.text(cookingButtonX, cookingButtonY, '🍳', {
+      fontSize: `${Math.max(14, smallButtonSize * 0.35)}px`,
+      color: '#ffffff'
+    });
+    cookingIcon.setOrigin(0.5);
+    cookingIcon.setScrollFactor(0);
+    cookingIcon.setDepth(1012);
+
+    cookingButton.on('pointerdown', () => {
+      this.openCookingInterface();
+      
+      this.tweens.add({
+        targets: [cookingButton, cookingInner],
+        scaleX: 0.9,
+        scaleY: 0.9,
+        duration: 100,
+        yoyo: true,
+        ease: 'Power2'
+      });
+      
+      this.triggerActionHaptic('button_press');
+    });
+
+    this.actionButtons.cooking = {
+      button: cookingButton,
+      shadow: cookingButtonShadow,
+      inner: cookingInner,
+      icon: cookingIcon
+    };
+
     // Tool selection buttons with improved layout
-    const tools = [
-      { tool: ToolType.HOE, icon: '🔨', color: 0x8B4513, name: '锄头' },
-      { tool: ToolType.WATERING_CAN, icon: '💧', color: 0x2196F3, name: '水壶' },
-      { tool: ToolType.FERTILIZER, icon: '🌱', color: 0x4CAF50, name: '肥料' },
-      { tool: ToolType.SEEDS, icon: '🌰', color: 0xFF9800, name: '种子' }
-    ];
+    const tools = ['watering_can', 'hoe', 'fertilizer'];
+    const toolButtonSize = Math.max(35, smallButtonSize * 0.8);
+    
+    // Position tool buttons in a row above other buttons
+    const toolStartX = isLandscape ? secondaryStartX - (toolButtonSize + 5) * 2 : primaryButtonX - (toolButtonSize + 5) * 2;
+    const toolStartY = isLandscape ? secondaryStartY - smallButtonSize - 35 : primaryButtonY - buttonSize - 20;
+    
+    tools.forEach((tool, index) => {
+      const toolX = toolStartX + (index * (toolButtonSize + 8));
+      const toolY = toolStartY;
+      
+      // Ensure tool buttons don't go off-screen
+      const adjustedX = Math.max(toolButtonSize/2 + minPadding, Math.min(toolX, screenWidth - toolButtonSize/2 - minPadding));
+      const adjustedY = Math.max(toolButtonSize/2 + minPadding, toolY);
+      
+      const toolButtonShadow = this.add.circle(adjustedX + 1, adjustedY + 1, toolButtonSize/2, 0x000000, 0.2);
+      toolButtonShadow.setScrollFactor(0);
+      toolButtonShadow.setDepth(1009);
 
-    // Create tool selector panel - positioned safely away from edges
-    const toolPanelWidth = 60;
-    const toolPanelHeight = tools.length * (smallButtonSize + 10) + 20;
-    const toolPanelX = Math.min(rightEdge - buttonSize - toolPanelWidth - 20, 
-                                this.cameras.main.width - buttonSize - toolPanelWidth - 30);
-    const toolPanelY = Math.min(bottomEdge - toolPanelHeight/2, 
-                                this.cameras.main.height - toolPanelHeight/2 - 20);
+      const toolButton = this.add.circle(adjustedX, adjustedY, toolButtonSize/2, 0x95a5a6, 0.8);
+      toolButton.setScrollFactor(0);
+      toolButton.setDepth(1010);
+      toolButton.setStrokeStyle(1, 0xbdc3c7, 0.6);
+      toolButton.setInteractive();
 
-    // Tool panel background
-    const toolPanel = this.add.graphics();
-    toolPanel.fillStyle(0x2c3e50, 0.8);
-    toolPanel.fillRoundedRect(toolPanelX - toolPanelWidth/2, toolPanelY - toolPanelHeight/2, toolPanelWidth, toolPanelHeight, 10);
-    toolPanel.lineStyle(2, 0x34495e, 1);
-    toolPanel.strokeRoundedRect(toolPanelX - toolPanelWidth/2, toolPanelY - toolPanelHeight/2, toolPanelWidth, toolPanelHeight, 10);
-    toolPanel.setScrollFactor(0);
-    toolPanel.setDepth(999);
-
-    tools.forEach((toolData, index) => {
-      const buttonX = toolPanelX;
-      const buttonY = toolPanelY - toolPanelHeight/2 + 30 + (index * (smallButtonSize + 10));
-
-      const button = this.add.circle(buttonX, buttonY, (smallButtonSize-10)/2, toolData.color, 0.9);
-      button.setScrollFactor(0);
-      button.setDepth(1000);
-      button.setInteractive();
-      button.setStrokeStyle(2, toolData.color, 1);
-
-      const text = this.add.text(buttonX, buttonY, toolData.icon, {
-        fontSize: '16px',
+      const toolIcon = this.add.text(adjustedX, adjustedY, this.getToolIcon(tool as ToolType), {
+        fontSize: `${Math.max(12, toolButtonSize * 0.4)}px`,
         color: '#ffffff'
       });
-      text.setOrigin(0.5);
-      text.setScrollFactor(0);
-      text.setDepth(1001);
+      toolIcon.setOrigin(0.5);
+      toolIcon.setScrollFactor(0);
+      toolIcon.setDepth(1012);
 
-      // Tool selection feedback
-      button.on('pointerdown', () => {
-        this.selectToolWithFeedback(toolData.tool, toolData.name);
-        this.addButtonPressEffect(button);
-        this.highlightSelectedTool(button, index);
+      toolButton.on('pointerdown', () => {
+        this.selectTool(tool as ToolType);
+        
+        this.tweens.add({
+          targets: toolButton,
+          scaleX: 0.85,
+          scaleY: 0.85,
+          duration: 80,
+          yoyo: true,
+          ease: 'Power2'
+        });
+        
+        this.triggerActionHaptic('tool_select');
       });
 
-      // Add hover effects
-      button.on('pointerover', () => {
-        button.setScale(1.1);
-        this.showToolTooltip(toolData.name, buttonX, buttonY);
+      this.actionButtons.tools.push({
+        type: tool,
+        button: toolButton,
+        shadow: toolButtonShadow,
+        icon: toolIcon,
+        x: adjustedX,
+        y: adjustedY
       });
-
-      button.on('pointerout', () => {
-        button.setScale(1);
-        this.hideToolTooltip();
-      });
-
-      this.actionButtons.tools.push({ button, text, tool: toolData.tool });
     });
   }
 
@@ -1592,84 +1713,194 @@ export class GameScene extends Phaser.Scene {
     // Update UI elements based on screen size changes
     const currentWidth = this.cameras.main.width;
     const currentHeight = this.cameras.main.height;
+    const isLandscape = currentWidth > currentHeight;
+    const isMobile = currentWidth < 768;
 
     // Update virtual controls position if screen size changed
     if (this.virtualControls) {
-      const padding = 60; // Increased padding for better visibility
-      const joystickRadius = 70;
-      // Ensure joystick is fully visible with safe area consideration
-      const newJoystickX = Math.max(padding + joystickRadius, joystickRadius + 20);
-      const newJoystickY = Math.min(currentHeight - padding - joystickRadius, currentHeight - joystickRadius - 20);
+      // Recalculate joystick positioning with improved logic
+      const baseSize = Math.min(currentWidth, currentHeight);
+      const joystickRadius = Math.max(50, Math.min(80, baseSize * 0.08));
+      const minPadding = 20;
+      const safePadding = isMobile ? 40 : 60;
+      
+      let newJoystickX, newJoystickY;
+      
+      if (isLandscape) {
+        // Landscape positioning
+        newJoystickX = Math.max(safePadding + joystickRadius, joystickRadius + minPadding);
+        newJoystickY = currentHeight - safePadding - joystickRadius;
+      } else {
+        // Portrait positioning
+        newJoystickX = Math.max(safePadding + joystickRadius, currentWidth * 0.2);
+        newJoystickY = Math.min(currentHeight - safePadding - joystickRadius, currentHeight * 0.85);
+      }
+      
+      // Ensure joystick stays within screen bounds
+      newJoystickX = Math.min(newJoystickX, currentWidth - joystickRadius - minPadding);
+      newJoystickY = Math.max(newJoystickY, joystickRadius + minPadding);
 
-      // Update joystick position smoothly
-      if (this.virtualControls.joystickCenter.x !== newJoystickX || 
-          this.virtualControls.joystickCenter.y !== newJoystickY) {
+      // Update joystick position if changed
+      if (Math.abs(this.virtualControls.joystickCenter.x - newJoystickX) > 5 || 
+          Math.abs(this.virtualControls.joystickCenter.y - newJoystickY) > 5) {
         
+        // Update center position
         this.virtualControls.joystickCenter.x = newJoystickX;
         this.virtualControls.joystickCenter.y = newJoystickY;
         
-        // Update all joystick elements
-        this.virtualControls.joystickBase.x = newJoystickX;
-        this.virtualControls.joystickBase.y = newJoystickY;
-        this.virtualControls.joystickInner.x = newJoystickX;
-        this.virtualControls.joystickInner.y = newJoystickY;
+        // Update touch area for conflict detection
+        this.virtualControls.touchArea = {
+          x: newJoystickX - joystickRadius - 20,
+          y: newJoystickY - joystickRadius - 20,
+          width: (joystickRadius + 20) * 2,
+          height: (joystickRadius + 20) * 2
+        };
         
+        // Update all joystick elements smoothly
+        this.tweens.add({
+          targets: [this.virtualControls.joystickBase, this.virtualControls.joystickInner],
+          x: newJoystickX,
+          y: newJoystickY,
+          duration: 300,
+          ease: 'Power2.easeOut'
+        });
+        
+        // Only move knob if not currently being dragged
         if (!this.virtualControls.isDragging) {
-          this.virtualControls.joystickKnob.x = newJoystickX;
-          this.virtualControls.joystickKnob.y = newJoystickY;
-          // Reset any stuck movement when repositioning
+          this.tweens.add({
+            targets: this.virtualControls.joystickKnob,
+            x: newJoystickX,
+            y: newJoystickY,
+            duration: 300,
+            ease: 'Power2.easeOut'
+          });
+          
+          // Reset movement vector when repositioning
           this.virtualControls.joystickVector = { x: 0, y: 0 };
           this.virtualControls.lastInputTime = 0;
         }
 
-        // Update direction dots
-        const dotPositions = [
-          { x: 0, y: -joystickRadius + 15 },
-          { x: joystickRadius - 15, y: 0 },
-          { x: 0, y: joystickRadius - 15 },
-          { x: -joystickRadius + 15, y: 0 }
-        ];
+        // Update direction dots with new positioning
+        if (this.virtualControls.directionDots) {
+          const dotDistance = joystickRadius - 12;
+          const dotPositions = [
+            { x: 0, y: -dotDistance }, // Top
+            { x: dotDistance * 0.7, y: -dotDistance * 0.7 }, // Top-right
+            { x: dotDistance, y: 0 }, // Right
+            { x: dotDistance * 0.7, y: dotDistance * 0.7 }, // Bottom-right
+            { x: 0, y: dotDistance }, // Bottom
+            { x: -dotDistance * 0.7, y: dotDistance * 0.7 }, // Bottom-left
+            { x: -dotDistance, y: 0 }, // Left
+            { x: -dotDistance * 0.7, y: -dotDistance * 0.7 } // Top-left
+          ];
 
-        this.virtualControls.directionDots.forEach((dot: any, index: number) => {
-          dot.x = newJoystickX + dotPositions[index].x;
-          dot.y = newJoystickY + dotPositions[index].y;
-        });
+          this.virtualControls.directionDots.forEach((dot: any, index: number) => {
+            this.tweens.add({
+              targets: dot,
+              x: newJoystickX + dotPositions[index].x,
+              y: newJoystickY + dotPositions[index].y,
+              duration: 300,
+              ease: 'Power2.easeOut'
+            });
+          });
+        }
       }
     }
 
-    // Update action buttons position
-    if (this.actionButtons) {
-      const padding = 50; // Increased padding to ensure buttons are in safe area
-      const rightEdge = currentWidth - padding;
-      const bottomEdge = currentHeight - padding;
-      const buttonSize = 60;
-      const smallButtonSize = 45;
+    // Update action buttons position with improved conflict avoidance
+    if (this.actionButtons && this.actionButtons.layout) {
+      const baseSize = Math.min(currentWidth, currentHeight);
+      const buttonSize = Math.max(45, Math.min(65, baseSize * 0.08));
+      const smallButtonSize = buttonSize * 0.75;
+      const minPadding = 15;
+      const safePadding = isMobile ? 35 : 50;
+      
+      // Recalculate button positions
+      let primaryButtonX, primaryButtonY;
+      let secondaryStartX, secondaryStartY;
+      
+      if (isLandscape) {
+        primaryButtonX = currentWidth - safePadding - buttonSize/2;
+        primaryButtonY = currentHeight - safePadding - buttonSize/2;
+        secondaryStartX = primaryButtonX;
+        secondaryStartY = primaryButtonY - buttonSize - 15;
+      } else {
+        primaryButtonX = Math.min(currentWidth - safePadding - buttonSize/2, currentWidth - buttonSize/2 - minPadding);
+        primaryButtonY = Math.min(currentHeight - safePadding - buttonSize/2, currentHeight * 0.8);
+        secondaryStartX = primaryButtonX - buttonSize - 10;
+        secondaryStartY = primaryButtonY;
+      }
 
       // Update main interact button
       if (this.actionButtons.interact) {
-        const interactButtonX = Math.min(rightEdge - buttonSize/2, currentWidth - buttonSize/2 - 10);
-        const interactButtonY = Math.min(bottomEdge - buttonSize/2, currentHeight - buttonSize/2 - 10);
-        
-        this.actionButtons.interact.button.x = interactButtonX;
-        this.actionButtons.interact.button.y = interactButtonY;
-        this.actionButtons.interact.text.x = interactButtonX;
-        this.actionButtons.interact.text.y = interactButtonY;
+        this.updateButtonPosition(this.actionButtons.interact, primaryButtonX, primaryButtonY, buttonSize);
       }
 
-      // Update secondary buttons
-      ['inventory', 'cooking'].forEach((key, index) => {
-        if (this.actionButtons[key]) {
-          const buttonX = Math.min(rightEdge - smallButtonSize/2, currentWidth - smallButtonSize/2 - 10);
-          const buttonY = Math.min(bottomEdge - buttonSize - 20 - (index * (smallButtonSize + 15)), 
-                                   currentHeight - buttonSize - 20 - (index * (smallButtonSize + 15)) - 10);
+      // Update inventory button
+      if (this.actionButtons.inventory) {
+        const invX = isLandscape ? secondaryStartX : secondaryStartX;
+        const invY = isLandscape ? secondaryStartY : secondaryStartY;
+        this.updateButtonPosition(this.actionButtons.inventory, invX, invY, smallButtonSize);
+      }
+
+      // Update cooking button
+      if (this.actionButtons.cooking) {
+        const cookX = isLandscape ? secondaryStartX : secondaryStartX - smallButtonSize - 10;
+        const cookY = isLandscape ? secondaryStartY - smallButtonSize - 15 : secondaryStartY;
+        this.updateButtonPosition(this.actionButtons.cooking, cookX, cookY, smallButtonSize);
+      }
+
+      // Update tool buttons
+      if (this.actionButtons.tools && this.actionButtons.tools.length > 0) {
+        const toolButtonSize = Math.max(35, smallButtonSize * 0.8);
+        const toolStartX = isLandscape ? secondaryStartX - (toolButtonSize + 5) * 2 : primaryButtonX - (toolButtonSize + 5) * 2;
+        const toolStartY = isLandscape ? secondaryStartY - smallButtonSize - 35 : primaryButtonY - buttonSize - 20;
+        
+        this.actionButtons.tools.forEach((toolBtn: any, index: number) => {
+          const toolX = toolStartX + (index * (toolButtonSize + 8));
+          const adjustedX = Math.max(toolButtonSize/2 + minPadding, Math.min(toolX, currentWidth - toolButtonSize/2 - minPadding));
+          const adjustedY = Math.max(toolButtonSize/2 + minPadding, toolStartY);
           
-          this.actionButtons[key].button.x = buttonX;
-          this.actionButtons[key].button.y = buttonY;
-          this.actionButtons[key].text.x = buttonX;
-          this.actionButtons[key].text.y = buttonY;
-        }
-      });
+          this.updateButtonPosition(toolBtn, adjustedX, adjustedY, toolButtonSize);
+        });
+      }
+
+      // Update layout info
+      this.actionButtons.layout = {
+        isLandscape,
+        isMobile,
+        buttonSize,
+        smallButtonSize,
+        primaryX: primaryButtonX,
+        primaryY: primaryButtonY,
+        secondaryX: secondaryStartX,
+        secondaryY: secondaryStartY
+      };
     }
+  }
+
+  // Helper function to smoothly update button positions
+  private updateButtonPosition(buttonObj: any, newX: number, newY: number, size: number) {
+    if (!buttonObj) return;
+    
+    const elements = [buttonObj.button, buttonObj.shadow, buttonObj.inner, buttonObj.icon];
+    const duration = 300;
+    
+    elements.forEach(element => {
+      if (element) {
+        this.tweens.add({
+          targets: element,
+          x: newX + (element === buttonObj.shadow ? 2 : 0),
+          y: newY + (element === buttonObj.shadow ? 2 : 0),
+          duration: duration,
+          ease: 'Power2.easeOut'
+        });
+      }
+    });
+    
+    // Update stored position
+    if (buttonObj.x !== undefined) buttonObj.x = newX;
+    if (buttonObj.y !== undefined) buttonObj.y = newY;
   }
 
   // Enhanced interaction system with better feedback
@@ -1813,9 +2044,53 @@ export class GameScene extends Phaser.Scene {
   }
 
   private setupCamera() {
+    // Improved camera setup with responsive behavior
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    
+    // Dynamic zoom based on screen size
+    const baseZoom = Math.min(screenWidth / 800, screenHeight / 600);
+    const optimalZoom = Math.max(0.8, Math.min(2.0, baseZoom * 1.2));
+    
     this.cameras.main.startFollow(this.cat);
-    this.cameras.main.setZoom(1.5);
-    this.cameras.main.setBounds(0, 0, 800, 600);
+    this.cameras.main.setZoom(optimalZoom);
+    
+    // Dynamic world bounds based on screen size
+    const worldWidth = Math.max(1000, screenWidth * 1.5);
+    const worldHeight = Math.max(800, screenHeight * 1.5);
+    this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
+    
+    // Smooth camera following
+    this.cameras.main.setLerp(0.1, 0.1);
+    this.cameras.main.setDeadzone(100, 100);
+  }
+  
+  // Setup orientation change handling
+  private setupOrientationHandling() {
+    // Listen for screen orientation changes
+    const handleOrientationChange = () => {
+      // Delay to allow browser to complete orientation change
+      this.time.delayedCall(300, () => {
+        console.log('Orientation changed, updating UI layout');
+        this.updateResponsiveUI();
+        
+        // Update camera bounds and zoom
+        this.setupCamera();
+        
+        // Show brief notification
+        this.showNotification('🔄 界面已适配新屏幕方向');
+      });
+    };
+    
+    // Add event listeners for orientation changes
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleOrientationChange);
+    
+    // Store handlers for cleanup
+    this.orientationHandlers = {
+      orientationChange: handleOrientationChange,
+      resize: handleOrientationChange
+    };
   }
 
   private setupCollisions() {
@@ -2107,46 +2382,49 @@ export class GameScene extends Phaser.Scene {
       moveY = 1;
     }
 
-    // Enhanced virtual joystick input with improved stability and stuck prevention
+    // Enhanced virtual joystick input with improved stability and conflict prevention
     if (this.virtualControls && this.virtualControls.joystickVector) {
       const timeSinceLastInput = this.time.now - this.virtualControls.lastInputTime;
       
-      // Enhanced stuck detection and prevention
-      if (timeSinceLastInput > 300 && !this.virtualControls.isDragging) {
-        // Force stop movement if no input for 300ms and not actively dragging
-        this.virtualControls.joystickVector.x = 0;
-        this.virtualControls.joystickVector.y = 0;
-        this.cat.setVelocity(0, 0); // Immediately stop cat movement
-      }
-      
-      // Emergency reset if stuck for too long
-      if (timeSinceLastInput > 2000 && this.virtualControls.isDragging) {
-        console.warn('Emergency joystick reset triggered');
-        this.forceResetJoystick();
-        return; // Skip movement processing this frame
+      // Improved stuck prevention with better timing
+      if (timeSinceLastInput > 200 && !this.virtualControls.isDragging) {
+        // Gradually reduce movement when not actively dragging
+        this.virtualControls.joystickVector.x *= 0.8;
+        this.virtualControls.joystickVector.y *= 0.8;
+        
+        // Complete stop if values are very small
+        if (Math.abs(this.virtualControls.joystickVector.x) < 0.05) {
+          this.virtualControls.joystickVector.x = 0;
+        }
+        if (Math.abs(this.virtualControls.joystickVector.y) < 0.05) {
+          this.virtualControls.joystickVector.y = 0;
+        }
       }
       
       const joystickStrength = Math.sqrt(
         this.virtualControls.joystickVector.x ** 2 + this.virtualControls.joystickVector.y ** 2
       );
       
-      // Only apply joystick input if actively dragging with recent input
-      if (this.virtualControls.isDragging && timeSinceLastInput < 150) {
+      // Apply joystick input with improved validation
+      if (this.virtualControls.isDragging && timeSinceLastInput < 100) {
+        // Active dragging - use full joystick input
         if (joystickStrength > this.virtualControls.deadZone) {
-          // Use smooth movement based on joystick distance with performance optimization
-          const smoothedX = this.virtualControls.joystickVector.x * 0.9; // Slight damping for smoother movement
-          const smoothedY = this.virtualControls.joystickVector.y * 0.9;
+          const dampingFactor = 0.92; // Improved damping for smoother control
+          moveX = this.virtualControls.joystickVector.x * dampingFactor;
+          moveY = this.virtualControls.joystickVector.y * dampingFactor;
           
-          moveX = smoothedX;
-          moveY = smoothedY;
-          
-          // Add subtle haptic feedback during movement (throttled for performance)
-          if (this.hapticEnabled && joystickStrength > 0.8 && this.frameCounter % 30 === 0) {
-            this.triggerHapticFeedback(8);
+          // Throttled haptic feedback for better performance
+          if (this.hapticEnabled && joystickStrength > 0.7 && this.frameCounter % 45 === 0) {
+            this.triggerHapticFeedback(6);
           }
         }
-      } else if (!this.virtualControls.isDragging) {
-        // Ensure movement is completely stopped when not actively using joystick
+      } else if (timeSinceLastInput < 300 && joystickStrength > 0.1) {
+        // Recent input but not actively dragging - apply reduced movement
+        const inertiaFactor = Math.max(0, 1 - (timeSinceLastInput / 300));
+        moveX = this.virtualControls.joystickVector.x * inertiaFactor * 0.5;
+        moveY = this.virtualControls.joystickVector.y * inertiaFactor * 0.5;
+      } else {
+        // No recent input - ensure complete stop
         this.virtualControls.joystickVector.x = 0;
         this.virtualControls.joystickVector.y = 0;
       }
@@ -2221,11 +2499,168 @@ export class GameScene extends Phaser.Scene {
       this.actionButtons = null;
     }
     
+    // Clean up orientation handlers
+    if (this.orientationHandlers) {
+      window.removeEventListener('orientationchange', this.orientationHandlers.orientationChange);
+      window.removeEventListener('resize', this.orientationHandlers.resize);
+      this.orientationHandlers = null;
+    }
+    
     // Ensure cat movement is stopped
     if (this.cat) {
       this.cat.setVelocity(0, 0);
     }
     
     console.log('GameScene cleanup completed');
+  }
+
+  // Clean up existing joystick to prevent conflicts
+  private cleanupExistingJoystick() {
+    if (this.virtualControls) {
+      // Clear stuck detection timer
+      this.clearStuckDetection();
+      
+      // Stop all movement immediately
+      if (this.cat) {
+        this.cat.setVelocity(0, 0);
+      }
+      
+      // Destroy visual elements safely
+      const elementsToDestroy = [
+        this.virtualControls.joystickBase,
+        this.virtualControls.joystickInner,
+        this.virtualControls.joystickKnob,
+        this.virtualControls.knobShadow
+      ];
+      
+      elementsToDestroy.forEach(element => {
+        if (element && element.destroy) {
+          element.destroy();
+        }
+      });
+      
+      // Destroy direction dots array
+      if (this.virtualControls.directionDots) {
+        this.virtualControls.directionDots.forEach((dot: any) => {
+          if (dot && dot.destroy) dot.destroy();
+        });
+      }
+      
+      this.virtualControls = null;
+    }
+  }
+
+  // Clear stuck detection timer
+  private clearStuckDetection() {
+    if (this.virtualControls && this.virtualControls.stuckDetectionTimer) {
+      this.virtualControls.stuckDetectionTimer.destroy();
+      this.virtualControls.stuckDetectionTimer = null;
+    }
+  }
+
+  // Emergency joystick reset with comprehensive cleanup
+  private emergencyJoystickReset(trigger: string) {
+    if (!this.virtualControls) return;
+    
+    console.log(`Emergency joystick reset triggered by: ${trigger}`);
+    
+    // Immediate state cleanup
+    this.virtualControls.isDragging = false;
+    this.virtualControls.activePointerId = null;
+    this.virtualControls.isStuck = false;
+    this.virtualControls.joystickVector = { x: 0, y: 0 };
+    this.virtualControls.lastInputTime = 0;
+    
+    // Stop cat movement immediately
+    if (this.cat) {
+      this.cat.setVelocity(0, 0);
+    }
+    
+    // Clear detection timer
+    this.clearStuckDetection();
+    
+    // Reset knob position with animation
+    const centerX = this.virtualControls.joystickCenter.x;
+    const centerY = this.virtualControls.joystickCenter.y;
+    
+    this.tweens.killTweensOf(this.virtualControls.joystickKnob);
+    this.tweens.add({
+      targets: this.virtualControls.joystickKnob,
+      x: centerX,
+      y: centerY,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 200,
+      ease: 'Back.easeOut',
+      onComplete: () => {
+        if (this.virtualControls) {
+          this.virtualControls.joystickKnob.setFillStyle(0x4a90e2, 0.8);
+          this.resetDirectionIndicators();
+        }
+      }
+    });
+    
+    // Visual feedback
+    const centerScreenX = this.cameras.main.width / 2;
+    const centerScreenY = this.cameras.main.height / 2;
+    
+    const resetText = this.add.text(centerScreenX, centerScreenY, '🔄 操控杆已重置', {
+      fontSize: '20px',
+      color: '#27ae60',
+      backgroundColor: 'rgba(0,0,0,0.8)',
+      padding: { x: 12, y: 6 }
+    });
+    resetText.setOrigin(0.5);
+    resetText.setScrollFactor(0);
+    resetText.setDepth(2000);
+    
+    this.tweens.add({
+      targets: resetText,
+      alpha: 0,
+      y: centerScreenY - 50,
+      duration: 1500,
+      ease: 'Power2.easeOut',
+      onComplete: () => resetText.destroy()
+    });
+    
+    // Restart detection
+    this.startStuckDetection();
+    
+    // Haptic feedback
+    this.triggerActionHaptic('success');
+  }
+
+  // Check for double-tap emergency reset
+  private checkForEmergencyReset(pointer: Phaser.Input.Pointer): boolean {
+    if (!this.emergencyResetEnabled) return false;
+    
+    const currentTime = this.time.now;
+    const timeSinceLastTap = currentTime - this.lastTapTime;
+    
+    // Double-tap detection (within 400ms for more reliable detection)
+    if (timeSinceLastTap < 400 && timeSinceLastTap > 50) {
+      // Check if tap is in the center area (not on UI elements)
+      const centerX = this.cameras.main.width / 2;
+      const centerY = this.cameras.main.height / 2;
+      const tapDistance = Phaser.Math.Distance.Between(pointer.x, pointer.y, centerX, centerY);
+      
+      // Only trigger if tapping in center area and not on virtual controls
+      if (tapDistance < 120 && !this.isInVirtualControlsArea(pointer.x, pointer.y)) {
+        console.log('Emergency reset triggered by double-tap in center area');
+        this.emergencyJoystickReset('双击屏幕中央');
+        
+        // Temporarily disable to prevent spam
+        this.emergencyResetEnabled = false;
+        this.time.delayedCall(2000, () => {
+          this.emergencyResetEnabled = true;
+        });
+        
+        this.lastTapTime = 0;
+        return true;
+      }
+    }
+    
+    this.lastTapTime = currentTime;
+    return false;
   }
 }

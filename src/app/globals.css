@@ -50,12 +50,40 @@
       -webkit-tap-highlight-color: transparent;
     }
     
-    /* iOS 状态栏适配 */
-    .mobile-content {
+    /* PWA Header 安全区域适配 */
+    .pwa-safe-header {
       padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
+      /* 减少顶部内边距，避免拥挤 */
+      margin-top: 0;
+    }
+    
+    .pwa-header-content {
+      min-height: 4rem;
+      /* 移除额外的高度计算，避免过高 */
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+    
+    /* PWA 模式下的主内容区域优化 */
+    .mobile-content {
+      /* 减少顶部内边距，因为header已经处理了安全区域 */
+      padding-top: 1rem !important;
+      padding-bottom: calc(env(safe-area-inset-bottom) + 5rem);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+    
+    /* PWA 模式下隐藏不必要的元素 */
+    .pwa-hide-when-installed {
+      display: none;
+    }
+    
+    /* PWA 模式下的状态指示器位置调整 */
+    .fixed.top-4.right-4 {
+      top: calc(1rem + env(safe-area-inset-top));
+      right: calc(1rem + env(safe-area-inset-right));
     }
   }
 

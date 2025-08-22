@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+
 
 export default function OfflinePage() {
   return (
@@ -19,12 +19,12 @@ export default function OfflinePage() {
             您当前处于离线状态，无法访问此页面
           </p>
         </div>
-        
+
         <div className="space-y-4">
           <p className="text-gray-500 dark:text-gray-400">
             请检查您的网络连接，然后重试
           </p>
-          
+
           <button
             onClick={() => window.location.reload()}
             className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
@@ -34,7 +34,7 @@ export default function OfflinePage() {
             </svg>
             重新加载
           </button>
-          
+
           <div className="mt-8">
             <a
               href="/"

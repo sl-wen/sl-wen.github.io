@@ -3,7 +3,7 @@
 import { usePWA } from '@/hooks/usePWA';
 
 export default function PWAStatus() {
-  const { isInstalled, isOffline, isIOS } = usePWA();
+  const { isOffline } = usePWA();
 
   return (
     <div className="fixed top-4 right-4 z-40">

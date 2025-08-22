@@ -41,7 +41,7 @@ export class UILayoutManager {
     this.screenHeight = this.scene.cameras.main.height;
     this.isPortrait = this.screenHeight > this.screenWidth;
     this.isMobile = this.screenWidth < 768;
-    
+
     // 计算安全区域
     this.calculateSafeArea();
   }
@@ -49,7 +49,7 @@ export class UILayoutManager {
   private calculateSafeArea() {
     // 基础边距
     const basePadding = this.isMobile ? 20 : 30;
-    
+
     // 移动端需要考虑状态栏、导航栏等
     if (this.isMobile) {
       this.safeArea = {
@@ -69,7 +69,7 @@ export class UILayoutManager {
   }
 
   private setupResizeListener() {
-    this.scene.scale.on('resize', (gameSize: any) => {
+    this.scene.scale.on('resize', () => {
       this.updateScreenInfo();
       this.repositionAllElements();
     });
@@ -109,27 +109,27 @@ export class UILayoutManager {
         x = this.safeArea.left + element.margin;
         y = this.safeArea.top + element.margin;
         break;
-      
+
       case 'top-right':
         x = this.screenWidth - this.safeArea.right - element.width - element.margin;
         y = this.safeArea.top + element.margin;
         break;
-      
+
       case 'bottom-left':
         x = this.safeArea.left + element.margin;
         y = this.screenHeight - this.safeArea.bottom - element.height - element.margin;
         break;
-      
+
       case 'bottom-right':
         x = this.screenWidth - this.safeArea.right - element.width - element.margin;
         y = this.screenHeight - this.safeArea.bottom - element.height - element.margin;
         break;
-      
+
       case 'center':
         x = (this.screenWidth - element.width) / 2;
         y = (this.screenHeight - element.height) / 2;
         break;
-      
+
       default:
         x = element.x;
         y = element.y;
@@ -137,14 +137,14 @@ export class UILayoutManager {
 
     // 检查并解决冲突
     const resolvedPosition = this.resolveConflicts(element, x, y);
-    
+
     return resolvedPosition;
   }
 
   private resolveConflicts(currentElement: UIElement, x: number, y: number): { x: number; y: number } {
     const conflictElements = Array.from(this.elements.values())
-      .filter(el => 
-        el.id !== currentElement.id && 
+      .filter(el =>
+        el.id !== currentElement.id &&
         el.isVisible &&
         this.isOverlapping(
           { x, y, width: currentElement.width, height: currentElement.height },
@@ -170,17 +170,17 @@ export class UILayoutManager {
     return { x, y };
   }
 
-  private isOverlapping(rect1: { x: number; y: number; width: number; height: number }, 
-                       rect2: { x: number; y: number; width: number; height: number }): boolean {
-    return !(rect1.x + rect1.width < rect2.x || 
-             rect2.x + rect2.width < rect1.x || 
-             rect1.y + rect1.height < rect2.y || 
-             rect2.y + rect2.height < rect1.y);
+  private isOverlapping(rect1: { x: number; y: number; width: number; height: number },
+    rect2: { x: number; y: number; width: number; height: number }): boolean {
+    return !(rect1.x + rect1.width < rect2.x ||
+      rect2.x + rect2.width < rect1.x ||
+      rect1.y + rect1.height < rect2.y ||
+      rect2.y + rect2.height < rect1.y);
   }
 
   private findAlternativePosition(element: UIElement, conflictElement: UIElement): { x: number; y: number } | null {
     const margin = 10;
-    
+
     // 尝试不同的替代位置
     const alternatives = [
       // 在冲突元素的右侧
@@ -204,10 +204,10 @@ export class UILayoutManager {
 
   private isPositionValid(x: number, y: number, width: number, height: number): boolean {
     // 检查是否在屏幕边界内
-    return x >= this.safeArea.left && 
-           y >= this.safeArea.top && 
-           x + width <= this.screenWidth - this.safeArea.right && 
-           y + height <= this.screenHeight - this.safeArea.bottom;
+    return x >= this.safeArea.left &&
+      y >= this.safeArea.top &&
+      x + width <= this.screenWidth - this.safeArea.right &&
+      y + height <= this.screenHeight - this.safeArea.bottom;
   }
 
   private repositionElement(id: string): void {
@@ -271,7 +271,7 @@ export class UILayoutManager {
         // 竖屏：右下角垂直排列
         const startX = this.screenWidth - this.safeArea.right - buttonSize - margin;
         const startY = this.screenHeight - this.safeArea.bottom - (count * spacing) + spacing - margin;
-        
+
         for (let i = 0; i < count; i++) {
           positions.push({
             x: startX,
@@ -282,7 +282,7 @@ export class UILayoutManager {
         // 横屏：右下角水平排列
         const startX = this.screenWidth - this.safeArea.right - (count * spacing) + spacing - margin;
         const startY = this.screenHeight - this.safeArea.bottom - buttonSize - margin;
-        
+
         for (let i = 0; i < count; i++) {
           positions.push({
             x: startX + (i * spacing),
@@ -294,7 +294,7 @@ export class UILayoutManager {
       // 桌面端：右下角水平排列
       const startX = this.screenWidth - this.safeArea.right - (count * spacing) + spacing - margin * 2;
       const startY = this.screenHeight - this.safeArea.bottom - buttonSize - margin * 2;
-      
+
       for (let i = 0; i < count; i++) {
         positions.push({
           x: startX + (i * spacing),

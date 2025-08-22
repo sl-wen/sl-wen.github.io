@@ -1,11 +1,11 @@
 import * as Phaser from 'phaser';
-import { InventoryItem, CatStats, Recipe } from '../types/GameTypes';
+import { CatStats, InventoryItem, Recipe } from '../types/GameTypes';
 import { UILayoutManager } from '../UILayoutManager';
 
 export class UIScene extends Phaser.Scene {
   // UI布局管理器
   private uiLayoutManager!: UILayoutManager;
-  
+
   // UI元素
   private dialogueBox!: Phaser.GameObjects.Container;
   private dialogueText!: Phaser.GameObjects.Text;
@@ -25,7 +25,7 @@ export class UIScene extends Phaser.Scene {
   private interactionIndicators!: Phaser.GameObjects.Container;
   private proximityIndicator!: Phaser.GameObjects.Graphics;
   private characterPortrait!: Phaser.GameObjects.Text;
-  
+
   // 状态栏容器
   private statsContainer!: Phaser.GameObjects.Container;
 
@@ -36,7 +36,7 @@ export class UIScene extends Phaser.Scene {
   create() {
     // 初始化UI布局管理器
     this.uiLayoutManager = new UILayoutManager(this);
-    
+
     // Create UI elements with responsive design
     this.createDialogueBox();
     this.createNotificationArea();
@@ -142,7 +142,7 @@ export class UIScene extends Phaser.Scene {
 
     notificationContainer.add([notificationBg, this.notificationText]);
     notificationContainer.setVisible(false);
-    
+
     // Store reference
     (this as any).notificationContainer = notificationContainer;
   }
@@ -150,7 +150,7 @@ export class UIScene extends Phaser.Scene {
   private createResponsiveCatStats() {
     const screenInfo = this.uiLayoutManager.getScreenInfo();
     const statsPosition = this.uiLayoutManager.getStatsBarPosition();
-    
+
     // 根据屏幕尺寸调整状态栏
     const barWidth = screenInfo.isMobile ? (screenInfo.isPortrait ? 140 : 160) : 180;
     const barHeight = screenInfo.isMobile ? 16 : 18;
@@ -235,7 +235,7 @@ export class UIScene extends Phaser.Scene {
 
     // 添加到主容器
     this.statsContainer.add([healthContainer, energyContainer, happinessContainer, this.levelText]);
-    
+
     // 存储容器尺寸信息用于响应式更新
     (this.statsContainer as any).barWidth = barWidth;
     (this.statsContainer as any).barHeight = barHeight;
@@ -333,25 +333,25 @@ export class UIScene extends Phaser.Scene {
 
   private onCatStatsChanged(stats: CatStats) {
     if (!this.statsContainer) return;
-    
+
     const barWidth = (this.statsContainer as any).barWidth || 160;
     const barHeight = (this.statsContainer as any).barHeight || 18;
 
     // Update health bar with animation
     this.healthBar.clear();
     const healthPercent = stats.health / stats.maxHealth;
-    
+
     // Create gradient health bar
     const healthGradient = healthPercent > 0.5 ? 0xe74c3c : (healthPercent > 0.25 ? 0xf39c12 : 0x8b0000);
     this.healthBar.fillStyle(healthGradient, 0.8);
     this.healthBar.fillRoundedRect(3, 3, (barWidth - 6) * healthPercent, barHeight - 6, 6);
-    
+
     // Add glow effect for low health
     if (healthPercent < 0.3) {
       this.healthBar.lineStyle(2, 0xff0000, 0.6);
       this.healthBar.strokeRoundedRect(1, 1, barWidth - 2, barHeight - 2, 8);
     }
-    
+
     this.healthText.setText(`❤️ ${Math.floor(stats.health)}/${stats.maxHealth}`);
 
     // Update energy bar with animation
@@ -359,13 +359,13 @@ export class UIScene extends Phaser.Scene {
     const energyPercent = stats.energy / stats.maxEnergy;
     this.energyBar.fillStyle(0x74b9ff, 0.8);
     this.energyBar.fillRoundedRect(3, 3, (barWidth - 6) * energyPercent, barHeight - 6, 6);
-    
+
     // Add sparkle effect for full energy
     if (energyPercent > 0.9) {
       this.energyBar.lineStyle(2, 0x00cec9, 0.7);
       this.energyBar.strokeRoundedRect(1, 1, barWidth - 2, barHeight - 2, 8);
     }
-    
+
     this.energyText.setText(`⚡ ${Math.floor(stats.energy)}/${stats.maxEnergy}`);
 
     // Update happiness bar with animation
@@ -373,13 +373,13 @@ export class UIScene extends Phaser.Scene {
     const happinessPercent = stats.happiness / stats.maxHappiness;
     this.happinessBar.fillStyle(0xff6b9d, 0.8);
     this.happinessBar.fillRoundedRect(3, 3, (barWidth - 6) * happinessPercent, barHeight - 6, 6);
-    
+
     // Add heart effect for high happiness
     if (happinessPercent > 0.8) {
       this.happinessBar.lineStyle(2, 0xff7675, 0.7);
       this.happinessBar.strokeRoundedRect(1, 1, barWidth - 2, barHeight - 2, 8);
     }
-    
+
     this.happinessText.setText(`😸 ${Math.floor(stats.happiness)}/${stats.maxHappiness}`);
 
     // Update level with celebration effect for level up
@@ -437,9 +437,9 @@ export class UIScene extends Phaser.Scene {
       // Slot background
       const slotBg = this.add.graphics();
       slotBg.fillStyle(0x34495e, 0.8);
-      slotBg.fillRoundedRect(x - slotSize/2, y - slotSize/2, slotSize, slotSize, 5);
+      slotBg.fillRoundedRect(x - slotSize / 2, y - slotSize / 2, slotSize, slotSize, 5);
       slotBg.lineStyle(2, 0x7f8c8d);
-      slotBg.strokeRoundedRect(x - slotSize/2, y - slotSize/2, slotSize, slotSize, 5);
+      slotBg.strokeRoundedRect(x - slotSize / 2, y - slotSize / 2, slotSize, slotSize, 5);
 
       // Item icon (placeholder)
       const itemIcon = this.add.text(x, y - 8, this.getItemIcon(item), {
@@ -520,13 +520,13 @@ export class UIScene extends Phaser.Scene {
     // List recipes
     recipes.forEach((recipe, index) => {
       const y = -150 + (index * 60);
-      
+
       // Recipe background
       const recipeBg = this.add.graphics();
       const canCook = this.canCookRecipe(recipe, inventory);
       recipeBg.fillStyle(canCook ? 0x27ae60 : 0x7f8c8d, 0.3);
       recipeBg.fillRoundedRect(-280, y - 20, 560, 50, 8);
-      
+
       if (canCook) {
         recipeBg.lineStyle(2, 0x2ecc71);
         recipeBg.strokeRoundedRect(-280, y - 20, 560, 50, 8);
@@ -596,7 +596,7 @@ export class UIScene extends Phaser.Scene {
       'watering_can': '💧',
       'hoe': '🔨',
       'fertilizer': '🌱',
-      
+
       // Seeds
       'carrot_seeds': '🥕',
       'tomato_seeds': '🍅',
@@ -606,7 +606,7 @@ export class UIScene extends Phaser.Scene {
       'lettuce_seeds': '🥬',
       'potato_seeds': '🥔',
       'pumpkin_seeds': '🎃',
-      
+
       // Crops
       'carrot': '🥕',
       'tomato': '🍅',
@@ -616,7 +616,7 @@ export class UIScene extends Phaser.Scene {
       'lettuce': '🥬',
       'potato': '🥔',
       'pumpkin': '🎃',
-      
+
       // Food
       'carrot_soup': '🍲',
       'tomato_salad': '🥗',
@@ -626,11 +626,11 @@ export class UIScene extends Phaser.Scene {
       'potato_stew': '🍲',
       'pumpkin_pie': '🥧',
       'mixed_salad': '🥗',
-      
+
       // Ingredients
       'water': '💧'
     };
-    
+
     return icons[item.id] || '📦';
   }
 
@@ -638,7 +638,7 @@ export class UIScene extends Phaser.Scene {
     // Create a container for interaction indicators
     this.interactionIndicators = this.add.container(0, 0);
     this.interactionIndicators.setDepth(500);
-    
+
     // Create proximity indicator
     this.proximityIndicator = this.add.graphics();
     this.proximityIndicator.setScrollFactor(1);
@@ -688,15 +688,15 @@ export class UIScene extends Phaser.Scene {
   private highlightInteractable(data: { x: number, y: number, type: string, range: number }) {
     // Clear existing proximity indicator
     this.proximityIndicator.clear();
-    
+
     // Draw interaction range circle
     this.proximityIndicator.lineStyle(3, 0x74b9ff, 0.6);
     this.proximityIndicator.strokeCircle(data.x, data.y, data.range);
-    
+
     // Add inner glow effect
     this.proximityIndicator.lineStyle(1, 0x74b9ff, 0.3);
     this.proximityIndicator.strokeCircle(data.x, data.y, data.range - 5);
-    
+
     this.proximityIndicator.setVisible(true);
 
     // Create pulsing effect
@@ -729,7 +729,7 @@ export class UIScene extends Phaser.Scene {
       'cook': '👨‍🍳',
       'default': '💫'
     };
-    
+
     return icons[type] || icons['default'];
   }
 
@@ -753,7 +753,7 @@ export class UIScene extends Phaser.Scene {
     };
 
     const style = styles[category as keyof typeof styles] || styles.info;
-    
+
     // Update notification background
     const bg = container.list[0] as Phaser.GameObjects.Graphics;
     bg.clear();
@@ -765,7 +765,7 @@ export class UIScene extends Phaser.Scene {
     // Add subtle glow effect
     bg.lineStyle(4, style.borderColor, 0.3);
     bg.strokeRoundedRect(-124, -24, 248, 48, 24);
-    
+
     this.notificationText.setText(text);
     this.notificationText.setStyle({
       fontSize: '16px',
@@ -809,7 +809,7 @@ export class UIScene extends Phaser.Scene {
   // Enhanced dialogue system with character portraits
   private showDialogue(data: { text: string, character?: string, portrait?: string }) {
     this.dialogueText.setText(data.text);
-    
+
     // Add character portrait if provided
     if (data.character && data.portrait) {
       // Create or update character portrait
@@ -861,23 +861,23 @@ export class UIScene extends Phaser.Scene {
   update() {
     // Update UI elements if needed
     // For example, update mini-map or other dynamic UI elements
-    
+
     // Update interaction indicators based on game state
     this.updateInteractionIndicators();
-    
+
     // 更新响应式UI布局
     this.updateResponsiveLayout();
   }
 
   private updateResponsiveLayout() {
     if (!this.uiLayoutManager) return;
-    
-    const screenInfo = this.uiLayoutManager.getScreenInfo();
-    
+
+    // const screenInfo = this.uiLayoutManager.getScreenInfo();
+
     // 更新状态栏位置
     if (this.statsContainer) {
       const statsPosition = this.uiLayoutManager.getStatsBarPosition();
-      
+
       // 平滑移动到新位置
       this.tweens.add({
         targets: this.statsContainer,
@@ -887,7 +887,7 @@ export class UIScene extends Phaser.Scene {
         ease: 'Power2.easeOut'
       });
     }
-    
+
     // 更新对话框和通知的位置以适应屏幕变化
     this.updateDialoguePosition();
     this.updateNotificationPosition();
@@ -898,12 +898,12 @@ export class UIScene extends Phaser.Scene {
       const width = this.cameras.main.width;
       const height = this.cameras.main.height;
       const screenInfo = this.uiLayoutManager.getScreenInfo();
-      
+
       // 根据屏幕尺寸调整对话框位置
-      const dialogueY = screenInfo.isMobile 
+      const dialogueY = screenInfo.isMobile
         ? height - (screenInfo.isPortrait ? 100 : 80)
         : height - 120;
-      
+
       this.dialogueBox.setPosition(width / 2, dialogueY);
     }
   }
@@ -913,12 +913,12 @@ export class UIScene extends Phaser.Scene {
     if (notificationContainer) {
       const width = this.cameras.main.width;
       const screenInfo = this.uiLayoutManager.getScreenInfo();
-      
+
       // 根据屏幕尺寸调整通知位置
-      const notificationY = screenInfo.isMobile 
+      const notificationY = screenInfo.isMobile
         ? (screenInfo.isPortrait ? 40 : 30)
         : 50;
-      
+
       notificationContainer.setPosition(width / 2, notificationY);
     }
   }

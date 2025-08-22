@@ -31,6 +31,18 @@ const GamePage: React.FC = () => {
     updateViewportSize();
   }, []);
 
+  // 检测平台类型
+  const getPlatformInfo = () => {
+    if (typeof window === 'undefined') return { isMobile: false, platform: 'unknown' };
+
+    const isMobile = window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const platform = isMobile ? 'Mobile (Joystick Controls)' : 'Desktop (Keyboard Controls)';
+
+    return { isMobile, platform };
+  };
+
+  const platformInfo = getPlatformInfo();
+
   // 更新视口尺寸和方向
   const updateViewportSize = () => {
     const width = window.innerWidth;
@@ -68,7 +80,7 @@ const GamePage: React.FC = () => {
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
     document.addEventListener('mozfullscreenchange', handleFullscreenChange);
     document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-    
+
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleOrientationChange);
 
@@ -85,7 +97,7 @@ const GamePage: React.FC = () => {
   // 计算游戏容器的最佳尺寸
   const getOptimalGameSize = () => {
     const { width, height } = viewportSize;
-    
+
     if (isFullscreen) {
       return {
         width: '100vw',
@@ -128,12 +140,12 @@ const GamePage: React.FC = () => {
   const startGame = async () => {
     console.log('🎮 startGame button clicked!');
     console.log('startGame called', { isClient, gameInstance: !!gameInstance, gameRef: !!gameRef.current });
-    
+
     if (!isClient) {
       console.warn('Game cannot start: not in client environment');
       return;
     }
-    
+
     if (gameInstance) {
       console.warn('Game cannot start: game instance already exists');
       return;
@@ -151,15 +163,15 @@ const GamePage: React.FC = () => {
 
     try {
       console.log('Starting game initialization...');
-      
+
       // 动态导入游戏类，避免SSR时的模块加载问题
       const { RPGGame: GameClass } = await import('@/components/game/RPGGame');
       console.log('RPGGame class imported successfully');
-      
+
       // 创建游戏实例并挂载到DOM容器
       const game = new GameClass(gameRef.current);
       console.log('Game instance created:', game);
-      
+
       setGameInstance(game.game);
       setIsLoading(false); // 游戏加载完成
       console.log('Game started successfully');
@@ -174,7 +186,7 @@ const GamePage: React.FC = () => {
   // 重置游戏函数
   const resetGame = () => {
     console.log('🔄 Resetting game...');
-    
+
     // 销毁现有游戏实例
     if (gameInstance) {
       try {
@@ -183,13 +195,13 @@ const GamePage: React.FC = () => {
         console.error('Error destroying game instance:', error);
       }
     }
-    
+
     // 重置所有状态
     setGameInstance(null);
     setGameStarted(false);
     setIsLoading(false);
     setIsFullscreen(false);
-    
+
     console.log('Game reset completed');
   };
 
@@ -277,12 +289,11 @@ const GamePage: React.FC = () => {
           {/* 改进的游戏容器 - 更好的响应式设计 */}
           <div
             ref={gameRef}
-            className={`game-container ${gameStarted ? 'block' : 'hidden'} w-full bg-gradient-to-br from-slate-900 to-black overflow-hidden shadow-2xl border-2 border-slate-600/50 touch-none select-none ${
-              isFullscreen 
-                ? 'fixed inset-0 z-50 rounded-none h-screen' 
-                : 'rounded-xl'
-            }`}
-            style={{ 
+            className={`game-container ${gameStarted ? 'block' : 'hidden'} w-full bg-gradient-to-br from-slate-900 to-black overflow-hidden shadow-2xl border-2 border-slate-600/50 touch-none select-none ${isFullscreen
+              ? 'fixed inset-0 z-50 rounded-none h-screen'
+              : 'rounded-xl'
+              }`}
+            style={{
               width: gameSize.width,
               height: gameSize.height,
               maxWidth: gameSize.maxWidth,
@@ -300,16 +311,15 @@ const GamePage: React.FC = () => {
 
           {/* 游戏启动界面 */}
           {!gameStarted && (
-            <div className={`flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border-2 border-slate-600/50 ${
-              screenOrientation === 'portrait' ? 'min-h-[50vh]' : 'min-h-[600px]'
-            }`}>
+            <div className={`flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border-2 border-slate-600/50 ${screenOrientation === 'portrait' ? 'min-h-[50vh]' : 'min-h-[600px]'
+              }`}>
               <div className="text-center p-8 max-w-md mx-auto">
                 <div className="text-6xl mb-6">🐱</div>
                 <h2 className="text-3xl font-bold text-white mb-4">小猫厨房农场</h2>
                 <p className="text-slate-300 mb-8">
                   准备好体验温馨治愈的农场生活了吗？种植作物、烹饪美食、照料可爱的小猫！
                 </p>
-                
+
                 {/* 设备适配提示 */}
                 <div className="mb-6 p-4 bg-slate-700/30 rounded-lg border border-slate-600/50">
                   <div className="text-sm text-slate-300">
@@ -341,7 +351,7 @@ const GamePage: React.FC = () => {
                       </div>
                     )}
                   </button>
-                  
+
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => window.open('/game/debug', '_blank')}
@@ -349,7 +359,7 @@ const GamePage: React.FC = () => {
                     >
                       🔧 调试工具
                     </button>
-                    
+
                     <button
                       onClick={resetGame}
                       className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-medium py-2 px-4 rounded-lg text-sm transition-all duration-300"
@@ -357,7 +367,7 @@ const GamePage: React.FC = () => {
                       🔄 重置
                     </button>
                   </div>
-                  
+
                   <div className="text-center text-slate-400 text-xs mt-2">
                     游戏将根据您的设备自动优化布局和控制方式
                   </div>
@@ -392,30 +402,27 @@ const GamePage: React.FC = () => {
 
               {/* 游戏控制按钮 - 改进的定位 */}
               {!isLoading && (
-                <div className={`absolute z-20 flex ${
-                  isFullscreen 
-                    ? 'top-4 right-4 space-x-2' 
-                    : screenOrientation === 'portrait' 
-                      ? 'top-2 right-2 space-x-1' 
-                      : 'top-4 right-4 space-x-2'
-                }`}>
+                <div className={`absolute z-20 flex ${isFullscreen
+                  ? 'top-4 right-4 space-x-2'
+                  : screenOrientation === 'portrait'
+                    ? 'top-2 right-2 space-x-1'
+                    : 'top-4 right-4 space-x-2'
+                  }`}>
                   <button
                     onClick={resetGame}
-                    className={`bg-red-500/70 hover:bg-red-600/70 text-white rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40 ${
-                      screenOrientation === 'portrait' ? 'p-2' : 'p-3'
-                    }`}
+                    className={`bg-red-500/70 hover:bg-red-600/70 text-white rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40 ${screenOrientation === 'portrait' ? 'p-2' : 'p-3'
+                      }`}
                     title="重置游戏"
                   >
                     <svg className={`${screenOrientation === 'portrait' ? 'w-4 h-4' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                   </button>
-                  
+
                   <button
                     onClick={isFullscreen ? exitFullscreen : enterFullscreen}
-                    className={`bg-black/50 hover:bg-black/70 text-white rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40 ${
-                      screenOrientation === 'portrait' ? 'p-2' : 'p-3'
-                    }`}
+                    className={`bg-black/50 hover:bg-black/70 text-white rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40 ${screenOrientation === 'portrait' ? 'p-2' : 'p-3'
+                      }`}
                     title={isFullscreen ? "退出全屏" : "进入全屏"}
                   >
                     {isFullscreen ? (
@@ -441,7 +448,7 @@ const GamePage: React.FC = () => {
               <div className="text-3xl mr-3">🎮</div>
               <h3 className="text-2xl font-bold text-white">游戏控制</h3>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* 桌面端控制 */}
               <div className="bg-slate-700/50 rounded-xl p-5 border border-slate-600 backdrop-blur-sm">
@@ -470,7 +477,7 @@ const GamePage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="bg-slate-800/50 rounded-lg p-3">
                     <h5 className="text-green-300 font-medium mb-2">农场操作</h5>
                     <div className="space-y-2 text-sm">
@@ -494,7 +501,7 @@ const GamePage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* 移动端控制 */}
               <div className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-xl p-5 border border-purple-400/30 backdrop-blur-sm">
                 <h4 className="font-bold text-purple-400 mb-4 flex items-center text-lg">
@@ -509,7 +516,7 @@ const GamePage: React.FC = () => {
                         <p className="text-slate-300 text-xs">自适应定位，防卡死设计</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center bg-slate-800/30 rounded-lg p-3">
                       <div className="w-8 h-8 bg-green-500 rounded-full mr-3 flex items-center justify-center text-sm">🐾</div>
                       <div>
@@ -517,7 +524,7 @@ const GamePage: React.FC = () => {
                         <p className="text-slate-300 text-xs">自动避让，优化布局</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center bg-slate-800/30 rounded-lg p-3">
                       <div className="w-8 h-8 bg-purple-500 rounded-full mr-3 flex items-center justify-center text-sm">🎒</div>
                       <div>
@@ -526,7 +533,7 @@ const GamePage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="bg-yellow-500/10 rounded-lg p-3 border border-yellow-400/20">
                     <div className="flex items-center mb-2">
                       <span className="text-yellow-400 mr-2">✨</span>
@@ -539,7 +546,24 @@ const GamePage: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
+            {/* 平台检测信息 */}
+            <div className="mt-6 bg-gradient-to-r from-blue-500/10 to-green-500/10 rounded-xl p-4 border border-blue-400/20">
+              <h4 className="font-bold text-blue-400 mb-3 flex items-center">
+                <span className="mr-2">🔍</span>平台检测
+              </h4>
+              <div className="text-sm">
+                <div className="flex items-center mb-2">
+                  <span className="text-green-400 mr-2">📱</span>
+                  <span className="text-slate-300">当前平台: <span className="text-blue-400 font-medium">{platformInfo.platform}</span></span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-yellow-400 mr-2">⚙️</span>
+                  <span className="text-slate-300">控制方式: <span className="text-purple-400 font-medium">{platformInfo.isMobile ? '虚拟摇杆' : '键盘控制'}</span></span>
+                </div>
+              </div>
+            </div>
+
             {/* 游戏提示 */}
             <div className="mt-6 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-xl p-4 border border-yellow-400/20">
               <h4 className="font-bold text-yellow-400 mb-3 flex items-center">

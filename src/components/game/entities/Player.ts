@@ -7,7 +7,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   private stats: CatStats; // 小猫的属性数值（血量、体力、快乐值等）
   private currentTool: ToolType | null = null; // 当前选中的工具
   private inventory: InventoryItem[] = []; // 背包物品列表
-  private isActing: boolean = false; // 是否正在执行动作（防止动作重叠）
+  public isActing: boolean = false; // 是否正在执行动作（防止动作重叠）
 
   // 构造函数 - 创建小猫实例并初始化所有属性
   constructor(scene: Phaser.Scene, x: number, y: number) {

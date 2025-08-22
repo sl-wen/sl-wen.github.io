@@ -6,6 +6,9 @@ export class UIScene extends Phaser.Scene {
   private notificationText!: Phaser.GameObjects.Text;
   private healthBar!: Phaser.GameObjects.Graphics;
   private manaBar!: Phaser.GameObjects.Graphics;
+  private healthText!: Phaser.GameObjects.Text;
+  private manaText!: Phaser.GameObjects.Text;
+  private levelText!: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: 'UIScene' });
@@ -21,6 +24,7 @@ export class UIScene extends Phaser.Scene {
     // Listen for events from GameScene
     this.events.on('showDialogue', this.showDialogue, this);
     this.events.on('showNotification', this.showNotification, this);
+    this.events.on('playerStatsChanged', this.onPlayerStatsChanged, this);
   }
 
   private createDialogueBox() {
@@ -68,41 +72,49 @@ export class UIScene extends Phaser.Scene {
   }
 
   private createPlayerStats() {
-    // Health bar
+    // Health bar background
     const healthBg = this.add.graphics();
     healthBg.fillStyle(0x8b0000);
     healthBg.fillRect(20, 20, 200, 20);
     healthBg.setScrollFactor(0);
 
+    // Health bar
     this.healthBar = this.add.graphics();
-    this.healthBar.fillStyle(0xff0000);
-    this.healthBar.fillRect(20, 20, 200, 20);
     this.healthBar.setScrollFactor(0);
 
-    // Health text
-    const healthText = this.add.text(25, 22, 'HP', {
-      fontSize: '14px',
-      color: '#ffffff'
+    // Health text with actual values
+    this.healthText = this.add.text(25, 22, 'HP: 100/100', {
+      fontSize: '12px',
+      color: '#ffffff',
+      fontStyle: 'bold'
     });
-    healthText.setScrollFactor(0);
+    this.healthText.setScrollFactor(0);
 
-    // Mana bar
+    // Mana bar background
     const manaBg = this.add.graphics();
     manaBg.fillStyle(0x000080);
     manaBg.fillRect(20, 45, 200, 20);
     manaBg.setScrollFactor(0);
 
+    // Mana bar
     this.manaBar = this.add.graphics();
-    this.manaBar.fillStyle(0x0000ff);
-    this.manaBar.fillRect(20, 45, 150, 20);
     this.manaBar.setScrollFactor(0);
 
-    // Mana text
-    const manaText = this.add.text(25, 47, 'MP', {
-      fontSize: '14px',
-      color: '#ffffff'
+    // Mana text with actual values
+    this.manaText = this.add.text(25, 47, 'MP: 50/100', {
+      fontSize: '12px',
+      color: '#ffffff',
+      fontStyle: 'bold'
     });
-    manaText.setScrollFactor(0);
+    this.manaText.setScrollFactor(0);
+
+    // Level text
+    this.levelText = this.add.text(25, 70, 'Level: 1', {
+      fontSize: '12px',
+      color: '#f1c40f',
+      fontStyle: 'bold'
+    });
+    this.levelText.setScrollFactor(0);
   }
 
   private createMiniMap() {
@@ -158,23 +170,63 @@ export class UIScene extends Phaser.Scene {
     });
   }
 
+  private onPlayerStatsChanged(stats: any) {
+    // Immediately update UI when player stats change
+    this.updatePlayerStatsWithData(stats);
+  }
+
+  private updatePlayerStatsWithData(stats: any) {
+    // Calculate percentages
+    const healthPercent = stats.health / stats.maxHealth;
+    const manaPercent = stats.mana / stats.maxMana;
+    
+    // Update health bar
+    this.healthBar.clear();
+    this.healthBar.fillStyle(0xff0000);
+    this.healthBar.fillRect(20, 20, 200 * Math.max(0, healthPercent), 20);
+    
+    // Update mana bar
+    this.manaBar.clear();
+    this.manaBar.fillStyle(0x0000ff);
+    this.manaBar.fillRect(20, 45, 200 * Math.max(0, manaPercent), 20);
+    
+    // Update text displays
+    this.healthText.setText(`HP: ${Math.ceil(stats.health)}/${stats.maxHealth}`);
+    this.manaText.setText(`MP: ${Math.ceil(stats.mana)}/${stats.maxMana}`);
+    this.levelText.setText(`Level: ${stats.level}`);
+    
+    // Change bar color based on health percentage
+    if (healthPercent < 0.25) {
+      this.healthBar.clear();
+      this.healthBar.fillStyle(0x8b0000); // Dark red when low
+      this.healthBar.fillRect(20, 20, 200 * Math.max(0, healthPercent), 20);
+    } else if (healthPercent < 0.5) {
+      this.healthBar.clear();
+      this.healthBar.fillStyle(0xff8c00); // Orange when medium
+      this.healthBar.fillRect(20, 20, 200 * Math.max(0, healthPercent), 20);
+    }
+    
+    // Add pulsing effect when health is low
+    if (healthPercent < 0.25) {
+      const pulse = 0.8 + Math.sin(this.time.now * 0.01) * 0.2;
+      this.healthText.setAlpha(pulse);
+    } else {
+      this.healthText.setAlpha(1);
+    }
+  }
+
   update() {
-    // Update UI elements if needed
+    // Update UI elements - fallback to polling if events don't work
     this.updatePlayerStats();
   }
 
   private updatePlayerStats() {
-    // This would typically get real player stats
-    // For now, just animate the bars slightly
-    const healthPercent = 0.8 + Math.sin(this.time.now * 0.001) * 0.1;
-    const manaPercent = 0.6 + Math.cos(this.time.now * 0.002) * 0.2;
-
-    this.healthBar.clear();
-    this.healthBar.fillStyle(0xff0000);
-    this.healthBar.fillRect(20, 20, 200 * Math.max(0, healthPercent), 20);
-
-    this.manaBar.clear();
-    this.manaBar.fillStyle(0x0000ff);
-    this.manaBar.fillRect(20, 45, 200 * Math.max(0, manaPercent), 20);
+    // Get the GameScene instance
+    const gameScene = this.scene.get('GameScene') as any;
+    
+    if (gameScene && gameScene.player) {
+      const stats = gameScene.player.getStats();
+      this.updatePlayerStatsWithData(stats);
+    }
   }
 }

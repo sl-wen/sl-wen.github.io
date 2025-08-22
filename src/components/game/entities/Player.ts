@@ -124,8 +124,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Flash red when taking damage
     this.setTint(0xff0000);
     this.scene.time.delayedCall(200, () => {
-      this.setTint(0x3498db);
+      this.clearTint();
     });
+
+    // Trigger UI update
+    if ('events' in this.scene.scene.get('UIScene')) {
+      this.scene.scene.get('UIScene').events.emit('playerStatsChanged', this.getStats());
+    }
 
     if (this.health <= 0) {
       this.die();
@@ -133,25 +138,91 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   public heal(amount: number) {
+    const oldHealth = this.health;
     this.health = Math.min(this.maxHealth, this.health + amount);
+    const actualHeal = this.health - oldHealth;
 
-    // Flash green when healing
-    this.setTint(0x00ff00);
-    this.scene.time.delayedCall(200, () => {
-      this.setTint(0x3498db);
-    });
+    // Only show effects if actually healed
+    if (actualHeal > 0) {
+      // Flash green when healing
+      this.setTint(0x00ff00);
+      this.scene.time.delayedCall(200, () => {
+        this.clearTint();
+      });
+
+      // Create healing particles
+      const particles = this.scene.add.particles(this.x, this.y - 10, 'grass', {
+        scale: { start: 0.3, end: 0 },
+        alpha: { start: 1, end: 0 },
+        tint: 0x00ff00,
+        lifespan: 1000,
+        quantity: 8,
+        speed: { min: 30, max: 60 },
+        gravityY: -20
+      });
+
+      this.scene.time.delayedCall(1000, () => {
+        particles.destroy();
+      });
+
+      // Trigger UI update event
+      if ('events' in this.scene.scene.get('UIScene')) {
+        this.scene.scene.get('UIScene').events.emit('playerStatsChanged', this.getStats());
+      }
+    }
+
+    return actualHeal;
   }
 
   public useMana(amount: number): boolean {
     if (this.mana >= amount) {
       this.mana -= amount;
+      
+      // Trigger UI update
+      if ('events' in this.scene.scene.get('UIScene')) {
+        this.scene.scene.get('UIScene').events.emit('playerStatsChanged', this.getStats());
+      }
+      
       return true;
     }
     return false;
   }
 
   public restoreMana(amount: number) {
+    const oldMana = this.mana;
     this.mana = Math.min(this.maxMana, this.mana + amount);
+    const actualRestore = this.mana - oldMana;
+
+    // Only show effects if actually restored
+    if (actualRestore > 0) {
+      // Flash blue when restoring mana
+      this.setTint(0x0080ff);
+      this.scene.time.delayedCall(200, () => {
+        this.clearTint();
+      });
+
+      // Create mana particles
+      const particles = this.scene.add.particles(this.x, this.y - 10, 'grass', {
+        scale: { start: 0.3, end: 0 },
+        alpha: { start: 1, end: 0 },
+        tint: 0x0080ff,
+        lifespan: 1000,
+        quantity: 8,
+        speed: { min: 30, max: 60 },
+        gravityY: -20
+      });
+
+      this.scene.time.delayedCall(1000, () => {
+        particles.destroy();
+      });
+
+      // Trigger UI update event
+      if ('events' in this.scene.scene.get('UIScene')) {
+        this.scene.scene.get('UIScene').events.emit('playerStatsChanged', this.getStats());
+      }
+    }
+
+    return actualRestore;
   }
 
   public gainExperience(amount: number) {
@@ -161,11 +232,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.experience >= expNeeded) {
       this.levelUp();
     }
+
+    // Trigger UI update
+    if ('events' in this.scene.scene.get('UIScene')) {
+      this.scene.scene.get('UIScene').events.emit('playerStatsChanged', this.getStats());
+    }
   }
 
   private levelUp() {
     this.level++;
     this.experience = 0;
+    const oldMaxHealth = this.maxHealth;
+    const oldMaxMana = this.maxMana;
+    
     this.maxHealth += 20;
     this.maxMana += 10;
     this.health = this.maxHealth;
@@ -177,7 +256,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       alpha: { start: 1, end: 0 },
       tint: 0xffd700,
       lifespan: 1000,
-      quantity: 10,
+      quantity: 15,
       speed: { min: 50, max: 100 }
     });
 
@@ -187,7 +266,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Notify UI
     if ('showNotification' in this.scene) {
-      (this.scene as any).showNotification(`Level Up! 现在是 ${this.level} 级！`);
+      (this.scene as any).showNotification(`🎉 升级了！现在是 ${this.level} 级！`);
+      (this.scene as any).showNotification(`💪 最大生命值增加 ${this.maxHealth - oldMaxHealth}！`);
+      (this.scene as any).showNotification(`🔮 最大魔法值增加 ${this.maxMana - oldMaxMana}！`);
+    }
+
+    // Trigger UI update
+    if ('events' in this.scene.scene.get('UIScene')) {
+      this.scene.scene.get('UIScene').events.emit('playerStatsChanged', this.getStats());
     }
   }
 

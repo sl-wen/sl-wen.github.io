@@ -114,11 +114,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createChests() {
-    // Create some treasure chests
+    // Create treasure chests with various rewards
     const chestData = [
       { x: 250, y: 400, treasure: '金币 x50' },
       { x: 550, y: 250, treasure: '生命药水' },
-      { x: 350, y: 450, treasure: '魔法卷轴' }
+      { x: 350, y: 450, treasure: '魔法卷轴' },
+      { x: 150, y: 200, treasure: '生命药水' },
+      { x: 650, y: 400, treasure: '魔法卷轴' },
+      { x: 450, y: 150, treasure: '金币 x100' }
     ];
 
     chestData.forEach(data => {
@@ -152,10 +155,10 @@ export class GameScene extends Phaser.Scene {
       interact: false
     };
 
-    // Create virtual D-pad for mobile
-    this.createVirtualDPad();
+    // Create virtual joystick for mobile
+    this.createVirtualJoystick();
 
-    // Touch/click to move (for areas outside virtual controls)
+    // Enhanced touch/click to move and interact
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       // Ignore if touching virtual controls area
       if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
@@ -163,79 +166,184 @@ export class GameScene extends Phaser.Scene {
       }
 
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-      const distance = Phaser.Math.Distance.Between(
-        this.player.x, this.player.y, worldPoint.x, worldPoint.y
-      );
+      
+      // Check if touching a chest directly
+      let chestTouched = false;
+      this.chests.children.entries.forEach((chest: any) => {
+        const chestDistance = Phaser.Math.Distance.Between(
+          worldPoint.x, worldPoint.y, chest.x, chest.y
+        );
+        
+        if (chestDistance < 40 && !chest.isChestOpened()) {
+          chest.interact();
+          chestTouched = true;
+        }
+      });
 
-      // If clicking close to player, interact instead of move
-      if (distance < 50) {
-        this.checkInteractions();
-      } else {
-        // Move towards clicked position
-        this.movePlayerTowards(worldPoint.x, worldPoint.y);
+      // Check if touching an NPC directly
+      let npcTouched = false;
+      this.npcs.children.entries.forEach((npc: any) => {
+        const npcDistance = Phaser.Math.Distance.Between(
+          worldPoint.x, worldPoint.y, npc.x, npc.y
+        );
+        
+        if (npcDistance < 40) {
+          npc.interact();
+          npcTouched = true;
+        }
+      });
+
+      // If no direct interaction, handle movement
+      if (!chestTouched && !npcTouched) {
+        const distance = Phaser.Math.Distance.Between(
+          this.player.x, this.player.y, worldPoint.x, worldPoint.y
+        );
+
+        // If clicking close to player, try to interact with nearby objects
+        if (distance < 50) {
+          this.checkInteractions();
+        } else {
+          // Move towards clicked position
+          this.movePlayerTowards(worldPoint.x, worldPoint.y);
+        }
+      }
+    });
+
+    // Add long press support for mobile interaction
+    let longPressTimer: Phaser.Time.TimerEvent | null = null;
+    
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
+        return;
+      }
+
+      // Start long press timer
+      longPressTimer = this.time.delayedCall(500, () => {
+        // Long press detected - show nearby interactables
+        this.highlightNearbyInteractables();
+      });
+    });
+
+    this.input.on('pointerup', () => {
+      // Cancel long press timer
+      if (longPressTimer) {
+        longPressTimer.destroy();
+        longPressTimer = null;
       }
     });
   }
 
-  private createVirtualDPad() {
+  private createVirtualJoystick() {
     const padding = 60;
-    const buttonSize = 40;
-    const dpadSize = 140;
+    const joystickRadius = 60;
+    const knobRadius = 25;
     
-    // D-pad background
-    const dpadBg = this.add.circle(padding + dpadSize/2, this.cameras.main.height - padding - dpadSize/2, dpadSize/2, 0x000000, 0.2);
-    dpadBg.setScrollFactor(0);
-    dpadBg.setDepth(1000);
+    // Joystick position
+    const joystickX = padding + joystickRadius;
+    const joystickY = this.cameras.main.height - padding - joystickRadius;
 
-    // Direction buttons
-    const directions = [
-      { key: 'up', x: 0, y: -buttonSize, angle: 0 },
-      { key: 'down', x: 0, y: buttonSize, angle: 180 },
-      { key: 'left', x: -buttonSize, y: 0, angle: 270 },
-      { key: 'right', x: buttonSize, y: 0, angle: 90 }
-    ];
+    // Joystick base (outer circle)
+    const joystickBase = this.add.circle(joystickX, joystickY, joystickRadius, 0x000000, 0.3);
+    joystickBase.setScrollFactor(0);
+    joystickBase.setDepth(1000);
+    joystickBase.setStrokeStyle(3, 0x4a5568, 0.8);
 
-    directions.forEach(dir => {
-      const button = this.add.circle(
-        dpadBg.x + dir.x,
-        dpadBg.y + dir.y,
-        buttonSize/2,
-        0x4a5568,
-        0.7
+    // Joystick knob (inner circle)
+    const joystickKnob = this.add.circle(joystickX, joystickY, knobRadius, 0x4a5568, 0.8);
+    joystickKnob.setScrollFactor(0);
+    joystickKnob.setDepth(1001);
+    joystickKnob.setStrokeStyle(2, 0x718096, 1);
+
+    // Store references
+    (this as any).joystickBase = joystickBase;
+    (this as any).joystickKnob = joystickKnob;
+    (this as any).joystickCenter = { x: joystickX, y: joystickY };
+    (this as any).isDragging = false;
+    (this as any).joystickVector = { x: 0, y: 0 };
+
+    // Make joystick interactive
+    joystickBase.setInteractive();
+    joystickKnob.setInteractive();
+
+    // Joystick input handling
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      const distance = Phaser.Math.Distance.Between(
+        pointer.x, pointer.y, joystickX, joystickY
       );
-      button.setScrollFactor(0);
-      button.setDepth(1001);
-      button.setInteractive();
-
-      // Add arrow indicator
-      const arrow = this.add.triangle(
-        button.x,
-        button.y,
-        0, -6, -4, 4, 4, 4,
-        0xffffff
-      );
-      arrow.setScrollFactor(0);
-      arrow.setDepth(1002);
-      arrow.setRotation(Phaser.Math.DegToRad(dir.angle));
-
-      // Touch events
-      button.on('pointerdown', () => {
-        this.virtualControls[dir.key] = true;
-        button.setFillStyle(0x718096, 1);
-      });
-
-      button.on('pointerup', () => {
-        this.virtualControls[dir.key] = false;
-        button.setFillStyle(0x4a5568, 0.7);
-      });
-
-      button.on('pointerout', () => {
-        this.virtualControls[dir.key] = false;
-        button.setFillStyle(0x4a5568, 0.7);
-      });
+      
+      if (distance <= joystickRadius + 20) {
+        (this as any).isDragging = true;
+        joystickKnob.setFillStyle(0x718096, 1);
+      }
     });
 
-    // Action button (interact)
+    this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (!(this as any).isDragging) return;
+
+      const centerX = (this as any).joystickCenter.x;
+      const centerY = (this as any).joystickCenter.y;
+      
+      // Calculate vector from center to pointer
+      let deltaX = pointer.x - centerX;
+      let deltaY = pointer.y - centerY;
+      
+      // Limit knob movement to joystick radius
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      const maxDistance = joystickRadius - knobRadius;
+      
+      if (distance > maxDistance) {
+        deltaX = (deltaX / distance) * maxDistance;
+        deltaY = (deltaY / distance) * maxDistance;
+      }
+      
+      // Update knob position
+      joystickKnob.x = centerX + deltaX;
+      joystickKnob.y = centerY + deltaY;
+      
+      // Calculate normalized vector (-1 to 1)
+      const normalizedX = deltaX / maxDistance;
+      const normalizedY = deltaY / maxDistance;
+      
+      (this as any).joystickVector = { x: normalizedX, y: normalizedY };
+      
+      // Update virtual controls based on joystick position
+      const deadZone = 0.2;
+      this.virtualControls.left = normalizedX < -deadZone;
+      this.virtualControls.right = normalizedX > deadZone;
+      this.virtualControls.up = normalizedY < -deadZone;
+      this.virtualControls.down = normalizedY > deadZone;
+    });
+
+    this.input.on('pointerup', () => {
+      if (!(this as any).isDragging) return;
+      
+      (this as any).isDragging = false;
+      
+      // Reset knob to center
+      const centerX = (this as any).joystickCenter.x;
+      const centerY = (this as any).joystickCenter.y;
+      
+      this.tweens.add({
+        targets: joystickKnob,
+        x: centerX,
+        y: centerY,
+        duration: 150,
+        ease: 'Back.easeOut'
+      });
+      
+      joystickKnob.setFillStyle(0x4a5568, 0.8);
+      
+      // Reset virtual controls
+      this.virtualControls.left = false;
+      this.virtualControls.right = false;
+      this.virtualControls.up = false;
+      this.virtualControls.down = false;
+      
+      (this as any).joystickVector = { x: 0, y: 0 };
+    });
+
+    // Action button (interact) - keep this separate
+    const buttonSize = 40;
     const actionButton = this.add.circle(
       this.cameras.main.width - padding - buttonSize,
       this.cameras.main.height - padding - buttonSize,
@@ -246,6 +354,7 @@ export class GameScene extends Phaser.Scene {
     actionButton.setScrollFactor(0);
     actionButton.setDepth(1001);
     actionButton.setInteractive();
+    actionButton.setStrokeStyle(2, 0x3b82f6, 1);
 
     // Action button text
     const actionText = this.add.text(
@@ -276,20 +385,20 @@ export class GameScene extends Phaser.Scene {
 
   private isInVirtualControlsArea(x: number, y: number): boolean {
     const padding = 60;
-    const dpadSize = 140;
+    const joystickRadius = 60;
     const buttonSize = 40;
     
-    // Check D-pad area
-    const dpadCenterX = padding + dpadSize/2;
-    const dpadCenterY = this.cameras.main.height - padding - dpadSize/2;
-    const dpadDistance = Phaser.Math.Distance.Between(x, y, dpadCenterX, dpadCenterY);
+    // Check joystick area
+    const joystickCenterX = padding + joystickRadius;
+    const joystickCenterY = this.cameras.main.height - padding - joystickRadius;
+    const joystickDistance = Phaser.Math.Distance.Between(x, y, joystickCenterX, joystickCenterY);
     
     // Check action button area
     const actionX = this.cameras.main.width - padding - buttonSize;
     const actionY = this.cameras.main.height - padding - buttonSize;
     const actionDistance = Phaser.Math.Distance.Between(x, y, actionX, actionY);
     
-    return dpadDistance < dpadSize/2 + 20 || actionDistance < buttonSize + 20;
+    return joystickDistance < joystickRadius + 20 || actionDistance < buttonSize + 20;
   }
 
   private movePlayerTowards(targetX: number, targetY: number) {
@@ -354,11 +463,20 @@ export class GameScene extends Phaser.Scene {
     // Update player
     this.player.update();
 
+    // Update chests with player proximity
+    this.chests.children.entries.forEach((chest: any) => {
+      chest.update();
+      chest.checkPlayerProximity(this.player.x, this.player.y);
+    });
+
     // Handle input
     this.handleInput();
 
-    // Check interactions
-    this.checkInteractions();
+    // Check interactions only when keys are pressed
+    if (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
+        Phaser.Input.Keyboard.JustDown(this.investigateKey)) {
+      this.checkInteractions();
+    }
   }
 
   private handleInput() {
@@ -370,25 +488,47 @@ export class GameScene extends Phaser.Scene {
     let isMoving = false;
     let direction = this.player.getDirection();
 
-    // Handle movement with WASD, arrow keys, or virtual controls
-    if (this.cursors.left?.isDown || this.wasdKeys.A.isDown || this.virtualControls.left) {
-      this.player.setVelocityX(-speed);
-      direction = 'left';
-      isMoving = true;
-    } else if (this.cursors.right?.isDown || this.wasdKeys.D.isDown || this.virtualControls.right) {
-      this.player.setVelocityX(speed);
-      direction = 'right';
-      isMoving = true;
+    // Handle joystick input with analog movement
+    if ((this as any).joystickVector) {
+      const vector = (this as any).joystickVector;
+      const deadZone = 0.1;
+      
+      if (Math.abs(vector.x) > deadZone || Math.abs(vector.y) > deadZone) {
+        // Apply analog movement with joystick vector
+        this.player.setVelocityX(vector.x * speed);
+        this.player.setVelocityY(vector.y * speed);
+        isMoving = true;
+        
+        // Determine direction based on strongest axis
+        if (Math.abs(vector.x) > Math.abs(vector.y)) {
+          direction = vector.x > 0 ? 'right' : 'left';
+        } else {
+          direction = vector.y > 0 ? 'down' : 'up';
+        }
+      }
     }
 
-    if (this.cursors.up?.isDown || this.wasdKeys.W.isDown || this.virtualControls.up) {
-      this.player.setVelocityY(-speed);
-      direction = 'up';
-      isMoving = true;
-    } else if (this.cursors.down?.isDown || this.wasdKeys.S.isDown || this.virtualControls.down) {
-      this.player.setVelocityY(speed);
-      direction = 'down';
-      isMoving = true;
+    // Handle keyboard input (fallback for desktop)
+    if (!isMoving) {
+      if (this.cursors.left?.isDown || this.wasdKeys.A.isDown) {
+        this.player.setVelocityX(-speed);
+        direction = 'left';
+        isMoving = true;
+      } else if (this.cursors.right?.isDown || this.wasdKeys.D.isDown) {
+        this.player.setVelocityX(speed);
+        direction = 'right';
+        isMoving = true;
+      }
+
+      if (this.cursors.up?.isDown || this.wasdKeys.W.isDown) {
+        this.player.setVelocityY(-speed);
+        direction = 'up';
+        isMoving = true;
+      } else if (this.cursors.down?.isDown || this.wasdKeys.S.isDown) {
+        this.player.setVelocityY(speed);
+        direction = 'down';
+        isMoving = true;
+      }
     }
 
     // Update player direction and animation
@@ -397,32 +537,66 @@ export class GameScene extends Phaser.Scene {
   }
 
   private checkInteractions() {
-    // Check if interact key is pressed
-    if (Phaser.Input.Keyboard.JustDown(this.interactKey) ||
-      Phaser.Input.Keyboard.JustDown(this.investigateKey)) {
+    // Check NPC interactions
+    this.npcs.children.entries.forEach((npc: any) => {
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x, this.player.y, npc.x, npc.y
+      );
 
-      // Check NPC interactions
-      this.npcs.children.entries.forEach((npc: any) => {
-        const distance = Phaser.Math.Distance.Between(
-          this.player.x, this.player.y, npc.x, npc.y
-        );
+      if (distance < 50) {
+        npc.interact();
+      }
+    });
 
-        if (distance < 50) {
-          npc.interact();
-        }
-      });
+    // Check chest interactions
+    this.chests.children.entries.forEach((chest: any) => {
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x, this.player.y, chest.x, chest.y
+      );
 
-      // Check chest interactions
-      this.chests.children.entries.forEach((chest: any) => {
-        const distance = Phaser.Math.Distance.Between(
-          this.player.x, this.player.y, chest.x, chest.y
-        );
+      if (distance < 60 && !chest.isChestOpened()) {
+        chest.interact();
+      }
+    });
+  }
 
-        if (distance < 50) {
-          chest.interact();
-        }
-      });
-    }
+  private highlightNearbyInteractables() {
+    // Highlight all chests and NPCs within interaction range
+    this.chests.children.entries.forEach((chest: any) => {
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x, this.player.y, chest.x, chest.y
+      );
+      
+      if (distance < 100 && !chest.isChestOpened()) {
+        chest.showRangeIndicator(true);
+        chest.showIndicator(true);
+        
+        // Auto-hide after 3 seconds
+        this.time.delayedCall(3000, () => {
+          if (distance > 60) {
+            chest.showRangeIndicator(false);
+            chest.showIndicator(false);
+          }
+        });
+      }
+    });
+
+    this.npcs.children.entries.forEach((npc: any) => {
+      const distance = Phaser.Math.Distance.Between(
+        this.player.x, this.player.y, npc.x, npc.y
+      );
+      
+      if (distance < 100) {
+        npc.showIndicator(true);
+        
+        // Auto-hide after 3 seconds
+        this.time.delayedCall(3000, () => {
+          if (distance > 50) {
+            npc.showIndicator(false);
+          }
+        });
+      }
+    });
   }
 
   // Public method to show dialogue

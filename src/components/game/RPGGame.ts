@@ -3,7 +3,7 @@ import { GameScene } from './scenes/GameScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { UIScene } from './scenes/UIScene';
 
-export class CatFarmGame {
+export class RPGGame {
   public game: Phaser.Game;
 
   constructor(container: HTMLElement) {

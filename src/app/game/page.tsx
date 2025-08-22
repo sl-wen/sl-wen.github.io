@@ -62,9 +62,9 @@ const GamePage: React.FC = () => {
       {/* Game Header */}
       <div className="bg-slate-800 border-b border-slate-700 p-4">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-white mb-2">🎮 RPG 冒险世界</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">🐱 小猫农场</h1>
           <p className="text-slate-300">
-            使用 WASD 键或虚拟摇杆移动，空格键或触摸交互，探索这个充满精美像素艺术的 2D RPG 世界！
+            使用 WASD 键或虚拟摇杆移动小猫，空格键交互，体验温馨治愈的农场生活！种植作物、烹饪美食、照料农场。
           </p>
         </div>
       </div>
@@ -91,23 +91,24 @@ const GamePage: React.FC = () => {
 
         {/* Game Controls Info */}
         <div className="mt-6 bg-slate-800 rounded-lg p-4 w-full max-w-4xl">
-          <h3 className="text-lg font-semibold text-white mb-3">🎯 游戏控制</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">🐾 游戏控制</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300">
             <div>
               <h4 className="font-medium text-blue-400 mb-2">移动控制：</h4>
               <ul className="space-y-1">
-                <li>• <kbd className="kbd">W</kbd> - 向上移动</li>
-                <li>• <kbd className="kbd">S</kbd> - 向下移动</li>
-                <li>• <kbd className="kbd">A</kbd> - 向左移动</li>
-                <li>• <kbd className="kbd">D</kbd> - 向右移动</li>
+                <li>• <kbd className="kbd">W/↑</kbd> - 小猫向上移动</li>
+                <li>• <kbd className="kbd">S/↓</kbd> - 小猫向下移动</li>
+                <li>• <kbd className="kbd">A/←</kbd> - 小猫向左移动</li>
+                <li>• <kbd className="kbd">D/→</kbd> - 小猫向右移动</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-green-400 mb-2">交互控制：</h4>
+              <h4 className="font-medium text-green-400 mb-2">农场操作：</h4>
               <ul className="space-y-1">
-                <li>• <kbd className="kbd">Space</kbd> - 交互/确认</li>
-                <li>• <kbd className="kbd">E</kbd> - 调查物品</li>
-                <li>• <kbd className="kbd">ESC</kbd> - 菜单/暂停</li>
+                <li>• <kbd className="kbd">Space</kbd> - 交互/使用工具</li>
+                <li>• <kbd className="kbd">I</kbd> - 打开背包</li>
+                <li>• <kbd className="kbd">C</kbd> - 打开烹饪界面</li>
+                <li>• <kbd className="kbd">1-4</kbd> - 选择工具</li>
               </ul>
             </div>
           </div>

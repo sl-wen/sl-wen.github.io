@@ -24,6 +24,7 @@ export class GameScene extends Phaser.Scene {
   private actionButtons: any;
   private toolTooltip: Phaser.GameObjects.Text | null = null;
   private hapticEnabled: boolean = false;
+  private useSimpleTouch: boolean = false; // Toggle for simple touch controls like original RPG
 
   constructor() {
     super({ key: 'GameScene' });
@@ -55,8 +56,18 @@ export class GameScene extends Phaser.Scene {
     // Setup input
     this.setupInput();
     
-    // Setup mobile controls
-    this.setupMobileControls();
+    // Setup mobile controls with error handling
+    try {
+      this.setupMobileControls();
+      // Test joystick functionality after a short delay
+      this.time.delayedCall(1000, () => {
+        this.testJoystickFunctionality();
+      });
+    } catch (error) {
+      console.warn('Virtual joystick failed, falling back to simple touch controls:', error);
+      this.useSimpleTouch = true;
+      this.setupSimpleTouchControls();
+    }
 
     // Setup camera
     this.setupCamera();
@@ -223,16 +234,26 @@ export class GameScene extends Phaser.Scene {
   }
 
   private setupMobileControls() {
+    // Check if we should use simple touch controls (fallback mode)
+    if (this.useSimpleTouch) {
+      this.setupSimpleTouchControls();
+      return;
+    }
+
     // Create enhanced virtual joystick for mobile
     this.createEnhancedVirtualJoystick();
     
     // Create improved action buttons with better layout
     this.createEnhancedActionButtons();
 
+    // Add control mode toggle button
+    this.createControlModeToggle();
+
     // Enhanced touch input for interactions with better feedback
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      // Check if touch is in virtual controls area first
       if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
-        return;
+        return; // Don't handle world interaction if touching controls
       }
 
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
@@ -244,6 +265,162 @@ export class GameScene extends Phaser.Scene {
     // Add haptic feedback for supported devices
     this.setupHapticFeedback();
   }
+
+  // Simple touch controls similar to original RPG version
+  private setupSimpleTouchControls() {
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+      const distance = Phaser.Math.Distance.Between(
+        this.cat.x, this.cat.y, worldPoint.x, worldPoint.y
+      );
+      
+      // If clicking close to player, interact instead of move
+      if (distance < 50) {
+        this.checkInteractions();
+      } else {
+        // Move towards clicked position
+        this.movePlayerTowards(worldPoint.x, worldPoint.y);
+      }
+    });
+  }
+
+  private movePlayerTowards(targetX: number, targetY: number) {
+    const angle = Phaser.Math.Angle.Between(this.cat.x, this.cat.y, targetX, targetY);
+    const speed = 160;
+    
+    // Set velocity towards target
+    this.cat.setVelocity(
+      Math.cos(angle) * speed,
+      Math.sin(angle) * speed
+    );
+    
+    // Stop movement after a short time
+    this.time.delayedCall(300, () => {
+      this.cat.setVelocity(0, 0);
+    });
+  }
+
+  // Test if joystick is working properly
+  private testJoystickFunctionality() {
+    if (!this.virtualControls || !this.virtualControls.joystickKnob) {
+      console.warn('Joystick elements not found, switching to simple touch controls');
+      this.switchToSimpleTouch();
+      return;
+    }
+
+    // Check if joystick elements are properly positioned
+    const knob = this.virtualControls.joystickKnob;
+    const center = this.virtualControls.joystickCenter;
+    
+    if (!knob.x || !knob.y || !center.x || !center.y) {
+      console.warn('Joystick positioning issue detected, switching to simple touch controls');
+      this.switchToSimpleTouch();
+      return;
+    }
+
+    // Test touch detection
+    const testDistance = Phaser.Math.Distance.Between(
+      center.x, center.y, center.x + 50, center.y + 50
+    );
+    
+    if (testDistance === 0) {
+      console.warn('Joystick distance calculation issue, switching to simple touch controls');
+      this.switchToSimpleTouch();
+      return;
+    }
+
+    console.log('Joystick functionality test passed');
+  }
+
+  // Switch to simple touch controls as fallback
+  private switchToSimpleTouch() {
+    this.useSimpleTouch = true;
+    
+    // Clean up existing virtual controls
+    if (this.virtualControls) {
+      Object.values(this.virtualControls).forEach((element: any) => {
+        if (element && element.destroy) {
+          element.destroy();
+        } else if (Array.isArray(element)) {
+          element.forEach((item: any) => {
+            if (item && item.destroy) item.destroy();
+          });
+        }
+      });
+      this.virtualControls = null;
+    }
+    
+    // Setup simple touch controls
+    this.setupSimpleTouchControls();
+    
+         // Show notification to user
+     this.showNotification('已切换到简单触摸控制模式');
+   }
+
+   // Create control mode toggle button
+   private createControlModeToggle() {
+     const toggleButton = this.add.circle(60, 60, 25, 0x6c5ce7, 0.9);
+     toggleButton.setScrollFactor(0);
+     toggleButton.setDepth(1000);
+     toggleButton.setInteractive();
+     toggleButton.setStrokeStyle(2, 0x74b9ff, 1);
+
+     const toggleText = this.add.text(60, 60, '🎮', {
+       fontSize: '20px',
+       color: '#ffffff'
+     });
+     toggleText.setOrigin(0.5);
+     toggleText.setScrollFactor(0);
+     toggleText.setDepth(1001);
+
+     // Toggle functionality
+     toggleButton.on('pointerdown', () => {
+       this.useSimpleTouch = !this.useSimpleTouch;
+       
+       if (this.useSimpleTouch) {
+         toggleText.setText('👆');
+         this.switchToSimpleTouch();
+       } else {
+         toggleText.setText('🎮');
+         this.switchToJoystickMode();
+       }
+       
+       // Visual feedback
+       this.tweens.add({
+         targets: [toggleButton, toggleText],
+         scaleX: 1.2,
+         scaleY: 1.2,
+         duration: 100,
+         yoyo: true,
+         ease: 'Back.easeOut'
+       });
+     });
+
+     // Store reference for cleanup
+     if (!this.actionButtons) this.actionButtons = {};
+     this.actionButtons.modeToggle = { button: toggleButton, text: toggleText };
+   }
+
+   // Switch to joystick mode
+   private switchToJoystickMode() {
+     // Clean up simple touch handlers
+     this.input.removeAllListeners('pointerdown');
+     
+     // Recreate virtual joystick
+     this.createEnhancedVirtualJoystick();
+     this.createEnhancedActionButtons();
+     
+     // Restore enhanced touch input
+     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+       if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
+         return;
+       }
+       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+       this.handleEnhancedTouchInteraction(worldPoint.x, worldPoint.y, pointer);
+     });
+     
+     this.showNotification('已切换到虚拟摇杆模式');
+   }
 
   private createEnhancedVirtualJoystick() {
     const padding = 60; // Increased padding for better visibility
@@ -299,23 +476,24 @@ export class GameScene extends Phaser.Scene {
       lastInputTime: 0 // Track last input time to prevent stuck movement
     };
 
-    // Enhanced joystick input handling
+    // Enhanced joystick input handling with proper event management
     joystickBase.setInteractive();
     joystickKnob.setInteractive();
 
-    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+    // Use dedicated joystick event handlers to avoid conflicts
+    const handleJoystickStart = (pointer: Phaser.Input.Pointer) => {
       const distance = Phaser.Math.Distance.Between(
         pointer.x, pointer.y, joystickX, joystickY
       );
       
       if (distance <= joystickRadius + 30) {
         this.virtualControls.isDragging = true;
-        this.virtualControls.lastInputTime = this.time.now; // Update input time
+        this.virtualControls.lastInputTime = this.time.now;
         joystickKnob.setFillStyle(0x74b9ff, 1);
         joystickKnob.setScale(1.1);
         
         // Add glow effect
-        const glowTween = this.tweens.add({
+        this.tweens.add({
           targets: joystickKnob,
           scaleX: 1.15,
           scaleY: 1.15,
@@ -324,12 +502,16 @@ export class GameScene extends Phaser.Scene {
           repeat: 0
         });
       }
-    });
+    };
+
+    // Attach to both joystick elements for better touch detection
+    joystickBase.on('pointerdown', handleJoystickStart);
+    joystickKnob.on('pointerdown', handleJoystickStart);
 
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
-      if (!this.virtualControls.isDragging) return;
+      if (!this.virtualControls || !this.virtualControls.isDragging) return;
 
-      this.virtualControls.lastInputTime = this.time.now; // Update input time
+      this.virtualControls.lastInputTime = this.time.now;
       
       const centerX = this.virtualControls.joystickCenter.x;
       const centerY = this.virtualControls.joystickCenter.y;
@@ -340,19 +522,23 @@ export class GameScene extends Phaser.Scene {
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
       const maxDistance = this.virtualControls.maxDistance;
       
+      // Constrain movement within joystick bounds
       if (distance > maxDistance) {
         deltaX = (deltaX / distance) * maxDistance;
         deltaY = (deltaY / distance) * maxDistance;
       }
       
+      // Update knob position
       joystickKnob.x = centerX + deltaX;
       joystickKnob.y = centerY + deltaY;
       
-      // Calculate normalized vector with dead zone
+      // Calculate normalized vector with improved dead zone handling
       const normalizedDistance = Math.min(distance / maxDistance, 1);
       if (normalizedDistance > this.virtualControls.deadZone) {
-        this.virtualControls.joystickVector.x = (deltaX / maxDistance) * normalizedDistance;
-        this.virtualControls.joystickVector.y = (deltaY / maxDistance) * normalizedDistance;
+        // Apply smooth scaling for better control
+        const smoothFactor = (normalizedDistance - this.virtualControls.deadZone) / (1 - this.virtualControls.deadZone);
+        this.virtualControls.joystickVector.x = (deltaX / maxDistance) * smoothFactor;
+        this.virtualControls.joystickVector.y = (deltaY / maxDistance) * smoothFactor;
       } else {
         this.virtualControls.joystickVector.x = 0;
         this.virtualControls.joystickVector.y = 0;
@@ -373,7 +559,7 @@ export class GameScene extends Phaser.Scene {
         // Stop any existing tweens to prevent conflicts
         this.tweens.killTweensOf(joystickKnob);
         
-        // Smooth return animation
+        // Smooth return animation with completion callback
         this.tweens.add({
           targets: joystickKnob,
           x: joystickX,
@@ -381,7 +567,13 @@ export class GameScene extends Phaser.Scene {
           scaleX: 1,
           scaleY: 1,
           duration: 200,
-          ease: 'Back.easeOut'
+          ease: 'Back.easeOut',
+          onComplete: () => {
+            // Ensure final state is correct
+            joystickKnob.x = joystickX;
+            joystickKnob.y = joystickY;
+            joystickKnob.setScale(1);
+          }
         });
         
         joystickKnob.setFillStyle(0x4a90e2, 0.9);
@@ -724,6 +916,9 @@ export class GameScene extends Phaser.Scene {
         if (!this.virtualControls.isDragging) {
           this.virtualControls.joystickKnob.x = newJoystickX;
           this.virtualControls.joystickKnob.y = newJoystickY;
+          // Reset any stuck movement when repositioning
+          this.virtualControls.joystickVector = { x: 0, y: 0 };
+          this.virtualControls.lastInputTime = 0;
         }
 
         // Update direction dots
@@ -1247,11 +1442,11 @@ export class GameScene extends Phaser.Scene {
       moveY = 1;
     }
 
-    // Enhanced virtual joystick input with smooth movement
+    // Enhanced virtual joystick input with improved stability
     if (this.virtualControls && this.virtualControls.joystickVector) {
       // Check for stuck movement - reset if no input for too long
       const timeSinceLastInput = this.time.now - this.virtualControls.lastInputTime;
-      if (timeSinceLastInput > 100 && !this.virtualControls.isDragging) {
+      if (timeSinceLastInput > 200 && !this.virtualControls.isDragging) {
         this.virtualControls.joystickVector.x = 0;
         this.virtualControls.joystickVector.y = 0;
       }
@@ -1260,19 +1455,22 @@ export class GameScene extends Phaser.Scene {
         this.virtualControls.joystickVector.x ** 2 + this.virtualControls.joystickVector.y ** 2
       );
       
-      if (joystickStrength > this.virtualControls.deadZone) {
-        // Use smooth movement based on joystick distance
-        moveX = this.virtualControls.joystickVector.x;
-        moveY = this.virtualControls.joystickVector.y;
-        
-        // Add subtle haptic feedback during movement
-        if (this.hapticEnabled && joystickStrength > 0.8) {
-          if (Math.random() < 0.05) { // Occasional feedback to avoid spam
-            this.triggerHapticFeedback(10);
+      // Only apply joystick input if actively dragging or recent input
+      if (this.virtualControls.isDragging || timeSinceLastInput < 100) {
+        if (joystickStrength > this.virtualControls.deadZone) {
+          // Use smooth movement based on joystick distance
+          moveX = this.virtualControls.joystickVector.x;
+          moveY = this.virtualControls.joystickVector.y;
+          
+          // Add subtle haptic feedback during movement
+          if (this.hapticEnabled && joystickStrength > 0.8) {
+            if (Math.random() < 0.05) { // Occasional feedback to avoid spam
+              this.triggerHapticFeedback(10);
+            }
           }
         }
       } else {
-        // Ensure movement is completely stopped when in dead zone
+        // Ensure movement is completely stopped when not actively using joystick
         this.virtualControls.joystickVector.x = 0;
         this.virtualControls.joystickVector.y = 0;
       }

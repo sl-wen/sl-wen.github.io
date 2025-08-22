@@ -214,11 +214,12 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   }
 
   // 停止移动 - 将速度设为0并播放静止动画
-  public stop() {
+  public stop(): this {
     this.setVelocity(0, 0);
     if (!this.isActing) {
       this.play(`cat_idle_${this.direction}`, true);
     }
+    return this;
   }
 
   // 执行农场动作 - 挖掘、浇水、收获

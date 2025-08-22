@@ -64,8 +64,7 @@ export class PreloadScene extends Phaser.Scene {
     // Load sprite assets
     this.loadSpriteAssets();
 
-    // Create farm tilemap data
-    this.createFarmTilemapData();
+
   }
 
   private loadSpriteAssets() {
@@ -83,12 +82,7 @@ export class PreloadScene extends Phaser.Scene {
       frameHeight: 16
     });
 
-    // Load farm tile sprites (using existing tiles as fallback)
-    this.load.image('farm_grass', '/assets/tiles/grass.png');
-    this.load.image('farm_dirt', '/assets/tiles/stone.png');
-    this.load.image('farm_stone_path', '/assets/tiles/stone.png');
-    this.load.image('farm_fence', '/assets/tiles/stone.png');
-    this.load.image('farm_water', '/assets/tiles/water.png');
+
 
     // Load farm plot sprites (using existing tiles as fallback)
     this.load.image('farm_plot_empty', '/assets/tiles/grass.png');
@@ -160,38 +154,7 @@ export class PreloadScene extends Phaser.Scene {
     });
   }
 
-  private createFarmTilemapData() {
-    // Create a cozy farm environment tilemap
-    // 0 = grass, 1 = dirt, 2 = stone path, 3 = water, 4 = fence, 5 = farm plot area
-    const mapData = [
-      [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 2, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 2, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 2, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 2, 0, 0, 3, 3, 3, 3, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 2, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 2, 0, 0, 3, 3, 3, 3, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 2, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 2, 0, 0, 3, 3, 3, 3, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 3, 3, 3, 3, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 4],
-      [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
-    ];
 
-    // Store map data in registry for use in GameScene
-    this.registry.set('mapData', mapData);
-  }
 
   create() {
     // Start the main game scene

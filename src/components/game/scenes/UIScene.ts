@@ -33,7 +33,7 @@ export class UIScene extends Phaser.Scene {
     this.createToolIndicator();
     this.createInventoryInterface();
     this.createCookingInterface();
-    this.createMiniMap();
+
     this.createInteractionIndicators();
 
     // Listen for events from GameScene
@@ -312,95 +312,6 @@ export class UIScene extends Phaser.Scene {
     });
 
     this.cookingContainer.add([cookingBg, cookingTitle, closeButton]);
-  }
-
-  private createMiniMap() {
-    // Modern mini-map with enhanced design
-    const mapWidth = 120;
-    const mapHeight = 90;
-    const mapX = this.cameras.main.width - mapWidth - 20;
-    const mapY = 25;
-
-    // Create mini-map container
-    const miniMapContainer = this.add.container(mapX + mapWidth/2, mapY + mapHeight/2);
-    miniMapContainer.setScrollFactor(0);
-    miniMapContainer.setDepth(90);
-
-    // Modern background with glassmorphism
-    const miniMapBg = this.add.graphics();
-    miniMapBg.fillStyle(0x000000, 0.6);
-    miniMapBg.lineStyle(2, 0x4ecdc4, 0.8);
-    miniMapBg.fillRoundedRect(-mapWidth/2, -mapHeight/2, mapWidth, mapHeight, 8);
-    miniMapBg.strokeRoundedRect(-mapWidth/2, -mapHeight/2, mapWidth, mapHeight, 8);
-
-    // Add subtle glow
-    miniMapBg.lineStyle(4, 0x4ecdc4, 0.3);
-    miniMapBg.strokeRoundedRect(-mapWidth/2 - 2, -mapHeight/2 - 2, mapWidth + 4, mapHeight + 4, 10);
-
-    // Map content area
-    const mapContent = this.add.graphics();
-    mapContent.fillStyle(0x27ae60, 0.3); // Green for farm area
-    mapContent.fillRoundedRect(-50, -35, 100, 70, 5);
-
-    // Player indicator (pulsing dot)
-    const playerDot = this.add.circle(0, 0, 3, 0xff6b9d, 1);
-    this.tweens.add({
-      targets: playerDot,
-      scaleX: 1.5,
-      scaleY: 1.5,
-      duration: 1000,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut'
-    });
-
-    // Map title
-    const mapTitle = this.add.text(0, -30, '🗺️', {
-      fontSize: '16px',
-      color: '#4ecdc4'
-    });
-    mapTitle.setOrigin(0.5);
-
-    const mapLabel = this.add.text(0, 25, '农场', {
-      fontSize: '10px',
-      color: '#ffffff',
-      fontStyle: 'bold'
-    });
-    mapLabel.setOrigin(0.5);
-
-    // Add all elements to container
-    miniMapContainer.add([miniMapBg, mapContent, playerDot, mapTitle, mapLabel]);
-
-    // Store reference for updates
-    (this as any).miniMapContainer = miniMapContainer;
-    (this as any).playerDot = playerDot;
-  }
-
-  private showDialogue(text: string) {
-    this.dialogueText.setText(text);
-    this.dialogueBox.setVisible(true);
-
-    // Auto-hide after 3 seconds
-    this.time.delayedCall(3000, () => {
-      this.dialogueBox.setVisible(false);
-    });
-  }
-
-  private showNotification(text: string) {
-    this.notificationText.setText(text);
-    this.notificationText.setVisible(true);
-
-    // Fade out animation
-    this.tweens.add({
-      targets: this.notificationText,
-      alpha: { from: 1, to: 0 },
-      duration: 3000,
-      ease: 'Power2',
-      onComplete: () => {
-        this.notificationText.setVisible(false);
-        this.notificationText.setAlpha(1);
-      }
-    });
   }
 
   private onCatStatsChanged(stats: CatStats) {

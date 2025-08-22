@@ -11,8 +11,7 @@ export class GameScene extends Phaser.Scene {
   private cookingStations!: Phaser.GameObjects.Group;
   private decorations!: Phaser.GameObjects.Group;
   private inventoryManager!: InventoryManager;
-  private tilemap!: Phaser.Tilemaps.Tilemap;
-  private groundLayer!: Phaser.Tilemaps.TilemapLayer;
+
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasdKeys!: any;
   private interactKey!: Phaser.Input.Keyboard.Key;
@@ -35,9 +34,6 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    // Create farm tilemap
-    this.createFarmTilemap();
-
     // Initialize inventory system
     this.inventoryManager = new InventoryManager();
     this.inventoryManager.addTestItems(); // Add some test items
@@ -92,46 +88,22 @@ export class GameScene extends Phaser.Scene {
     this.setupPerformanceMonitoring();
   }
 
-  private createFarmTilemap() {
-    const mapData = this.registry.get('mapData');
 
-    // Create tilemap from data
-    this.tilemap = this.make.tilemap({
-      data: mapData,
-      tileWidth: 32,
-      tileHeight: 32
-    });
-
-    // Add farm tilesets
-    const grassTileset = this.tilemap.addTilesetImage('farm_grass');
-    const dirtTileset = this.tilemap.addTilesetImage('farm_dirt');
-    const pathTileset = this.tilemap.addTilesetImage('farm_stone_path');
-    const waterTileset = this.tilemap.addTilesetImage('farm_water');
-    const fenceTileset = this.tilemap.addTilesetImage('farm_fence');
-
-    // Create layers
-    this.groundLayer = this.tilemap.createLayer(0, [grassTileset!, dirtTileset!, pathTileset!, waterTileset!, fenceTileset!])!;
-
-    // Set collision properties
-    this.groundLayer.setCollisionByExclusion([0, 1, 2]); // Grass, dirt, and paths are walkable
-    this.groundLayer.setCollisionBetween(3, 4); // Water and fence are obstacles
-  }
 
   private createFarmPlots() {
-    // Create farm plots in designated areas (where tile type is 5 in the map)
-    const mapData = this.registry.get('mapData');
+    // Create farm plots in a simple grid layout
+    const plotPositions = [
+      { x: 200, y: 200 }, { x: 250, y: 200 }, { x: 300, y: 200 },
+      { x: 200, y: 250 }, { x: 250, y: 250 }, { x: 300, y: 250 },
+      { x: 200, y: 300 }, { x: 250, y: 300 }, { x: 300, y: 300 },
+      { x: 500, y: 350 }, { x: 550, y: 350 }, { x: 600, y: 350 },
+      { x: 500, y: 400 }, { x: 550, y: 400 }, { x: 600, y: 400 }
+    ];
     
-    for (let y = 0; y < mapData.length; y++) {
-      for (let x = 0; x < mapData[y].length; x++) {
-        if (mapData[y][x] === 5) { // Farm plot area
-          const worldX = x * 32 + 16;
-          const worldY = y * 32 + 32;
-          
-          const plot = new FarmPlot(this, worldX, worldY);
-          this.farmPlots.add(plot);
-        }
-      }
-    }
+    plotPositions.forEach(pos => {
+      const plot = new FarmPlot(this, pos.x, pos.y);
+      this.farmPlots.add(plot);
+    });
   }
 
   private createCookingStations() {
@@ -286,7 +258,7 @@ export class GameScene extends Phaser.Scene {
       
       // If clicking close to player, interact instead of move
       if (distance < 50) {
-        this.checkInteractions();
+        this.handleInteraction();
       } else {
         // Move towards clicked position
         this.movePlayerTowards(worldPoint.x, worldPoint.y);
@@ -523,7 +495,7 @@ export class GameScene extends Phaser.Scene {
       const dot = this.add.circle(joystickX + pos.x, joystickY + pos.y, 4, 0x74b9ff, 0.7);
       dot.setScrollFactor(0);
       dot.setDepth(1001);
-      dot.setStrokeStyle(1, 0x ffffff, 0.8);
+      dot.setStrokeStyle(1, 0xffffff, 0.8);
       
       // Add subtle pulsing animation
       this.tweens.add({
@@ -947,7 +919,7 @@ export class GameScene extends Phaser.Scene {
 
   private highlightSelectedTool(selectedButton: Phaser.GameObjects.Shape, selectedIndex: number) {
     // Reset all tool buttons
-    this.actionButtons.tools.forEach((toolBtn, index) => {
+    this.actionButtons.tools.forEach((toolBtn: any, index: number) => {
       if (index === selectedIndex) {
         // Highlight selected tool
         toolBtn.button.setStrokeStyle(3, 0xf1c40f, 1);
@@ -1421,13 +1393,10 @@ export class GameScene extends Phaser.Scene {
   private setupCamera() {
     this.cameras.main.startFollow(this.cat);
     this.cameras.main.setZoom(1.5);
-    this.cameras.main.setBounds(0, 0, this.tilemap.widthInPixels, this.tilemap.heightInPixels);
+    this.cameras.main.setBounds(0, 0, 800, 600);
   }
 
   private setupCollisions() {
-    // Collision between cat and tilemap
-    this.physics.add.collider(this.cat, this.groundLayer);
-
     // Collision between cat and decorations
     this.physics.add.collider(this.cat, this.decorations);
   }
@@ -1462,8 +1431,8 @@ export class GameScene extends Phaser.Scene {
   private createAtmosphere() {
     // Add ambient particles (butterflies, leaves, etc.)
     const butterflies = this.add.particles(0, 0, 'sparkle', {
-      x: { min: 0, max: this.tilemap.widthInPixels },
-      y: { min: 0, max: this.tilemap.heightInPixels },
+      x: { min: 0, max: 800 },
+      y: { min: 0, max: 600 },
       scale: { start: 0.1, end: 0.3 },
       alpha: { start: 0.8, end: 0.3 },
       tint: [0xFFD700, 0xFF69B4, 0x87CEEB],
@@ -1628,32 +1597,7 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private handleInteraction() {
-    // General interaction handler
-    const nearbyPlots = this.farmPlots.children.entries.filter((plot: any) => {
-      const distance = Phaser.Math.Distance.Between(
-        this.cat.x, this.cat.y, plot.x, plot.y
-      );
-      return distance < 50;
-    });
 
-    if (nearbyPlots.length > 0) {
-      const plot = nearbyPlots[0] as FarmPlot;
-      plot.emit('pointerdown');
-    }
-
-    const nearbyCookingStations = this.cookingStations.children.entries.filter((station: any) => {
-      const distance = Phaser.Math.Distance.Between(
-        this.cat.x, this.cat.y, station.x, station.y
-      );
-      return distance < 50;
-    });
-
-    if (nearbyCookingStations.length > 0) {
-      const station = nearbyCookingStations[0] as CookingStation;
-      station.emit('pointerdown');
-    }
-  }
 
   private handleTouchInteraction(worldX: number, worldY: number) {
     const distance = Phaser.Math.Distance.Between(
@@ -1667,18 +1611,7 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private movePlayerTowards(x: number, y: number) {
-    const angle = Phaser.Math.Angle.Between(this.cat.x, this.cat.y, x, y);
-    const moveX = Math.cos(angle);
-    const moveY = Math.sin(angle);
-    
-    this.cat.move(moveX, moveY);
-    
-    // Stop when close enough
-    this.time.delayedCall(1000, () => {
-      this.cat.stop();
-    });
-  }
+
 
   private isInVirtualControlsArea(x: number, y: number): boolean {
     // Check if touch is in virtual joystick area (left side)

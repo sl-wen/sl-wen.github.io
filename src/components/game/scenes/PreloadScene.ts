@@ -1,30 +1,34 @@
 import * as Phaser from 'phaser';
 
+// 预加载场景类 - 负责加载游戏所需的所有资源文件
 export class PreloadScene extends Phaser.Scene {
   constructor() {
-    super({ key: 'PreloadScene' });
+    super({ key: 'PreloadScene' }); // 场景标识符
   }
 
+  // 预加载阶段 - 加载所有游戏资源并显示加载进度
   preload() {
-    // Create loading bar
-    const width = this.cameras.main.width;
-    const height = this.cameras.main.height;
+    // 创建加载进度条界面
+    const width = this.cameras.main.width; // 获取摄像机宽度
+    const height = this.cameras.main.height; // 获取摄像机高度
 
+    // 创建进度条图形对象
     const progressBar = this.add.graphics();
     const progressBox = this.add.graphics();
-    progressBox.fillStyle(0x222222, 0.8);
-    progressBox.fillRect(width / 2 - 160, height / 2 - 25, 320, 50);
+    progressBox.fillStyle(0x222222, 0.8); // 深灰色背景，80%透明度
+    progressBox.fillRect(width / 2 - 160, height / 2 - 25, 320, 50); // 居中的矩形框
 
+    // 创建加载文本提示
     const loadingText = this.make.text({
       x: width / 2,
       y: height / 2 - 50,
       text: '正在加载小猫农场...',
       style: {
-        font: '20px monospace',
-        color: '#ffffff'
+        font: '20px monospace', // 等宽字体
+        color: '#ffffff' // 白色文字
       }
     });
-    loadingText.setOrigin(0.5, 0.5);
+    loadingText.setOrigin(0.5, 0.5); // 设置文本居中对齐
 
     const percentText = this.make.text({
       x: width / 2,

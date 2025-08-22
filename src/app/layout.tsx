@@ -3,10 +3,12 @@ import { Inter } from 'next/font/google';
 import dynamic from 'next/dynamic';
 import './globals.css';
 import { AuthProvider } from '@/utils/auth-context';
-// import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import PerformanceMonitor from '@/components/PerformanceMonitor';
 import NetworkStatus from '@/components/NetworkStatus';
 import ResourcePreloader from '@/components/ResourcePreloader';
+import InstallPrompt from '@/components/InstallPrompt';
+import PWAStatus from '@/components/PWAStatus';
 
 // 优化字体加载
 const inter = Inter({
@@ -51,18 +53,67 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  colorScheme: 'light'
+  maximumScale: 5,
+  userScalable: true,
+  colorScheme: 'light dark',
+  viewportFit: 'cover'
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN" className="scroll-smooth">
       <head>
+        {/* PWA Manifest */}
+        <link rel="manifest" href="/manifest.json" />
+        
         {/* Icons */}
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png" />
+        <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        
+        {/* iOS PWA Meta Tags */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="鱼鱼博客" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        
+        {/* PWA Theme Colors */}
+        <meta name="theme-color" content="#24292e" />
+        <meta name="msapplication-navbutton-color" content="#24292e" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        
+        {/* PWA Display Mode */}
+        <meta name="display-mode" content="standalone" />
+        
+        {/* iOS Splash Screens */}
+        <link rel="apple-touch-startup-image" href="/apple-splash-2048-2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" />
+        <link rel="apple-touch-startup-image" href="/apple-splash-1668-2224.png" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)" />
+        <link rel="apple-touch-startup-image" href="/apple-splash-1536-2048.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" />
+        <link rel="apple-touch-startup-image" href="/apple-splash-1125-2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" />
+        <link rel="apple-touch-startup-image" href="/pwa-512x512.png" />
+        
+        {/* Additional iOS Meta Tags */}
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="format-detection" content="email=no" />
+        <meta name="format-detection" content="address=no" />
+        
+        {/* Mobile Optimization */}
+        <meta name="HandheldFriendly" content="true" />
+        <meta name="MobileOptimized" content="320" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
+        
+        {/* Touch Icons for Android */}
+        <link rel="icon" sizes="192x192" href="/pwa-192x192.png" />
+        <link rel="icon" sizes="512x512" href="/pwa-512x512.png" />
 
         {/* 预连接关键域名 */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -107,7 +158,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </AuthProvider>
 
         {/* Service Worker Registration */}
-        {/* <ServiceWorkerRegistration /> */}
+        <ServiceWorkerRegistration />
 
         {/* Performance Monitor */}
         <PerformanceMonitor />
@@ -117,6 +168,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* Resource Preloader */}
         <ResourcePreloader />
+
+        {/* PWA Install Prompt */}
+        <InstallPrompt />
+
+        {/* PWA Status */}
+        <PWAStatus />
 
         {/* Dark Mode Script */}
         <script

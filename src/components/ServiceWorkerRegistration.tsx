@@ -8,6 +8,7 @@ export default function ServiceWorkerRegistration() {
       // 注册 Service Worker
       const registerSW = async () => {
         try {
+          // next-pwa 会自动生成 sw.js，我们只需要确保注册
           const registration = await navigator.serviceWorker.register('/sw.js', {
             scope: '/'
           });

@@ -28,6 +28,8 @@ export class GameScene extends Phaser.Scene {
   private performanceMode: 'high' | 'medium' | 'low' = 'high'; // Performance mode
   private frameCounter: number = 0;
   private lastFPSCheck: number = 0;
+  private lastTapTime: number = 0; // For double-tap emergency reset
+  private emergencyResetEnabled: boolean = true;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -203,6 +205,13 @@ export class GameScene extends Phaser.Scene {
     this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.inventoryKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.I);
     this.cookingKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.C);
+    
+    // Emergency reset key (ESC)
+    const emergencyResetKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+    emergencyResetKey.on('down', () => {
+      console.log('Emergency reset triggered by ESC key');
+      this.executeEmergencyReset('ESC键');
+    });
 
     // Tool selection keys
     this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ONE).on('down', () => {
@@ -250,6 +259,11 @@ export class GameScene extends Phaser.Scene {
 
     // Enhanced touch input for interactions with better feedback
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      // Check for double-tap emergency reset
+      if (this.checkForEmergencyReset(pointer)) {
+        return;
+      }
+      
       // Check if touch is in virtual controls area first
       if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
         return; // Don't handle world interaction if touching controls
@@ -356,119 +370,170 @@ export class GameScene extends Phaser.Scene {
      this.showNotification('已切换到简单触摸控制模式');
    }
 
-   // Create modern control mode toggle button
-   private createControlModeToggle() {
-     // Create settings panel container
-     const settingsPanel = this.add.container(60, 60);
-     settingsPanel.setScrollFactor(0);
-     settingsPanel.setDepth(1000);
+     // Create modern control mode toggle button
+  private createControlModeToggle() {
+    // Create settings panel container
+    const settingsPanel = this.add.container(60, 60);
+    settingsPanel.setScrollFactor(0);
+    settingsPanel.setDepth(1000);
 
-     // Modern toggle button with glassmorphism
-     const toggleButtonShadow = this.add.circle(2, 2, 28, 0x000000, 0.3);
-     const toggleButton = this.add.circle(0, 0, 28, 0x6c5ce7, 0.85);
-     toggleButton.setInteractive();
-     toggleButton.setStrokeStyle(2, 0x74b9ff, 0.8);
+    // Modern toggle button with glassmorphism
+    const toggleButtonShadow = this.add.circle(2, 2, 28, 0x000000, 0.3);
+    const toggleButton = this.add.circle(0, 0, 28, 0x6c5ce7, 0.85);
+    toggleButton.setInteractive();
+    toggleButton.setStrokeStyle(2, 0x74b9ff, 0.8);
 
-     // Inner gradient ring
-     const toggleInner = this.add.circle(0, 0, 20, 0x74b9ff, 0.3);
+    // Inner gradient ring
+    const toggleInner = this.add.circle(0, 0, 20, 0x74b9ff, 0.3);
 
-     const toggleText = this.add.text(0, 0, '🎮', {
-       fontSize: '18px',
-       color: '#ffffff'
-     });
-     toggleText.setOrigin(0.5);
+    const toggleText = this.add.text(0, 0, '🎮', {
+      fontSize: '18px',
+      color: '#ffffff'
+    });
+    toggleText.setOrigin(0.5);
 
-     // Add subtle breathing animation
-     this.tweens.add({
-       targets: [toggleButton, toggleInner],
-       scaleX: 1.05,
-       scaleY: 1.05,
-       duration: 2000,
-       yoyo: true,
-       repeat: -1,
-       ease: 'Sine.easeInOut'
-     });
+    // Add emergency reset button next to toggle
+    const resetButtonShadow = this.add.circle(62, 2, 22, 0x000000, 0.3);
+    const resetButton = this.add.circle(60, 0, 22, 0xe74c3c, 0.85);
+    resetButton.setInteractive();
+    resetButton.setStrokeStyle(2, 0xff6b6b, 0.8);
 
-     // Toggle functionality with enhanced feedback
-     toggleButton.on('pointerdown', () => {
-       this.useSimpleTouch = !this.useSimpleTouch;
-       
-       // Enhanced visual feedback
-       this.triggerActionHaptic('button_press');
-       
-       if (this.useSimpleTouch) {
-         toggleText.setText('👆');
-         toggleButton.setFillStyle(0xe17055, 0.85);
-         toggleInner.setFillStyle(0xff7675, 0.3);
-         this.switchToSimpleTouch();
-       } else {
-         toggleText.setText('🎮');
-         toggleButton.setFillStyle(0x6c5ce7, 0.85);
-         toggleInner.setFillStyle(0x74b9ff, 0.3);
-         this.switchToJoystickMode();
-       }
-       
-       // Enhanced press animation
-       this.tweens.add({
-         targets: [toggleButton, toggleInner, toggleText],
-         scaleX: 0.9,
-         scaleY: 0.9,
-         duration: 100,
-         yoyo: true,
-         ease: 'Back.easeOut'
-       });
+    const resetInner = this.add.circle(60, 0, 16, 0xff6b6b, 0.3);
+    const resetText = this.add.text(60, 0, '🔄', {
+      fontSize: '14px',
+      color: '#ffffff'
+    });
+    resetText.setOrigin(0.5);
 
-       // Create ripple effect
-       const ripple = this.add.circle(0, 0, 10, 0xffffff, 0.6);
-       ripple.setDepth(1005);
-       settingsPanel.add(ripple);
-       
-       this.tweens.add({
-         targets: ripple,
-         scaleX: 3,
-         scaleY: 3,
-         alpha: 0,
-         duration: 300,
-         ease: 'Power2',
-         onComplete: () => ripple.destroy()
-       });
-     });
+    // Emergency reset functionality
+    resetButton.on('pointerdown', () => {
+      this.executeEmergencyReset('重置按钮');
+      
+      // Visual feedback
+      this.triggerActionHaptic('button_press');
+      this.tweens.add({
+        targets: [resetButton, resetInner, resetText],
+        scaleX: 0.8,
+        scaleY: 0.8,
+        duration: 100,
+        yoyo: true,
+        ease: 'Back.easeOut'
+      });
+    });
 
-     // Add all elements to panel
-     settingsPanel.add([toggleButtonShadow, toggleButton, toggleInner, toggleText]);
+    // Add subtle breathing animation
+    this.tweens.add({
+      targets: [toggleButton, toggleInner],
+      scaleX: 1.05,
+      scaleY: 1.05,
+      duration: 2000,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
 
-     // Store reference for cleanup
-     if (!this.actionButtons) this.actionButtons = {};
-     this.actionButtons.modeToggle = { 
-       panel: settingsPanel,
-       button: toggleButton, 
-       text: toggleText,
-       inner: toggleInner
-     };
-   }
+    // Reset button pulse animation
+    this.tweens.add({
+      targets: [resetButton, resetInner],
+      scaleX: 1.03,
+      scaleY: 1.03,
+      duration: 1500,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
 
-   // Switch to joystick mode
-   private switchToJoystickMode() {
-     // Clean up simple touch handlers
-     this.input.removeAllListeners('pointerdown');
-     
-     // Recreate virtual joystick
-     this.createEnhancedVirtualJoystick();
-     this.createEnhancedActionButtons();
-     
-     // Restore enhanced touch input
-     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-       if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
-         return;
-       }
-       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-       this.handleEnhancedTouchInteraction(worldPoint.x, worldPoint.y, pointer);
-     });
-     
-     this.showNotification('已切换到虚拟摇杆模式');
-   }
+    // Toggle functionality with enhanced feedback
+    toggleButton.on('pointerdown', () => {
+      this.useSimpleTouch = !this.useSimpleTouch;
+      
+      // Enhanced visual feedback
+      this.triggerActionHaptic('button_press');
+      
+      if (this.useSimpleTouch) {
+        toggleText.setText('👆');
+        toggleButton.setFillStyle(0xe17055, 0.85);
+        toggleInner.setFillStyle(0xff7675, 0.3);
+        this.switchToSimpleTouch();
+      } else {
+        toggleText.setText('🎮');
+        toggleButton.setFillStyle(0x6c5ce7, 0.85);
+        toggleInner.setFillStyle(0x74b9ff, 0.3);
+        this.switchToJoystickMode();
+      }
+      
+      // Enhanced press animation
+      this.tweens.add({
+        targets: [toggleButton, toggleInner, toggleText],
+        scaleX: 0.9,
+        scaleY: 0.9,
+        duration: 100,
+        yoyo: true,
+        ease: 'Back.easeOut'
+      });
+
+      // Create ripple effect
+      const ripple = this.add.circle(0, 0, 10, 0xffffff, 0.6);
+      ripple.setDepth(1005);
+      settingsPanel.add(ripple);
+      
+      this.tweens.add({
+        targets: ripple,
+        scaleX: 3,
+        scaleY: 3,
+        alpha: 0,
+        duration: 300,
+        ease: 'Power2',
+        onComplete: () => ripple.destroy()
+      });
+    });
+
+    // Add all elements to panel
+    settingsPanel.add([toggleButtonShadow, toggleButton, toggleInner, toggleText, 
+                       resetButtonShadow, resetButton, resetInner, resetText]);
+
+    // Store reference for cleanup
+    if (!this.actionButtons) this.actionButtons = {};
+    this.actionButtons.modeToggle = { 
+      panel: settingsPanel,
+      button: toggleButton, 
+      text: toggleText,
+      inner: toggleInner,
+      resetButton: resetButton,
+      resetText: resetText,
+      resetInner: resetInner
+    };
+  }
+
+     // Switch to joystick mode
+  private switchToJoystickMode() {
+    // Clean up simple touch handlers and any existing joystick
+    this.input.removeAllListeners('pointerdown');
+    this.cleanupExistingJoystick();
+    
+    // Ensure cat movement is stopped
+    this.cat.setVelocity(0, 0);
+    
+    // Recreate virtual joystick
+    this.createEnhancedVirtualJoystick();
+    this.createEnhancedActionButtons();
+    
+    // Restore enhanced touch input
+    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
+        return;
+      }
+      const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+      this.handleEnhancedTouchInteraction(worldPoint.x, worldPoint.y, pointer);
+    });
+    
+    this.showNotification('已切换到虚拟摇杆模式');
+  }
 
   private createEnhancedVirtualJoystick() {
+    // Clean up any existing joystick to prevent conflicts
+    this.cleanupExistingJoystick();
+    
     const padding = 60; // Increased padding for better visibility
     const joystickRadius = 70;
     const knobRadius = 28;
@@ -538,7 +603,10 @@ export class GameScene extends Phaser.Scene {
       joystickVector: { x: 0, y: 0 },
       deadZone: 0.15, // Reduced dead zone for more responsive control
       maxDistance: joystickRadius - knobRadius - 5,
-      lastInputTime: 0 // Track last input time to prevent stuck movement
+      lastInputTime: 0, // Track last input time to prevent stuck movement
+      activePointerId: null, // Track which pointer is controlling the joystick
+      isStuck: false, // Flag to detect stuck state
+      stuckCheckTimer: null // Timer to check for stuck state
     };
 
     // Enhanced joystick input handling with proper event management
@@ -556,8 +624,17 @@ export class GameScene extends Phaser.Scene {
       );
       
       if (distance <= joystickRadius + 30) {
+        // Only allow one pointer to control joystick at a time
+        if (this.virtualControls.activePointerId !== null && 
+            this.virtualControls.activePointerId !== pointer.id) {
+          return;
+        }
+        
         this.virtualControls.isDragging = true;
+        this.virtualControls.activePointerId = pointer.id;
         this.virtualControls.lastInputTime = this.time.now;
+        this.virtualControls.isStuck = false;
+        
         joystickKnob.setFillStyle(0x74b9ff, 1);
         joystickKnob.setScale(1.1);
         
@@ -573,6 +650,9 @@ export class GameScene extends Phaser.Scene {
           yoyo: true,
           repeat: 0
         });
+        
+        // Start stuck detection timer
+        this.startStuckDetection();
       }
     };
 
@@ -580,13 +660,19 @@ export class GameScene extends Phaser.Scene {
     joystickBase.on('pointerdown', handleJoystickStart);
     joystickKnob.on('pointerdown', handleJoystickStart);
 
-    this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
-      if (!this.virtualControls || !this.virtualControls.isDragging) return;
+    // Enhanced pointer move handler with better validation
+    const handlePointerMove = (pointer: Phaser.Input.Pointer) => {
+      if (!this.virtualControls || 
+          !this.virtualControls.isDragging || 
+          this.virtualControls.activePointerId !== pointer.id) {
+        return;
+      }
 
       // Prevent default touch behavior
       pointer.event?.preventDefault();
       
       this.virtualControls.lastInputTime = this.time.now;
+      this.virtualControls.isStuck = false;
       
       const centerX = this.virtualControls.joystickCenter.x;
       const centerY = this.virtualControls.joystickCenter.y;
@@ -624,15 +710,28 @@ export class GameScene extends Phaser.Scene {
 
       // Update direction dots opacity based on direction
       this.updateDirectionIndicators(deltaX, deltaY);
-    });
+    };
+
+    this.input.on('pointermove', handlePointerMove);
 
     const resetJoystick = (pointer?: Phaser.Input.Pointer) => {
-      if (this.virtualControls.isDragging) {
+      // Only reset if it's the active pointer or no specific pointer
+      if (pointer && this.virtualControls.activePointerId !== null && 
+          this.virtualControls.activePointerId !== pointer.id) {
+        return;
+      }
+      
+      if (this.virtualControls.isDragging || this.virtualControls.isStuck) {
         this.virtualControls.isDragging = false;
+        this.virtualControls.activePointerId = null;
+        this.virtualControls.isStuck = false;
         
         // Immediately reset vector to prevent stuck movement
         this.virtualControls.joystickVector = { x: 0, y: 0 };
         this.virtualControls.lastInputTime = 0;
+        
+        // Clear stuck detection timer
+        this.clearStuckDetection();
         
         // Prevent default behavior if pointer event exists
         if (pointer?.event) {
@@ -658,6 +757,12 @@ export class GameScene extends Phaser.Scene {
             joystickKnob.y = joystickY;
             joystickKnob.setScale(1);
             joystickKnob.setFillStyle(0x4a90e2, 0.85);
+            
+            // Final safety check - ensure movement is stopped
+            if (this.virtualControls) {
+              this.virtualControls.joystickVector = { x: 0, y: 0 };
+              this.cat.setVelocity(0, 0);
+            }
           }
         });
         
@@ -669,12 +774,23 @@ export class GameScene extends Phaser.Scene {
       }
     };
 
-    this.input.on('pointerup', resetJoystick);
-    this.input.on('pointerupoutside', resetJoystick); // Handle when pointer leaves game area
+    // Enhanced event binding with better cleanup
+    const pointerUpHandler = (pointer: Phaser.Input.Pointer) => resetJoystick(pointer);
+    const pointerUpOutsideHandler = (pointer: Phaser.Input.Pointer) => resetJoystick(pointer);
+    const pointerCancelHandler = (pointer: Phaser.Input.Pointer) => resetJoystick(pointer);
     
-    // Add additional safety reset for touch cancel events
-    this.input.on('pointercancel', resetJoystick);
-    this.input.on('pointerleave', resetJoystick);
+    this.input.on('pointerup', pointerUpHandler);
+    this.input.on('pointerupoutside', pointerUpOutsideHandler);
+    this.input.on('pointercancel', pointerCancelHandler);
+    this.input.on('pointerleave', pointerCancelHandler);
+    
+    // Store event handlers for cleanup
+    this.virtualControls.eventHandlers = {
+      pointerMove: handlePointerMove,
+      pointerUp: pointerUpHandler,
+      pointerUpOutside: pointerUpOutsideHandler,
+      pointerCancel: pointerCancelHandler
+    };
   }
 
   private updateDirectionIndicators(deltaX: number, deltaY: number) {
@@ -698,6 +814,210 @@ export class GameScene extends Phaser.Scene {
   // Easing function for smoother joystick control
   private easeInOutQuad(t: number): number {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+  // Clean up existing joystick to prevent conflicts
+  private cleanupExistingJoystick() {
+    if (this.virtualControls) {
+      // Clear stuck detection timer
+      this.clearStuckDetection();
+      
+      // Remove event handlers to prevent memory leaks
+      if (this.virtualControls.eventHandlers) {
+        this.input.off('pointermove', this.virtualControls.eventHandlers.pointerMove);
+        this.input.off('pointerup', this.virtualControls.eventHandlers.pointerUp);
+        this.input.off('pointerupoutside', this.virtualControls.eventHandlers.pointerUpOutside);
+        this.input.off('pointercancel', this.virtualControls.eventHandlers.pointerCancel);
+        this.input.off('pointerleave', this.virtualControls.eventHandlers.pointerCancel);
+      }
+      
+      // Destroy visual elements
+      Object.values(this.virtualControls).forEach((element: any) => {
+        if (element && element.destroy) {
+          element.destroy();
+        } else if (Array.isArray(element)) {
+          element.forEach((item: any) => {
+            if (item && item.destroy) item.destroy();
+          });
+        }
+      });
+      
+      this.virtualControls = null;
+    }
+  }
+
+  // Start stuck detection timer
+  private startStuckDetection() {
+    this.clearStuckDetection(); // Clear any existing timer
+    
+    this.virtualControls.stuckCheckTimer = this.time.addEvent({
+      delay: 500, // Check every 500ms
+      callback: () => {
+        if (!this.virtualControls) return;
+        
+        const timeSinceLastInput = this.time.now - this.virtualControls.lastInputTime;
+        
+        // If dragging but no input for 1 second, force reset
+        if (this.virtualControls.isDragging && timeSinceLastInput > 1000) {
+          console.warn('Joystick stuck detected, forcing reset');
+          this.virtualControls.isStuck = true;
+          this.forceResetJoystick();
+        }
+      },
+      loop: true
+    });
+  }
+
+  // Clear stuck detection timer
+  private clearStuckDetection() {
+    if (this.virtualControls && this.virtualControls.stuckCheckTimer) {
+      this.virtualControls.stuckCheckTimer.destroy();
+      this.virtualControls.stuckCheckTimer = null;
+    }
+  }
+
+  // Force reset joystick when stuck
+  private forceResetJoystick() {
+    if (!this.virtualControls) return;
+    
+    console.log('Force resetting joystick');
+    
+    // Immediately stop all movement
+    this.virtualControls.isDragging = false;
+    this.virtualControls.activePointerId = null;
+    this.virtualControls.isStuck = false;
+    this.virtualControls.joystickVector = { x: 0, y: 0 };
+    this.virtualControls.lastInputTime = 0;
+    
+    // Stop cat movement immediately
+    this.cat.setVelocity(0, 0);
+    
+    // Clear stuck detection timer
+    this.clearStuckDetection();
+    
+    // Stop any existing tweens
+    this.tweens.killTweensOf(this.virtualControls.joystickKnob);
+    
+    // Reset knob position immediately
+    const centerX = this.virtualControls.joystickCenter.x;
+    const centerY = this.virtualControls.joystickCenter.y;
+    
+    this.virtualControls.joystickKnob.x = centerX;
+    this.virtualControls.joystickKnob.y = centerY;
+    this.virtualControls.joystickKnob.setScale(1);
+    this.virtualControls.joystickKnob.setFillStyle(0x4a90e2, 0.85);
+    
+    // Reset direction dots
+    if (this.virtualControls.directionDots) {
+      this.virtualControls.directionDots.forEach((dot: any) => dot.setAlpha(0.6));
+    }
+    
+    // Show notification to user
+    this.showNotification('🔄 操控杆已重置');
+    
+    // Restart stuck detection
+    this.startStuckDetection();
+  }
+
+  // Check for double-tap emergency reset
+  private checkForEmergencyReset(pointer: Phaser.Input.Pointer): boolean {
+    if (!this.emergencyResetEnabled) return false;
+    
+    const currentTime = this.time.now;
+    const timeSinceLastTap = currentTime - this.lastTapTime;
+    
+    // Double-tap detection (within 500ms)
+    if (timeSinceLastTap < 500 && timeSinceLastTap > 50) {
+      // Check if tap is in a safe area (not on UI elements)
+      const centerX = this.cameras.main.width / 2;
+      const centerY = this.cameras.main.height / 2;
+      const tapDistance = Phaser.Math.Distance.Between(pointer.x, pointer.y, centerX, centerY);
+      
+      // Only trigger if tapping in center area of screen
+      if (tapDistance < 150) {
+        console.log('Emergency reset triggered by double-tap');
+        
+        // Execute unified emergency reset
+        this.executeEmergencyReset('双击屏幕');
+        
+        // Temporarily disable emergency reset to prevent spam
+        this.emergencyResetEnabled = false;
+        this.time.delayedCall(2000, () => {
+          this.emergencyResetEnabled = true;
+        });
+        
+        this.lastTapTime = 0; // Reset tap time
+        return true;
+      }
+    }
+    
+    this.lastTapTime = currentTime;
+    return false;
+  }
+
+  // Unified emergency reset method
+  private executeEmergencyReset(trigger: string) {
+    console.log(`Emergency reset executed via ${trigger}`);
+    
+    // Force reset joystick
+    this.forceResetJoystick();
+    
+    // Stop all movement immediately
+    this.cat.setVelocity(0, 0);
+    
+    // Clear any stuck states
+    if (this.virtualControls) {
+      this.virtualControls.isDragging = false;
+      this.virtualControls.activePointerId = null;
+      this.virtualControls.isStuck = false;
+      this.virtualControls.joystickVector = { x: 0, y: 0 };
+      this.virtualControls.lastInputTime = 0;
+    }
+    
+    // Show visual feedback
+    const centerX = this.cameras.main.width / 2;
+    const centerY = this.cameras.main.height / 2;
+    
+    const emergencyText = this.add.text(centerX, centerY - 50, `🚨 ${trigger}紧急重置`, {
+      fontSize: '24px',
+      color: '#e74c3c',
+      backgroundColor: 'rgba(0,0,0,0.9)',
+      padding: { x: 15, y: 8 }
+    });
+    emergencyText.setOrigin(0.5);
+    emergencyText.setScrollFactor(0);
+    emergencyText.setDepth(2000);
+    
+    // Success message
+    const successText = this.add.text(centerX, centerY + 20, '✅ 操控杆已重置', {
+      fontSize: '18px',
+      color: '#27ae60',
+      backgroundColor: 'rgba(0,0,0,0.8)',
+      padding: { x: 12, y: 6 }
+    });
+    successText.setOrigin(0.5);
+    successText.setScrollFactor(0);
+    successText.setDepth(2000);
+    
+    // Animate both texts
+    this.tweens.add({
+      targets: [emergencyText, successText],
+      scaleX: 1.1,
+      scaleY: 1.1,
+      alpha: 0,
+      duration: 2000,
+      ease: 'Power2',
+      onComplete: () => {
+        emergencyText.destroy();
+        successText.destroy();
+      }
+    });
+    
+    // Haptic feedback
+    this.triggerActionHaptic('success');
+    
+    // Show notification
+    this.showNotification(`🚨 ${trigger}紧急重置已执行`);
   }
 
   private createEnhancedActionButtons() {
@@ -1787,21 +2107,31 @@ export class GameScene extends Phaser.Scene {
       moveY = 1;
     }
 
-    // Enhanced virtual joystick input with improved stability
+    // Enhanced virtual joystick input with improved stability and stuck prevention
     if (this.virtualControls && this.virtualControls.joystickVector) {
-      // Check for stuck movement - reset if no input for too long
       const timeSinceLastInput = this.time.now - this.virtualControls.lastInputTime;
-      if (timeSinceLastInput > 200 && !this.virtualControls.isDragging) {
+      
+      // Enhanced stuck detection and prevention
+      if (timeSinceLastInput > 300 && !this.virtualControls.isDragging) {
+        // Force stop movement if no input for 300ms and not actively dragging
         this.virtualControls.joystickVector.x = 0;
         this.virtualControls.joystickVector.y = 0;
+        this.cat.setVelocity(0, 0); // Immediately stop cat movement
+      }
+      
+      // Emergency reset if stuck for too long
+      if (timeSinceLastInput > 2000 && this.virtualControls.isDragging) {
+        console.warn('Emergency joystick reset triggered');
+        this.forceResetJoystick();
+        return; // Skip movement processing this frame
       }
       
       const joystickStrength = Math.sqrt(
         this.virtualControls.joystickVector.x ** 2 + this.virtualControls.joystickVector.y ** 2
       );
       
-      // Only apply joystick input if actively dragging or recent input
-      if (this.virtualControls.isDragging || timeSinceLastInput < 100) {
+      // Only apply joystick input if actively dragging with recent input
+      if (this.virtualControls.isDragging && timeSinceLastInput < 150) {
         if (joystickStrength > this.virtualControls.deadZone) {
           // Use smooth movement based on joystick distance with performance optimization
           const smoothedX = this.virtualControls.joystickVector.x * 0.9; // Slight damping for smoother movement
@@ -1815,7 +2145,7 @@ export class GameScene extends Phaser.Scene {
             this.triggerHapticFeedback(8);
           }
         }
-      } else {
+      } else if (!this.virtualControls.isDragging) {
         // Ensure movement is completely stopped when not actively using joystick
         this.virtualControls.joystickVector.x = 0;
         this.virtualControls.joystickVector.y = 0;
@@ -1858,5 +2188,44 @@ export class GameScene extends Phaser.Scene {
 
     // Update responsive UI elements
     this.updateResponsiveUI();
+  }
+
+  // Scene cleanup - called when scene is destroyed
+  destroy() {
+    // Clean up joystick resources
+    this.cleanupExistingJoystick();
+    
+    // Clean up particle pool
+    this.particlePool.forEach(particles => {
+      if (particles && particles.destroy) {
+        particles.destroy();
+      }
+    });
+    this.particlePool = [];
+    
+    // Clean up tooltips
+    if (this.toolTooltip) {
+      this.toolTooltip.destroy();
+      this.toolTooltip = null;
+    }
+    
+    // Clean up action buttons
+    if (this.actionButtons) {
+      Object.values(this.actionButtons).forEach((button: any) => {
+        if (button && button.destroy) {
+          button.destroy();
+        } else if (button && button.panel && button.panel.destroy) {
+          button.panel.destroy();
+        }
+      });
+      this.actionButtons = null;
+    }
+    
+    // Ensure cat movement is stopped
+    if (this.cat) {
+      this.cat.setVelocity(0, 0);
+    }
+    
+    console.log('GameScene cleanup completed');
   }
 }

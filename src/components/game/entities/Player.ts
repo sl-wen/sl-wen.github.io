@@ -86,40 +86,40 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   private createAnimations() {
     const anims = this.scene.anims;
     
-    // Walking animations for each direction
-    // Down (frames 0-3)
+    // Walking animations for each direction (simplified for available frames)
+    // Down
     anims.create({
       key: 'cat_walk_down',
-      frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: 3 }),
+      frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: Math.min(1, 3) }),
       frameRate: 8,
       repeat: -1
     });
     
-    // Left (frames 4-7)
+    // Left 
     anims.create({
       key: 'cat_walk_left',
-      frames: anims.generateFrameNumbers('cat_walk', { start: 4, end: 7 }),
+      frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: Math.min(1, 3) }),
       frameRate: 8,
       repeat: -1
     });
     
-    // Right (frames 8-11)
+    // Right
     anims.create({
       key: 'cat_walk_right',
-      frames: anims.generateFrameNumbers('cat_walk', { start: 8, end: 11 }),
+      frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: Math.min(1, 3) }),
       frameRate: 8,
       repeat: -1
     });
     
-    // Up (frames 12-15)
+    // Up
     anims.create({
       key: 'cat_walk_up',
-      frames: anims.generateFrameNumbers('cat_walk', { start: 12, end: 15 }),
+      frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: Math.min(1, 3) }),
       frameRate: 8,
       repeat: -1
     });
     
-    // Idle animations (first frame of each direction)
+    // Idle animations (using first frame for all directions)
     anims.create({
       key: 'cat_idle_down',
       frames: [{ key: 'cat_walk', frame: 0 }],
@@ -128,40 +128,40 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     
     anims.create({
       key: 'cat_idle_left',
-      frames: [{ key: 'cat_walk', frame: 4 }],
+      frames: [{ key: 'cat_walk', frame: 0 }],
       frameRate: 1
     });
     
     anims.create({
       key: 'cat_idle_right',
-      frames: [{ key: 'cat_walk', frame: 8 }],
+      frames: [{ key: 'cat_walk', frame: 0 }],
       frameRate: 1
     });
     
     anims.create({
       key: 'cat_idle_up',
-      frames: [{ key: 'cat_walk', frame: 12 }],
+      frames: [{ key: 'cat_walk', frame: 0 }],
       frameRate: 1
     });
 
-    // Action animations
+    // Action animations (simplified)
     anims.create({
       key: 'cat_digging',
-      frames: anims.generateFrameNumbers('cat_actions', { start: 0, end: 3 }),
+      frames: anims.generateFrameNumbers('cat_actions', { start: 0, end: Math.min(1, 3) }),
       frameRate: 6,
       repeat: 2
     });
 
     anims.create({
       key: 'cat_watering',
-      frames: anims.generateFrameNumbers('cat_actions', { start: 4, end: 7 }),
+      frames: anims.generateFrameNumbers('cat_actions', { start: 0, end: Math.min(1, 3) }),
       frameRate: 6,
       repeat: 2
     });
 
     anims.create({
       key: 'cat_harvesting',
-      frames: anims.generateFrameNumbers('cat_actions', { start: 8, end: 11 }),
+      frames: anims.generateFrameNumbers('cat_actions', { start: 0, end: Math.min(1, 3) }),
       frameRate: 6,
       repeat: 1
     });

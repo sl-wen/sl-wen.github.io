@@ -246,12 +246,13 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createEnhancedVirtualJoystick() {
-    const padding = 40;
+    const padding = 60; // Increased padding for better visibility
     const joystickRadius = 70;
     const knobRadius = 28;
     
-    const joystickX = padding + joystickRadius;
-    const joystickY = this.cameras.main.height - padding - joystickRadius;
+    // Ensure joystick is fully visible with safe area consideration
+    const joystickX = Math.max(padding + joystickRadius, joystickRadius + 20);
+    const joystickY = Math.min(this.cameras.main.height - padding - joystickRadius, this.cameras.main.height - joystickRadius - 20);
 
     // Enhanced joystick base with gradient and glow effect
     const joystickBase = this.add.circle(joystickX, joystickY, joystickRadius, 0x1a1a1a, 0.4);
@@ -294,7 +295,8 @@ export class GameScene extends Phaser.Scene {
       isDragging: false,
       joystickVector: { x: 0, y: 0 },
       deadZone: 0.2, // Add dead zone for better control
-      maxDistance: joystickRadius - knobRadius - 5
+      maxDistance: joystickRadius - knobRadius - 5,
+      lastInputTime: 0 // Track last input time to prevent stuck movement
     };
 
     // Enhanced joystick input handling
@@ -308,6 +310,7 @@ export class GameScene extends Phaser.Scene {
       
       if (distance <= joystickRadius + 30) {
         this.virtualControls.isDragging = true;
+        this.virtualControls.lastInputTime = this.time.now; // Update input time
         joystickKnob.setFillStyle(0x74b9ff, 1);
         joystickKnob.setScale(1.1);
         
@@ -326,6 +329,8 @@ export class GameScene extends Phaser.Scene {
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (!this.virtualControls.isDragging) return;
 
+      this.virtualControls.lastInputTime = this.time.now; // Update input time
+      
       const centerX = this.virtualControls.joystickCenter.x;
       const centerY = this.virtualControls.joystickCenter.y;
       
@@ -357,9 +362,16 @@ export class GameScene extends Phaser.Scene {
       this.updateDirectionIndicators(deltaX, deltaY);
     });
 
-    this.input.on('pointerup', () => {
+    const resetJoystick = () => {
       if (this.virtualControls.isDragging) {
         this.virtualControls.isDragging = false;
+        
+        // Immediately reset vector to prevent stuck movement
+        this.virtualControls.joystickVector = { x: 0, y: 0 };
+        this.virtualControls.lastInputTime = 0;
+        
+        // Stop any existing tweens to prevent conflicts
+        this.tweens.killTweensOf(joystickKnob);
         
         // Smooth return animation
         this.tweens.add({
@@ -373,12 +385,14 @@ export class GameScene extends Phaser.Scene {
         });
         
         joystickKnob.setFillStyle(0x4a90e2, 0.9);
-        this.virtualControls.joystickVector = { x: 0, y: 0 };
         
         // Reset direction dots
         directionDots.forEach(dot => dot.setAlpha(0.6));
       }
-    });
+    };
+
+    this.input.on('pointerup', resetJoystick);
+    this.input.on('pointerupoutside', resetJoystick); // Handle when pointer leaves game area
   }
 
   private updateDirectionIndicators(deltaX: number, deltaY: number) {
@@ -402,7 +416,7 @@ export class GameScene extends Phaser.Scene {
   private createEnhancedActionButtons() {
     const buttonSize = 60;
     const smallButtonSize = 45;
-    const padding = 30;
+    const padding = 50; // Increased padding to ensure buttons are in safe area
     const rightEdge = this.cameras.main.width - padding;
     const bottomEdge = this.cameras.main.height - padding;
 
@@ -414,8 +428,11 @@ export class GameScene extends Phaser.Scene {
       tools: []
     };
 
-    // Main interact button with enhanced visual design
-    const interactButton = this.add.circle(rightEdge - buttonSize/2, bottomEdge - buttonSize/2, buttonSize/2, 0x27ae60, 0.9);
+    // Main interact button with enhanced visual design - positioned safely in bottom right
+    const interactButtonX = Math.min(rightEdge - buttonSize/2, this.cameras.main.width - buttonSize/2 - 10);
+    const interactButtonY = Math.min(bottomEdge - buttonSize/2, this.cameras.main.height - buttonSize/2 - 10);
+    
+    const interactButton = this.add.circle(interactButtonX, interactButtonY, buttonSize/2, 0x27ae60, 0.9);
     interactButton.setScrollFactor(0);
     interactButton.setDepth(1000);
     interactButton.setInteractive();
@@ -432,7 +449,7 @@ export class GameScene extends Phaser.Scene {
       ease: 'Sine.easeInOut'
     });
 
-    const interactText = this.add.text(rightEdge - buttonSize/2, bottomEdge - buttonSize/2, '🐾', {
+    const interactText = this.add.text(interactButtonX, interactButtonY, '🐾', {
       fontSize: '28px',
       color: '#ffffff'
     });
@@ -454,8 +471,9 @@ export class GameScene extends Phaser.Scene {
     ];
 
     secondaryButtons.forEach((btnData, index) => {
-      const buttonX = rightEdge - smallButtonSize/2;
-      const buttonY = bottomEdge - buttonSize - 20 - (index * (smallButtonSize + 15));
+      const buttonX = Math.min(rightEdge - smallButtonSize/2, this.cameras.main.width - smallButtonSize/2 - 10);
+      const buttonY = Math.min(bottomEdge - buttonSize - 20 - (index * (smallButtonSize + 15)), 
+                               this.cameras.main.height - buttonSize - 20 - (index * (smallButtonSize + 15)) - 10);
 
       const button = this.add.circle(buttonX, buttonY, smallButtonSize/2, btnData.color, 0.9);
       button.setScrollFactor(0);
@@ -487,11 +505,13 @@ export class GameScene extends Phaser.Scene {
       { tool: ToolType.SEEDS, icon: '🌰', color: 0xFF9800, name: '种子' }
     ];
 
-    // Create tool selector panel
+    // Create tool selector panel - positioned safely away from edges
     const toolPanelWidth = 60;
     const toolPanelHeight = tools.length * (smallButtonSize + 10) + 20;
-    const toolPanelX = rightEdge - buttonSize - toolPanelWidth - 20;
-    const toolPanelY = bottomEdge - toolPanelHeight/2;
+    const toolPanelX = Math.min(rightEdge - buttonSize - toolPanelWidth - 20, 
+                                this.cameras.main.width - buttonSize - toolPanelWidth - 30);
+    const toolPanelY = Math.min(bottomEdge - toolPanelHeight/2, 
+                                this.cameras.main.height - toolPanelHeight/2 - 20);
 
     // Tool panel background
     const toolPanel = this.add.graphics();
@@ -682,10 +702,11 @@ export class GameScene extends Phaser.Scene {
 
     // Update virtual controls position if screen size changed
     if (this.virtualControls) {
-      const padding = 40;
+      const padding = 60; // Increased padding for better visibility
       const joystickRadius = 70;
-      const newJoystickX = padding + joystickRadius;
-      const newJoystickY = currentHeight - padding - joystickRadius;
+      // Ensure joystick is fully visible with safe area consideration
+      const newJoystickX = Math.max(padding + joystickRadius, joystickRadius + 20);
+      const newJoystickY = Math.min(currentHeight - padding - joystickRadius, currentHeight - joystickRadius - 20);
 
       // Update joystick position smoothly
       if (this.virtualControls.joystickCenter.x !== newJoystickX || 
@@ -722,7 +743,7 @@ export class GameScene extends Phaser.Scene {
 
     // Update action buttons position
     if (this.actionButtons) {
-      const padding = 30;
+      const padding = 50; // Increased padding to ensure buttons are in safe area
       const rightEdge = currentWidth - padding;
       const bottomEdge = currentHeight - padding;
       const buttonSize = 60;
@@ -730,17 +751,21 @@ export class GameScene extends Phaser.Scene {
 
       // Update main interact button
       if (this.actionButtons.interact) {
-        this.actionButtons.interact.button.x = rightEdge - buttonSize/2;
-        this.actionButtons.interact.button.y = bottomEdge - buttonSize/2;
-        this.actionButtons.interact.text.x = rightEdge - buttonSize/2;
-        this.actionButtons.interact.text.y = bottomEdge - buttonSize/2;
+        const interactButtonX = Math.min(rightEdge - buttonSize/2, currentWidth - buttonSize/2 - 10);
+        const interactButtonY = Math.min(bottomEdge - buttonSize/2, currentHeight - buttonSize/2 - 10);
+        
+        this.actionButtons.interact.button.x = interactButtonX;
+        this.actionButtons.interact.button.y = interactButtonY;
+        this.actionButtons.interact.text.x = interactButtonX;
+        this.actionButtons.interact.text.y = interactButtonY;
       }
 
       // Update secondary buttons
       ['inventory', 'cooking'].forEach((key, index) => {
         if (this.actionButtons[key]) {
-          const buttonX = rightEdge - smallButtonSize/2;
-          const buttonY = bottomEdge - buttonSize - 20 - (index * (smallButtonSize + 15));
+          const buttonX = Math.min(rightEdge - smallButtonSize/2, currentWidth - smallButtonSize/2 - 10);
+          const buttonY = Math.min(bottomEdge - buttonSize - 20 - (index * (smallButtonSize + 15)), 
+                                   currentHeight - buttonSize - 20 - (index * (smallButtonSize + 15)) - 10);
           
           this.actionButtons[key].button.x = buttonX;
           this.actionButtons[key].button.y = buttonY;
@@ -1159,20 +1184,21 @@ export class GameScene extends Phaser.Scene {
       const joystickDistance = Phaser.Math.Distance.Between(
         x, y, this.virtualControls.joystickCenter.x, this.virtualControls.joystickCenter.y
       );
-      if (joystickDistance <= 120) return true; // Increased area for better touch detection
+      if (joystickDistance <= 130) return true; // Increased area for better touch detection
     }
 
-    // Check if touch is in action buttons area (right side)
+    // Check if touch is in action buttons area (right side) - updated for new positioning
     const rightEdge = this.cameras.main.width;
     const bottomEdge = this.cameras.main.height;
+    const padding = 50;
     
-    // Main action buttons area
-    if (x > rightEdge - 150 && y > bottomEdge - 400) {
+    // Main action buttons area - adjusted for new padding
+    if (x > rightEdge - padding - 120 && y > bottomEdge - padding - 200) {
       return true;
     }
 
-    // Tool panel area (left side of action buttons)
-    if (x > rightEdge - 280 && x < rightEdge - 150 && y > bottomEdge - 300) {
+    // Tool panel area (left side of action buttons) - adjusted for new positioning
+    if (x > rightEdge - padding - 250 && x < rightEdge - padding - 120 && y > bottomEdge - padding - 180) {
       return true;
     }
 
@@ -1223,6 +1249,13 @@ export class GameScene extends Phaser.Scene {
 
     // Enhanced virtual joystick input with smooth movement
     if (this.virtualControls && this.virtualControls.joystickVector) {
+      // Check for stuck movement - reset if no input for too long
+      const timeSinceLastInput = this.time.now - this.virtualControls.lastInputTime;
+      if (timeSinceLastInput > 100 && !this.virtualControls.isDragging) {
+        this.virtualControls.joystickVector.x = 0;
+        this.virtualControls.joystickVector.y = 0;
+      }
+      
       const joystickStrength = Math.sqrt(
         this.virtualControls.joystickVector.x ** 2 + this.virtualControls.joystickVector.y ** 2
       );
@@ -1238,6 +1271,10 @@ export class GameScene extends Phaser.Scene {
             this.triggerHapticFeedback(10);
           }
         }
+      } else {
+        // Ensure movement is completely stopped when in dead zone
+        this.virtualControls.joystickVector.x = 0;
+        this.virtualControls.joystickVector.y = 0;
       }
     }
 

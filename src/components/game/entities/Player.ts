@@ -1,16 +1,27 @@
 import * as Phaser from 'phaser';
+import { CatStats, ToolType, InventoryItem } from '../types/GameTypes';
 
-export class Player extends Phaser.Physics.Arcade.Sprite {
+export class Cat extends Phaser.Physics.Arcade.Sprite {
   private direction: string = 'down';
-  private health: number = 100;
-  private maxHealth: number = 100;
-  private mana: number = 50;
-  private maxMana: number = 100;
-  private level: number = 1;
-  private experience: number = 0;
+  private stats: CatStats;
+  private currentTool: ToolType | null = null;
+  private inventory: InventoryItem[] = [];
+  private isActing: boolean = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, 'player_walk', 0);
+    super(scene, x, y, 'cat_walk', 0);
+
+    // Initialize cat stats
+    this.stats = {
+      health: 100,
+      maxHealth: 100,
+      energy: 100,
+      maxEnergy: 100,
+      level: 1,
+      experience: 0,
+      happiness: 100,
+      maxHappiness: 100
+    };
 
     // Add to scene
     scene.add.existing(this);
@@ -28,7 +39,48 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.createAnimations();
     
     // Start with idle animation
-    this.play('player_idle_down');
+    this.play('cat_idle_down');
+
+    // Initialize with basic farming tools
+    this.initializeInventory();
+  }
+
+  private initializeInventory() {
+    // Give the cat some starting tools and seeds
+    this.inventory = [
+      {
+        id: 'watering_can',
+        name: '水壶',
+        type: 'tool',
+        quantity: 1,
+        icon: 'watering_can',
+        description: '给作物浇水的工具'
+      },
+      {
+        id: 'hoe',
+        name: '锄头',
+        type: 'tool',
+        quantity: 1,
+        icon: 'hoe',
+        description: '用来耕地的工具'
+      },
+      {
+        id: 'carrot_seeds',
+        name: '胡萝卜种子',
+        type: 'seed',
+        quantity: 10,
+        icon: 'carrot_seeds',
+        description: '可以种植胡萝卜的种子'
+      },
+      {
+        id: 'tomato_seeds',
+        name: '番茄种子',
+        type: 'seed',
+        quantity: 5,
+        icon: 'tomato_seeds',
+        description: '可以种植番茄的种子'
+      }
+    ];
   }
 
   private createAnimations() {
@@ -37,59 +89,81 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Walking animations for each direction
     // Down (frames 0-3)
     anims.create({
-      key: 'player_walk_down',
-      frames: anims.generateFrameNumbers('player_walk', { start: 0, end: 3 }),
+      key: 'cat_walk_down',
+      frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: 3 }),
       frameRate: 8,
       repeat: -1
     });
     
     // Left (frames 4-7)
     anims.create({
-      key: 'player_walk_left',
-      frames: anims.generateFrameNumbers('player_walk', { start: 4, end: 7 }),
+      key: 'cat_walk_left',
+      frames: anims.generateFrameNumbers('cat_walk', { start: 4, end: 7 }),
       frameRate: 8,
       repeat: -1
     });
     
     // Right (frames 8-11)
     anims.create({
-      key: 'player_walk_right',
-      frames: anims.generateFrameNumbers('player_walk', { start: 8, end: 11 }),
+      key: 'cat_walk_right',
+      frames: anims.generateFrameNumbers('cat_walk', { start: 8, end: 11 }),
       frameRate: 8,
       repeat: -1
     });
     
     // Up (frames 12-15)
     anims.create({
-      key: 'player_walk_up',
-      frames: anims.generateFrameNumbers('player_walk', { start: 12, end: 15 }),
+      key: 'cat_walk_up',
+      frames: anims.generateFrameNumbers('cat_walk', { start: 12, end: 15 }),
       frameRate: 8,
       repeat: -1
     });
     
     // Idle animations (first frame of each direction)
     anims.create({
-      key: 'player_idle_down',
-      frames: [{ key: 'player_walk', frame: 0 }],
+      key: 'cat_idle_down',
+      frames: [{ key: 'cat_walk', frame: 0 }],
       frameRate: 1
     });
     
     anims.create({
-      key: 'player_idle_left',
-      frames: [{ key: 'player_walk', frame: 4 }],
+      key: 'cat_idle_left',
+      frames: [{ key: 'cat_walk', frame: 4 }],
       frameRate: 1
     });
     
     anims.create({
-      key: 'player_idle_right',
-      frames: [{ key: 'player_walk', frame: 8 }],
+      key: 'cat_idle_right',
+      frames: [{ key: 'cat_walk', frame: 8 }],
       frameRate: 1
     });
     
     anims.create({
-      key: 'player_idle_up',
-      frames: [{ key: 'player_walk', frame: 12 }],
+      key: 'cat_idle_up',
+      frames: [{ key: 'cat_walk', frame: 12 }],
       frameRate: 1
+    });
+
+    // Action animations
+    anims.create({
+      key: 'cat_digging',
+      frames: anims.generateFrameNumbers('cat_actions', { start: 0, end: 3 }),
+      frameRate: 6,
+      repeat: 2
+    });
+
+    anims.create({
+      key: 'cat_watering',
+      frames: anims.generateFrameNumbers('cat_actions', { start: 4, end: 7 }),
+      frameRate: 6,
+      repeat: 2
+    });
+
+    anims.create({
+      key: 'cat_harvesting',
+      frames: anims.generateFrameNumbers('cat_actions', { start: 8, end: 11 }),
+      frameRate: 6,
+      repeat: 1
     });
   }
 
@@ -99,226 +173,171 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Play walking animation based on direction
     const isMoving = Math.abs(this.body!.velocity.x) > 10 || Math.abs(this.body!.velocity.y) > 10;
     
+    if (this.isActing) {
+      return; // Don't change animation if performing an action
+    }
+
     if (isMoving) {
-      this.play(`player_walk_${direction}`, true);
+      this.play(`cat_walk_${direction}`, true);
     } else {
-      this.play(`player_idle_${direction}`, true);
+      this.play(`cat_idle_${direction}`, true);
     }
   }
 
-  public setMoving(isMoving: boolean) {
-    if (isMoving) {
-      this.play(`player_walk_${this.direction}`, true);
-    } else {
-      this.play(`player_idle_${this.direction}`, true);
+  public move(x: number, y: number) {
+    if (this.isActing) return; // Can't move while performing actions
+    
+    const speed = 120;
+    this.setVelocity(x * speed, y * speed);
+
+    // Determine direction based on movement
+    if (Math.abs(x) > Math.abs(y)) {
+      this.setDirection(x > 0 ? 'right' : 'left');
+    } else if (y !== 0) {
+      this.setDirection(y > 0 ? 'down' : 'up');
     }
   }
 
-  public getDirection(): string {
-    return this.direction;
+  public stop() {
+    this.setVelocity(0, 0);
+    if (!this.isActing) {
+      this.play(`cat_idle_${this.direction}`, true);
+    }
   }
 
-  public takeDamage(amount: number) {
-    this.health = Math.max(0, this.health - amount);
+  public performAction(action: 'dig' | 'water' | 'harvest') {
+    if (this.isActing) return false;
 
-    // Flash red when taking damage
-    this.setTint(0xff0000);
-    this.scene.time.delayedCall(200, () => {
-      this.clearTint();
+    this.isActing = true;
+    this.setVelocity(0, 0);
+
+    let animationKey: string;
+    let duration: number;
+
+    switch (action) {
+      case 'dig':
+        animationKey = 'cat_digging';
+        duration = 1000;
+        this.consumeEnergy(5);
+        break;
+      case 'water':
+        animationKey = 'cat_watering';
+        duration = 800;
+        this.consumeEnergy(3);
+        break;
+      case 'harvest':
+        animationKey = 'cat_harvesting';
+        duration = 600;
+        this.consumeEnergy(2);
+        this.gainHappiness(5);
+        break;
+    }
+
+    this.play(animationKey);
+    
+    // Return to idle after action
+    this.scene.time.delayedCall(duration, () => {
+      this.isActing = false;
+      this.play(`cat_idle_${this.direction}`);
     });
 
-    // Trigger UI update
-    if ('events' in this.scene.scene.get('UIScene')) {
-      this.scene.scene.get('UIScene').events.emit('playerStatsChanged', this.getStats());
-    }
+    return true;
+  }
 
-    if (this.health <= 0) {
-      this.die();
+  public consumeEnergy(amount: number) {
+    this.stats.energy = Math.max(0, this.stats.energy - amount);
+    if (this.stats.energy === 0) {
+      this.scene.events.emit('cat-tired');
     }
   }
 
-  public heal(amount: number) {
-    const oldHealth = this.health;
-    this.health = Math.min(this.maxHealth, this.health + amount);
-    const actualHeal = this.health - oldHealth;
-
-    // Only show effects if actually healed
-    if (actualHeal > 0) {
-      // Flash green when healing
-      this.setTint(0x00ff00);
-      this.scene.time.delayedCall(200, () => {
-        this.clearTint();
-      });
-
-      // Create healing particles
-      const particles = this.scene.add.particles(this.x, this.y - 10, 'grass', {
-        scale: { start: 0.3, end: 0 },
-        alpha: { start: 1, end: 0 },
-        tint: 0x00ff00,
-        lifespan: 1000,
-        quantity: 8,
-        speed: { min: 30, max: 60 },
-        gravityY: -20
-      });
-
-      this.scene.time.delayedCall(1000, () => {
-        particles.destroy();
-      });
-
-      // Trigger UI update event
-      if ('events' in this.scene.scene.get('UIScene')) {
-        this.scene.scene.get('UIScene').events.emit('playerStatsChanged', this.getStats());
-      }
-    }
-
-    return actualHeal;
+  public restoreEnergy(amount: number) {
+    this.stats.energy = Math.min(this.stats.maxEnergy, this.stats.energy + amount);
   }
 
-  public useMana(amount: number): boolean {
-    if (this.mana >= amount) {
-      this.mana -= amount;
-      
-      // Trigger UI update
-      if ('events' in this.scene.scene.get('UIScene')) {
-        this.scene.scene.get('UIScene').events.emit('playerStatsChanged', this.getStats());
-      }
-      
-      return true;
-    }
-    return false;
+  public gainHappiness(amount: number) {
+    this.stats.happiness = Math.min(this.stats.maxHappiness, this.stats.happiness + amount);
   }
 
-  public restoreMana(amount: number) {
-    const oldMana = this.mana;
-    this.mana = Math.min(this.maxMana, this.mana + amount);
-    const actualRestore = this.mana - oldMana;
-
-    // Only show effects if actually restored
-    if (actualRestore > 0) {
-      // Flash blue when restoring mana
-      this.setTint(0x0080ff);
-      this.scene.time.delayedCall(200, () => {
-        this.clearTint();
-      });
-
-      // Create mana particles
-      const particles = this.scene.add.particles(this.x, this.y - 10, 'grass', {
-        scale: { start: 0.3, end: 0 },
-        alpha: { start: 1, end: 0 },
-        tint: 0x0080ff,
-        lifespan: 1000,
-        quantity: 8,
-        speed: { min: 30, max: 60 },
-        gravityY: -20
-      });
-
-      this.scene.time.delayedCall(1000, () => {
-        particles.destroy();
-      });
-
-      // Trigger UI update event
-      if ('events' in this.scene.scene.get('UIScene')) {
-        this.scene.scene.get('UIScene').events.emit('playerStatsChanged', this.getStats());
-      }
-    }
-
-    return actualRestore;
+  public loseHappiness(amount: number) {
+    this.stats.happiness = Math.max(0, this.stats.happiness - amount);
   }
 
   public gainExperience(amount: number) {
-    this.experience += amount;
-    const expNeeded = this.level * 100;
-
-    if (this.experience >= expNeeded) {
+    this.stats.experience += amount;
+    const expForNextLevel = this.stats.level * 100;
+    
+    if (this.stats.experience >= expForNextLevel) {
       this.levelUp();
-    }
-
-    // Trigger UI update
-    if ('events' in this.scene.scene.get('UIScene')) {
-      this.scene.scene.get('UIScene').events.emit('playerStatsChanged', this.getStats());
     }
   }
 
   private levelUp() {
-    this.level++;
-    this.experience = 0;
-    const oldMaxHealth = this.maxHealth;
-    const oldMaxMana = this.maxMana;
-    
-    this.maxHealth += 20;
-    this.maxMana += 10;
-    this.health = this.maxHealth;
-    this.mana = this.maxMana;
+    this.stats.level++;
+    this.stats.experience = 0;
+    this.stats.maxHealth += 10;
+    this.stats.maxEnergy += 10;
+    this.stats.maxHappiness += 5;
+    this.stats.health = this.stats.maxHealth;
+    this.stats.energy = this.stats.maxEnergy;
+    this.stats.happiness = this.stats.maxHappiness;
 
-    // Level up effect
-    const particles = this.scene.add.particles(this.x, this.y, 'grass', {
-      scale: { start: 0.5, end: 0 },
-      alpha: { start: 1, end: 0 },
-      tint: 0xffd700,
-      lifespan: 1000,
-      quantity: 15,
-      speed: { min: 50, max: 100 }
-    });
-
-    this.scene.time.delayedCall(1000, () => {
-      particles.destroy();
-    });
-
-    // Notify UI
-    if ('showNotification' in this.scene) {
-      (this.scene as any).showNotification(`🎉 升级了！现在是 ${this.level} 级！`);
-      (this.scene as any).showNotification(`💪 最大生命值增加 ${this.maxHealth - oldMaxHealth}！`);
-      (this.scene as any).showNotification(`🔮 最大魔法值增加 ${this.maxMana - oldMaxMana}！`);
-    }
-
-    // Trigger UI update
-    if ('events' in this.scene.scene.get('UIScene')) {
-      this.scene.scene.get('UIScene').events.emit('playerStatsChanged', this.getStats());
-    }
+    // Show level up effect
+    this.scene.events.emit('cat-level-up', this.stats.level);
   }
 
-  private die() {
-    // Death animation
-    this.setTint(0x666666);
-    this.setAlpha(0.5);
-
-    // Respawn after delay
-    this.scene.time.delayedCall(2000, () => {
-      this.respawn();
-    });
-
-    if ('showNotification' in this.scene) {
-      (this.scene as any).showNotification('你死了！正在重生...');
-    }
+  public setCurrentTool(tool: ToolType | null) {
+    this.currentTool = tool;
   }
 
-  private respawn() {
-    this.health = this.maxHealth;
-    this.mana = this.maxMana;
-    this.setAlpha(1);
-    this.setTint(0x3498db);
-    this.setPosition(100, 100); // Respawn at starting position
-
-    if ('showNotification' in this.scene) {
-      (this.scene as any).showNotification('重生成功！');
-    }
+  public getCurrentTool(): ToolType | null {
+    return this.currentTool;
   }
 
-  public getStats() {
-    return {
-      health: this.health,
-      maxHealth: this.maxHealth,
-      mana: this.mana,
-      maxMana: this.maxMana,
-      level: this.level,
-      experience: this.experience
-    };
+  public getInventory(): InventoryItem[] {
+    return this.inventory;
+  }
+
+  public addToInventory(item: InventoryItem): boolean {
+    const existingItem = this.inventory.find(i => i.id === item.id);
+    if (existingItem) {
+      existingItem.quantity += item.quantity;
+    } else {
+      this.inventory.push(item);
+    }
+    return true;
+  }
+
+  public removeFromInventory(itemId: string, quantity: number = 1): boolean {
+    const item = this.inventory.find(i => i.id === itemId);
+    if (!item || item.quantity < quantity) {
+      return false;
+    }
+
+    item.quantity -= quantity;
+    if (item.quantity === 0) {
+      this.inventory = this.inventory.filter(i => i.id !== itemId);
+    }
+    return true;
+  }
+
+  public getStats(): CatStats {
+    return { ...this.stats };
+  }
+
+  public canPerformAction(): boolean {
+    return !this.isActing && this.stats.energy > 0;
   }
 
   update() {
-    // Regenerate mana slowly
-    if (this.mana < this.maxMana) {
-      this.mana = Math.min(this.maxMana, this.mana + 0.1);
+    // Gradually restore energy over time
+    if (this.stats.energy < this.stats.maxEnergy) {
+      this.stats.energy = Math.min(this.stats.maxEnergy, this.stats.energy + 0.01);
+    }
+
+    // Gradually decrease happiness if energy is low
+    if (this.stats.energy < 20) {
+      this.loseHappiness(0.005);
     }
   }
 }

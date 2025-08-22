@@ -332,39 +332,103 @@
 
 /* 游戏相关样式 */
 .kbd {
-  @apply inline-flex items-center px-2 py-1 text-xs font-mono bg-gray-100 text-gray-800 border border-gray-300 rounded shadow-sm;
+  @apply inline-flex items-center px-3 py-1.5 text-xs font-mono bg-slate-100 text-slate-800 border border-slate-300 rounded-md shadow-sm transition-all duration-200 hover:bg-slate-200 hover:shadow-md;
 }
 
 .dark .kbd {
-  @apply bg-gray-800 text-gray-200 border-gray-600;
+  @apply bg-slate-800 text-slate-200 border-slate-600 hover:bg-slate-700;
 }
 
-/* 游戏容器样式 */
+/* 现代游戏容器样式 */
 .game-container {
   position: relative;
   overflow: hidden;
-  border-radius: 0.5rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border-radius: 1rem;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  background: linear-gradient(145deg, #1e293b, #0f172a);
 }
 
-/* 游戏加载动画 */
+/* 增强的游戏加载动画 */
 .game-loading {
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.game-loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer 2s infinite;
 }
 
 .game-loading-spinner {
-  width: 3rem;
-  height: 3rem;
-  border: 0.25rem solid rgba(255, 255, 255, 0.2);
-  border-top: 0.25rem solid #ffffff;
+  width: 4rem;
+  height: 4rem;
+  border: 0.3rem solid rgba(255, 255, 255, 0.2);
+  border-top: 0.3rem solid #ffffff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  position: relative;
+}
+
+.game-loading-spinner::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1rem;
+  height: 1rem;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+/* 游戏UI增强样式 */
+.game-ui-panel {
+  backdrop-filter: blur(10px);
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.game-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+}
+
+.game-button:hover {
+  transform: translateY(-2px) translateZ(0);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.game-button:active {
+  transform: translateY(0) scale(0.95) translateZ(0);
 }

@@ -170,14 +170,14 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
   }
 
   private createRewardEffect(color: number) {
-    // Create specific reward particles
+    // Create enhanced reward particles with multiple layers
     const particles = this.scene.add.particles(this.x, this.y - 10, 'grass', {
-      scale: { start: 0.4, end: 0 },
+      scale: { start: 0.5, end: 0 },
       alpha: { start: 1, end: 0 },
-      tint: color,
-      lifespan: 2000,
-      quantity: 20,
-      speed: { min: 50, max: 120 },
+      tint: [color, 0xffffff, color],
+      lifespan: 2500,
+      quantity: 25,
+      speed: { min: 60, max: 150 },
       gravityY: -30,
       emitZone: { type: 'edge', source: new Phaser.Geom.Circle(0, 0, 15), quantity: 20 }
     });

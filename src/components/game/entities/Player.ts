@@ -11,7 +11,20 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
 
   // 构造函数 - 创建小猫实例并初始化所有属性
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, 'cat_walk', 0);
+    // 检查纹理是否存在，如果不存在则创建fallback
+    if (!scene.textures.exists('cat_walk')) {
+      console.warn('cat_walk texture not found, creating fallback');
+      // 创建一个简单的fallback纹理
+      scene.add.graphics()
+        .fillStyle(0xffa500) // 橙色
+        .fillRect(0, 0, 16, 16)
+        .generateTexture('cat_fallback', 16, 16)
+        .destroy();
+      
+      super(scene, x, y, 'cat_fallback', 0);
+    } else {
+      super(scene, x, y, 'cat_walk', 0);
+    }
 
     // 初始化小猫属性数值
     this.stats = {
@@ -38,10 +51,26 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     this.setDepth(10); // 设置渲染层级，确保小猫在其他对象之上
 
     // 创建小猫的各种动画
-    this.createAnimations();
-    
-    // 开始播放默认的静止动画
-    this.play('cat_idle_down');
+    try {
+      this.createAnimations();
+      console.log('Cat animations created successfully');
+      
+      // 开始播放默认的静止动画
+      if (this.anims.exists('cat_idle_down')) {
+        this.play('cat_idle_down');
+        console.log('Cat idle animation started');
+      } else {
+        console.warn('cat_idle_down animation not found');
+      }
+    } catch (error) {
+      console.error('Failed to create cat animations:', error);
+      // 使用静态纹理作为fallback
+      if (this.scene.textures.exists('cat')) {
+        this.setTexture('cat');
+      } else {
+        console.warn('cat texture not found, using default');
+      }
+    }
 
     // 初始化背包，给小猫一些基础工具
     this.initializeInventory();
@@ -89,63 +118,85 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   private createAnimations() {
     const anims = this.scene.anims;
     
+    // 检查纹理是否存在
+    if (!this.scene.textures.exists('cat_walk')) {
+      console.warn('cat_walk texture not found, skipping animations');
+      return;
+    }
+    
     // 各个方向的行走动画
     // 向下行走动画
-    anims.create({
-      key: 'cat_walk_down',
-      frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: Math.min(1, 3) }),
-      frameRate: 8, // 动画帧率
-      repeat: -1 // 无限循环
-    });
+    if (!anims.exists('cat_walk_down')) {
+      anims.create({
+        key: 'cat_walk_down',
+        frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: Math.min(1, 3) }),
+        frameRate: 8, // 动画帧率
+        repeat: -1 // 无限循环
+      });
+    }
     
     // 向左行走动画
-    anims.create({
-      key: 'cat_walk_left',
-      frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: Math.min(1, 3) }),
-      frameRate: 8,
-      repeat: -1
-    });
+    if (!anims.exists('cat_walk_left')) {
+      anims.create({
+        key: 'cat_walk_left',
+        frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: Math.min(1, 3) }),
+        frameRate: 8,
+        repeat: -1
+      });
+    }
     
     // 向右行走动画
-    anims.create({
-      key: 'cat_walk_right',
-      frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: Math.min(1, 3) }),
-      frameRate: 8,
-      repeat: -1
-    });
+    if (!anims.exists('cat_walk_right')) {
+      anims.create({
+        key: 'cat_walk_right',
+        frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: Math.min(1, 3) }),
+        frameRate: 8,
+        repeat: -1
+      });
+    }
     
     // 向上行走动画
-    anims.create({
-      key: 'cat_walk_up',
-      frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: Math.min(1, 3) }),
-      frameRate: 8,
-      repeat: -1
-    });
+    if (!anims.exists('cat_walk_up')) {
+      anims.create({
+        key: 'cat_walk_up',
+        frames: anims.generateFrameNumbers('cat_walk', { start: 0, end: Math.min(1, 3) }),
+        frameRate: 8,
+        repeat: -1
+      });
+    }
     
     // 各个方向的静止动画（使用第一帧作为静止状态）
-    anims.create({
-      key: 'cat_idle_down',
-      frames: [{ key: 'cat_walk', frame: 0 }],
-      frameRate: 1
-    });
+    if (!anims.exists('cat_idle_down')) {
+      anims.create({
+        key: 'cat_idle_down',
+        frames: [{ key: 'cat_walk', frame: 0 }],
+        frameRate: 1
+      });
+    }
     
-    anims.create({
-      key: 'cat_idle_left',
-      frames: [{ key: 'cat_walk', frame: 0 }],
-      frameRate: 1
-    });
+    if (!anims.exists('cat_idle_left')) {
+      anims.create({
+        key: 'cat_idle_left',
+        frames: [{ key: 'cat_walk', frame: 0 }],
+        frameRate: 1
+      });
+    }
     
-    anims.create({
-      key: 'cat_idle_right',
-      frames: [{ key: 'cat_walk', frame: 0 }],
-      frameRate: 1
-    });
+    if (!anims.exists('cat_idle_right')) {
+      anims.create({
+        key: 'cat_idle_right',
+        frames: [{ key: 'cat_walk', frame: 0 }],
+        frameRate: 1
+      });
+    }
     
-    anims.create({
-      key: 'cat_idle_up',
-      frames: [{ key: 'cat_walk', frame: 0 }],
-      frameRate: 1
-    });
+    if (!anims.exists('cat_idle_up')) {
+      anims.create({
+        key: 'cat_idle_up',
+        frames: [{ key: 'cat_walk', frame: 0 }],
+        frameRate: 1
+      });
+    }
 
     // 农场动作动画
     anims.create({

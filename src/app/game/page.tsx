@@ -46,22 +46,112 @@ const GamePage: React.FC = () => {
 
   // 启动游戏函数
   const startGame = async () => {
-    if (!isClient || gameInstance || !gameRef.current) return;
+    console.log('🎮 startGame button clicked!');
+    console.log('startGame called', { isClient, gameInstance: !!gameInstance, gameRef: !!gameRef.current });
+    
+    if (!isClient) {
+      console.warn('Game cannot start: not in client environment');
+      return;
+    }
+    
+    if (gameInstance) {
+      console.warn('Game cannot start: game instance already exists');
+      return;
+    }
+    
+    if (!gameRef.current) {
+      console.warn('Game cannot start: game container not found');
+      return;
+    }
 
     setIsLoading(true);
     setGameStarted(true);
 
     try {
+      console.log('Starting game initialization...');
       // 动态导入游戏类，避免SSR时的模块加载问题
       const { RPGGame: GameClass } = await import('@/components/game/RPGGame');
+      console.log('RPGGame class imported successfully');
+      
       // 创建游戏实例并挂载到DOM容器
       const game = new GameClass(gameRef.current);
+      console.log('Game instance created:', game);
+      
       setGameInstance(game.game);
       setIsLoading(false); // 游戏加载完成
+      console.log('Game started successfully');
     } catch (error) {
       console.error('Failed to initialize game:', error);
+      alert(`游戏启动失败: ${error instanceof Error ? error.message : String(error)}`);
       setIsLoading(false); // 即使失败也要停止加载状态
       setGameStarted(false); // 重置启动状态，允许重试
+    }
+  };
+
+  // 测试按钮点击
+  const testClick = () => {
+    console.log('🔍 Test button clicked - buttons are working!');
+    alert('按钮点击测试成功！如果您看到这个消息，说明按钮是可以点击的。');
+  };
+
+  // 简单的Phaser测试
+  const startSimpleGame = async () => {
+    console.log('🎮 Starting simple game test...');
+    
+    if (!gameRef.current) {
+      alert('游戏容器未找到');
+      return;
+    }
+
+    setIsLoading(true);
+    setGameStarted(true);
+
+    try {
+      const Phaser = await import('phaser');
+      
+      const simpleConfig = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        parent: gameRef.current,
+        backgroundColor: '#87CEEB',
+        scene: {
+          create: function() {
+            // 创建一个简单的文本和图形
+            this.add.text(50, 50, '🐱 小猫农场 - 简单模式', { 
+              fontSize: '24px', 
+              color: '#000000',
+              fontFamily: 'Arial'
+            });
+            
+            // 创建一个简单的小猫图形
+            const cat = this.add.graphics();
+            cat.fillStyle(0xffa500); // 橙色
+            cat.fillCircle(200, 200, 20);
+            cat.fillStyle(0x000000); // 黑色眼睛
+            cat.fillCircle(195, 195, 3);
+            cat.fillCircle(205, 195, 3);
+            
+            this.add.text(50, 100, '如果您看到这个界面，说明Phaser工作正常', { 
+              fontSize: '16px', 
+              color: '#000000' 
+            });
+            
+            console.log('Simple game scene created successfully');
+          }
+        }
+      };
+
+      const testGame = new Phaser.Game(simpleConfig);
+      setGameInstance(testGame);
+      setIsLoading(false);
+      console.log('Simple game started successfully');
+      
+    } catch (error) {
+      console.error('Simple game failed:', error);
+      alert(`简单游戏也失败了: ${error}`);
+      setIsLoading(false);
+      setGameStarted(false);
     }
   };
 
@@ -151,23 +241,47 @@ const GamePage: React.FC = () => {
                 <p className="text-slate-300 mb-8 max-w-md">
                   准备好体验温馨治愈的农场生活了吗？种植作物、烹饪美食、照料可爱的小猫！
                 </p>
-                <button
-                  onClick={startGame}
-                  disabled={isLoading}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-500 disabled:to-gray-600 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 disabled:scale-100 shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
-                      正在加载游戏...
-                    </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <span className="mr-2">🎮</span>
-                      进入游戏
-                    </div>
-                  )}
-                </button>
+                <div className="space-y-4">
+                  <button
+                    onClick={startGame}
+                    disabled={isLoading}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-500 disabled:to-gray-600 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 disabled:scale-100 shadow-lg hover:shadow-xl disabled:cursor-not-allowed w-full"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
+                        正在加载游戏...
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <span className="mr-2">🎮</span>
+                        进入游戏
+                      </div>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => window.open('/game/debug', '_blank')}
+                    className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-medium py-2 px-6 rounded-lg text-sm transition-all duration-300 w-full"
+                  >
+                    🔧 游戏调试工具
+                  </button>
+                  
+                  <button
+                    onClick={testClick}
+                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium py-2 px-6 rounded-lg text-sm transition-all duration-300 w-full"
+                  >
+                    🔍 测试按钮点击
+                  </button>
+                  
+                  <button
+                    onClick={startSimpleGame}
+                    disabled={isLoading}
+                    className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 disabled:from-gray-500 disabled:to-gray-600 text-white font-medium py-2 px-6 rounded-lg text-sm transition-all duration-300 w-full"
+                  >
+                    🚀 简单模式测试
+                  </button>
+                </div>
               </div>
             </div>
           )}

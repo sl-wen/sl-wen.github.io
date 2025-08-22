@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { Cat } from '../entities/Cat';
+import { Cat } from '../entities/Player';
 import { FarmPlot } from '../entities/FarmPlot';
 import { CookingStation } from '../entities/CookingStation';
 import { InventoryManager } from '../entities/InventoryManager';

@@ -85,7 +85,7 @@ const GamePage: React.FC = () => {
           <div
             ref={gameRef}
             className="w-full bg-black rounded-lg overflow-hidden shadow-2xl border-2 border-slate-600"
-            style={{ aspectRatio: '16/10', minHeight: '400px' }}
+            style={{ aspectRatio: '16/10', minHeight: '600px' }}
           />
         </div>
 

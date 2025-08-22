@@ -1,4 +1,4 @@
-import * as Phaser from 'phaser';
+  import * as Phaser from 'phaser';
 import { GameScene } from './scenes/GameScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { UIScene } from './scenes/UIScene';
@@ -19,8 +19,8 @@ export class RPGGame {
         width: 800,
         height: 600,
         min: {
-          width: 320,
-          height: 240
+          width: 360,
+          height: 360
         },
         max: {
           width: 2048,

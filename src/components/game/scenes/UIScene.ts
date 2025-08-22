@@ -1,7 +1,12 @@
 import * as Phaser from 'phaser';
 import { InventoryItem, CatStats, Recipe } from '../types/GameTypes';
+import { UILayoutManager } from '../UILayoutManager';
 
 export class UIScene extends Phaser.Scene {
+  // UI布局管理器
+  private uiLayoutManager!: UILayoutManager;
+  
+  // UI元素
   private dialogueBox!: Phaser.GameObjects.Container;
   private dialogueText!: Phaser.GameObjects.Text;
   private notificationText!: Phaser.GameObjects.Text;
@@ -20,20 +25,25 @@ export class UIScene extends Phaser.Scene {
   private interactionIndicators!: Phaser.GameObjects.Container;
   private proximityIndicator!: Phaser.GameObjects.Graphics;
   private characterPortrait!: Phaser.GameObjects.Text;
+  
+  // 状态栏容器
+  private statsContainer!: Phaser.GameObjects.Container;
 
   constructor() {
     super({ key: 'UIScene' });
   }
 
   create() {
-    // Create UI elements
+    // 初始化UI布局管理器
+    this.uiLayoutManager = new UILayoutManager(this);
+    
+    // Create UI elements with responsive design
     this.createDialogueBox();
     this.createNotificationArea();
-    this.createCatStats();
+    this.createResponsiveCatStats();
     this.createToolIndicator();
     this.createInventoryInterface();
     this.createCookingInterface();
-
     this.createInteractionIndicators();
 
     // Listen for events from GameScene
@@ -137,17 +147,23 @@ export class UIScene extends Phaser.Scene {
     (this as any).notificationContainer = notificationContainer;
   }
 
-  private createCatStats() {
-    const startY = 25;
-    const barWidth = 160;
-    const barHeight = 18;
-    const spacing = 28;
+  private createResponsiveCatStats() {
+    const screenInfo = this.uiLayoutManager.getScreenInfo();
+    const statsPosition = this.uiLayoutManager.getStatsBarPosition();
+    
+    // 根据屏幕尺寸调整状态栏
+    const barWidth = screenInfo.isMobile ? (screenInfo.isPortrait ? 140 : 160) : 180;
+    const barHeight = screenInfo.isMobile ? 16 : 18;
+    const spacing = screenInfo.isMobile ? 24 : 28;
+    const fontSize = screenInfo.isMobile ? '10px' : '11px';
 
-    // Modern health bar with glassmorphism design
-    const healthContainer = this.add.container(25, startY);
-    healthContainer.setScrollFactor(0);
-    healthContainer.setDepth(100);
+    // 创建状态栏容器
+    this.statsContainer = this.add.container(statsPosition.x, statsPosition.y);
+    this.statsContainer.setScrollFactor(0);
+    this.statsContainer.setDepth(100);
 
+    // 健康值条
+    const healthContainer = this.add.container(0, 0);
     const healthBg = this.add.graphics();
     healthBg.fillStyle(0x000000, 0.4);
     healthBg.lineStyle(2, 0xe74c3c, 0.6);
@@ -158,7 +174,7 @@ export class UIScene extends Phaser.Scene {
     this.healthBar.setDepth(1);
 
     this.healthText = this.add.text(8, 2, '❤️ 100/100', {
-      fontSize: '11px',
+      fontSize: fontSize,
       color: '#ffffff',
       fontStyle: 'bold',
       fontFamily: 'Arial, sans-serif'
@@ -167,11 +183,8 @@ export class UIScene extends Phaser.Scene {
 
     healthContainer.add([healthBg, this.healthBar, this.healthText]);
 
-    // Modern energy bar
-    const energyContainer = this.add.container(25, startY + spacing);
-    energyContainer.setScrollFactor(0);
-    energyContainer.setDepth(100);
-
+    // 能量值条
+    const energyContainer = this.add.container(0, spacing);
     const energyBg = this.add.graphics();
     energyBg.fillStyle(0x000000, 0.4);
     energyBg.lineStyle(2, 0x74b9ff, 0.6);
@@ -182,7 +195,7 @@ export class UIScene extends Phaser.Scene {
     this.energyBar.setDepth(1);
 
     this.energyText = this.add.text(8, 2, '⚡ 100/100', {
-      fontSize: '11px',
+      fontSize: fontSize,
       color: '#ffffff',
       fontStyle: 'bold',
       fontFamily: 'Arial, sans-serif'
@@ -191,11 +204,8 @@ export class UIScene extends Phaser.Scene {
 
     energyContainer.add([energyBg, this.energyBar, this.energyText]);
 
-    // Modern happiness bar
-    const happinessContainer = this.add.container(25, startY + spacing * 2);
-    happinessContainer.setScrollFactor(0);
-    happinessContainer.setDepth(100);
-
+    // 快乐值条
+    const happinessContainer = this.add.container(0, spacing * 2);
     const happinessBg = this.add.graphics();
     happinessBg.fillStyle(0x000000, 0.4);
     happinessBg.lineStyle(2, 0xff6b9d, 0.6);
@@ -206,7 +216,7 @@ export class UIScene extends Phaser.Scene {
     this.happinessBar.setDepth(1);
 
     this.happinessText = this.add.text(8, 2, '😸 100/100', {
-      fontSize: '11px',
+      fontSize: fontSize,
       color: '#ffffff',
       fontStyle: 'bold',
       fontFamily: 'Arial, sans-serif'
@@ -215,14 +225,21 @@ export class UIScene extends Phaser.Scene {
 
     happinessContainer.add([happinessBg, this.happinessBar, this.happinessText]);
 
-    // Level text
-    this.levelText = this.add.text(20, startY + spacing * 3 + 5, '🐱 等级: 1', {
-      fontSize: '14px',
+    // 等级文本
+    this.levelText = this.add.text(0, spacing * 3 + 5, '🐱 等级: 1', {
+      fontSize: screenInfo.isMobile ? '12px' : '14px',
       color: '#ffd700',
       fontStyle: 'bold'
     });
-    this.levelText.setScrollFactor(0);
     this.levelText.setDepth(102);
+
+    // 添加到主容器
+    this.statsContainer.add([healthContainer, energyContainer, happinessContainer, this.levelText]);
+    
+    // 存储容器尺寸信息用于响应式更新
+    (this.statsContainer as any).barWidth = barWidth;
+    (this.statsContainer as any).barHeight = barHeight;
+    (this.statsContainer as any).spacing = spacing;
   }
 
   private createToolIndicator() {
@@ -315,8 +332,10 @@ export class UIScene extends Phaser.Scene {
   }
 
   private onCatStatsChanged(stats: CatStats) {
-    const barWidth = 160;
-    const barHeight = 18;
+    if (!this.statsContainer) return;
+    
+    const barWidth = (this.statsContainer as any).barWidth || 160;
+    const barHeight = (this.statsContainer as any).barHeight || 18;
 
     // Update health bar with animation
     this.healthBar.clear();
@@ -845,6 +864,63 @@ export class UIScene extends Phaser.Scene {
     
     // Update interaction indicators based on game state
     this.updateInteractionIndicators();
+    
+    // 更新响应式UI布局
+    this.updateResponsiveLayout();
+  }
+
+  private updateResponsiveLayout() {
+    if (!this.uiLayoutManager) return;
+    
+    const screenInfo = this.uiLayoutManager.getScreenInfo();
+    
+    // 更新状态栏位置
+    if (this.statsContainer) {
+      const statsPosition = this.uiLayoutManager.getStatsBarPosition();
+      
+      // 平滑移动到新位置
+      this.tweens.add({
+        targets: this.statsContainer,
+        x: statsPosition.x,
+        y: statsPosition.y,
+        duration: 300,
+        ease: 'Power2.easeOut'
+      });
+    }
+    
+    // 更新对话框和通知的位置以适应屏幕变化
+    this.updateDialoguePosition();
+    this.updateNotificationPosition();
+  }
+
+  private updateDialoguePosition() {
+    if (this.dialogueBox) {
+      const width = this.cameras.main.width;
+      const height = this.cameras.main.height;
+      const screenInfo = this.uiLayoutManager.getScreenInfo();
+      
+      // 根据屏幕尺寸调整对话框位置
+      const dialogueY = screenInfo.isMobile 
+        ? height - (screenInfo.isPortrait ? 100 : 80)
+        : height - 120;
+      
+      this.dialogueBox.setPosition(width / 2, dialogueY);
+    }
+  }
+
+  private updateNotificationPosition() {
+    const notificationContainer = (this as any).notificationContainer;
+    if (notificationContainer) {
+      const width = this.cameras.main.width;
+      const screenInfo = this.uiLayoutManager.getScreenInfo();
+      
+      // 根据屏幕尺寸调整通知位置
+      const notificationY = screenInfo.isMobile 
+        ? (screenInfo.isPortrait ? 40 : 30)
+        : 50;
+      
+      notificationContainer.setPosition(width / 2, notificationY);
+    }
   }
 
   private updateInteractionIndicators() {

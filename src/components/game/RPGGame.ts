@@ -10,9 +10,27 @@ export class RPGGame {
   // 构造函数 - 创建并配置Phaser游戏实例
   constructor(container: HTMLElement) {
     console.log('RPGGame constructor called with container:', container);
+    console.log('Container details:', {
+      tagName: container?.tagName,
+      id: container?.id,
+      className: container?.className,
+      clientWidth: container?.clientWidth,
+      clientHeight: container?.clientHeight,
+      offsetWidth: container?.offsetWidth,
+      offsetHeight: container?.offsetHeight,
+      parentElement: container?.parentElement
+    });
     
     if (!container) {
       throw new Error('Game container element is required');
+    }
+    
+    if (!container.parentElement) {
+      throw new Error('Game container must be attached to DOM');
+    }
+    
+    if (container.clientWidth === 0 || container.clientHeight === 0) {
+      console.warn('Container has zero dimensions, this may cause rendering issues');
     }
     
     // Phaser游戏配置对象 - 定义游戏的各项参数和设置
@@ -125,11 +143,28 @@ export class RPGGame {
     // 创建Phaser游戏实例
     try {
       console.log('Creating Phaser game with config:', config);
+      console.log('Container element before game creation:', container);
+      console.log('Container is attached to DOM:', !!container.parentElement);
+      console.log('Container dimensions:', {
+        clientWidth: container.clientWidth,
+        clientHeight: container.clientHeight,
+        offsetWidth: container.offsetWidth,
+        offsetHeight: container.offsetHeight
+      });
+      
       this.game = new Phaser.Game(config);
-      console.log('Phaser game instance created:', this.game);
+      console.log('Phaser game instance created successfully:', this.game);
+      console.log('Game canvas created:', this.game.canvas);
+      console.log('Game config applied:', this.game.config);
     } catch (error) {
       console.error('Failed to create Phaser game:', error);
-      throw new Error(`Phaser game creation failed: ${error}`);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        container: container,
+        containerParent: container.parentElement
+      });
+      throw new Error(`Phaser game creation failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     // 添加错误处理

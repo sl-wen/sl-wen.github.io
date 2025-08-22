@@ -51,16 +51,19 @@ export class PreloadScene extends Phaser.Scene {
     });
 
     this.load.on('complete', () => {
+      console.log('All assets loaded successfully');
+      percentText.setText('100%');
+      
+      // Clean up loading UI
       progressBar.destroy();
       progressBox.destroy();
       loadingText.destroy();
       percentText.destroy();
-      console.log('Assets loaded successfully!');
     });
 
     this.load.on('loaderror', (file: any) => {
       console.error('Failed to load asset:', file.src || file.key);
-      // Continue loading even if some assets fail
+      // Continue loading other assets even if one fails
     });
 
     this.load.on('fileprogress', (file: any) => {
@@ -74,6 +77,8 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   private loadSpriteAssets() {
+    console.log('Loading sprite assets...');
+    
     // Load cat character sprites (using player as fallback)
     this.load.image('cat', '/assets/characters/player.png');
     
@@ -87,6 +92,8 @@ export class PreloadScene extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 16
     });
+    
+    console.log('Cat sprites loaded successfully');
 
 
 

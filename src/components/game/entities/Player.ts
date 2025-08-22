@@ -11,6 +11,9 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
 
   // 构造函数 - 创建小猫实例并初始化所有属性
   constructor(scene: Phaser.Scene, x: number, y: number) {
+    // 确定使用的纹理
+    let textureKey = 'cat_walk';
+    
     // 检查纹理是否存在，如果不存在则创建fallback
     if (!scene.textures.exists('cat_walk')) {
       console.warn('cat_walk texture not found, creating fallback');
@@ -21,10 +24,11 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
         .generateTexture('cat_fallback', 16, 16)
         .destroy();
       
-      super(scene, x, y, 'cat_fallback', 0);
-    } else {
-      super(scene, x, y, 'cat_walk', 0);
+      textureKey = 'cat_fallback';
     }
+    
+    // 调用父类构造函数
+    super(scene, x, y, textureKey, 0);
 
     // 初始化小猫属性数值
     this.stats = {

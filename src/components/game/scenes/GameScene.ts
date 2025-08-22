@@ -1210,7 +1210,7 @@ export class GameScene extends Phaser.Scene {
       this.switchToSimpleTouch();
     }
     
-    this.showNotification('已启用紧急性能优化模式', 'warning');
+    this.showNotification('⚠️ 已启用紧急性能优化模式');
   }
 
   // Resource cleanup

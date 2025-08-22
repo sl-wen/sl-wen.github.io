@@ -58,9 +58,13 @@ const GamePage: React.FC = () => {
       console.warn('Game cannot start: game instance already exists');
       return;
     }
-    
+
+    // 现在容器始终存在于DOM中，直接检查
     if (!gameRef.current) {
-      console.warn('Game cannot start: game container not found');
+      console.error('Game cannot start: game container not found');
+      console.log('GameRef current value:', gameRef.current);
+      console.log('GameRef object:', gameRef);
+      alert('游戏容器未找到，请刷新页面重试');
       return;
     }
 
@@ -69,6 +73,14 @@ const GamePage: React.FC = () => {
 
     try {
       console.log('Starting game initialization...');
+      console.log('Game container element:', gameRef.current);
+      console.log('Container dimensions:', {
+        width: gameRef.current.clientWidth,
+        height: gameRef.current.clientHeight,
+        offsetWidth: gameRef.current.offsetWidth,
+        offsetHeight: gameRef.current.offsetHeight
+      });
+      
       // 动态导入游戏类，避免SSR时的模块加载问题
       const { RPGGame: GameClass } = await import('@/components/game/RPGGame');
       console.log('RPGGame class imported successfully');
@@ -82,6 +94,12 @@ const GamePage: React.FC = () => {
       console.log('Game started successfully');
     } catch (error) {
       console.error('Failed to initialize game:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        gameRef: gameRef.current,
+        isClient
+      });
       alert(`游戏启动失败: ${error instanceof Error ? error.message : String(error)}`);
       setIsLoading(false); // 即使失败也要停止加载状态
       setGameStarted(false); // 重置启动状态，允许重试
@@ -94,11 +112,61 @@ const GamePage: React.FC = () => {
     alert('按钮点击测试成功！如果您看到这个消息，说明按钮是可以点击的。');
   };
 
+  // 容器诊断函数
+  const diagnoseContainer = () => {
+    console.log('🔍 Container Diagnosis:');
+    console.log('gameRef:', gameRef);
+    console.log('gameRef.current:', gameRef.current);
+    console.log('isClient:', isClient);
+    console.log('gameStarted:', gameStarted);
+    console.log('gameInstance:', gameInstance);
+    
+    if (gameRef.current) {
+      console.log('Container details:', {
+        tagName: gameRef.current.tagName,
+        id: gameRef.current.id,
+        className: gameRef.current.className,
+        clientWidth: gameRef.current.clientWidth,
+        clientHeight: gameRef.current.clientHeight,
+        offsetWidth: gameRef.current.offsetWidth,
+        offsetHeight: gameRef.current.offsetHeight,
+        parentElement: gameRef.current.parentElement,
+        style: gameRef.current.style.cssText
+      });
+    }
+    
+    alert(`容器诊断完成，请查看控制台输出。容器状态: ${gameRef.current ? '已找到' : '未找到'}`);
+  };
+
+  // 重置游戏函数
+  const resetGame = () => {
+    console.log('🔄 Resetting game...');
+    
+    // 销毁现有游戏实例
+    if (gameInstance) {
+      try {
+        gameInstance.destroy(true);
+      } catch (error) {
+        console.error('Error destroying game instance:', error);
+      }
+    }
+    
+    // 重置所有状态
+    setGameInstance(null);
+    setGameStarted(false);
+    setIsLoading(false);
+    setIsFullscreen(false);
+    
+    console.log('Game reset completed');
+  };
+
   // 简单的Phaser测试
   const startSimpleGame = async () => {
     console.log('🎮 Starting simple game test...');
     
+    // 现在容器始终存在于DOM中，直接检查
     if (!gameRef.current) {
+      console.error('Simple game cannot start: game container not found');
       alert('游戏容器未找到');
       return;
     }
@@ -107,6 +175,7 @@ const GamePage: React.FC = () => {
     setGameStarted(true);
 
     try {
+      console.log('Starting simple game with container:', gameRef.current);
       const Phaser = await import('phaser');
       
       const simpleConfig = {
@@ -115,8 +184,15 @@ const GamePage: React.FC = () => {
         height: 600,
         parent: gameRef.current,
         backgroundColor: '#87CEEB',
+        scale: {
+          mode: Phaser.Scale.RESIZE,
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+          width: 800,
+          height: 600
+        },
         scene: {
-          create: function() {
+          create: function(this: Phaser.Scene) {
+            console.log('Simple game scene create() called');
             // 创建一个简单的文本和图形
             this.add.text(50, 50, '🐱 小猫农场 - 简单模式', { 
               fontSize: '24px', 
@@ -137,11 +213,17 @@ const GamePage: React.FC = () => {
               color: '#000000' 
             });
             
+            this.add.text(50, 130, `容器尺寸: ${this.cameras.main.width}x${this.cameras.main.height}`, { 
+              fontSize: '14px', 
+              color: '#333333' 
+            });
+            
             console.log('Simple game scene created successfully');
           }
         }
       };
 
+      console.log('Creating simple Phaser game...');
       const testGame = new Phaser.Game(simpleConfig);
       setGameInstance(testGame);
       setIsLoading(false);
@@ -149,7 +231,7 @@ const GamePage: React.FC = () => {
       
     } catch (error) {
       console.error('Simple game failed:', error);
-      alert(`简单游戏也失败了: ${error}`);
+      alert(`简单游戏也失败了: ${error instanceof Error ? error.message : String(error)}`);
       setIsLoading(false);
       setGameStarted(false);
     }
@@ -232,6 +314,23 @@ const GamePage: React.FC = () => {
       {/* 游戏主体容器区域 */}
       <div className="flex flex-col items-center justify-center p-4">
         <div className="relative w-full max-w-4xl">
+          {/* 隐藏的游戏容器 - 始终存在于DOM中，避免ref时序问题 */}
+          <div
+            ref={gameRef}
+            className={`game-container ${gameStarted ? 'block' : 'hidden'} w-full bg-gradient-to-br from-slate-900 to-black rounded-xl overflow-hidden shadow-2xl border-2 border-slate-600/50 touch-none select-none ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}
+            style={{ 
+              aspectRatio: isFullscreen ? 'auto' : '16/10', // 游戏画面比例
+              minHeight: isFullscreen ? '100vh' : '600px', // 最小高度确保游戏可见
+              maxHeight: isFullscreen ? '100vh' : '80vh', // 最大高度适应屏幕
+              touchAction: 'none', // 禁用触摸滚动，专用于游戏操作
+              userSelect: 'none', // 禁用文本选择
+              WebkitUserSelect: 'none', // Safari兼容
+              WebkitTouchCallout: 'none', // iOS Safari兼容
+              backdropFilter: 'blur(10px)',
+              background: 'linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9))'
+            }}
+          />
+
           {/* 游戏启动界面 */}
           {!gameStarted && (
             <div className="flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl min-h-[600px] border-2 border-slate-600/50">
@@ -281,12 +380,23 @@ const GamePage: React.FC = () => {
                   >
                     🚀 简单模式测试
                   </button>
+                  
+                  <button
+                    onClick={diagnoseContainer}
+                    className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-medium py-2 px-6 rounded-lg text-sm transition-all duration-300 w-full"
+                  >
+                    🔬 容器诊断
+                  </button>
+                  
+                  <div className="text-center text-slate-400 text-xs mt-2">
+                    如果游戏无法启动，请先尝试"简单模式测试"
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* 游戏运行时的界面 */}
+          {/* 游戏运行时的遮罩和控制 */}
           {gameStarted && (
             <>
               {/* 游戏加载遮罩层 */}
@@ -310,9 +420,19 @@ const GamePage: React.FC = () => {
                 </div>
               )}
 
-              {/* 全屏控制按钮 */}
+              {/* 游戏控制按钮 */}
               {!isLoading && (
                 <div className="absolute top-4 right-4 z-20 flex space-x-2">
+                  <button
+                    onClick={resetGame}
+                    className="bg-red-500/70 hover:bg-red-600/70 text-white p-3 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40"
+                    title="重置游戏"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                  
                   <button
                     onClick={isFullscreen ? exitFullscreen : enterFullscreen}
                     className="bg-black/50 hover:bg-black/70 text-white p-3 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40"
@@ -330,23 +450,6 @@ const GamePage: React.FC = () => {
                   </button>
                 </div>
               )}
-
-              {/* 游戏画布容器 - Phaser游戏实例将挂载到这里 */}
-              <div
-                ref={gameRef}
-                className={`w-full bg-gradient-to-br from-slate-900 to-black rounded-xl overflow-hidden shadow-2xl border-2 border-slate-600/50 touch-none select-none game-container ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}
-                style={{ 
-                  aspectRatio: isFullscreen ? 'auto' : '16/10', // 游戏画面比例
-                  minHeight: isFullscreen ? '100vh' : '600px', // 最小高度确保游戏可见
-                  maxHeight: isFullscreen ? '100vh' : '80vh', // 最大高度适应屏幕
-                  touchAction: 'none', // 禁用触摸滚动，专用于游戏操作
-                  userSelect: 'none', // 禁用文本选择
-                  WebkitUserSelect: 'none', // Safari兼容
-                  WebkitTouchCallout: 'none', // iOS Safari兼容
-                  backdropFilter: 'blur(10px)',
-                  background: 'linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9))'
-                }}
-              />
             </>
           )}
         </div>

@@ -4,6 +4,8 @@ import { FarmPlot } from '../entities/FarmPlot';
 import { CookingStation } from '../entities/CookingStation';
 import { InventoryManager } from '../entities/InventoryManager';
 import { CropType, ToolType } from '../types/GameTypes';
+import { VirtualJoystick } from '../VirtualJoystick';
+import { UILayoutManager } from '../UILayoutManager';
 
 export class GameScene extends Phaser.Scene {
   private cat!: Cat;
@@ -17,10 +19,15 @@ export class GameScene extends Phaser.Scene {
   private interactKey!: Phaser.Input.Keyboard.Key;
   private inventoryKey!: Phaser.Input.Keyboard.Key;
   private cookingKey!: Phaser.Input.Keyboard.Key;
+  // 新的控制系统
+  private virtualJoystick!: VirtualJoystick;
+  private uiLayoutManager!: UILayoutManager;
+  private actionButtons: Phaser.GameObjects.Container[] = [];
+  
+  // 保留的旧属性（兼容性）
   private virtualControls!: any;
   private touchStartPos: { x: number; y: number } | null = null;
   private currentTool: ToolType | null = null;
-  private actionButtons: any;
   private toolTooltip: Phaser.GameObjects.Text | null = null;
   private hapticEnabled: boolean = false;
   private useSimpleTouch: boolean = false; // Toggle for simple touch controls like original RPG
@@ -342,76 +349,194 @@ export class GameScene extends Phaser.Scene {
   }
 
   private setupMobileControls() {
-    // Check if we should use simple touch controls (fallback mode)
-    if (this.useSimpleTouch) {
-      this.setupSimpleTouchControls();
+    // Import and initialize the new systems
+    this.initializeUILayoutManager();
+    this.initializeVirtualJoystick();
+    this.setupActionButtons();
+    
+    // Enhanced touch input for world interactions
+    this.setupWorldTouchHandling();
+    
+    console.log('New mobile control system initialized successfully');
+  }
+
+  // 初始化UI布局管理器
+  private initializeUILayoutManager() {
+    this.uiLayoutManager = new UILayoutManager(this);
+    console.log('UI Layout Manager initialized');
+  }
+
+  // 初始化新的虚拟摇杆
+  private initializeVirtualJoystick() {
+    const screenInfo = this.uiLayoutManager.getScreenInfo();
+    
+    // 只在移动设备上创建摇杆
+    if (!screenInfo.isMobile) {
+      console.log('Desktop detected, skipping virtual joystick');
       return;
     }
 
-    // Create enhanced virtual joystick for mobile
-    this.createEnhancedVirtualJoystick();
-    
-    // Create improved action buttons with better layout
-    this.createEnhancedActionButtons();
+    const joystickRadius = screenInfo.isPortrait ? 60 : 70;
+    const knobRadius = joystickRadius * 0.4;
+    const position = this.uiLayoutManager.getJoystickPosition(joystickRadius);
 
-    // Add control mode toggle button
-    this.createControlModeToggle();
-
-    // Enhanced touch input for interactions with better feedback
-    this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      // Check for double-tap emergency reset
-      if (this.checkForEmergencyReset(pointer)) {
-        return;
-      }
-      
-      // Check if touch is in virtual controls area first
-      if (this.isInVirtualControlsArea(pointer.x, pointer.y)) {
-        return; // Don't handle world interaction if touching controls
-      }
-
-      const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-      
-      // Enhanced touch interaction with visual feedback
-      this.handleEnhancedTouchInteraction(worldPoint.x, worldPoint.y, pointer);
+    this.virtualJoystick = new VirtualJoystick({
+      x: position.x,
+      y: position.y,
+      radius: joystickRadius,
+      knobRadius: knobRadius,
+      deadZone: 0.15,
+      scene: this
     });
 
-    // Add haptic feedback for supported devices
-    this.setupHapticFeedback();
+    // 设置摇杆回调
+    this.virtualJoystick.onMoveCallback((vector) => {
+      if (this.cat && !this.cat.isActing) {
+        const speed = 120;
+        const velocityX = vector.x * speed;
+        const velocityY = vector.y * speed;
+        this.cat.setVelocity(velocityX, velocityY);
+      }
+    });
+
+    this.virtualJoystick.onEndCallback(() => {
+      if (this.cat) {
+        this.cat.setVelocity(0, 0);
+      }
+    });
+
+    console.log('Virtual joystick initialized at position:', position);
   }
 
-  // Simple touch controls similar to original RPG version
-  private setupSimpleTouchControls() {
+  // 设置动作按钮
+  private setupActionButtons() {
+    const screenInfo = this.uiLayoutManager.getScreenInfo();
+    
+    // 只在移动设备上创建动作按钮
+    if (!screenInfo.isMobile) {
+      return;
+    }
+
+    const buttonSize = screenInfo.isPortrait ? 50 : 60;
+    const buttons = [
+      { id: 'interact', icon: '🐾', action: () => this.handleInteraction() },
+      { id: 'inventory', icon: '🎒', action: () => this.toggleInventory() },
+      { id: 'cooking', icon: '🍳', action: () => this.openCookingInterface() }
+    ];
+
+    const positions = this.uiLayoutManager.getActionButtonsPosition(buttonSize, buttons.length);
+
+    this.actionButtons = buttons.map((button, index) => {
+      const position = positions[index];
+      const container = this.add.container(position.x, position.y);
+      container.setDepth(1000);
+      container.setScrollFactor(0);
+
+      // 按钮背景
+      const bg = this.add.circle(0, 0, buttonSize / 2, 0x000000, 0.4);
+      bg.setStrokeStyle(2, 0x4a90e2, 0.7);
+
+      // 按钮图标
+      const icon = this.add.text(0, 0, button.icon, {
+        fontSize: `${buttonSize * 0.4}px`,
+        color: '#ffffff'
+      });
+      icon.setOrigin(0.5);
+
+      container.add([bg, icon]);
+
+      // 设置交互
+      bg.setInteractive();
+      bg.on('pointerdown', () => {
+        // 视觉反馈
+        bg.setFillStyle(0x4a90e2, 0.6);
+        icon.setScale(1.1);
+        
+        // 执行动作
+        button.action();
+        
+        // 重置视觉状态
+        this.time.delayedCall(150, () => {
+          bg.setFillStyle(0x000000, 0.4);
+          icon.setScale(1);
+        });
+      });
+
+      return container;
+    });
+
+    console.log('Action buttons created at positions:', positions);
+  }
+
+  // 设置世界触摸处理
+  private setupWorldTouchHandling() {
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      // 检查是否在UI控件区域内
+      if (this.isPointerInUIArea(pointer)) {
+        return;
+      }
+
       const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
       const distance = Phaser.Math.Distance.Between(
         this.cat.x, this.cat.y, worldPoint.x, worldPoint.y
       );
       
-      // If clicking close to player, interact instead of move
+      // 如果点击靠近玩家，执行交互而不是移动
       if (distance < 50) {
         this.handleInteraction();
-      } else {
-        // Move towards clicked position
+      } else if (!this.uiLayoutManager.getIsMobile()) {
+        // 桌面端：点击移动（移动端使用摇杆）
         this.movePlayerTowards(worldPoint.x, worldPoint.y);
       }
     });
   }
 
+  // 检查指针是否在UI区域内
+  private isPointerInUIArea(pointer: Phaser.Input.Pointer): boolean {
+    // 检查摇杆区域
+    if (this.virtualJoystick && this.virtualJoystick.isJoystickActive()) {
+      return true;
+    }
+
+    // 检查动作按钮区域
+    for (const button of this.actionButtons) {
+      const bounds = button.getBounds();
+      if (bounds.contains(pointer.x, pointer.y)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // 简化的玩家移动方法
   private movePlayerTowards(targetX: number, targetY: number) {
+    if (!this.cat || this.cat.isActing) {
+      return;
+    }
+
+    const distance = Phaser.Math.Distance.Between(this.cat.x, this.cat.y, targetX, targetY);
+    if (distance < 20) {
+      return;
+    }
+
     const angle = Phaser.Math.Angle.Between(this.cat.x, this.cat.y, targetX, targetY);
-    const speed = 160;
+    const speed = 120;
     
-    // Set velocity towards target
     this.cat.setVelocity(
       Math.cos(angle) * speed,
       Math.sin(angle) * speed
     );
-    
-    // Stop movement after a short time
-    this.time.delayedCall(300, () => {
-      this.cat.setVelocity(0, 0);
+
+    // 停止移动当接近目标时
+    this.time.delayedCall(distance / speed * 1000, () => {
+      if (this.cat) {
+        this.cat.setVelocity(0, 0);
+      }
     });
   }
+
+
 
   // Test if joystick is working properly
   private testJoystickFunctionality() {
@@ -1709,175 +1834,35 @@ export class GameScene extends Phaser.Scene {
      }
    }
 
-   private updateResponsiveUI() {
-    // Update UI elements based on screen size changes
-    const currentWidth = this.cameras.main.width;
-    const currentHeight = this.cameras.main.height;
-    const isLandscape = currentWidth > currentHeight;
-    const isMobile = currentWidth < 768;
-
-    // Update virtual controls position if screen size changed
-    if (this.virtualControls) {
-      // Recalculate joystick positioning with improved logic
-      const baseSize = Math.min(currentWidth, currentHeight);
-      const joystickRadius = Math.max(50, Math.min(80, baseSize * 0.08));
-      const minPadding = 20;
-      const safePadding = isMobile ? 40 : 60;
-      
-      let newJoystickX, newJoystickY;
-      
-      if (isLandscape) {
-        // Landscape positioning
-        newJoystickX = Math.max(safePadding + joystickRadius, joystickRadius + minPadding);
-        newJoystickY = currentHeight - safePadding - joystickRadius;
-      } else {
-        // Portrait positioning
-        newJoystickX = Math.max(safePadding + joystickRadius, currentWidth * 0.2);
-        newJoystickY = Math.min(currentHeight - safePadding - joystickRadius, currentHeight * 0.85);
-      }
-      
-      // Ensure joystick stays within screen bounds
-      newJoystickX = Math.min(newJoystickX, currentWidth - joystickRadius - minPadding);
-      newJoystickY = Math.max(newJoystickY, joystickRadius + minPadding);
-
-      // Update joystick position if changed
-      if (Math.abs(this.virtualControls.joystickCenter.x - newJoystickX) > 5 || 
-          Math.abs(this.virtualControls.joystickCenter.y - newJoystickY) > 5) {
-        
-        // Update center position
-        this.virtualControls.joystickCenter.x = newJoystickX;
-        this.virtualControls.joystickCenter.y = newJoystickY;
-        
-        // Update touch area for conflict detection
-        this.virtualControls.touchArea = {
-          x: newJoystickX - joystickRadius - 20,
-          y: newJoystickY - joystickRadius - 20,
-          width: (joystickRadius + 20) * 2,
-          height: (joystickRadius + 20) * 2
-        };
-        
-        // Update all joystick elements smoothly
-        this.tweens.add({
-          targets: [this.virtualControls.joystickBase, this.virtualControls.joystickInner],
-          x: newJoystickX,
-          y: newJoystickY,
-          duration: 300,
-          ease: 'Power2.easeOut'
-        });
-        
-        // Only move knob if not currently being dragged
-        if (!this.virtualControls.isDragging) {
-          this.tweens.add({
-            targets: this.virtualControls.joystickKnob,
-            x: newJoystickX,
-            y: newJoystickY,
-            duration: 300,
-            ease: 'Power2.easeOut'
-          });
-          
-          // Reset movement vector when repositioning
-          this.virtualControls.joystickVector = { x: 0, y: 0 };
-          this.virtualControls.lastInputTime = 0;
-        }
-
-        // Update direction dots with new positioning
-        if (this.virtualControls.directionDots) {
-          const dotDistance = joystickRadius - 12;
-          const dotPositions = [
-            { x: 0, y: -dotDistance }, // Top
-            { x: dotDistance * 0.7, y: -dotDistance * 0.7 }, // Top-right
-            { x: dotDistance, y: 0 }, // Right
-            { x: dotDistance * 0.7, y: dotDistance * 0.7 }, // Bottom-right
-            { x: 0, y: dotDistance }, // Bottom
-            { x: -dotDistance * 0.7, y: dotDistance * 0.7 }, // Bottom-left
-            { x: -dotDistance, y: 0 }, // Left
-            { x: -dotDistance * 0.7, y: -dotDistance * 0.7 } // Top-left
-          ];
-
-          this.virtualControls.directionDots.forEach((dot: any, index: number) => {
-            this.tweens.add({
-              targets: dot,
-              x: newJoystickX + dotPositions[index].x,
-              y: newJoystickY + dotPositions[index].y,
-              duration: 300,
-              ease: 'Power2.easeOut'
-            });
-          });
-        }
-      }
-    }
-
-    // Update action buttons position with improved conflict avoidance
-    if (this.actionButtons && this.actionButtons.layout) {
-      const baseSize = Math.min(currentWidth, currentHeight);
-      const buttonSize = Math.max(45, Math.min(65, baseSize * 0.08));
-      const smallButtonSize = buttonSize * 0.75;
-      const minPadding = 15;
-      const safePadding = isMobile ? 35 : 50;
-      
-      // Recalculate button positions
-      let primaryButtonX, primaryButtonY;
-      let secondaryStartX, secondaryStartY;
-      
-      if (isLandscape) {
-        primaryButtonX = currentWidth - safePadding - buttonSize/2;
-        primaryButtonY = currentHeight - safePadding - buttonSize/2;
-        secondaryStartX = primaryButtonX;
-        secondaryStartY = primaryButtonY - buttonSize - 15;
-      } else {
-        primaryButtonX = Math.min(currentWidth - safePadding - buttonSize/2, currentWidth - buttonSize/2 - minPadding);
-        primaryButtonY = Math.min(currentHeight - safePadding - buttonSize/2, currentHeight * 0.8);
-        secondaryStartX = primaryButtonX - buttonSize - 10;
-        secondaryStartY = primaryButtonY;
-      }
-
-      // Update main interact button
-      if (this.actionButtons.interact) {
-        this.updateButtonPosition(this.actionButtons.interact, primaryButtonX, primaryButtonY, buttonSize);
-      }
-
-      // Update inventory button
-      if (this.actionButtons.inventory) {
-        const invX = isLandscape ? secondaryStartX : secondaryStartX;
-        const invY = isLandscape ? secondaryStartY : secondaryStartY;
-        this.updateButtonPosition(this.actionButtons.inventory, invX, invY, smallButtonSize);
-      }
-
-      // Update cooking button
-      if (this.actionButtons.cooking) {
-        const cookX = isLandscape ? secondaryStartX : secondaryStartX - smallButtonSize - 10;
-        const cookY = isLandscape ? secondaryStartY - smallButtonSize - 15 : secondaryStartY;
-        this.updateButtonPosition(this.actionButtons.cooking, cookX, cookY, smallButtonSize);
-      }
-
-      // Update tool buttons
-      if (this.actionButtons.tools && this.actionButtons.tools.length > 0) {
-        const toolButtonSize = Math.max(35, smallButtonSize * 0.8);
-        const toolStartX = isLandscape ? secondaryStartX - (toolButtonSize + 5) * 2 : primaryButtonX - (toolButtonSize + 5) * 2;
-        const toolStartY = isLandscape ? secondaryStartY - smallButtonSize - 35 : primaryButtonY - buttonSize - 20;
-        
-        this.actionButtons.tools.forEach((toolBtn: any, index: number) => {
-          const toolX = toolStartX + (index * (toolButtonSize + 8));
-          const adjustedX = Math.max(toolButtonSize/2 + minPadding, Math.min(toolX, currentWidth - toolButtonSize/2 - minPadding));
-          const adjustedY = Math.max(toolButtonSize/2 + minPadding, toolStartY);
-          
-          this.updateButtonPosition(toolBtn, adjustedX, adjustedY, toolButtonSize);
-        });
-      }
-
-      // Update layout info
-      this.actionButtons.layout = {
-        isLandscape,
-        isMobile,
-        buttonSize,
-        smallButtonSize,
-        primaryX: primaryButtonX,
-        primaryY: primaryButtonY,
-        secondaryX: secondaryStartX,
-        secondaryY: secondaryStartY
-      };
-    }
-  }
+     private updateResponsiveUI() {
+   // 使用新的布局管理器更新UI
+   if (this.uiLayoutManager) {
+     const screenInfo = this.uiLayoutManager.getScreenInfo();
+     
+     // 更新虚拟摇杆位置
+     if (this.virtualJoystick && screenInfo.isMobile) {
+       this.virtualJoystick.updateLayout(screenInfo.width, screenInfo.height);
+     }
+     
+     // 更新动作按钮位置
+     if (this.actionButtons.length > 0 && screenInfo.isMobile) {
+       const buttonSize = screenInfo.isPortrait ? 50 : 60;
+       const positions = this.uiLayoutManager.getActionButtonsPosition(buttonSize, this.actionButtons.length);
+       
+       this.actionButtons.forEach((button, index) => {
+         if (positions[index]) {
+           this.tweens.add({
+             targets: button,
+             x: positions[index].x,
+             y: positions[index].y,
+             duration: 300,
+             ease: 'Power2.easeOut'
+           });
+         }
+       });
+     }
+   }
+ }
 
   // Helper function to smoothly update button positions
   private updateButtonPosition(buttonObj: any, newX: number, newY: number, size: number) {
@@ -2382,51 +2367,16 @@ export class GameScene extends Phaser.Scene {
       moveY = 1;
     }
 
-    // Enhanced virtual joystick input with improved stability and conflict prevention
-    if (this.virtualControls && this.virtualControls.joystickVector) {
-      const timeSinceLastInput = this.time.now - this.virtualControls.lastInputTime;
+    // 新的虚拟摇杆输入处理 - 简化且可靠
+    if (this.virtualJoystick) {
+      const joystickVector = this.virtualJoystick.getVector();
       
-      // Improved stuck prevention with better timing
-      if (timeSinceLastInput > 200 && !this.virtualControls.isDragging) {
-        // Gradually reduce movement when not actively dragging
-        this.virtualControls.joystickVector.x *= 0.8;
-        this.virtualControls.joystickVector.y *= 0.8;
-        
-        // Complete stop if values are very small
-        if (Math.abs(this.virtualControls.joystickVector.x) < 0.05) {
-          this.virtualControls.joystickVector.x = 0;
-        }
-        if (Math.abs(this.virtualControls.joystickVector.y) < 0.05) {
-          this.virtualControls.joystickVector.y = 0;
-        }
-      }
-      
-      const joystickStrength = Math.sqrt(
-        this.virtualControls.joystickVector.x ** 2 + this.virtualControls.joystickVector.y ** 2
-      );
-      
-      // Apply joystick input with improved validation
-      if (this.virtualControls.isDragging && timeSinceLastInput < 100) {
-        // Active dragging - use full joystick input
-        if (joystickStrength > this.virtualControls.deadZone) {
-          const dampingFactor = 0.92; // Improved damping for smoother control
-          moveX = this.virtualControls.joystickVector.x * dampingFactor;
-          moveY = this.virtualControls.joystickVector.y * dampingFactor;
-          
-          // Throttled haptic feedback for better performance
-          if (this.hapticEnabled && joystickStrength > 0.7 && this.frameCounter % 45 === 0) {
-            this.triggerHapticFeedback(6);
-          }
-        }
-      } else if (timeSinceLastInput < 300 && joystickStrength > 0.1) {
-        // Recent input but not actively dragging - apply reduced movement
-        const inertiaFactor = Math.max(0, 1 - (timeSinceLastInput / 300));
-        moveX = this.virtualControls.joystickVector.x * inertiaFactor * 0.5;
-        moveY = this.virtualControls.joystickVector.y * inertiaFactor * 0.5;
-      } else {
-        // No recent input - ensure complete stop
-        this.virtualControls.joystickVector.x = 0;
-        this.virtualControls.joystickVector.y = 0;
+      // 摇杆输入会直接在回调中处理玩家移动
+      // 这里只需要处理键盘输入与摇杆输入的协调
+      if (Math.abs(joystickVector.x) > 0.01 || Math.abs(joystickVector.y) > 0.01) {
+        // 摇杆激活时，忽略键盘输入以避免冲突
+        moveX = 0;
+        moveY = 0;
       }
     }
 
@@ -2470,7 +2420,23 @@ export class GameScene extends Phaser.Scene {
 
   // Scene cleanup - called when scene is destroyed
   destroy() {
-    // Clean up joystick resources
+    // 清理新的控制系统
+    if (this.virtualJoystick) {
+      this.virtualJoystick.destroy();
+    }
+    
+    if (this.uiLayoutManager) {
+      this.uiLayoutManager.destroy();
+    }
+    
+    // 清理新的动作按钮
+    this.actionButtons.forEach(button => {
+      if (button && button.destroy) {
+        button.destroy();
+      }
+    });
+    
+    // Clean up old joystick resources
     this.cleanupExistingJoystick();
     
     // Clean up particle pool
@@ -2485,18 +2451,6 @@ export class GameScene extends Phaser.Scene {
     if (this.toolTooltip) {
       this.toolTooltip.destroy();
       this.toolTooltip = null;
-    }
-    
-    // Clean up action buttons
-    if (this.actionButtons) {
-      Object.values(this.actionButtons).forEach((button: any) => {
-        if (button && button.destroy) {
-          button.destroy();
-        } else if (button && button.panel && button.panel.destroy) {
-          button.panel.destroy();
-        }
-      });
-      this.actionButtons = null;
     }
     
     // Clean up orientation handlers

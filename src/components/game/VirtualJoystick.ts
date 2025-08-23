@@ -1,37 +1,48 @@
 import * as Phaser from 'phaser';
 
-// 虚拟摇杆接口定义
+/**
+ * 虚拟摇杆向量接口
+ * 定义摇杆的X和Y方向输入值
+ */
 interface JoystickVector {
-  x: number;
-  y: number;
+  x: number;  // X方向输入值（-1到1）
+  y: number;  // Y方向输入值（-1到1）
 }
 
+/**
+ * 虚拟摇杆配置接口
+ * 定义摇杆的位置、大小和场景引用
+ */
 interface JoystickConfig {
-  x: number;
-  y: number;
-  radius: number;
-  knobRadius: number;
-  deadZone: number;
-  scene: Phaser.Scene;
+  x: number;           // 摇杆X坐标
+  y: number;           // 摇杆Y坐标
+  radius: number;      // 摇杆底座半径
+  knobRadius: number;  // 摇杆手柄半径
+  deadZone: number;    // 死区大小（防止误触）
+  scene: Phaser.Scene; // 游戏场景引用
 }
 
-// 全新的虚拟摇杆类 - 简化的事件处理，防止卡死
+/**
+ * 虚拟摇杆类
+ * 为移动设备提供触摸控制的虚拟摇杆
+ * 简化的事件处理，防止卡死
+ */
 export class VirtualJoystick {
   private scene: Phaser.Scene;
   private config: JoystickConfig;
-  
+
   // 视觉元素
-  private base!: Phaser.GameObjects.Circle;
-  private knob!: Phaser.GameObjects.Circle;
-  private outerRing!: Phaser.GameObjects.Circle;
+  private base!: any;
+  private knob!: any;
+  private outerRing!: any;
   private container!: Phaser.GameObjects.Container;
-  
+
   // 状态管理
   private isActive: boolean = false;
   private activePointerId: number | null = null;
   private vector: JoystickVector = { x: 0, y: 0 };
   private lastUpdateTime: number = 0;
-  
+
   // 事件回调
   private onMove: ((vector: JoystickVector) => void) | null = null;
   private onStart: (() => void) | null = null;
@@ -103,86 +114,103 @@ export class VirtualJoystick {
     });
   }
 
+  /**
+   * 处理触摸开始事件
+   * @param pointer 触摸指针对象
+   */
   private handleTouchStart(pointer: Phaser.Input.Pointer) {
     // 防止多点触控冲突
     if (this.isActive && this.activePointerId !== null) {
-      return;
+      return;  // 如果摇杆已经激活且不是同一个指针，则忽略
     }
 
     // 计算距离，确保在有效范围内
     const distance = Phaser.Math.Distance.Between(
-      pointer.x, 
-      pointer.y, 
-      this.container.x, 
-      this.container.y
+      pointer.x,        // 触摸点X坐标
+      pointer.y,        // 触摸点Y坐标
+      this.container.x, // 摇杆中心X坐标
+      this.container.y  // 摇杆中心Y坐标
     );
 
-    if (distance <= this.config.radius + 25) {
-      this.isActive = true;
-      this.activePointerId = pointer.id;
-      this.lastUpdateTime = this.scene.time.now;
+    if (distance <= this.config.radius + 25) {  // 在有效触摸范围内
+      this.isActive = true;                    // 激活摇杆
+      this.activePointerId = pointer.id;       // 记录指针ID
+      this.lastUpdateTime = this.scene.time.now;  // 记录最后更新时间
 
-      // 视觉反馈
-      this.knob.setFillStyle(0xa29bfe, 1);
-      this.knob.setScale(1.1);
-      this.base.setStrokeStyle(3, 0x74b9ff, 0.8);
+      // 视觉反馈 - 改变手柄颜色和大小
+      this.knob.setFillStyle(0xa29bfe, 1);     // 设置手柄填充颜色为紫色
+      this.knob.setScale(1.1);                 // 手柄放大1.1倍
+      this.base.setStrokeStyle(3, 0x74b9ff, 0.8);  // 底座边框加粗并变亮
 
       // 触发开始回调
       if (this.onStart) {
-        this.onStart();
+        this.onStart();  // 调用开始回调函数
       }
 
       // 立即更新位置
-      this.updateKnobPosition(pointer);
+      this.updateKnobPosition(pointer);  // 更新手柄位置
     }
   }
 
+  /**
+   * 处理触摸移动事件
+   * @param pointer 触摸指针对象
+   */
   private handleTouchMove(pointer: Phaser.Input.Pointer) {
     if (!this.isActive || this.activePointerId !== pointer.id) {
-      return;
+      return;  // 如果摇杆未激活或不是同一个指针，则忽略
     }
 
-    this.lastUpdateTime = this.scene.time.now;
-    this.updateKnobPosition(pointer);
+    this.lastUpdateTime = this.scene.time.now;  // 更新最后更新时间
+    this.updateKnobPosition(pointer);          // 更新手柄位置
   }
 
+  /**
+   * 处理触摸结束事件
+   * @param pointer 触摸指针对象
+   */
   private handleTouchEnd(pointer: Phaser.Input.Pointer) {
     if (!this.isActive || this.activePointerId !== pointer.id) {
-      return;
+      return;  // 如果摇杆未激活或不是同一个指针，则忽略
     }
 
-    this.resetJoystick();
+    this.resetJoystick();  // 重置摇杆状态
   }
 
+  /**
+   * 更新手柄位置
+   * 根据触摸位置计算手柄的新位置和输入向量
+   * @param pointer 触摸指针对象
+   */
   private updateKnobPosition(pointer: Phaser.Input.Pointer) {
-    const deltaX = pointer.x - this.container.x;
-    const deltaY = pointer.y - this.container.y;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    const deltaX = pointer.x - this.container.x;  // 计算X方向偏移
+    const deltaY = pointer.y - this.container.y;  // 计算Y方向偏移
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);  // 计算触摸点到中心的距离
 
     // 限制在摇杆范围内
-    const maxDistance = this.config.radius - this.config.knobRadius;
-    let knobX = deltaX;
-    let knobY = deltaY;
+    const maxDistance = this.config.radius - this.config.knobRadius;  // 最大移动距离
+    let knobX = deltaX;  // 手柄X位置
+    let knobY = deltaY;  // 手柄Y位置
 
     if (distance > maxDistance) {
-      const ratio = maxDistance / distance;
-      knobX *= ratio;
-      knobY *= ratio;
+      const ratio = maxDistance / distance;  // 计算缩放比例
+      knobX *= ratio;  // 限制X位置
+      knobY *= ratio;  // 限制Y位置
     }
 
     // 更新手柄位置
-    this.knob.x = knobX;
-    this.knob.y = knobY;
+    this.knob.x = knobX;  // 设置手柄X坐标
+    this.knob.y = knobY;  // 设置手柄Y坐标
 
     // 计算标准化向量
-    const normalizedDistance = Math.min(distance / maxDistance, 1);
-    
+    const normalizedDistance = Math.min(distance / maxDistance, 1);  // 标准化距离（0-1）
+
     if (normalizedDistance > this.config.deadZone) {
-      this.vector.x = (knobX / maxDistance);
-      this.vector.y = (knobY / maxDistance);
+      this.vector.x = (knobX / maxDistance);  // 计算X方向输入值（-1到1）
+      this.vector.y = (knobY / maxDistance);  // 计算Y方向输入值（-1到1）
     } else {
-      this.vector.x = 0;
-      this.vector.y = 0;
+      this.vector.x = 0;  // 在死区内，输入值为0
+      this.vector.y = 0;  // 在死区内，输入值为0
     }
 
     // 触发移动回调
@@ -191,146 +219,191 @@ export class VirtualJoystick {
     }
   }
 
+  /**
+   * 重置摇杆状态
+   * 将摇杆恢复到初始状态
+   */
   private resetJoystick() {
-    this.isActive = false;
-    this.activePointerId = null;
-    this.vector = { x: 0, y: 0 };
+    this.isActive = false;                    // 取消激活状态
+    this.activePointerId = null;              // 清空指针ID
+    this.vector = { x: 0, y: 0 };            // 重置输入向量
 
     // 动画回到中心
     this.scene.tweens.add({
-      targets: this.knob,
-      x: 0,
-      y: 0,
-      scaleX: 1,
-      scaleY: 1,
-      duration: 200,
-      ease: 'Back.easeOut'
+      targets: this.knob,                     // 动画目标：手柄
+      x: 0,                                   // 回到中心X坐标
+      y: 0,                                   // 回到中心Y坐标
+      scaleX: 1,                              // 恢复原始X缩放
+      scaleY: 1,                              // 恢复原始Y缩放
+      duration: 200,                          // 动画持续时间200ms
+      ease: 'Back.easeOut'                    // 弹性缓动效果
     });
 
     // 重置视觉状态
-    this.knob.setFillStyle(0x74b9ff, 0.9);
-    this.base.setStrokeStyle(2, 0x4a90e2, 0.6);
+    this.knob.setFillStyle(0x74b9ff, 0.9);   // 恢复手柄颜色
+    this.base.setStrokeStyle(2, 0x4a90e2, 0.6);  // 恢复底座边框
 
     // 触发结束回调
     if (this.onEnd) {
-      this.onEnd();
+      this.onEnd();  // 调用结束回调函数
     }
 
     // 最终确保移动回调被调用
     if (this.onMove) {
-      this.onMove({ x: 0, y: 0 });
+      this.onMove({ x: 0, y: 0 });  // 发送零向量，表示停止移动
     }
   }
 
-  // 公共方法
+  /**
+   * 设置摇杆位置
+   * @param x 新的X坐标
+   * @param y 新的Y坐标
+   */
   public setPosition(x: number, y: number) {
-    this.container.setPosition(x, y);
-    this.config.x = x;
-    this.config.y = y;
+    this.container.setPosition(x, y);  // 设置容器位置
+    this.config.x = x;                 // 更新配置中的X坐标
+    this.config.y = y;                 // 更新配置中的Y坐标
   }
 
+  /**
+   * 设置摇杆可见性
+   * @param visible 是否可见
+   */
   public setVisible(visible: boolean) {
-    this.container.setVisible(visible);
+    this.container.setVisible(visible);  // 设置容器可见性
   }
 
+  /**
+   * 获取当前输入向量
+   * @returns 输入向量的副本
+   */
   public getVector(): JoystickVector {
-    return { ...this.vector };
+    return { ...this.vector };  // 返回向量副本，防止外部修改
   }
 
+  /**
+   * 检查摇杆是否激活
+   * @returns 摇杆是否处于激活状态
+   */
   public isJoystickActive(): boolean {
-    return this.isActive;
+    return this.isActive;  // 返回激活状态
   }
 
-  // 事件监听器设置
+  /**
+   * 设置移动回调函数
+   * @param callback 移动回调函数
+   */
   public onMoveCallback(callback: (vector: JoystickVector) => void) {
-    this.onMove = callback;
+    this.onMove = callback;  // 设置移动回调
   }
 
+  /**
+   * 设置开始回调函数
+   * @param callback 开始回调函数
+   */
   public onStartCallback(callback: () => void) {
-    this.onStart = callback;
+    this.onStart = callback;  // 设置开始回调
   }
 
+  /**
+   * 设置结束回调函数
+   * @param callback 结束回调函数
+   */
   public onEndCallback(callback: () => void) {
-    this.onEnd = callback;
+    this.onEnd = callback;  // 设置结束回调
   }
 
-  // 更新摇杆位置以适应屏幕变化
+  /**
+   * 更新摇杆位置以适应屏幕变化
+   * 根据屏幕尺寸和方向调整摇杆位置
+   * @param screenWidth 屏幕宽度
+   * @param screenHeight 屏幕高度
+   */
   public updateLayout(screenWidth: number, screenHeight: number) {
-    const isPortrait = screenHeight > screenWidth;
-    const isMobile = screenWidth < 768;
-    
-    let newX: number, newY: number;
-    
+    const isPortrait = screenHeight > screenWidth;  // 判断是否为竖屏
+    const isMobile = screenWidth < 768;             // 判断是否为移动设备
+
+    let newX: number, newY: number;  // 新的位置坐标
+
     if (isMobile) {
       if (isPortrait) {
         // 竖屏：左下角，但避开底部导航
-        newX = Math.max(this.config.radius + 30, screenWidth * 0.15);
-        newY = screenHeight - this.config.radius - 80;
+        newX = Math.max(this.config.radius + 30, screenWidth * 0.15);  // 确保不贴边
+        newY = screenHeight - this.config.radius - 80;                  // 避开底部导航栏
       } else {
         // 横屏：左下角，标准位置
-        newX = this.config.radius + 40;
-        newY = screenHeight - this.config.radius - 50;
+        newX = this.config.radius + 40;  // 标准左边距
+        newY = screenHeight - this.config.radius - 50;  // 标准下边距
       }
     } else {
       // 桌面端：固定位置
-      newX = this.config.radius + 50;
-      newY = screenHeight - this.config.radius - 60;
+      newX = this.config.radius + 50;  // 桌面端左边距
+      newY = screenHeight - this.config.radius - 60;  // 桌面端下边距
     }
 
     // 确保不超出边界
-    newX = Math.max(this.config.radius + 20, Math.min(newX, screenWidth - this.config.radius - 20));
-    newY = Math.max(this.config.radius + 20, Math.min(newY, screenHeight - this.config.radius - 20));
+    newX = Math.max(this.config.radius + 20, Math.min(newX, screenWidth - this.config.radius - 20));  // 限制X坐标范围
+    newY = Math.max(this.config.radius + 20, Math.min(newY, screenHeight - this.config.radius - 20)); // 限制Y坐标范围
 
-    this.setPosition(newX, newY);
+    this.setPosition(newX, newY);  // 设置新位置
   }
 
-  // 清理资源
+  /**
+   * 清理资源
+   * 销毁摇杆对象并清理所有回调
+   */
   public destroy() {
     if (this.container) {
-      this.container.destroy();
+      this.container.destroy();  // 销毁容器及其所有子对象
     }
-    
+
     // 清理回调
-    this.onMove = null;
-    this.onStart = null;
-    this.onEnd = null;
+    this.onMove = null;   // 清空移动回调
+    this.onStart = null;  // 清空开始回调
+    this.onEnd = null;    // 清空结束回调
   }
 
-  // 紧急重置 - 解决卡死问题
+  /**
+   * 紧急重置 - 解决卡死问题
+   * 强制重置摇杆状态，用于处理异常情况
+   */
   public emergencyReset() {
-    console.log('🚨 Emergency reset triggered for joystick');
-    
+    console.log('🚨 Emergency reset triggered for joystick');  // 紧急重置日志
+
     // 强制重置所有状态
-    this.isActive = false;
-    this.activePointerId = null;
-    this.vector = { x: 0, y: 0 };
-    
+    this.isActive = false;                    // 取消激活状态
+    this.activePointerId = null;              // 清空指针ID
+    this.vector = { x: 0, y: 0 };            // 重置输入向量
+
     // 立即重置视觉状态
     if (this.knob) {
-      this.knob.setPosition(0, 0);
-      this.knob.setScale(1);
-      this.knob.setFillStyle(0x74b9ff, 0.9);
+      this.knob.setPosition(0, 0);            // 手柄回到中心
+      this.knob.setScale(1);                  // 恢复原始大小
+      this.knob.setFillStyle(0x74b9ff, 0.9); // 恢复原始颜色
     }
-    
+
     if (this.base) {
-      this.base.setStrokeStyle(2, 0x4a90e2, 0.6);
+      this.base.setStrokeStyle(2, 0x4a90e2, 0.6);  // 恢复底座边框
     }
-    
+
     // 确保移动回调被调用
     if (this.onMove) {
-      this.onMove({ x: 0, y: 0 });
+      this.onMove({ x: 0, y: 0 });  // 发送零向量，表示停止移动
     }
   }
 
-  // 获取摇杆状态信息（用于调试）
+  /**
+   * 获取摇杆状态信息（用于调试）
+   * @returns 摇杆的调试信息
+   */
   public getDebugInfo() {
     return {
-      isActive: this.isActive,
-      activePointerId: this.activePointerId,
-      vector: this.vector,
-      position: { x: this.container.x, y: this.container.y },
-      lastUpdateTime: this.lastUpdateTime,
-      timeSinceLastUpdate: this.scene.time.now - this.lastUpdateTime
+      isActive: this.isActive,                                    // 激活状态
+      activePointerId: this.activePointerId,                     // 当前指针ID
+      vector: this.vector,                                        // 当前输入向量
+      position: { x: this.container.x, y: this.container.y },    // 摇杆位置
+      lastUpdateTime: this.lastUpdateTime,                       // 最后更新时间
+      timeSinceLastUpdate: this.scene.time.now - this.lastUpdateTime  // 距离上次更新的时间
     };
   }
 }

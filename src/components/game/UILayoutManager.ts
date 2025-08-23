@@ -1,26 +1,36 @@
 import * as Phaser from 'phaser';
 
-// UI元素类型定义
+/**
+ * UI元素接口
+ * 定义UI元素的基本属性和布局信息
+ */
 interface UIElement {
-  id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  priority: number; // 优先级，数值越高越重要
-  anchor: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
-  margin: number;
-  isVisible: boolean;
+  id: string;                                                           // 元素唯一标识
+  x: number;                                                            // X坐标
+  y: number;                                                            // Y坐标
+  width: number;                                                        // 宽度
+  height: number;                                                       // 高度
+  priority: number;                                                     // 优先级，数值越高越重要
+  anchor: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';  // 锚点位置
+  margin: number;                                                       // 边距
+  isVisible: boolean;                                                   // 是否可见
 }
 
+/**
+ * 安全区域接口
+ * 定义屏幕的安全显示区域，避免被系统UI遮挡
+ */
 interface SafeArea {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
+  top: number;    // 顶部安全距离
+  right: number;  // 右侧安全距离
+  bottom: number; // 底部安全距离
+  left: number;   // 左侧安全距离
 }
 
-// 智能UI布局管理器
+/**
+ * 智能UI布局管理器
+ * 负责管理游戏UI元素的响应式布局和位置计算
+ */
 export class UILayoutManager {
   private scene: Phaser.Scene;
   private elements: Map<string, UIElement> = new Map();
@@ -46,11 +56,20 @@ export class UILayoutManager {
     this.calculateSafeArea();
   }
 
+  /**
+   * 计算安全区域
+   * 考虑开发者工具、浏览器UI等可能遮挡的区域
+   */
   private calculateSafeArea() {
     // 基础边距
     const basePadding = this.isMobile ? 20 : 30;
 
-    // 移动端需要考虑状态栏、导航栏等
+    // 检测是否在开发环境中（可能打开开发者工具）
+    const isDevelopment = window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.port !== '';
+
+    // 桌面端需要考虑开发者工具可能遮挡右侧内容
     if (this.isMobile) {
       this.safeArea = {
         top: this.isPortrait ? 50 : 30, // 状态栏高度
@@ -59,13 +78,40 @@ export class UILayoutManager {
         left: basePadding
       };
     } else {
+      // 桌面端安全区域，考虑开发者工具
+      const rightPadding = isDevelopment ? 400 : basePadding; // 开发环境预留更多右侧空间
+
       this.safeArea = {
         top: basePadding,
-        right: basePadding,
+        right: rightPadding, // 为开发者工具预留空间
         bottom: basePadding,
         left: basePadding
       };
     }
+
+    // 动态检测屏幕宽度变化，自动调整右侧安全区域
+    this.detectDeveloperTools();
+  }
+
+  /**
+   * 检测开发者工具是否打开
+   * 通过监听窗口大小变化来动态调整安全区域
+   */
+  private detectDeveloperTools() {
+    // 监听窗口大小变化
+    window.addEventListener('resize', () => {
+      const currentWidth = window.innerWidth;
+
+      // 如果窗口宽度显著减少，可能是开发者工具打开了
+      if (currentWidth < this.screenWidth * 0.8) {
+        this.safeArea.right = Math.max(400, this.screenWidth - currentWidth + 50);
+        this.repositionAllElements();
+      } else {
+        // 窗口恢复正常，减少右侧安全区域
+        this.safeArea.right = this.isMobile ? 20 : 30;
+        this.repositionAllElements();
+      }
+    });
   }
 
   private setupResizeListener() {
@@ -90,55 +136,65 @@ export class UILayoutManager {
     }
   }
 
-  // 获取元素的最佳位置
+  /**
+   * 获取元素的最佳位置
+   * @param id 元素ID
+   * @returns 计算出的最佳位置坐标
+   */
   public getOptimalPosition(id: string): { x: number; y: number } {
-    const element = this.elements.get(id);
+    const element = this.elements.get(id);  // 获取元素
     if (!element) {
-      return { x: 0, y: 0 };
+      return { x: 0, y: 0 };  // 如果元素不存在，返回默认位置
     }
 
-    return this.calculatePosition(element);
+    return this.calculatePosition(element);  // 计算并返回最佳位置
   }
 
+  /**
+   * 计算元素位置
+   * 根据锚点和安全区域计算元素的基础位置
+   * @param element UI元素
+   * @returns 计算出的位置坐标
+   */
   private calculatePosition(element: UIElement): { x: number; y: number } {
-    let x: number, y: number;
+    let x: number, y: number;  // 位置坐标
 
     // 根据锚点计算基础位置
     switch (element.anchor) {
       case 'top-left':
-        x = this.safeArea.left + element.margin;
-        y = this.safeArea.top + element.margin;
+        x = this.safeArea.left + element.margin;      // 左上角：安全区域左边界 + 边距
+        y = this.safeArea.top + element.margin;       // 左上角：安全区域上边界 + 边距
         break;
 
       case 'top-right':
-        x = this.screenWidth - this.safeArea.right - element.width - element.margin;
-        y = this.safeArea.top + element.margin;
+        x = this.screenWidth - this.safeArea.right - element.width - element.margin;  // 右上角：屏幕宽度 - 安全区域右边界 - 元素宽度 - 边距
+        y = this.safeArea.top + element.margin;       // 右上角：安全区域上边界 + 边距
         break;
 
       case 'bottom-left':
-        x = this.safeArea.left + element.margin;
-        y = this.screenHeight - this.safeArea.bottom - element.height - element.margin;
+        x = this.safeArea.left + element.margin;      // 左下角：安全区域左边界 + 边距
+        y = this.screenHeight - this.safeArea.bottom - element.height - element.margin;  // 左下角：屏幕高度 - 安全区域下边界 - 元素高度 - 边距
         break;
 
       case 'bottom-right':
-        x = this.screenWidth - this.safeArea.right - element.width - element.margin;
-        y = this.screenHeight - this.safeArea.bottom - element.height - element.margin;
+        x = this.screenWidth - this.safeArea.right - element.width - element.margin;  // 右下角：屏幕宽度 - 安全区域右边界 - 元素宽度 - 边距
+        y = this.screenHeight - this.safeArea.bottom - element.height - element.margin; // 右下角：屏幕高度 - 安全区域下边界 - 元素高度 - 边距
         break;
 
       case 'center':
-        x = (this.screenWidth - element.width) / 2;
-        y = (this.screenHeight - element.height) / 2;
+        x = (this.screenWidth - element.width) / 2;   // 中心：屏幕宽度的一半减去元素宽度的一半
+        y = (this.screenHeight - element.height) / 2; // 中心：屏幕高度的一半减去元素高度的一半
         break;
 
       default:
-        x = element.x;
-        y = element.y;
+        x = element.x;  // 默认使用元素的原始X坐标
+        y = element.y;  // 默认使用元素的原始Y坐标
     }
 
     // 检查并解决冲突
-    const resolvedPosition = this.resolveConflicts(element, x, y);
+    const resolvedPosition = this.resolveConflicts(element, x, y);  // 解决与其他元素的冲突
 
-    return resolvedPosition;
+    return resolvedPosition;  // 返回最终位置
   }
 
   private resolveConflicts(currentElement: UIElement, x: number, y: number): { x: number; y: number } {
@@ -178,8 +234,15 @@ export class UILayoutManager {
       rect2.y + rect2.height < rect1.y);
   }
 
+  /**
+   * 查找替代位置
+   * 当元素位置发生冲突时，寻找可用的替代位置
+   * @param element 当前元素
+   * @param conflictElement 冲突元素
+   * @returns 替代位置或null
+   */
   private findAlternativePosition(element: UIElement, conflictElement: UIElement): { x: number; y: number } | null {
-    const margin = 10;
+    const margin = 10;  // 元素间距
 
     // 尝试不同的替代位置
     const alternatives = [
@@ -195,40 +258,57 @@ export class UILayoutManager {
 
     for (const alt of alternatives) {
       if (this.isPositionValid(alt.x, alt.y, element.width, element.height)) {
-        return alt;
+        return alt;  // 找到有效位置
       }
     }
 
-    return null;
+    return null;  // 没有找到有效位置
   }
 
+  /**
+   * 检查位置是否有效
+   * 验证元素位置是否在安全区域内
+   * @param x X坐标
+   * @param y Y坐标
+   * @param width 元素宽度
+   * @param height 元素高度
+   * @returns 位置是否有效
+   */
   private isPositionValid(x: number, y: number, width: number, height: number): boolean {
     // 检查是否在屏幕边界内
-    return x >= this.safeArea.left &&
-      y >= this.safeArea.top &&
-      x + width <= this.screenWidth - this.safeArea.right &&
-      y + height <= this.screenHeight - this.safeArea.bottom;
+    return x >= this.safeArea.left &&                                    // 左边界检查
+      y >= this.safeArea.top &&                                          // 上边界检查
+      x + width <= this.screenWidth - this.safeArea.right &&             // 右边界检查
+      y + height <= this.screenHeight - this.safeArea.bottom;            // 下边界检查
   }
 
+  /**
+   * 重新定位单个元素
+   * @param id 元素ID
+   */
   private repositionElement(id: string): void {
-    const element = this.elements.get(id);
+    const element = this.elements.get(id);  // 获取元素
     if (!element || !element.isVisible) {
-      return;
+      return;  // 如果元素不存在或不可见，则跳过
     }
 
-    const newPosition = this.calculatePosition(element);
-    element.x = newPosition.x;
-    element.y = newPosition.y;
+    const newPosition = this.calculatePosition(element);  // 计算新位置
+    element.x = newPosition.x;  // 更新X坐标
+    element.y = newPosition.y;  // 更新Y坐标
   }
 
+  /**
+   * 重新定位所有元素
+   * 按优先级排序，优先级高的先定位
+   */
   private repositionAllElements(): void {
     // 按优先级排序，优先级高的先定位
     const sortedElements = Array.from(this.elements.values())
-      .filter(el => el.isVisible)
-      .sort((a, b) => b.priority - a.priority);
+      .filter(el => el.isVisible)  // 过滤出可见元素
+      .sort((a, b) => b.priority - a.priority);  // 按优先级降序排序
 
     for (const element of sortedElements) {
-      this.repositionElement(element.id);
+      this.repositionElement(element.id);  // 重新定位每个元素
     }
   }
 
@@ -260,88 +340,112 @@ export class UILayoutManager {
     return { x, y };
   }
 
-  // 获取推荐的动作按钮位置
+  /**
+   * 获取推荐的动作按钮位置
+   * 根据屏幕尺寸和方向计算动作按钮的最佳位置
+   * @param buttonSize 按钮大小
+   * @param count 按钮数量
+   * @returns 按钮位置数组
+   */
   public getActionButtonsPosition(buttonSize: number, count: number): { x: number; y: number }[] {
-    const margin = 15;
-    const spacing = buttonSize + 10;
-    const positions: { x: number; y: number }[] = [];
+    const margin = 15;  // 边距
+    const spacing = buttonSize + 10;  // 按钮间距
+    const positions: { x: number; y: number }[] = [];  // 位置数组
 
     if (this.isMobile) {
       if (this.isPortrait) {
         // 竖屏：右下角垂直排列
-        const startX = this.screenWidth - this.safeArea.right - buttonSize - margin;
-        const startY = this.screenHeight - this.safeArea.bottom - (count * spacing) + spacing - margin;
+        const startX = this.screenWidth - this.safeArea.right - buttonSize - margin;  // 起始X坐标
+        const startY = this.screenHeight - this.safeArea.bottom - (count * spacing) + spacing - margin;  // 起始Y坐标
 
         for (let i = 0; i < count; i++) {
           positions.push({
-            x: startX,
-            y: startY + (i * spacing)
+            x: startX,  // 所有按钮X坐标相同
+            y: startY + (i * spacing)  // Y坐标递增
           });
         }
       } else {
         // 横屏：右下角水平排列
-        const startX = this.screenWidth - this.safeArea.right - (count * spacing) + spacing - margin;
-        const startY = this.screenHeight - this.safeArea.bottom - buttonSize - margin;
+        const startX = this.screenWidth - this.safeArea.right - (count * spacing) + spacing - margin;  // 起始X坐标
+        const startY = this.screenHeight - this.safeArea.bottom - buttonSize - margin;  // 起始Y坐标
 
         for (let i = 0; i < count; i++) {
           positions.push({
-            x: startX + (i * spacing),
-            y: startY
+            x: startX + (i * spacing),  // X坐标递增
+            y: startY  // 所有按钮Y坐标相同
           });
         }
       }
     } else {
       // 桌面端：右下角水平排列
-      const startX = this.screenWidth - this.safeArea.right - (count * spacing) + spacing - margin * 2;
-      const startY = this.screenHeight - this.safeArea.bottom - buttonSize - margin * 2;
+      const startX = this.screenWidth - this.safeArea.right - (count * spacing) + spacing - margin * 2;  // 起始X坐标
+      const startY = this.screenHeight - this.safeArea.bottom - buttonSize - margin * 2;  // 起始Y坐标
 
       for (let i = 0; i < count; i++) {
         positions.push({
-          x: startX + (i * spacing),
-          y: startY
+          x: startX + (i * spacing),  // X坐标递增
+          y: startY  // 所有按钮Y坐标相同
         });
       }
     }
 
-    return positions;
+    return positions;  // 返回位置数组
   }
 
-  // 获取状态栏的最佳位置
+  /**
+   * 获取状态栏的最佳位置
+   * @returns 状态栏位置坐标
+   */
   public getStatsBarPosition(): { x: number; y: number } {
     return {
-      x: this.safeArea.left + 10,
-      y: this.safeArea.top + 10
+      x: this.safeArea.left + 10,  // 安全区域左边界 + 10像素
+      y: this.safeArea.top + 10    // 安全区域上边界 + 10像素
     };
   }
 
-  // 检查是否是移动设备
+  /**
+   * 检查是否是移动设备
+   * @returns 是否为移动设备
+   */
   public getIsMobile(): boolean {
-    return this.isMobile;
+    return this.isMobile;  // 返回移动设备标识
   }
 
-  // 检查是否是竖屏
+  /**
+   * 检查是否是竖屏
+   * @returns 是否为竖屏模式
+   */
   public getIsPortrait(): boolean {
-    return this.isPortrait;
+    return this.isPortrait;  // 返回竖屏标识
   }
 
-  // 获取安全区域信息
+  /**
+   * 获取安全区域信息
+   * @returns 安全区域信息的副本
+   */
   public getSafeArea(): SafeArea {
-    return { ...this.safeArea };
+    return { ...this.safeArea };  // 返回安全区域的副本
   }
 
-  // 获取屏幕信息
+  /**
+   * 获取屏幕信息
+   * @returns 包含屏幕尺寸、方向和安全区域的完整信息
+   */
   public getScreenInfo() {
     return {
-      width: this.screenWidth,
-      height: this.screenHeight,
-      isPortrait: this.isPortrait,
-      isMobile: this.isMobile,
-      safeArea: this.getSafeArea()
+      width: this.screenWidth,      // 屏幕宽度
+      height: this.screenHeight,    // 屏幕高度
+      isPortrait: this.isPortrait,  // 是否竖屏
+      isMobile: this.isMobile,      // 是否移动设备
+      safeArea: this.getSafeArea()  // 安全区域信息
     };
   }
 
-  // 清理资源
+  /**
+   * 清理资源
+   * 清空所有UI元素
+   */
   public destroy() {
-    this.elements.clear();
+    this.elements.clear();  // 清空元素映射
   }
 }

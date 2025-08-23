@@ -1,14 +1,19 @@
 import * as Phaser from 'phaser';
 
+/**
+ * 宝箱类
+ * 继承自Phaser物理精灵，管理宝箱的交互和奖励系统
+ * 包括视觉效果、交互提示、奖励发放等功能
+ */
 export class Chest extends Phaser.Physics.Arcade.Sprite {
-  private treasure: string;
-  private isOpened: boolean = false;
-  private interactionCooldown: boolean = false;
-  private glow: Phaser.GameObjects.Graphics | null = null;
-  private indicator: Phaser.GameObjects.Text | null = null;
-  private interactionPrompt: Phaser.GameObjects.Container | null = null;
-  private rangeIndicator: Phaser.GameObjects.Graphics | null = null;
-  private isPlayerNearby: boolean = false;
+  private treasure: string;                                             // 宝箱内的宝藏内容
+  private isOpened: boolean = false;                                    // 是否已开启
+  private interactionCooldown: boolean = false;                        // 交互冷却状态
+  private glow: Phaser.GameObjects.Graphics | null = null;             // 发光效果
+  private indicator: Phaser.GameObjects.Text | null = null;            // 宝藏图标指示器
+  private interactionPrompt: Phaser.GameObjects.Container | null = null; // 交互提示容器
+  private rangeIndicator: Phaser.GameObjects.Graphics | null = null;   // 交互范围指示器
+  private isPlayerNearby: boolean = false;                             // 玩家是否在附近
 
   constructor(scene: Phaser.Scene, x: number, y: number, treasure: string) {
     super(scene, x, y, 'chest');
@@ -111,11 +116,11 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
     this.rangeIndicator = this.scene.add.graphics();
     this.rangeIndicator.setDepth(3);
     this.rangeIndicator.setVisible(false);
-    
+
     // Draw range circle
     this.rangeIndicator.lineStyle(2, 0x4ecdc4, 0.6);
     this.rangeIndicator.strokeCircle(this.x, this.y, 60);
-    
+
     // Add subtle pulsing animation
     this.scene.tweens.add({
       targets: this.rangeIndicator,
@@ -127,43 +132,47 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
     });
   }
 
+  /**
+   * 宝箱交互
+   * 处理玩家与宝箱的交互，发放奖励并播放效果
+   */
   public interact() {
-    if (this.isOpened || this.interactionCooldown) return;
+    if (this.isOpened || this.interactionCooldown) return;  // 已开启或冷却中
 
-    this.interactionCooldown = true;
+    this.interactionCooldown = true;                        // 设置交互冷却
 
-    // Hide interaction prompt immediately
+    // 立即隐藏交互提示
     this.showInteractionPrompt(false);
 
-    // Open chest animation
+    // 播放开箱动画
     this.openChest();
 
-    // Show treasure notification with enhanced feedback
+    // 显示宝藏获得通知
     (this.scene as any).showNotification(`✨ 获得了: ${this.treasure}! ✨`);
 
-    // Give reward to player
+    // 给玩家发放奖励
     const gameScene = this.scene;
     if ((gameScene as any).player) {
-      (gameScene as any).player.gainExperience(25);
+      (gameScene as any).player.gainExperience(25);         // 获得经验值
 
-      // Give specific rewards based on treasure type with better feedback
+      // 根据宝藏类型发放特定奖励
       if (this.treasure.includes('金币')) {
-        // Give gold (could implement inventory system)
-        this.createRewardEffect(0xffd700); // Gold particles
+        // 发放金币（可扩展背包系统）
+        this.createRewardEffect(0xffd700);                  // 金色粒子效果
       } else if (this.treasure.includes('生命药水')) {
         const healAmount = 30;
-        (gameScene as any).player.heal(healAmount);
-        this.createRewardEffect(0x00ff00); // Green particles for health
+        (gameScene as any).player.heal(healAmount);         // 恢复生命值
+        this.createRewardEffect(0x00ff00);                  // 绿色粒子效果
         (this.scene as any).showNotification(`❤️ 恢复了 ${healAmount} 点生命值!`);
       } else if (this.treasure.includes('魔法')) {
         const manaAmount = 20;
-        (gameScene as any).player.restoreMana(manaAmount);
-        this.createRewardEffect(0x0000ff); // Blue particles for mana
+        (gameScene as any).player.restoreMana(manaAmount);  // 恢复魔法值
+        this.createRewardEffect(0x0000ff);                  // 蓝色粒子效果
         (this.scene as any).showNotification(`💙 恢复了 ${manaAmount} 点魔法值!`);
       }
     }
 
-    // Reset cooldown
+    // 重置冷却时间
     this.scene.time.delayedCall(1000, () => {
       this.interactionCooldown = false;
     });
@@ -259,14 +268,14 @@ export class Chest extends Phaser.Physics.Arcade.Sprite {
     const wasNearby = this.isPlayerNearby;
     const isInRange = distance < 60;
     const isVeryClose = distance < 40;
-    
+
     this.isPlayerNearby = isInRange;
 
     // Show/hide interaction elements based on proximity
     if (isInRange && !wasNearby && !this.isOpened) {
       this.showIndicator(true);
       this.showRangeIndicator(true);
-      
+
       if (isVeryClose) {
         this.showInteractionPrompt(true);
       }

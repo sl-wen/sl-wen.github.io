@@ -1,12 +1,15 @@
 import * as Phaser from 'phaser';
 
-// 扩展游戏场景接口 - 为Phaser场景添加自定义游戏方法
+/**
+ * 扩展游戏场景接口
+ * 为Phaser场景添加自定义游戏方法
+ */
 export interface GameSceneInterface extends Phaser.Scene {
-  showDialogue?: (text: string) => void; // 显示对话框的方法
-  showNotification?: (text: string) => void; // 显示通知消息的方法
-  player?: any; // 玩家对象引用
-  showInventory?: () => void; // 显示背包界面的方法
-  showCookingInterface?: () => void; // 显示烹饪界面的方法
+  showDialogue?: (text: string) => void;        // 显示对话框的方法
+  showNotification?: (text: string) => void;    // 显示通知消息的方法
+  player?: any;                                 // 玩家对象引用
+  showInventory?: () => void;                   // 显示背包界面的方法
+  showCookingInterface?: () => void;            // 显示烹饪界面的方法
 }
 
 // 扩展精灵接口 - 为Phaser精灵添加自定义属性

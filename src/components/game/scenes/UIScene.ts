@@ -2,59 +2,68 @@ import * as Phaser from 'phaser';
 import { CatStats, InventoryItem, Recipe } from '../types/GameTypes';
 import { UILayoutManager } from '../UILayoutManager';
 
+/**
+ * UI场景类
+ * 负责管理游戏的所有用户界面元素
+ * 包括对话框、通知、状态栏、背包界面、烹饪界面等
+ */
 export class UIScene extends Phaser.Scene {
   // UI布局管理器
   private uiLayoutManager!: UILayoutManager;
 
   // UI元素
-  private dialogueBox!: Phaser.GameObjects.Container;
-  private dialogueText!: Phaser.GameObjects.Text;
-  private notificationText!: Phaser.GameObjects.Text;
-  private healthBar!: Phaser.GameObjects.Graphics;
-  private energyBar!: Phaser.GameObjects.Graphics;
-  private happinessBar!: Phaser.GameObjects.Graphics;
-  private healthText!: Phaser.GameObjects.Text;
-  private energyText!: Phaser.GameObjects.Text;
-  private happinessText!: Phaser.GameObjects.Text;
-  private levelText!: Phaser.GameObjects.Text;
-  private inventoryContainer!: Phaser.GameObjects.Container;
-  private cookingContainer!: Phaser.GameObjects.Container;
-  private currentToolText!: Phaser.GameObjects.Text;
-  private isInventoryOpen: boolean = false;
-  private isCookingOpen: boolean = false;
-  private interactionIndicators!: Phaser.GameObjects.Container;
-  private proximityIndicator!: Phaser.GameObjects.Graphics;
-  private characterPortrait!: Phaser.GameObjects.Text;
+  private dialogueBox!: Phaser.GameObjects.Container;      // 对话框容器
+  private dialogueText!: Phaser.GameObjects.Text;          // 对话框文本
+  private notificationText!: Phaser.GameObjects.Text;      // 通知文本
+  private healthBar!: Phaser.GameObjects.Graphics;         // 生命值条
+  private energyBar!: Phaser.GameObjects.Graphics;         // 体力值条
+  private happinessBar!: Phaser.GameObjects.Graphics;      // 快乐值条
+  private healthText!: Phaser.GameObjects.Text;            // 生命值文本
+  private energyText!: Phaser.GameObjects.Text;            // 体力值文本
+  private happinessText!: Phaser.GameObjects.Text;         // 快乐值文本
+  private levelText!: Phaser.GameObjects.Text;             // 等级文本
+  private inventoryContainer!: Phaser.GameObjects.Container;  // 背包容器
+  private cookingContainer!: Phaser.GameObjects.Container;    // 烹饪界面容器
+  private currentToolText!: Phaser.GameObjects.Text;          // 当前工具文本
+  private isInventoryOpen: boolean = false;                   // 背包是否打开
+  private isCookingOpen: boolean = false;                     // 烹饪界面是否打开
+  private interactionIndicators!: Phaser.GameObjects.Container;  // 交互指示器容器
+  private proximityIndicator!: Phaser.GameObjects.Graphics;      // 接近指示器
+  private characterPortrait!: Phaser.GameObjects.Text;           // 角色肖像
 
   // 状态栏容器
-  private statsContainer!: Phaser.GameObjects.Container;
+  private statsContainer!: Phaser.GameObjects.Container;         // 统计信息容器
 
   constructor() {
     super({ key: 'UIScene' });
   }
 
+  /**
+   * 场景创建方法
+   * 初始化所有UI元素和事件监听器
+   */
   create() {
     // 初始化UI布局管理器
     this.uiLayoutManager = new UILayoutManager(this);
 
-    // Create UI elements with responsive design
-    this.createDialogueBox();
-    this.createNotificationArea();
-    this.createResponsiveCatStats();
-    this.createToolIndicator();
-    this.createInventoryInterface();
-    this.createCookingInterface();
-    this.createInteractionIndicators();
+    // 创建响应式设计的UI元素
+    this.createDialogueBox();              // 创建对话框
+    this.createNotificationArea();         // 创建通知区域
+    this.createResponsiveCatStats();       // 创建响应式状态栏
+    this.createToolIndicator();            // 创建工具指示器
+    this.createInventoryInterface();       // 创建背包界面
+    this.createCookingInterface();         // 创建烹饪界面
+    this.createInteractionIndicators();    // 创建交互指示器
 
-    // Listen for events from GameScene
-    this.events.on('show-dialogue', this.showDialogue, this);
-    this.events.on('show-notification', this.showNotification, this);
-    this.events.on('cat-stats-changed', this.onCatStatsChanged, this);
-    this.events.on('toggle-inventory', this.toggleInventory, this);
-    this.events.on('open-cooking', this.openCookingInterface, this);
-    this.events.on('tool-selected', this.onToolSelected, this);
-    this.events.on('show-interaction-hint', this.showInteractionHint, this);
-    this.events.on('highlight-interactable', this.highlightInteractable, this);
+    // 监听来自GameScene的事件
+    this.events.on('show-dialogue', this.showDialogue, this);           // 显示对话框
+    this.events.on('show-notification', this.showNotification, this);   // 显示通知
+    this.events.on('cat-stats-changed', this.onCatStatsChanged, this);  // 小猫状态变化
+    this.events.on('toggle-inventory', this.toggleInventory, this);     // 切换背包
+    this.events.on('open-cooking', this.openCookingInterface, this);    // 打开烹饪界面
+    this.events.on('tool-selected', this.onToolSelected, this);         // 工具选择
+    this.events.on('show-interaction-hint', this.showInteractionHint, this);  // 显示交互提示
+    this.events.on('highlight-interactable', this.highlightInteractable, this); // 高亮可交互对象
   }
 
   private createDialogueBox() {

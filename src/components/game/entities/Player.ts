@@ -1,32 +1,42 @@
 import * as Phaser from 'phaser';
-import { CatStats, ToolType, InventoryItem } from '../types/GameTypes';
+import { CatStats, InventoryItem, ToolType } from '../types/GameTypes';
 
-// 小猫玩家类 - 继承自Phaser物理精灵，实现可控制的农场小猫角色
+/**
+ * 小猫玩家类
+ * 继承自Phaser物理精灵，实现可控制的农场小猫角色
+ * 包含移动、交互、属性管理等功能
+ */
 export class Cat extends Phaser.Physics.Arcade.Sprite {
-  private direction: string = 'down'; // 小猫当前朝向（up, down, left, right）
-  private stats: CatStats; // 小猫的属性数值（血量、体力、快乐值等）
-  private currentTool: ToolType | null = null; // 当前选中的工具
-  private inventory: InventoryItem[] = []; // 背包物品列表
-  public isActing: boolean = false; // 是否正在执行动作（防止动作重叠）
+  private direction: string = 'down';           // 小猫当前朝向（up, down, left, right）
+  private stats: CatStats;                      // 小猫的属性数值（血量、体力、快乐值等）
+  private currentTool: ToolType | null = null;  // 当前选中的工具
+  private inventory: InventoryItem[] = [];      // 背包物品列表
+  public isActing: boolean = false;             // 是否正在执行动作（防止动作重叠）
 
-  // 构造函数 - 创建小猫实例并初始化所有属性
+  /**
+ * 构造函数
+ * 创建小猫实例并初始化所有属性
+ * @param scene 游戏场景
+ * @param x 初始X坐标
+ * @param y 初始Y坐标
+ */
   constructor(scene: Phaser.Scene, x: number, y: number) {
     // 确定使用的纹理
     let textureKey = 'cat_walk';
-    
+
     // 检查纹理是否存在，如果不存在则创建fallback
     if (!scene.textures.exists('cat_walk')) {
       console.warn('cat_walk texture not found, creating fallback');
-      // 创建一个简单的fallback纹理
+      // 创建一个简单的fallback纹理（橙色方块）
       scene.add.graphics()
         .fillStyle(0xffa500) // 橙色
         .fillRect(0, 0, 16, 16)
         .generateTexture('cat_fallback', 16, 16)
         .destroy();
-      
+
       textureKey = 'cat_fallback';
     }
-    
+
     // 调用父类构造函数
     super(scene, x, y, textureKey, 0);
 
@@ -58,7 +68,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     try {
       this.createAnimations();
       console.log('Cat animations created successfully');
-      
+
       // 开始播放默认的静止动画
       if (this.anims.exists('cat_idle_down')) {
         this.play('cat_idle_down');
@@ -121,13 +131,13 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   // 创建小猫的所有动画 - 包括行走、静止和动作动画
   private createAnimations() {
     const anims = this.scene.anims;
-    
+
     // 检查纹理是否存在
     if (!this.scene.textures.exists('cat_walk')) {
       console.warn('cat_walk texture not found, skipping animations');
       return;
     }
-    
+
     // 各个方向的行走动画
     // 向下行走动画
     if (!anims.exists('cat_walk_down')) {
@@ -138,7 +148,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
         repeat: -1 // 无限循环
       });
     }
-    
+
     // 向左行走动画
     if (!anims.exists('cat_walk_left')) {
       anims.create({
@@ -148,7 +158,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
         repeat: -1
       });
     }
-    
+
     // 向右行走动画
     if (!anims.exists('cat_walk_right')) {
       anims.create({
@@ -158,7 +168,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
         repeat: -1
       });
     }
-    
+
     // 向上行走动画
     if (!anims.exists('cat_walk_up')) {
       anims.create({
@@ -168,7 +178,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
         repeat: -1
       });
     }
-    
+
     // 各个方向的静止动画（使用第一帧作为静止状态）
     if (!anims.exists('cat_idle_down')) {
       anims.create({
@@ -177,7 +187,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
         frameRate: 1
       });
     }
-    
+
     if (!anims.exists('cat_idle_left')) {
       anims.create({
         key: 'cat_idle_left',
@@ -185,7 +195,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
         frameRate: 1
       });
     }
-    
+
     if (!anims.exists('cat_idle_right')) {
       anims.create({
         key: 'cat_idle_right',
@@ -193,7 +203,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
         frameRate: 1
       });
     }
-    
+
     if (!anims.exists('cat_idle_up')) {
       anims.create({
         key: 'cat_idle_up',
@@ -228,10 +238,10 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   // 设置小猫朝向并播放相应动画
   public setDirection(direction: string) {
     this.direction = direction;
-    
+
     // 根据速度判断小猫是否在移动
     const isMoving = Math.abs(this.body!.velocity.x) > 10 || Math.abs(this.body!.velocity.y) > 10;
-    
+
     if (this.isActing) {
       return; // 正在执行动作时不改变动画
     }
@@ -247,12 +257,12 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   // 移动小猫 - 设置速度并更新朝向
   public move(x: number, y: number) {
     if (this.isActing) return; // 执行动作时无法移动
-    
+
     const baseSpeed = 120;
     // 根据输入强度调整速度（支持摇杆的精确控制）
     const inputStrength = Math.sqrt(x * x + y * y);
     const adjustedSpeed = baseSpeed * Math.min(inputStrength, 1);
-    
+
     this.setVelocity(x * adjustedSpeed, y * adjustedSpeed);
 
     // 根据移动方向确定朝向
@@ -308,10 +318,10 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     }
 
     this.play(animationKey);
-    
+
     // 添加动作特效
     this.createInteractionEffect();
-    
+
     // 动作完成后返回静止状态
     this.scene.time.delayedCall(duration, () => {
       this.isActing = false;
@@ -348,7 +358,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   public gainExperience(amount: number) {
     this.stats.experience += amount;
     const expForNextLevel = this.stats.level * 100; // 升级所需经验 = 等级 × 100
-    
+
     if (this.stats.experience >= expForNextLevel) {
       this.levelUp(); // 经验足够时升级
     }
@@ -434,7 +444,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
         speed: { min: 10, max: 30 },
         gravityY: 50
       });
-      
+
       this.scene.time.delayedCall(300, () => {
         particles.destroy();
       });
@@ -447,7 +457,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     const ring = this.scene.add.circle(this.x, this.y, 5, 0xffffff, 0);
     ring.setStrokeStyle(3, 0x74b9ff, 0.8);
     ring.setDepth(15);
-    
+
     this.scene.tweens.add({
       targets: ring,
       scaleX: 3,
@@ -461,13 +471,13 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     // 添加上升的光点
     for (let i = 0; i < 3; i++) {
       const sparkle = this.scene.add.text(
-        this.x + (Math.random() - 0.5) * 30, 
-        this.y - 10, 
-        '✨', 
+        this.x + (Math.random() - 0.5) * 30,
+        this.y - 10,
+        '✨',
         { fontSize: '12px' }
       );
       sparkle.setDepth(15);
-      
+
       this.scene.tweens.add({
         targets: sparkle,
         y: sparkle.y - 40,

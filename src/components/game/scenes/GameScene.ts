@@ -3,74 +3,99 @@ import { CookingStation } from '../entities/CookingStation';
 import { FarmPlot } from '../entities/FarmPlot';
 import { InventoryManager } from '../entities/InventoryManager';
 import { Cat } from '../entities/Player';
+import { FarmLayoutManager } from '../FarmLayoutManager';
 import { CropType, ToolType } from '../types/GameTypes';
 import { UILayoutManager } from '../UILayoutManager';
 import { VirtualJoystick } from '../VirtualJoystick';
 
+/**
+ * 游戏主场景类
+ * 负责管理整个游戏的核心逻辑，包括玩家控制、农场交互、UI管理等
+ */
 export class GameScene extends Phaser.Scene {
-  private cat!: Cat;
-  private farmPlots!: Phaser.GameObjects.Group;
-  private cookingStations!: Phaser.GameObjects.Group;
-  private decorations!: Phaser.GameObjects.Group;
-  private inventoryManager!: InventoryManager;
+  // 游戏实体
+  private cat!: Cat;                                    // 玩家角色（小猫）
+  private farmPlots!: Phaser.GameObjects.Group;        // 农田地块组
+  private cookingStations!: Phaser.GameObjects.Group;  // 烹饪站组
+  private decorations!: Phaser.GameObjects.Group;      // 装饰物组
+  private inventoryManager!: InventoryManager;         // 背包管理器
 
-  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private wasdKeys!: any;
-  private interactKey!: Phaser.Input.Keyboard.Key;
-  private inventoryKey!: Phaser.Input.Keyboard.Key;
-  private cookingKey!: Phaser.Input.Keyboard.Key;
-  // 新的控制系统
-  private virtualJoystick!: VirtualJoystick;
-  private uiLayoutManager!: UILayoutManager;
-  private actionButtons: Phaser.GameObjects.Container[] = [];
+  // 键盘控制系统
+  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;  // 方向键
+  private wasdKeys!: any;                                    // WASD键
+  private interactKey!: Phaser.Input.Keyboard.Key;           // 交互键（空格）
+  private inventoryKey!: Phaser.Input.Keyboard.Key;          // 背包键（I）
+  private cookingKey!: Phaser.Input.Keyboard.Key;            // 烹饪键（C）
 
-  // Game state properties
-  private currentTool: ToolType | null = null;
-  private toolTooltip: Phaser.GameObjects.Text | null = null;
-  private hapticEnabled: boolean = false;
-  private particlePool: Phaser.GameObjects.Particles.ParticleEmitter[] = []; // Particle effect pool for performance
-  private performanceMode: 'high' | 'medium' | 'low' = 'high'; // Performance mode
-  private frameCounter: number = 0;
-  private lastFPSCheck: number = 0;
-  private lastTapTime: number = 0; // For double-tap emergency reset
-  private emergencyResetEnabled: boolean = true;
-  private orientationHandlers: any = null; // Store orientation change handlers
+  // 移动端控制系统
+  private virtualJoystick!: VirtualJoystick;                // 虚拟摇杆
+  private uiLayoutManager!: UILayoutManager;                 // UI布局管理器
+  private farmLayoutManager!: FarmLayoutManager;             // 农场布局管理器
+  private actionButtons: Phaser.GameObjects.Container[] = []; // 动作按钮数组
 
+  // 游戏状态属性
+  private currentTool: ToolType | null = null;                                    // 当前选择的工具
+  private toolTooltip: Phaser.GameObjects.Text | null = null;                    // 工具提示文本
+  private hapticEnabled: boolean = false;                                        // 触觉反馈开关
+  private particlePool: Phaser.GameObjects.Particles.ParticleEmitter[] = [];     // 粒子效果池（性能优化）
+  private performanceMode: 'high' | 'medium' | 'low' = 'high';                   // 性能模式
+  private frameCounter: number = 0;                                              // 帧计数器
+  private lastFPSCheck: number = 0;                                              // 上次FPS检查时间
+  private lastTapTime: number = 0;                                               // 上次点击时间（双击重置）
+  private emergencyResetEnabled: boolean = true;                                 // 紧急重置开关
+  private orientationHandlers: any = null;                                       // 屏幕方向变化处理器
+
+  /**
+   * 构造函数
+   */
   constructor() {
     super({ key: 'GameScene' });
   }
 
+  /**
+   * 场景创建方法 - 游戏初始化入口
+   * 负责创建所有游戏元素和设置游戏系统
+   */
   create() {
     console.log('GameScene create() called');
 
     try {
-      // Initialize inventory system
+      // 初始化背包系统
       console.log('Initializing inventory system...');
       this.inventoryManager = new InventoryManager();
-      this.inventoryManager.addTestItems(); // Add some test items
+      this.inventoryManager.addTestItems(); // 添加测试物品
       console.log('Inventory system initialized');
 
-      // Create cat player
+      // 初始化UI布局管理器（优先初始化）
+      console.log('Initializing UI layout manager...');
+      this.uiLayoutManager = new UILayoutManager(this);
+      console.log('UI layout manager initialized');
+
+      // 初始化农场布局管理器
+      console.log('Initializing farm layout manager...');
+      this.farmLayoutManager = new FarmLayoutManager(this);
+      console.log('Farm layout manager initialized');
+
+      // 创建玩家角色（小猫）
       console.log('Creating cat player...');
       this.cat = new Cat(this, 200, 200);
       console.log('Cat player created successfully');
 
-      // Create farm plots group
+      // 创建农田地块组
       this.farmPlots = this.add.group();
       this.createFarmPlots();
 
-      // Create cooking stations group
+      // 创建烹饪站组
       this.cookingStations = this.add.group();
       this.createCookingStations();
 
-      // Create decorations group
-      this.decorations = this.add.group();
-      this.createFarmDecorations();
+      // 使用新的布局管理器创建装饰物组
+      this.decorations = this.farmLayoutManager.createFarmLayout();
 
-      // Setup input (includes platform detection)
+      // 设置输入控制（包含平台检测）
       this.setupInput();
 
-      // Setup mobile controls only for mobile platforms
+      // 仅在移动端平台设置移动端控制
       const screenInfo = this.uiLayoutManager.getScreenInfo();
       if (screenInfo.isMobile) {
         try {
@@ -82,32 +107,32 @@ export class GameScene extends Phaser.Scene {
         console.log('Desktop platform detected, skipping mobile controls setup');
       }
 
-      // Setup camera with improved responsive behavior
+      // 设置相机（改进的响应式行为）
       this.setupCamera();
 
-      // Add orientation change handling
+      // 添加屏幕方向变化处理
       this.setupOrientationHandling();
 
-      // Setup collisions
+      // 设置碰撞检测
       this.setupCollisions();
 
-      // Setup event listeners
+      // 设置事件监听器
       this.setupEventListeners();
 
-      // Add atmospheric effects
+      // 添加氛围效果
       this.createAtmosphere();
 
-      // Add enhanced ambient effects
+      // 添加增强的环境效果
       // 环境效果已移除，使用简化的性能优化
 
-      // Setup performance monitoring
+      // 设置性能监控
       this.setupPerformanceMonitoring();
 
       console.log('GameScene initialization completed successfully');
     } catch (error) {
       console.error('GameScene initialization failed:', error);
 
-      // Create a minimal fallback scene
+      // 创建最小化的备用场景
       this.add.text(50, 50, '游戏初始化失败', { fontSize: '24px', color: '#ff0000' });
       this.add.text(50, 80, '请刷新页面重试', { fontSize: '16px', color: '#ffffff' });
       this.add.text(50, 110, `错误: ${error}`, { fontSize: '12px', color: '#ffff00' });
@@ -116,68 +141,36 @@ export class GameScene extends Phaser.Scene {
 
 
 
+  /**
+   * 创建农田地块
+   * 使用农场布局管理器获取位置并创建农田地块
+   */
   private createFarmPlots() {
-    // 重新设计农田布局 - 放置在土地区域（下方40%区域）
-    const screenWidth = this.cameras.main.width;
-    const screenHeight = this.cameras.main.height;
+    // 使用新的农场布局管理器来获取农田位置
+    const plotPositions = this.farmLayoutManager.getFarmPlotPositions();
 
-    // 土地区域 - 下方40%区域
-    const farmArea = {
-      x: screenWidth * 0.1,
-      y: screenHeight * 0.5,
-      width: screenWidth * 0.8,
-      height: screenHeight * 0.4
-    };
+    console.log(`Creating ${plotPositions.length} farm plots using new layout manager`);
 
-    const plotSpacing = 60;
-
-    // 在土地区域内创建农田网格
-    const startX = farmArea.x + 50;
-    const startY = farmArea.y + 50;
-    const endX = farmArea.x + farmArea.width - 50;
-    const endY = farmArea.y + farmArea.height - 50;
-
-    // 计算可以放置的农田数量
-    const cols = Math.floor((endX - startX) / plotSpacing);
-    const rows = Math.floor((endY - startY) / plotSpacing);
-
-    console.log(`Creating farm plots: ${cols} cols x ${rows} rows in farm area`);
-
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        const x = startX + (col * plotSpacing);
-        const y = startY + (row * plotSpacing);
-
-        // 确保农田在土地区域内
-        if (x >= startX && x <= endX && y >= startY && y <= endY) {
-          const plot = new FarmPlot(this, x, y);
-          this.farmPlots.add(plot);
-        }
-      }
-    }
+    // 遍历位置数组，在每个位置创建农田地块
+    plotPositions.forEach(pos => {
+      const plot = new FarmPlot(this, pos.x, pos.y);
+      this.farmPlots.add(plot);
+    });
 
     console.log(`Created ${this.farmPlots.children.size} farm plots`);
   }
 
+  /**
+   * 创建烹饪站
+   * 使用农场布局管理器获取位置并创建烹饪站
+   */
   private createCookingStations() {
-    // 重新设计烹饪站位置 - 放置在房子区域附近
-    const screenWidth = this.cameras.main.width;
-    const screenHeight = this.cameras.main.height;
+    // 使用新的农场布局管理器来获取烹饪站位置
+    const stationPositions = this.farmLayoutManager.getCookingStationPositions();
 
-    // 房子区域附近的位置
-    const stationPositions = [
-      // 房子区域内的烹饪站
-      {
-        x: screenWidth * 0.25,
-        y: screenHeight * 0.25
-      },
-      // 道路附近的烹饪站
-      {
-        x: screenWidth * 0.45,
-        y: screenHeight * 0.3
-      }
-    ];
+    console.log(`Creating ${stationPositions.length} cooking stations using new layout manager`);
 
+    // 遍历位置数组，在每个位置创建烹饪站
     stationPositions.forEach((pos, index) => {
       const station = new CookingStation(this, pos.x, pos.y);
       this.cookingStations.add(station);
@@ -185,303 +178,83 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  // Helper function to validate plot positions
+  /**
+ * 验证农田位置是否有效的辅助函数
+ * 确保农田不会与UI元素重叠
+ */
   private isValidPlotPosition(x: number, y: number, screenWidth: number, screenHeight: number): boolean {
-    const margin = 100; // Safety margin from UI elements
+    const margin = 100; // 与UI元素的安全边距
 
-    // Check distance from likely joystick position (bottom-left)
+    // 检查与摇杆区域的距离（左下角）
     const joystickArea = { x: 0, y: screenHeight - 150, width: 200, height: 150 };
     if (x < joystickArea.x + joystickArea.width && y > joystickArea.y) {
       return false;
     }
 
-    // Check distance from likely action button area (bottom-right)
+    // 检查与动作按钮区域的距离（右下角）
     const buttonArea = { x: screenWidth - 200, y: screenHeight - 200, width: 200, height: 200 };
     if (x > buttonArea.x && y > buttonArea.y) {
       return false;
     }
 
-    // Ensure minimum distance from screen edges
+    // 确保与屏幕边缘的最小距离
     return x > margin && y > margin &&
       x < screenWidth - margin && y < screenHeight - margin;
   }
 
-  private createFarmDecorations() {
-    const screenWidth = this.cameras.main.width;
-    const screenHeight = this.cameras.main.height;
 
-    // 计算各个区域的位置和大小
 
-    // 房子区域 - 左上角 20%
-    const houseArea = {
-      x: screenWidth * 0.1,
-      y: screenHeight * 0.1,
-      width: screenWidth * 0.3,
-      height: screenHeight * 0.3
-    };
 
-    // 池塘区域 - 右上角 20%
-    const pondArea = {
-      x: screenWidth * 0.6,
-      y: screenHeight * 0.1,
-      width: screenWidth * 0.3,
-      height: screenHeight * 0.3
-    };
 
-    // 土地区域 - 下方 40%
-    const farmArea = {
-      x: screenWidth * 0.1,
-      y: screenHeight * 0.5,
-      width: screenWidth * 0.8,
-      height: screenHeight * 0.4
-    };
 
-    // 道路区域 - 连接各个区域 20%
-    const roadArea = {
-      x: screenWidth * 0.4,
-      y: screenHeight * 0.1,
-      width: screenWidth * 0.2,
-      height: screenHeight * 0.8
-    };
 
-    // 创建房子区域
-    this.createHouseArea(houseArea);
-
-    // 创建池塘区域
-    this.createPondArea(pondArea);
-
-    // 创建道路系统
-    this.createRoadSystem(roadArea);
-
-    // 创建农场区域装饰
-    this.createFarmAreaDecorations(farmArea);
-
-    // 添加一些装饰性树木和花朵
-    this.createDecorativeElements();
-  }
-
-  private createHouseArea(area: { x: number; y: number; width: number; height: number }) {
-    // 主房子
-    const house = this.add.sprite(area.x + area.width * 0.5, area.y + area.height * 0.7, 'farm_house');
-    house.setOrigin(0.5, 1);
-    house.setDepth(8);
-    house.setScale(1.2);
-    this.decorations.add(house);
-
-    // 房子前的花园
-    const gardenPositions = [
-      { x: area.x + area.width * 0.3, y: area.y + area.height * 0.8 },
-      { x: area.x + area.width * 0.7, y: area.y + area.height * 0.8 },
-      { x: area.x + area.width * 0.5, y: area.y + area.height * 0.9 }
-    ];
-
-    gardenPositions.forEach(pos => {
-      const flower = this.add.sprite(pos.x, pos.y, 'farm_flower');
-      flower.setOrigin(0.5, 1);
-      flower.setDepth(3);
-      this.decorations.add(flower);
-    });
-
-    // 房子旁边的小仓库
-    const barn = this.add.sprite(area.x + area.width * 0.8, area.y + area.height * 0.6, 'farm_barn');
-    barn.setOrigin(0.5, 1);
-    barn.setDepth(8);
-    barn.setScale(0.8);
-    this.decorations.add(barn);
-  }
-
-  private createPondArea(area: { x: number; y: number; width: number; height: number }) {
-    // 主池塘
-    const pond = this.add.circle(area.x + area.width * 0.5, area.y + area.height * 0.5, area.width * 0.3, 0x4a90e2, 0.6);
-    pond.setStrokeStyle(3, 0x74b9ff, 0.8);
-    pond.setDepth(5);
-    this.decorations.add(pond);
-
-    // 池塘边的石头
-    const stonePositions = [
-      { x: area.x + area.width * 0.3, y: area.y + area.height * 0.4 },
-      { x: area.x + area.width * 0.7, y: area.y + area.height * 0.6 },
-      { x: area.x + area.width * 0.2, y: area.y + area.height * 0.7 }
-    ];
-
-    stonePositions.forEach(pos => {
-      const stone = this.add.circle(pos.x, pos.y, 8, 0x95a5a6, 0.8);
-      stone.setDepth(6);
-      this.decorations.add(stone);
-    });
-
-    // 池塘边的水井
-    const well = this.add.sprite(area.x + area.width * 0.8, area.y + area.height * 0.7, 'farm_well');
-    well.setOrigin(0.5, 1);
-    well.setDepth(6);
-    this.decorations.add(well);
-
-    // 添加水波纹动画效果
-    this.createPondAnimation(area.x + area.width * 0.5, area.y + area.height * 0.5);
-  }
-
-  private createPondAnimation(centerX: number, centerY: number) {
-    // 创建水波纹效果
-    this.time.addEvent({
-      delay: 2000,
-      callback: () => {
-        const ripple = this.add.circle(centerX, centerY, 5, 0x74b9ff, 0.3);
-        ripple.setDepth(4);
-
-        this.tweens.add({
-          targets: ripple,
-          scaleX: 3,
-          scaleY: 3,
-          alpha: 0,
-          duration: 1500,
-          ease: 'Power2',
-          onComplete: () => ripple.destroy()
-        });
-      },
-      loop: true
-    });
-  }
-
-  private createRoadSystem(area: { x: number; y: number; width: number; height: number }) {
-    // 主道路 - 垂直连接
-    const mainRoad = this.add.rectangle(area.x + area.width * 0.5, area.y + area.height * 0.5, area.width, area.height, 0x8b4513, 0.7);
-    mainRoad.setDepth(2);
-    this.decorations.add(mainRoad);
-
-    // 道路装饰线
-    const roadLines = [
-      { x: area.x + area.width * 0.3, y: area.y + area.height * 0.5 },
-      { x: area.x + area.width * 0.7, y: area.y + area.height * 0.5 }
-    ];
-
-    roadLines.forEach(pos => {
-      const line = this.add.rectangle(pos.x, pos.y, 4, area.height, 0xffffff, 0.8);
-      line.setDepth(3);
-      this.decorations.add(line);
-    });
-
-    // 道路交叉点
-    const crossroad = this.add.circle(area.x + area.width * 0.5, area.y + area.height * 0.5, 15, 0x8b4513, 0.8);
-    crossroad.setDepth(3);
-    this.decorations.add(crossroad);
-  }
-
-  private createFarmAreaDecorations(area: { x: number; y: number; width: number; height: number }) {
-    // 农场区域的装饰性元素
-
-    // 风车
-    const windmill = this.add.sprite(area.x + area.width * 0.8, area.y + area.height * 0.2, 'farm_windmill');
-    windmill.setOrigin(0.5, 1);
-    windmill.setDepth(9);
-    this.decorations.add(windmill);
-
-    // 创建风车动画
-    this.anims.create({
-      key: 'windmill_spin',
-      frames: this.anims.generateFrameNumbers('farm_windmill', { start: 0, end: 7 }),
-      frameRate: 4,
-      repeat: -1
-    });
-    windmill.play('windmill_spin');
-
-    // 农场边界围栏
-    const fencePositions = [
-      // 上边界
-      { x: area.x + area.width * 0.1, y: area.y + area.height * 0.1 },
-      { x: area.x + area.width * 0.3, y: area.y + area.height * 0.1 },
-      { x: area.x + area.width * 0.5, y: area.y + area.height * 0.1 },
-      { x: area.x + area.width * 0.7, y: area.y + area.height * 0.1 },
-      { x: area.x + area.width * 0.9, y: area.y + area.height * 0.1 },
-      // 下边界
-      { x: area.x + area.width * 0.1, y: area.y + area.height * 0.9 },
-      { x: area.x + area.width * 0.3, y: area.y + area.height * 0.9 },
-      { x: area.x + area.width * 0.5, y: area.y + area.height * 0.9 },
-      { x: area.x + area.width * 0.7, y: area.y + area.height * 0.9 },
-      { x: area.x + area.width * 0.9, y: area.y + area.height * 0.9 }
-    ];
-
-    fencePositions.forEach(pos => {
-      const fence = this.add.rectangle(pos.x, pos.y, 8, 20, 0x8b4513, 0.8);
-      fence.setDepth(4);
-      this.decorations.add(fence);
-    });
-  }
-
-  private createDecorativeElements() {
-    // 添加装饰性树木
-    const treePositions = [
-      { x: 80, y: 400 }, { x: 150, y: 500 }, { x: 600, y: 150 },
-      { x: 750, y: 350 }, { x: 200, y: 600 }, { x: 550, y: 600 }
-    ];
-
-    treePositions.forEach(pos => {
-      const tree = this.add.sprite(pos.x, pos.y, 'farm_tree');
-      tree.setOrigin(0.5, 1);
-      tree.setDepth(7);
-      this.decorations.add(tree);
-
-      // Add physics body for collision
-      this.physics.add.existing(tree, true);
-    });
-
-    // 添加装饰性花朵
-    const flowerPositions = [
-      { x: 120, y: 250 }, { x: 300, y: 180 }, { x: 500, y: 300 },
-      { x: 350, y: 450 }, { x: 680, y: 280 }
-    ];
-
-    flowerPositions.forEach(pos => {
-      const flower = this.add.sprite(pos.x, pos.y, 'farm_flower');
-      flower.setOrigin(0.5, 1);
-      flower.setDepth(3);
-      this.decorations.add(flower);
-    });
-  }
-
+  /**
+   * 设置输入控制系统
+   * 根据平台类型设置不同的控制方式（PC端键盘，移动端触摸）
+   */
   private setupInput() {
-    // 初始化UI布局管理器以获取平台信息
-    this.initializeUILayoutManager();
+    // UI布局管理器已经在create()中初始化，直接使用
     const screenInfo = this.uiLayoutManager.getScreenInfo();
 
     if (!screenInfo.isMobile) {
       // 桌面端：设置键盘控制
       console.log('Setting up keyboard controls for desktop');
-      this.cursors = this.input.keyboard!.createCursorKeys();
-      this.wasdKeys = this.input.keyboard!.addKeys('W,S,A,D');
-      this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-      this.inventoryKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.I);
-      this.cookingKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.C);
+      this.cursors = this.input.keyboard!.createCursorKeys();                    // 方向键
+      this.wasdKeys = this.input.keyboard!.addKeys('W,S,A,D');                   // WASD键
+      this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);  // 空格键（交互）
+      this.inventoryKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.I);     // I键（背包）
+      this.cookingKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.C);       // C键（烹饪）
 
-      // Emergency reset key (ESC)
+      // 紧急重置键（ESC）
       const emergencyResetKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
       emergencyResetKey.on('down', () => {
         console.log('Emergency reset triggered by ESC key');
         this.executeEmergencyReset('ESC键');
       });
 
-      // Tool selection keys
+      // 工具选择键（1-4）
       this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ONE).on('down', () => {
-        this.selectTool(ToolType.HOE);
+        this.selectTool(ToolType.HOE);           // 1键：锄头
       });
 
       this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.TWO).on('down', () => {
-        this.selectTool(ToolType.WATERING_CAN);
+        this.selectTool(ToolType.WATERING_CAN);  // 2键：水壶
       });
 
       this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.THREE).on('down', () => {
-        this.selectTool(ToolType.FERTILIZER);
+        this.selectTool(ToolType.FERTILIZER);    // 3键：肥料
       });
 
       this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.FOUR).on('down', () => {
-        this.selectTool(ToolType.SEEDS);
+        this.selectTool(ToolType.SEEDS);         // 4键：种子
       });
 
-      // Inventory key
+      // 背包键
       this.inventoryKey.on('down', () => {
         this.toggleInventory();
       });
 
-      // Cooking key
+      // 烹饪键
       this.cookingKey.on('down', () => {
         this.openCookingInterface();
       });
@@ -497,49 +270,54 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  // Execute emergency reset
+  /**
+   * 执行紧急重置
+   * 当游戏出现问题时，重置玩家位置和相机
+   */
   private executeEmergencyReset(reason: string) {
     console.log(`Emergency reset triggered: ${reason}`);
 
-    // Reset player position
+    // 重置玩家位置
     if (this.cat) {
       this.cat.setPosition(200, 200);
       this.cat.setVelocity(0, 0);
     }
 
-    // Reset camera
+    // 重置相机位置
     if (this.cameras.main) {
       this.cameras.main.setScroll(0, 0);
     }
 
-    // Show notification
+    // 显示通知
     this.showNotification('游戏已重置');
 
-    // Haptic feedback
+    // 触觉反馈
     if (this.hapticEnabled && navigator.vibrate) {
       navigator.vibrate([100, 50, 100]);
     }
   }
 
+  /**
+   * 设置移动端控制系统
+   * 初始化虚拟摇杆、动作按钮和触摸交互
+   */
   private setupMobileControls() {
-    // Import and initialize the new systems
-    this.initializeUILayoutManager();
-    this.initializeVirtualJoystick();
-    this.setupActionButtons();
+    // UI布局管理器已经在create()中初始化，直接使用
+    this.initializeVirtualJoystick();    // 初始化虚拟摇杆
+    this.setupActionButtons();           // 设置动作按钮
 
-    // Enhanced touch input for world interactions
+    // 增强的触摸输入处理（世界交互）
     this.setupWorldTouchHandling();
 
     console.log('New mobile control system initialized successfully');
   }
 
-  // 初始化UI布局管理器
-  private initializeUILayoutManager() {
-    this.uiLayoutManager = new UILayoutManager(this);
-    console.log('UI Layout Manager initialized');
-  }
 
-  // 初始化新的虚拟摇杆
+
+  /**
+   * 初始化虚拟摇杆
+   * 为移动设备创建虚拟摇杆控制
+   */
   private initializeVirtualJoystick() {
     const screenInfo = this.uiLayoutManager.getScreenInfo();
 
@@ -549,16 +327,18 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    // 根据屏幕方向调整摇杆大小
     const joystickRadius = screenInfo.isPortrait ? 60 : 70;
     const knobRadius = joystickRadius * 0.4;
     const position = this.uiLayoutManager.getJoystickPosition(joystickRadius);
 
+    // 创建虚拟摇杆实例
     this.virtualJoystick = new VirtualJoystick({
       x: position.x,
       y: position.y,
       radius: joystickRadius,
       knobRadius: knobRadius,
-      deadZone: 0.15,
+      deadZone: 0.15,  // 死区，防止误触
       scene: this
     });
 
@@ -713,463 +493,552 @@ export class GameScene extends Phaser.Scene {
     return icons[tool] || '🔧';
   }
 
-  // Enhanced interaction system with better feedback
+  /**
+   * 处理玩家交互
+   * 增强的交互系统，提供更好的反馈效果
+   */
+  /**
+   * 处理玩家交互
+   * 检测玩家周围的交互对象并执行相应的交互逻辑
+   */
   private handleInteraction() {
-    const interactionRange = 80;
-    const catPosition = { x: this.cat.x, y: this.cat.y };
-    let interactionFound = false;
+    const interactionRange = 80;  // 交互范围（像素）
+    const catPosition = { x: this.cat.x, y: this.cat.y };  // 小猫当前位置
+    let interactionFound = false;  // 是否找到交互对象
 
-    // Check for farm plot interactions
+    // 检查农田地块交互 - 优先处理农田
     this.farmPlots.children.entries.forEach((plot: any) => {
       const distance = Phaser.Math.Distance.Between(
         catPosition.x, catPosition.y, plot.x, plot.y
       );
 
       if (distance <= interactionRange) {
-        this.handleFarmPlotInteractionWithFeedback(plot);
-        interactionFound = true;
+        this.handleFarmPlotInteractionWithFeedback(plot);  // 处理农田交互并显示反馈
+        interactionFound = true;  // 标记找到交互对象
       }
     });
 
-    // Check for cooking station interactions
+    // 检查烹饪站交互（如果没有找到农田交互）
     if (!interactionFound) {
       this.cookingStations.children.entries.forEach((station: any) => {
+        const cookingStation = station as CookingStation;  // 类型断言为烹饪站
         const distance = Phaser.Math.Distance.Between(
-          catPosition.x, catPosition.y, station.x, station.y
+          catPosition.x, catPosition.y, cookingStation.x, cookingStation.y
         );
 
         if (distance <= interactionRange) {
-          this.handleCookingStationInteractionWithFeedback(station);
-          interactionFound = true;
+          this.handleCookingStationInteractionWithFeedback(cookingStation);  // 处理烹饪站交互
+          interactionFound = true;  // 标记找到交互对象
         }
       });
     }
 
-    // If no specific interaction, show general feedback
+    // 如果没有找到特定交互，显示通用提示
     if (!interactionFound) {
-      this.showInteractionHint();
+      this.showInteractionHint();  // 显示交互提示
     }
 
-    // Add haptic feedback for interactions
+    // 为交互添加触觉反馈（移动端振动）
     if (interactionFound && this.hapticEnabled && navigator.vibrate) {
-      navigator.vibrate([50, 50, 100]);
+      navigator.vibrate([50, 50, 100]);  // 振动模式：50ms振动，50ms暂停，100ms振动
     }
   }
 
+  /**
+   * 处理农田地块交互并显示反馈效果
+   * @param plot 农田地块对象
+   */
   private handleFarmPlotInteractionWithFeedback(plot: any) {
-    // Create interaction indicator
+    // 创建交互指示器（植物图标）
     const indicator = this.add.text(plot.x, plot.y - 50, '🌱', {
       fontSize: '32px',
-      color: '#2ecc71'
+      color: '#2ecc71'  // 绿色
     });
-    indicator.setOrigin(0.5);
-    indicator.setDepth(1000);
+    indicator.setOrigin(0.5);  // 居中对齐
+    indicator.setDepth(1000);  // 高渲染层级
 
-    // Animate indicator
+    // 动画效果：向上移动、放大、淡出
     this.tweens.add({
       targets: indicator,
-      y: indicator.y - 20,
-      scaleX: 1.5,
-      scaleY: 1.5,
-      alpha: 0,
-      duration: 1000,
-      ease: 'Power2',
-      onComplete: () => indicator.destroy()
+      y: indicator.y - 20,      // 向上移动20像素
+      scaleX: 1.5,              // X轴放大1.5倍
+      scaleY: 1.5,              // Y轴放大1.5倍
+      alpha: 0,                 // 淡出到透明
+      duration: 1000,           // 动画持续1秒
+      ease: 'Power2',           // 缓动函数
+      onComplete: () => indicator.destroy()  // 动画完成后销毁
     });
 
-    // Emit the actual interaction event
+    // 发出农田交互事件
     this.events.emit('farm-plot-interaction', {
-      plot: plot
+      plot: plot  // 传递农田地块对象
     });
   }
 
-  private handleCookingStationInteractionWithFeedback(station: any) {
-    // Create cooking indicator
+  /**
+   * 处理烹饪站交互并显示反馈效果
+   * @param station 烹饪站对象
+   */
+  private handleCookingStationInteractionWithFeedback(station: CookingStation) {
+    // 创建烹饪指示器（锅具图标）
     const indicator = this.add.text(station.x, station.y - 50, '🍳', {
       fontSize: '32px',
-      color: '#e67e22'
+      color: '#e67e22'  // 橙色
     });
-    indicator.setOrigin(0.5);
-    indicator.setDepth(1000);
+    indicator.setOrigin(0.5);  // 居中对齐
+    indicator.setDepth(1000);  // 高渲染层级
 
-    // Animate indicator
+    // 动画效果：向上移动、放大、淡出
     this.tweens.add({
       targets: indicator,
-      y: indicator.y - 20,
-      scaleX: 1.5,
-      scaleY: 1.5,
-      alpha: 0,
-      duration: 1000,
-      ease: 'Power2',
-      onComplete: () => indicator.destroy()
+      y: indicator.y - 20,      // 向上移动20像素
+      scaleX: 1.5,              // X轴放大1.5倍
+      scaleY: 1.5,              // Y轴放大1.5倍
+      alpha: 0,                 // 淡出到透明
+      duration: 1000,           // 动画持续1秒
+      ease: 'Power2',           // 缓动函数
+      onComplete: () => indicator.destroy()  // 动画完成后销毁
     });
 
-    // Emit the actual interaction event
+    // 发出烹饪站交互事件
     this.events.emit('cooking-station-interaction', {
-      station: station
+      station: station  // 传递烹饪站对象
     });
   }
 
+  /**
+   * 显示交互提示
+   * 当没有找到特定交互对象时显示通用提示
+   */
   private showInteractionHint() {
-    // Show a subtle hint that interaction is available
+    // 显示交互可用提示（灯泡图标）
     const hint = this.add.text(this.cat.x, this.cat.y - 80, '💡', {
       fontSize: '24px',
-      color: '#f1c40f'
+      color: '#f1c40f'  // 黄色
     });
-    hint.setOrigin(0.5);
-    hint.setDepth(1000);
+    hint.setOrigin(0.5);  // 居中对齐
+    hint.setDepth(1000);  // 高渲染层级
 
+    // 动画效果：向上移动并淡出
     this.tweens.add({
       targets: hint,
-      y: hint.y - 15,
-      alpha: 0,
-      duration: 800,
-      ease: 'Power2',
-      onComplete: () => hint.destroy()
+      y: hint.y - 15,           // 向上移动15像素
+      alpha: 0,                 // 淡出到透明
+      duration: 800,            // 动画持续0.8秒
+      ease: 'Power2',           // 缓动函数
+      onComplete: () => hint.destroy()  // 动画完成后销毁
     });
   }
 
-  // Performance monitoring and optimization
+  /**
+   * 设置性能监控和优化
+   * 监控FPS并根据性能调整游戏设置
+   */
   private setupPerformanceMonitoring() {
-    // Monitor FPS and adjust performance accordingly
+    // 监控FPS并相应调整性能
     this.time.addEvent({
-      delay: 1000,
+      delay: 1000,  // 每秒检查一次
       callback: () => {
         const currentTime = this.time.now;
 
-        if (currentTime - this.lastFPSCheck > 5000) { // Check every 5 seconds
-          const fps = this.game.loop.actualFps;
-          this.adjustPerformanceMode(fps);
-          this.lastFPSCheck = currentTime;
+        if (currentTime - this.lastFPSCheck > 5000) { // 每5秒检查一次FPS
+          const fps = this.game.loop.actualFps;  // 获取实际FPS
+          this.adjustPerformanceMode(fps);       // 根据FPS调整性能模式
+          this.lastFPSCheck = currentTime;       // 更新上次检查时间
 
-          // Emergency restart mechanism if FPS is critically low
+          // 如果FPS极低，启动紧急优化机制
           if (fps < 10) {
             console.warn('Critical performance detected, implementing emergency optimizations');
             this.emergencyPerformanceOptimization();
           }
         }
       },
-      loop: true
+      loop: true  // 循环执行
     });
 
-    // Memory cleanup timer
+    // 内存清理定时器
     this.time.addEvent({
-      delay: 30000, // Every 30 seconds
+      delay: 30000, // 每30秒执行一次
       callback: () => {
-        this.cleanupResources();
+        this.cleanupResources();  // 清理资源
       },
-      loop: true
+      loop: true  // 循环执行
     });
   }
 
-  // Emergency performance optimization
+  /**
+   * 紧急性能优化
+   * 当FPS极低时启动的紧急优化措施
+   */
   private emergencyPerformanceOptimization() {
-    // Disable all particle effects
+    // 禁用所有粒子效果
     this.particlePool.forEach(particles => {
       if (particles && particles.destroy) {
-        particles.destroy();
+        particles.destroy();  // 销毁粒子效果
       }
     });
-    this.particlePool = [];
+    this.particlePool = [];  // 清空粒子池
 
-    // Reduce animation quality
-    this.tweens.timeScale = 0.3;
+    // 降低动画质量
+    this.tweens.timeScale = 0.3;  // 动画速度降低到30%
 
     this.showNotification('⚠️ 已启用紧急性能优化模式');
   }
 
-  // Resource cleanup
+  /**
+   * 资源清理
+   * 定期清理不再使用的资源以释放内存
+   */
   private cleanupResources() {
-    // Clean up old particles
+    // 清理旧的粒子效果
     this.particlePool = this.particlePool.filter(particles => {
       if (particles && particles.active) {
-        return true;
+        return true;  // 保留活跃的粒子
       } else {
         if (particles && particles.destroy) {
-          particles.destroy();
+          particles.destroy();  // 销毁不活跃的粒子
         }
-        return false;
+        return false;  // 从数组中移除
       }
     });
 
-    // Force garbage collection if available
+    // 如果可用，强制垃圾回收
     if (window.gc) {
-      window.gc();
+      window.gc();  // 触发垃圾回收
     }
   }
 
+  /**
+   * 根据FPS调整性能模式
+   * @param fps 当前FPS值
+   */
   private adjustPerformanceMode(fps: number) {
-    let newMode: 'high' | 'medium' | 'low' = 'high';
+    let newMode: 'high' | 'medium' | 'low' = 'high';  // 默认高性能模式
 
     if (fps < 30) {
-      newMode = 'low';
+      newMode = 'low';      // FPS低于30时使用低性能模式
     } else if (fps < 45) {
-      newMode = 'medium';
+      newMode = 'medium';   // FPS低于45时使用中等性能模式
     }
 
     if (newMode !== this.performanceMode) {
-      this.performanceMode = newMode;
-      this.applyPerformanceSettings();
+      this.performanceMode = newMode;           // 更新性能模式
+      this.applyPerformanceSettings();          // 应用新的性能设置
       console.log(`Performance mode adjusted to: ${newMode} (FPS: ${fps.toFixed(1)})`);
     }
   }
 
+  /**
+   * 应用性能设置
+   * 根据当前性能模式调整游戏质量
+   */
   private applyPerformanceSettings() {
     switch (this.performanceMode) {
       case 'low':
-        // Reduce particle effects
-        this.particlePool.forEach(particles => particles.setQuantity(1));
-        // Reduce animation quality
-        this.tweens.timeScale = 0.5;
+        // 低性能模式：减少粒子效果和动画质量
+        this.particlePool.forEach(particles => particles.setQuantity(1));  // 粒子数量设为1
+        this.tweens.timeScale = 0.5;  // 动画速度降低到50%
         break;
       case 'medium':
-        this.particlePool.forEach(particles => particles.setQuantity(2));
-        this.tweens.timeScale = 0.8;
+        // 中等性能模式：适度减少效果
+        this.particlePool.forEach(particles => particles.setQuantity(2));  // 粒子数量设为2
+        this.tweens.timeScale = 0.8;  // 动画速度降低到80%
         break;
       case 'high':
-        // Full quality
-        this.tweens.timeScale = 1;
+        // 高性能模式：全质量
+        this.tweens.timeScale = 1;  // 动画速度100%
         break;
     }
   }
 
+  /**
+   * 更新响应式UI
+   * 根据屏幕尺寸和方向调整UI元素位置
+   */
   private updateResponsiveUI() {
-    // 使用新的布局管理器更新UI
-    if (this.uiLayoutManager) {
-      const screenInfo = this.uiLayoutManager.getScreenInfo();
+    // 使用新的布局管理器更新UI - 确保uiLayoutManager已初始化
+    if (!this.uiLayoutManager) {
+      return; // 如果还没初始化，跳过这次更新
+    }
 
-      // 更新虚拟摇杆位置
-      if (this.virtualJoystick && screenInfo.isMobile) {
-        this.virtualJoystick.updateLayout(screenInfo.width, screenInfo.height);
-      }
+    const screenInfo = this.uiLayoutManager.getScreenInfo();  // 获取屏幕信息
 
-      // 更新动作按钮位置
-      if (this.actionButtons.length > 0 && screenInfo.isMobile) {
-        const buttonSize = screenInfo.isPortrait ? 50 : 60;
-        const positions = this.uiLayoutManager.getActionButtonsPosition(buttonSize, this.actionButtons.length);
+    // 更新虚拟摇杆位置（仅移动端）
+    if (this.virtualJoystick && screenInfo.isMobile) {
+      this.virtualJoystick.updateLayout(screenInfo.width, screenInfo.height);  // 更新摇杆布局
+    }
 
-        this.actionButtons.forEach((button, index) => {
-          if (positions[index]) {
-            this.tweens.add({
-              targets: button,
-              x: positions[index].x,
-              y: positions[index].y,
-              duration: 300,
-              ease: 'Power2.easeOut'
-            });
-          }
-        });
-      }
+    // 更新动作按钮位置（仅移动端）
+    if (this.actionButtons.length > 0 && screenInfo.isMobile) {
+      const buttonSize = screenInfo.isPortrait ? 50 : 60;  // 根据屏幕方向调整按钮大小
+      const positions = this.uiLayoutManager.getActionButtonsPosition(buttonSize, this.actionButtons.length);  // 获取按钮位置
+
+      this.actionButtons.forEach((button, index) => {
+        if (positions[index]) {
+          this.tweens.add({
+            targets: button,
+            x: positions[index].x,      // 目标X坐标
+            y: positions[index].y,      // 目标Y坐标
+            duration: 300,              // 动画持续300ms
+            ease: 'Power2.easeOut'      // 缓动函数
+          });
+        }
+      });
     }
   }
 
-  // Helper function to smoothly update button positions
+  /**
+   * 平滑更新按钮位置的辅助函数
+   * @param buttonObj 按钮对象
+   * @param newX 新的X坐标
+   * @param newY 新的Y坐标
+   */
   private updateButtonPosition(buttonObj: any, newX: number, newY: number) {
-    if (!buttonObj) return;
+    if (!buttonObj) return;  // 如果按钮对象不存在，直接返回
 
-    const elements = [buttonObj.button, buttonObj.shadow, buttonObj.inner, buttonObj.icon];
-    const duration = 300;
+    const elements = [buttonObj.button, buttonObj.shadow, buttonObj.inner, buttonObj.icon];  // 按钮的所有元素
+    const duration = 300;  // 动画持续时间
 
     elements.forEach(element => {
       if (element) {
         this.tweens.add({
           targets: element,
-          x: newX + (element === buttonObj.shadow ? 2 : 0),
-          y: newY + (element === buttonObj.shadow ? 2 : 0),
-          duration: duration,
-          ease: 'Power2.easeOut'
+          x: newX + (element === buttonObj.shadow ? 2 : 0),  // 阴影元素偏移2像素
+          y: newY + (element === buttonObj.shadow ? 2 : 0),  // 阴影元素偏移2像素
+          duration: duration,                                  // 动画持续时间
+          ease: 'Power2.easeOut'                              // 缓动函数
         });
       }
     });
 
-    // Update stored position
-    if (buttonObj.x !== undefined) buttonObj.x = newX;
-    if (buttonObj.y !== undefined) buttonObj.y = newY;
+    // 更新存储的位置信息
+    if (buttonObj.x !== undefined) buttonObj.x = newX;  // 更新X坐标
+    if (buttonObj.y !== undefined) buttonObj.y = newY;  // 更新Y坐标
   }
 
+  /**
+   * 设置摄像机
+   * 配置响应式摄像机跟随和缩放，考虑开发者工具遮挡
+   */
   private setupCamera() {
-    // Improved camera setup with responsive behavior
-    const screenWidth = this.cameras.main.width;
-    const screenHeight = this.cameras.main.height;
+    // 改进的摄像机设置，具有响应式行为
+    const screenWidth = this.cameras.main.width;   // 屏幕宽度
+    const screenHeight = this.cameras.main.height; // 屏幕高度
 
-    // Dynamic zoom based on screen size
-    const baseZoom = Math.min(screenWidth / 800, screenHeight / 600);
-    const optimalZoom = Math.max(0.8, Math.min(2.0, baseZoom * 1.2));
+    // 检测是否在开发环境中（可能打开开发者工具）
+    const isDevelopment = window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.port !== '';
 
-    this.cameras.main.startFollow(this.cat);
-    this.cameras.main.setZoom(optimalZoom);
+    // 根据屏幕尺寸动态调整缩放
+    const baseZoom = Math.min(screenWidth / 800, screenHeight / 600);  // 基础缩放比例
+    const optimalZoom = Math.max(0.8, Math.min(2.0, baseZoom * 1.2));  // 最优缩放比例（0.8-2.0之间）
 
-    // Dynamic world bounds based on screen size
-    const worldWidth = Math.max(1000, screenWidth * 1.5);
-    const worldHeight = Math.max(800, screenHeight * 1.5);
-    this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
+    this.cameras.main.startFollow(this.cat);      // 开始跟随小猫
+    this.cameras.main.setZoom(optimalZoom);       // 设置缩放比例
 
-    // Smooth camera following
-    this.cameras.main.setLerp(0.1, 0.1);
-    this.cameras.main.setDeadzone(100, 100);
+    // 根据屏幕尺寸动态设置世界边界
+    // 在开发环境中，确保游戏内容不会被开发者工具遮挡
+    const effectiveWidth = isDevelopment ? Math.min(screenWidth, 1200) : screenWidth;
+    const worldWidth = Math.max(1000, effectiveWidth * 1.5);   // 世界宽度（至少1000像素）
+    const worldHeight = Math.max(800, screenHeight * 1.5);  // 世界高度（至少800像素）
+    this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);  // 设置摄像机边界
+
+    // 平滑摄像机跟随
+    this.cameras.main.setLerp(0.1, 0.1);        // 设置线性插值（平滑跟随）
+    this.cameras.main.setDeadzone(100, 100);     // 设置死区（避免微小移动）
+
+    // 在开发环境中，限制摄像机右边界以避免内容被遮挡
+    if (isDevelopment) {
+      const maxRightBound = Math.min(worldWidth, screenWidth - 400); // 预留400像素给开发者工具
+      this.cameras.main.setBounds(0, 0, maxRightBound, worldHeight);
+    }
   }
 
-  // Setup orientation change handling
+  /**
+   * 设置屏幕方向变化处理
+   * 监听屏幕方向变化并相应调整UI布局
+   */
   private setupOrientationHandling() {
-    // Listen for screen orientation changes
+    // 监听屏幕方向变化
     const handleOrientationChange = () => {
-      // Delay to allow browser to complete orientation change
+      // 延迟300ms等待浏览器完成方向变化
       this.time.delayedCall(300, () => {
         console.log('Orientation changed, updating UI layout');
-        this.updateResponsiveUI();
+        this.updateResponsiveUI();  // 更新响应式UI
 
-        // Update camera bounds and zoom
-        this.setupCamera();
+        // 更新摄像机边界和缩放
+        this.setupCamera();  // 重新设置摄像机
 
-        // Show brief notification
+        // 显示简短通知
         this.showNotification('🔄 界面已适配新屏幕方向');
       });
     };
 
-    // Add event listeners for orientation changes
-    window.addEventListener('orientationchange', handleOrientationChange);
-    window.addEventListener('resize', handleOrientationChange);
+    // 添加方向变化事件监听器
+    window.addEventListener('orientationchange', handleOrientationChange);  // 监听方向变化
+    window.addEventListener('resize', handleOrientationChange);             // 监听窗口大小变化
 
-    // Store handlers for cleanup
+    // 存储处理器以便清理
     this.orientationHandlers = {
-      orientationChange: handleOrientationChange,
-      resize: handleOrientationChange
+      orientationChange: handleOrientationChange,  // 方向变化处理器
+      resize: handleOrientationChange              // 大小变化处理器
     };
   }
 
+  /**
+   * 设置碰撞检测
+   * 配置游戏对象之间的碰撞关系
+   */
   private setupCollisions() {
-    // Collision between cat and decorations
-    this.physics.add.collider(this.cat, this.decorations);
+    // 小猫与装饰物的碰撞检测
+    this.physics.add.collider(this.cat, this.decorations);  // 添加小猫和装饰物的碰撞器
   }
 
+  /**
+   * 设置事件监听器
+   * 监听游戏中的各种事件并执行相应处理
+   */
   private setupEventListeners() {
-    // Farm plot interaction events
+    // 农田地块交互事件
     this.events.on('farm-plot-interaction', (data: any) => {
-      this.handleFarmPlotInteraction(data.plot);
+      this.handleFarmPlotInteraction(data.plot);  // 处理农田交互
     });
 
-    // Cooking station interaction events
-    this.events.on('cooking-station-interaction', (cookingStation: CookingStation) => {
-      this.handleCookingStationInteraction(cookingStation);
+    // 烹饪站交互事件
+    this.events.on('cooking-station-interaction', (data: any) => {
+      this.handleCookingStationInteraction(data.station);  // 处理烹饪站交互
     });
 
-    // Cooking completion events
+    // 烹饪完成事件
     this.events.on('cooking-completed', (data: any) => {
-      this.handleCookingCompletion(data.recipe, data.result);
+      this.handleCookingCompletion(data.recipe, data.result);  // 处理烹饪完成
     });
 
-    // Cat level up events
+    // 小猫升级事件
     this.events.on('cat-level-up', (level: number) => {
-      this.showNotification(`🎉 小猫升级了！现在是 ${level} 级！`);
+      this.showNotification(`🎉 小猫升级了！现在是 ${level} 级！`);  // 显示升级通知
     });
 
-    // Cat tired events
+    // 小猫疲劳事件
     this.events.on('cat-tired', () => {
-      this.showNotification('😴 小猫累了，需要休息一下！');
+      this.showNotification('😴 小猫累了，需要休息一下！');  // 显示疲劳通知
     });
   }
 
+  /**
+   * 创建氛围效果
+   * 添加环境粒子效果（蝴蝶、树叶等）增强游戏氛围
+   */
   private createAtmosphere() {
-    // Add ambient particles (butterflies, leaves, etc.)
+    // 添加环境粒子（蝴蝶、树叶等）
     const butterflies = this.add.particles(0, 0, 'sparkle', {
-      x: { min: 0, max: 800 },
-      y: { min: 0, max: 600 },
-      scale: { start: 0.1, end: 0.3 },
-      alpha: { start: 0.8, end: 0.3 },
-      tint: [0xFFD700, 0xFF69B4, 0x87CEEB],
-      lifespan: 5000,
-      frequency: 2000,
-      quantity: 1,
-      speed: { min: 20, max: 40 },
-      gravityY: -10
+      x: { min: 0, max: 800 },        // X坐标范围
+      y: { min: 0, max: 600 },        // Y坐标范围
+      scale: { start: 0.1, end: 0.3 }, // 缩放范围
+      alpha: { start: 0.8, end: 0.3 }, // 透明度范围
+      tint: [0xFFD700, 0xFF69B4, 0x87CEEB], // 颜色数组（金色、粉色、天蓝色）
+      lifespan: 5000,                 // 生命周期5秒
+      frequency: 2000,                // 生成频率2秒
+      quantity: 1,                    // 每次生成1个粒子
+      speed: { min: 20, max: 40 },    // 速度范围
+      gravityY: -10                   // 向上的重力（模拟飘浮）
     });
-    butterflies.setDepth(15);
+    butterflies.setDepth(15);  // 设置渲染深度
   }
 
+  /**
+   * 选择工具
+   * @param tool 要选择的工具类型
+   */
   private selectTool(tool: ToolType) {
-    this.currentTool = tool;
-    this.cat.setCurrentTool(tool);
+    this.currentTool = tool;           // 设置当前工具
+    this.cat.setCurrentTool(tool);     // 让小猫使用该工具
 
     const toolNames = {
-      [ToolType.HOE]: '锄头',
-      [ToolType.WATERING_CAN]: '水壶',
-      [ToolType.FERTILIZER]: '肥料',
-      [ToolType.SEEDS]: '种子'
+      [ToolType.HOE]: '锄头',           // 锄头工具
+      [ToolType.WATERING_CAN]: '水壶',  // 水壶工具
+      [ToolType.FERTILIZER]: '肥料',    // 肥料工具
+      [ToolType.SEEDS]: '种子'          // 种子工具
     };
 
-    this.showNotification(`选择了 ${toolNames[tool]}`);
+    this.showNotification(`选择了 ${toolNames[tool]}`);  // 显示工具选择通知
   }
 
+  /**
+   * 处理农田地块交互
+   * @param plot 农田地块对象
+   */
   private handleFarmPlotInteraction(plot: FarmPlot) {
     if (!this.cat.canPerformAction()) {
-      this.showNotification('小猫太累了，无法工作！');
+      this.showNotification('小猫太累了，无法工作！');  // 显示疲劳提示
       return;
     }
 
     switch (this.currentTool) {
-      case ToolType.HOE:
-        if (plot.canPlow()) {
-          if (this.cat.performAction('dig')) {
-            this.time.delayedCall(1000, () => {
-              plot.plow();
-              this.showNotification('土地已耕好！');
-              this.cat.gainExperience(5);
+      case ToolType.HOE:  // 锄头工具
+        if (plot.canPlow()) {  // 检查是否可以耕地
+          if (this.cat.performAction('dig')) {  // 小猫执行挖掘动作
+            this.time.delayedCall(1000, () => {  // 延迟1秒执行耕地
+              plot.plow();                       // 耕地
+              this.showNotification('土地已耕好！');  // 显示成功通知
+              this.cat.gainExperience(5);        // 获得经验值
             });
           }
         } else {
-          this.showNotification('这块地已经耕过了！');
+          this.showNotification('这块地已经耕过了！');  // 显示已耕地提示
         }
         break;
 
-      case ToolType.WATERING_CAN:
-        if (plot.canWater()) {
-          if (this.cat.performAction('water')) {
-            this.time.delayedCall(800, () => {
-              plot.waterCrop();
-              this.showNotification('作物已浇水！');
-              this.cat.gainExperience(2);
+      case ToolType.WATERING_CAN:  // 水壶工具
+        if (plot.canWater()) {  // 检查是否可以浇水
+          if (this.cat.performAction('water')) {  // 小猫执行浇水动作
+            this.time.delayedCall(800, () => {  // 延迟0.8秒执行浇水
+              plot.waterCrop();                 // 浇水
+              this.showNotification('作物已浇水！');  // 显示成功通知
+              this.cat.gainExperience(2);       // 获得经验值
             });
           }
         } else {
-          this.showNotification('这里没有作物需要浇水！');
+          this.showNotification('这里没有作物需要浇水！');  // 显示无法浇水提示
         }
         break;
 
-      case ToolType.FERTILIZER:
-        if (plot.canFertilize()) {
-          if (this.cat.performAction('water')) {
-            this.time.delayedCall(800, () => {
-              plot.fertilizeCrop();
-              this.showNotification('作物已施肥！');
-              this.cat.gainExperience(3);
+      case ToolType.FERTILIZER:  // 肥料工具
+        if (plot.canFertilize()) {  // 检查是否可以施肥
+          if (this.cat.performAction('water')) {  // 小猫执行施肥动作
+            this.time.delayedCall(800, () => {  // 延迟0.8秒执行施肥
+              plot.fertilizeCrop();             // 施肥
+              this.showNotification('作物已施肥！');  // 显示成功通知
+              this.cat.gainExperience(3);       // 获得经验值
             });
           }
         } else {
-          this.showNotification('这里没有作物需要施肥！');
+          this.showNotification('这里没有作物需要施肥！');  // 显示无法施肥提示
         }
         break;
 
-      case ToolType.SEEDS:
-        if (plot.canPlant()) {
-          this.showSeedSelectionMenu(plot);
+      case ToolType.SEEDS:  // 种子工具
+        if (plot.canPlant()) {  // 检查是否可以种植
+          this.showSeedSelectionMenu(plot);  // 显示种子选择菜单
         } else {
-          this.showNotification('这块地还没有耕好或已经种了作物！');
+          this.showNotification('这块地还没有耕好或已经种了作物！');  // 显示无法种植提示
         }
         break;
 
-      default:
-        if (plot.canHarvest()) {
-          if (this.cat.performAction('harvest')) {
-            this.time.delayedCall(600, () => {
-              const result = plot.harvestCrop();
-              if (result && result.success) {
-                const crop = plot.getCrop();
+      default:  // 默认情况（无工具或空手）
+        if (plot.canHarvest()) {  // 检查是否可以收获
+          if (this.cat.performAction('harvest')) {  // 小猫执行收获动作
+            this.time.delayedCall(600, () => {  // 延迟0.6秒执行收获
+              const result = plot.harvestCrop();  // 收获作物
+              if (result && result.success) {  // 如果收获成功
+                const crop = plot.getCrop();  // 获取作物信息
                 if (crop) {
-                  const cropData = crop.getCropData();
-                  this.inventoryManager.addHarvestedCrop(cropData.type, result.yield, result.quality);
-                  this.showNotification(`收获了 ${result.yield} 个作物！品质：${result.quality}`);
-                  this.cat.gainExperience(10);
-                  this.cat.gainHappiness(10);
+                  const cropData = crop.getCropData();  // 获取作物数据
+                  this.inventoryManager.addHarvestedCrop(cropData.type, result.yield, result.quality);  // 添加到背包
+                  this.showNotification(`收获了 ${result.yield} 个作物！品质：${result.quality}`);  // 显示收获通知
+                  this.cat.gainExperience(10);  // 获得经验值
+                  this.cat.gainHappiness(10);   // 获得快乐值
                 }
               }
             });
@@ -1179,76 +1048,98 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * 处理烹饪站交互
+   * @param cookingStation 烹饪站对象
+   */
   private handleCookingStationInteraction(cookingStation: CookingStation) {
-    if (cookingStation.isCookingInProgress()) {
-      this.showNotification('烹饪正在进行中...');
+    if (cookingStation.isCookingInProgress()) {  // 检查是否正在烹饪
+      this.showNotification('烹饪正在进行中...');  // 显示烹饪中提示
       return;
     }
 
-    this.showCookingMenu(cookingStation);
+    this.showCookingMenu(cookingStation);  // 显示烹饪菜单
   }
 
+  /**
+   * 处理烹饪完成
+   * @param recipe 烹饪配方
+   * @param result 烹饪结果
+   */
   private handleCookingCompletion(recipe: any, result: any) {
-    // Add cooked food to inventory
+    // 将烹饪好的食物添加到背包
     this.inventoryManager.addCookedFood(
-      result.itemId,
-      recipe.name,
-      result.quantity,
-      recipe.description
+      result.itemId,        // 物品ID
+      recipe.name,          // 食物名称
+      result.quantity,      // 数量
+      recipe.description    // 描述
     );
 
-    this.showNotification(`🍽️ ${recipe.name} 制作完成！`);
-    this.cat.gainExperience(15);
-    this.cat.gainHappiness(recipe.happinessBonus);
-    this.cat.restoreEnergy(recipe.energyBonus);
+    this.showNotification(`🍽️ ${recipe.name} 制作完成！`);  // 显示完成通知
+    this.cat.gainExperience(15);                           // 获得经验值
+    this.cat.gainHappiness(recipe.happinessBonus);        // 获得快乐值加成
+    this.cat.restoreEnergy(recipe.energyBonus);           // 恢复体力值
   }
 
+  /**
+   * 显示种子选择菜单
+   * @param plot 农田地块对象
+   */
   private showSeedSelectionMenu(plot: FarmPlot) {
-    // Simple seed selection - plant carrot by default for now
-    // In a full implementation, this would show a UI menu
-    const seeds = this.inventoryManager.getItemsByType('seed');
-    if (seeds.length > 0) {
-      const seedItem = seeds[0];
-      const cropType = seedItem.id.replace('_seeds', '') as CropType;
+    // 简单的种子选择 - 目前默认种植胡萝卜
+    // 在完整实现中，这会显示一个UI菜单
+    const seeds = this.inventoryManager.getItemsByType('seed');  // 获取所有种子
+    if (seeds.length > 0) {  // 如果有种子
+      const seedItem = seeds[0];  // 选择第一个种子
+      const cropType = seedItem.id.replace('_seeds', '') as CropType;  // 提取作物类型
 
-      if (this.inventoryManager.removeItem(seedItem.id, 1)) {
-        plot.plantCrop(cropType);
-        this.showNotification(`种植了 ${seedItem.name}！`);
-        this.cat.gainExperience(5);
+      if (this.inventoryManager.removeItem(seedItem.id, 1)) {  // 从背包移除1个种子
+        plot.plantCrop(cropType);  // 种植作物
+        this.showNotification(`种植了 ${seedItem.name}！`);  // 显示种植通知
+        this.cat.gainExperience(5);  // 获得经验值
       }
     } else {
-      this.showNotification('没有种子可以种植！');
+      this.showNotification('没有种子可以种植！');  // 显示无种子提示
     }
   }
 
+  /**
+   * 显示烹饪菜单
+   * @param cookingStation 烹饪站对象
+   */
   private showCookingMenu(cookingStation: CookingStation) {
-    // Simple cooking - make carrot soup if ingredients available
-    // In a full implementation, this would show a cooking UI
-    const availableRecipes = cookingStation.getAvailableRecipes(this.inventoryManager.getAllItems());
+    // 简单的烹饪 - 如果有材料就制作胡萝卜汤
+    // 在完整实现中，这会显示一个烹饪UI
+    const availableRecipes = cookingStation.getAvailableRecipes(this.inventoryManager.getAllItems());  // 获取可用配方
 
-    if (availableRecipes.length > 0) {
-      const recipe = availableRecipes[0];
+    if (availableRecipes.length > 0) {  // 如果有可用配方
+      const recipe = availableRecipes[0];  // 选择第一个配方
 
-      if (this.inventoryManager.consumeIngredients(recipe.ingredients)) {
-        cookingStation.startCooking(recipe);
-        this.showNotification(`开始制作 ${recipe.name}...`);
+      if (this.inventoryManager.consumeIngredients(recipe.ingredients)) {  // 消耗材料
+        cookingStation.startCooking(recipe);  // 开始烹饪
+        this.showNotification(`开始制作 ${recipe.name}...`);  // 显示开始烹饪通知
       }
     } else {
-      this.showNotification('没有足够的材料制作任何料理！');
+      this.showNotification('没有足够的材料制作任何料理！');  // 显示材料不足提示
     }
   }
 
 
 
+  /**
+   * 处理触摸交互
+   * @param worldX 世界坐标X
+   * @param worldY 世界坐标Y
+   */
   private handleTouchInteraction(worldX: number, worldY: number) {
     const distance = Phaser.Math.Distance.Between(
-      this.cat.x, this.cat.y, worldX, worldY
+      this.cat.x, this.cat.y, worldX, worldY  // 计算小猫与触摸点的距离
     );
 
-    if (distance < 50) {
-      this.handleInteraction();
+    if (distance < 50) {  // 如果距离小于50像素
+      this.handleInteraction();  // 执行交互
     } else {
-      this.movePlayerTowards(worldX, worldY);
+      this.movePlayerTowards(worldX, worldY);  // 移动到触摸点
     }
   }
 
@@ -1256,148 +1147,172 @@ export class GameScene extends Phaser.Scene {
 
 
 
+  /**
+   * 切换背包界面
+   */
   private toggleInventory() {
-    // Emit event to UI scene to toggle inventory
+    // 向UI场景发送切换背包事件
     this.scene.get('UIScene').events.emit('toggle-inventory', this.inventoryManager.getAllItems());
   }
 
+  /**
+   * 打开烹饪界面
+   */
   private openCookingInterface() {
-    // Emit event to UI scene to open cooking interface
+    // 向UI场景发送打开烹饪界面事件
     this.scene.get('UIScene').events.emit('open-cooking', {
       recipes: this.cookingStations.children.entries[0] ?
-        (this.cookingStations.children.entries[0] as CookingStation).getAllRecipes() : [],
-      inventory: this.inventoryManager.getAllItems()
+        (this.cookingStations.children.entries[0] as CookingStation).getAllRecipes() : [],  // 获取所有配方
+      inventory: this.inventoryManager.getAllItems()  // 获取所有物品
     });
   }
 
+  /**
+   * 显示通知
+   * @param text 通知文本
+   */
   public showNotification(text: string) {
-    // Emit notification to UI scene
+    // 向UI场景发送通知事件
     this.scene.get('UIScene').events.emit('show-notification', text);
   }
 
+  /**
+   * 显示对话框
+   * @param text 对话框文本
+   */
   public showDialogue(text: string) {
-    // Emit dialogue to UI scene
+    // 向UI场景发送对话框事件
     this.scene.get('UIScene').events.emit('show-dialogue', text);
   }
 
+  /**
+   * 游戏主更新循环
+   * 每帧执行，处理玩家输入、移动和游戏状态更新
+   */
   update() {
-    // Performance monitoring - limit update frequency for heavy operations
-    this.frameCounter++;
+    // 性能监控 - 限制重操作的更新频率
+    this.frameCounter++;  // 帧计数器递增
 
-    // Handle player movement - 平台特定的控制逻辑
-    let moveX = 0;
-    let moveY = 0;
+    // 处理玩家移动 - 平台特定的控制逻辑
+    let moveX = 0;  // X方向移动值
+    let moveY = 0;  // Y方向移动值
 
-    // 获取平台信息
-    const screenInfo = this.uiLayoutManager.getScreenInfo();
+    // 获取平台信息 - 确保uiLayoutManager已初始化
+    if (!this.uiLayoutManager) {
+      return; // 如果还没初始化，跳过这次更新
+    }
+
+    const screenInfo = this.uiLayoutManager.getScreenInfo();  // 获取屏幕信息
 
     if (screenInfo.isMobile) {
       // 移动端：只使用虚拟摇杆
       if (this.virtualJoystick) {
-        const joystickVector = this.virtualJoystick.getVector();
-        moveX = joystickVector.x;
-        moveY = joystickVector.y;
+        const joystickVector = this.virtualJoystick.getVector();  // 获取摇杆向量
+        moveX = joystickVector.x;  // 设置X方向移动
+        moveY = joystickVector.y;  // 设置Y方向移动
       }
     } else {
       // PC端：只使用键盘
       if (this.cursors.left.isDown || this.wasdKeys.A.isDown) {
-        moveX = -1;
+        moveX = -1;  // 向左移动
       } else if (this.cursors.right.isDown || this.wasdKeys.D.isDown) {
-        moveX = 1;
+        moveX = 1;   // 向右移动
       }
 
       if (this.cursors.up.isDown || this.wasdKeys.W.isDown) {
-        moveY = -1;
+        moveY = -1;  // 向上移动
       } else if (this.cursors.down.isDown || this.wasdKeys.S.isDown) {
-        moveY = 1;
+        moveY = 1;   // 向下移动
       }
     }
 
     // 应用移动
-    if (Math.abs(moveX) > 0.01 || Math.abs(moveY) > 0.01) {
-      this.cat.move(moveX, moveY);
+    if (Math.abs(moveX) > 0.01 || Math.abs(moveY) > 0.01) {  // 如果有移动输入
+      this.cat.move(moveX, moveY);  // 让小猫移动
     } else {
-      this.cat.stop();
+      this.cat.stop();  // 停止移动
     }
 
-    // Update cat
+    // 更新小猫状态
     this.cat.update();
 
-    // Performance optimized updates - only update every few frames for non-critical elements
-    if (this.frameCounter % 3 === 0) {
-      // Update farm plots (less frequent for performance)
+    // 性能优化的更新 - 非关键元素每几帧更新一次
+    if (this.frameCounter % 3 === 0) {  // 每3帧更新一次
+      // 更新农田地块（降低频率以提高性能）
       this.farmPlots.children.entries.forEach((plot: any) => {
         if (plot.update) {
-          plot.update();
+          plot.update();  // 更新农田地块
         }
       });
     }
 
-    if (this.frameCounter % 5 === 0) {
-      // Update cooking stations (even less frequent)
+    if (this.frameCounter % 5 === 0) {  // 每5帧更新一次
+      // 更新烹饪站（更低频率）
       this.cookingStations.children.entries.forEach((station: any) => {
         if (station.update) {
-          station.update();
+          station.update();  // 更新烹饪站
         }
       });
     }
 
-    // Handle interaction key (only for desktop)
+    // 处理交互键（仅桌面端）
     if (!screenInfo.isMobile && Phaser.Input.Keyboard.JustDown(this.interactKey)) {
-      this.handleInteraction();
+      this.handleInteraction();  // 执行交互
     }
 
-    // Update responsive UI elements
-    this.updateResponsiveUI();
+    // 更新响应式UI元素
+    this.updateResponsiveUI();  // 更新UI布局
   }
 
-  // Scene cleanup - called when scene is destroyed
+  /**
+   * 场景清理 - 场景销毁时调用
+   */
   destroy() {
     // 清理新的控制系统
     if (this.virtualJoystick) {
-      this.virtualJoystick.destroy();
+      this.virtualJoystick.destroy();  // 销毁虚拟摇杆
     }
 
     if (this.uiLayoutManager) {
-      this.uiLayoutManager.destroy();
+      this.uiLayoutManager.destroy();  // 销毁UI布局管理器
     }
 
     // 清理新的动作按钮
     this.actionButtons.forEach(button => {
       if (button && button.destroy) {
-        button.destroy();
+        button.destroy();  // 销毁动作按钮
       }
     });
 
 
 
-    // Clean up particle pool
+    // 清理粒子池
     this.particlePool.forEach(particles => {
       if (particles && particles.destroy) {
-        particles.destroy();
+        particles.destroy();  // 销毁粒子效果
       }
     });
-    this.particlePool = [];
+    this.particlePool = [];  // 清空粒子池
 
-    // Clean up tooltips
+    // 清理工具提示
     if (this.toolTooltip) {
-      this.toolTooltip.destroy();
+      this.toolTooltip.destroy();  // 销毁工具提示
       this.toolTooltip = null;
     }
 
-    // Clean up orientation handlers
+    // 清理方向变化处理器
     if (this.orientationHandlers) {
-      window.removeEventListener('orientationchange', this.orientationHandlers.orientationChange);
-      window.removeEventListener('resize', this.orientationHandlers.resize);
-      this.orientationHandlers = null;
+      window.removeEventListener('orientationchange', this.orientationHandlers.orientationChange);  // 移除方向变化监听
+      window.removeEventListener('resize', this.orientationHandlers.resize);                       // 移除大小变化监听
+      this.orientationHandlers = null;  // 清空处理器引用
     }
 
-    // Ensure cat movement is stopped
+    // 确保小猫停止移动
     if (this.cat) {
-      this.cat.setVelocity(0, 0);
+      this.cat.setVelocity(0, 0);  // 设置速度为0
     }
 
-    console.log('GameScene cleanup completed');
+    console.log('GameScene cleanup completed');  // 记录清理完成
   }
 
 

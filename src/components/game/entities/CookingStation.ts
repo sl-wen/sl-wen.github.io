@@ -1,31 +1,43 @@
 import * as Phaser from 'phaser';
-import { Recipe, InventoryItem } from '../types/GameTypes';
+import { InventoryItem, Recipe } from '../types/GameTypes';
 
+/**
+ * 烹饪站类
+ * 继承自Phaser精灵，管理烹饪站的状态和烹饪功能
+ * 包括配方管理、烹饪进度、粒子效果等
+ */
 export class CookingStation extends Phaser.GameObjects.Sprite {
-  private recipes: Recipe[] = [];
-  private currentRecipe: Recipe | null = null;
-  private cookingTimer: Phaser.Time.TimerEvent | null = null;
-  private isCooking: boolean = false;
-  private cookingProgress: number = 0;
-  private progressBar: Phaser.GameObjects.Graphics | null = null;
-  private cookingParticles: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
+  private recipes: Recipe[] = [];                                      // 可用配方列表
+  private currentRecipe: Recipe | null = null;                        // 当前烹饪的配方
+  private cookingTimer: Phaser.Time.TimerEvent | null = null;         // 烹饪计时器
+  private isCooking: boolean = false;                                  // 是否正在烹饪
+  private cookingProgress: number = 0;                                // 烹饪进度（0-100）
+  private progressBar: Phaser.GameObjects.Graphics | null = null;     // 进度条图形
+  private cookingParticles: Phaser.GameObjects.Particles.ParticleEmitter | null = null;  // 烹饪粒子效果
 
+  /**
+   * 构造函数
+   * 创建烹饪站并初始化所有功能
+   * @param scene 游戏场景
+   * @param x 烹饪站X坐标
+   * @param y 烹饪站Y坐标
+   */
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'cooking_station');
 
-    // Add to scene
+    // 添加到场景
     scene.add.existing(this);
-    this.setDepth(5);
-    this.setOrigin(0.5, 1);
-    this.setInteractive();
+    this.setDepth(5);                    // 设置渲染深度
+    this.setOrigin(0.5, 1);              // 设置锚点（底部中心）
+    this.setInteractive();               // 启用交互
 
-    // Initialize recipes
+    // 初始化配方
     this.initializeRecipes();
 
-    // Create progress bar
+    // 创建进度条
     this.createProgressBar();
 
-    // Setup interaction
+    // 设置交互
     this.setupInteraction();
   }
 
@@ -187,28 +199,34 @@ export class CookingStation extends Phaser.GameObjects.Sprite {
     });
   }
 
+  /**
+   * 开始烹饪
+   * 根据配方开始烹饪过程，包括计时器和粒子效果
+   * @param recipe 要烹饪的配方
+   * @returns 是否成功开始烹饪
+   */
   public startCooking(recipe: Recipe): boolean {
-    if (this.isCooking) return false;
+    if (this.isCooking) return false;  // 已在烹饪中
 
-    this.currentRecipe = recipe;
-    this.isCooking = true;
-    this.cookingProgress = 0;
+    this.currentRecipe = recipe;       // 设置当前配方
+    this.isCooking = true;             // 设置烹饪状态
+    this.cookingProgress = 0;          // 重置进度
 
-    // Change texture to cooking state
+    // 更换为烹饪状态纹理
     this.setTexture('cooking_station_active');
 
-    // Create cooking particles
+    // 创建烹饪粒子效果
     this.createCookingParticles();
 
-    // Start cooking timer
+    // 开始烹饪计时器（每100次更新一次进度）
     this.cookingTimer = this.scene.time.addEvent({
-      delay: recipe.cookingTime / 100, // Update 100 times during cooking
+      delay: recipe.cookingTime / 100,  // 烹饪时间除以100，确保100次更新
       callback: this.updateCooking,
       callbackScope: this,
-      repeat: 99
+      repeat: 99                        // 重复99次，总共100次
     });
 
-    // Cooking completion
+    // 烹饪完成回调
     this.scene.time.delayedCall(recipe.cookingTime, () => {
       this.completeCooking();
     });

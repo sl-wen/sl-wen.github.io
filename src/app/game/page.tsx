@@ -354,7 +354,7 @@ const GamePage: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-2">
                     <button
-                      onClick={() => window.open('/game/debug', '_blank')}
+                      onClick={() => window.open('/game/multi-atlas-debug', '_blank')}
                       className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-medium py-2 px-4 rounded-lg text-sm transition-all duration-300"
                     >
                       🔧 调试工具

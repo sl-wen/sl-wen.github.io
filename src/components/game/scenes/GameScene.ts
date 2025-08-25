@@ -22,7 +22,7 @@ export class GameScene extends Phaser.Scene {
 
   // 键盘控制系统
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;  // 方向键
-  private wasdKeys!: any;                                    // WASD键
+  private wasdKeys!: Record<string, Phaser.Input.Keyboard.Key>;  // WASD键
   private interactKey!: Phaser.Input.Keyboard.Key;           // 交互键（空格）
   private inventoryKey!: Phaser.Input.Keyboard.Key;          // 背包键（I）
   private cookingKey!: Phaser.Input.Keyboard.Key;            // 烹饪键（C）
@@ -43,7 +43,7 @@ export class GameScene extends Phaser.Scene {
   private lastFPSCheck: number = 0;                                              // 上次FPS检查时间
   private lastTapTime: number = 0;                                               // 上次点击时间（双击重置）
   private emergencyResetEnabled: boolean = true;                                 // 紧急重置开关
-  private orientationHandlers: any = null;                                       // 屏幕方向变化处理器
+  private orientationHandlers: { orientationChange: () => void; resize: () => void } | null = null; // 屏幕方向变化处理器
 
   /**
    * 构造函数
@@ -1259,11 +1259,12 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // 应用移动
+    // 应用移动 - 使用改进的移动系统
     if (Math.abs(moveX) > 0.01 || Math.abs(moveY) > 0.01) {  // 如果有移动输入
       this.cat.move(moveX, moveY);  // 让小猫移动
     } else {
-      this.cat.stop();  // 停止移动
+      // 使用平滑停止而非立即停止，增加游戏手感
+      this.cat.smoothStop(0.88);  // 使用稍高的减速率
     }
 
     // 更新小猫状态

@@ -147,6 +147,34 @@ export class GameScene extends Phaser.Scene {
 
 
   /**
+   * 创建游戏世界背景
+   * 包括基础地面纹理和环境装饰
+   */
+  private createWorldBackground() {
+    // 创建基础背景颜色
+    this.cameras.main.setBackgroundColor('#4a7c59'); // 深绿色背景，模拟草地
+    
+    // 创建地面纹理（使用现有的农田纹理作为地面）
+    const groundTileSize = 64; // 地面瓦片大小
+    const worldWidth = 1200;   // 世界宽度
+    const worldHeight = 800;   // 世界高度
+    
+    // 创建地面瓦片
+    for (let x = 0; x < worldWidth; x += groundTileSize) {
+      for (let y = 0; y < worldHeight; y += groundTileSize) {
+        // 使用空农田纹理作为基础地面
+        const groundTile = this.add.image(x, y, 'farm_plot_empty');
+        groundTile.setOrigin(0, 0);
+        groundTile.setAlpha(0.3); // 设置透明度，作为背景层
+        groundTile.setDepth(-100); // 确保在最底层
+      }
+    }
+    
+    // 设置世界边界
+    this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
+  }
+
+  /**
    * 创建农田地块
    * 使用农场布局管理器获取位置并创建农田地块
    */

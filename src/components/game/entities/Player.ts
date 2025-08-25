@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
 import { CatStats, InventoryItem, ToolType } from '../types/GameTypes';
+import { TileMapManager } from './TileMapManager';
 
 /**
  * 小猫玩家类
@@ -12,6 +13,13 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   private currentTool: ToolType | null = null;  // 当前选中的工具
   private inventory: InventoryItem[] = [];      // 背包物品列表
   public isActing: boolean = false;             // 是否正在执行动作（防止动作重叠）
+  
+  // 增强移动系统相关属性
+  private tileMapManager: TileMapManager | null = null;  // 瓦片地图管理器引用
+  private targetPosition: { x: number; y: number } | null = null; // 目标位置（用于路径寻找）
+  private pathQueue: { x: number; y: number }[] = [];     // 路径队列
+  private isPathfinding: boolean = false;                 // 是否正在寻路
+  private lastValidPosition: { x: number; y: number };    // 上一个有效位置
 
   /**
  * 构造函数
@@ -88,6 +96,9 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
 
     // 初始化背包，给小猫一些基础工具
     this.initializeInventory();
+
+    // 记录初始位置作为最后有效位置
+    this.lastValidPosition = { x, y };
   }
 
   // 初始化背包物品 - 给小猫配备基础的农场工具和种子
@@ -273,6 +284,29 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     const easedInput = this.easeInOutQuad(inputStrength);
     const adjustedSpeed = baseSpeed * (0.3 + 0.7 * easedInput); // 最低30%速度，最高100%
 
+    // 预测下一个位置
+    const nextX = this.x + x * adjustedSpeed * 0.016; // 假设60FPS
+    const nextY = this.y + y * adjustedSpeed * 0.016;
+
+    // 瓦片碰撞检测
+    if (this.tileMapManager && !this.tileMapManager.canMoveTo(nextX, nextY, 24, 24)) {
+      // 如果不能移动到目标位置，尝试沿轴移动
+      const canMoveX = this.tileMapManager.canMoveTo(nextX, this.y, 24, 24);
+      const canMoveY = this.tileMapManager.canMoveTo(this.x, nextY, 24, 24);
+      
+      if (canMoveX && !canMoveY) {
+        // 只能水平移动
+        y = 0;
+      } else if (canMoveY && !canMoveX) {
+        // 只能垂直移动
+        x = 0;
+      } else if (!canMoveX && !canMoveY) {
+        // 完全不能移动，停止
+        this.smoothStop(0.7);
+        return;
+      }
+    }
+
     // 添加微小的随机抖动，增加自然感
     const jitterX = (Math.random() - 0.5) * 0.02 * inputStrength;
     const jitterY = (Math.random() - 0.5) * 0.02 * inputStrength;
@@ -285,6 +319,11 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
 
     // 更新朝向和动画
     this.updateDirectionAndAnimation(x, y, inputStrength);
+
+    // 记录有效位置
+    if (inputStrength > 0.1) {
+      this.lastValidPosition = { x: this.x, y: this.y };
+    }
 
     // 增强的移动效果
     if (inputStrength > 0.3) {

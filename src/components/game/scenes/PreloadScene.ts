@@ -95,166 +95,29 @@ export class PreloadScene extends Phaser.Scene {
     console.log('Loading sprite assets...');
 
     // 加载小猫角色精灵（使用player作为备用）
-    this.load.image('cat', '/assets/characters/player.png');
+    this.load.image('cat', '/assets/farm-assets/cat/cat-0.png');
 
     // 加载小猫动画精灵表（使用player动画作为备用）
-    this.load.spritesheet('cat_walk', '/assets/animations/player_walk.png', {
+    this.load.spritesheet('cat_walk', '/assets/farm-assets/cat/cat-1.png', {
       frameWidth: 16,    // 帧宽度
       frameHeight: 16    // 帧高度
     });
 
-    this.load.spritesheet('cat_actions', '/assets/animations/player_walk.png', {
+    this.load.spritesheet('cat_actions', '/assets/farm-assets/cat/cat-2.png', {
       frameWidth: 16,    // 帧宽度
       frameHeight: 16    // 帧高度
     });
 
     console.log('Cat sprites loaded successfully');
 
-
-
     // Load farm plot sprites (using existing tiles as fallback)
-    this.load.image('farm_plot_empty', '/assets/tiles/grass.png');
-    this.load.image('farm_plot_plowed', '/assets/tiles/stone.png');
-    this.load.image('farm_plot_planted', '/assets/tiles/grass.png');
+    this.load.image('farm_plot_empty', '/assets/farm-assets/farmplants/framplant-0.png');
+    this.load.image('farm_plot_plowed', '/assets/farm-assets/farmplants/framplant-1.png');
+    this.load.image('farm_plot_planted', '/assets/farm-assets/farmplants/framplant-2.png');
 
-    // Load crop sprites for all growth stages (using existing assets as fallback)
-    const crops = ['carrot', 'tomato', 'wheat', 'corn', 'strawberry', 'lettuce', 'potato', 'pumpkin'];
-    const stages = ['seed', 'sprout', 'growing', 'mature', 'withered'];
+    this.load.image('fence', '/assets/farm-assets/fence/fence-0.png');
+    this.load.image('fence', '/assets/farm-assets/fence/fence-1.png');
 
-    crops.forEach(crop => {
-      stages.forEach(stage => {
-        this.load.image(`${crop}_${stage}`, `/assets/items/potion.png`);
-      });
-      // Also load harvested version
-      this.load.image(`${crop}_harvested`, `/assets/items/potion.png`);
-      // And seeds
-      this.load.image(`${crop}_seeds`, `/assets/items/potion.png`);
-    });
-
-    // Load farming tool sprites (using existing items as fallback)
-    this.load.image('watering_can', '/assets/items/potion.png');
-    this.load.image('hoe', '/assets/items/sword.png');
-    this.load.image('fertilizer_bag', '/assets/items/potion.png');
-    this.load.image('seeds_pouch', '/assets/items/potion.png');
-
-    // Load cooking station sprites (using existing items as fallback)
-    this.load.image('cooking_station', '/assets/items/chest.png');
-    this.load.image('cooking_station_active', '/assets/items/chest.png');
-
-    // Load food sprites (using existing items as fallback)
-    const foods = [
-      'carrot_soup', 'tomato_salad', 'wheat_bread', 'corn_soup',
-      'strawberry_cake', 'potato_stew', 'pumpkin_pie', 'mixed_salad'
-    ];
-    foods.forEach(food => {
-      this.load.image(food, `/assets/items/potion.png`);
-    });
-
-    // Load UI sprites (using existing UI assets)
-    this.load.image('ui_panel', '/assets/ui/panel.png');
-    this.load.image('ui_button', '/assets/ui/button.png');
-    this.load.image('ui_slot', '/assets/ui/button.png');
-    this.load.image('ui_heart', '/assets/ui/button.png');
-    this.load.image('ui_energy', '/assets/ui/button.png');
-    this.load.image('ui_happiness', '/assets/ui/button.png');
-
-    // Load particle sprites (using existing assets as fallback)
-    this.load.image('sparkle', '/assets/items/potion.png');
-    this.load.image('water_drop', '/assets/items/potion.png');
-    this.load.image('dirt_particle', '/assets/items/potion.png');
-    this.load.image('steam', '/assets/items/potion.png');
-
-    // Load ingredient sprites (using existing items as fallback)
-    this.load.image('water_bottle', '/assets/items/potion.png');
-
-    // Load new high-quality farm assets from Unity project
-    this.load.image('farm_grass', '/assets/farm-assets/grass.png');
-    this.load.image('farm_objects', '/assets/farm-assets/objects.png');
-    this.load.image('farm_overworld', '/assets/farm-assets/Overworld.png');
-    this.load.image('farm_character', '/assets/farm-assets/character.png');
-    this.load.image('farm_plants', '/assets/farm-assets/Plants.png');
-
-    // Load farm decoration sprites (using new assets)
-    this.load.image('farm_tree', '/assets/tiles/tree.png');
-    this.load.image('farm_flower', '/assets/tiles/grass.png');
-    this.load.image('farm_rock', '/assets/tiles/stone.png');
-    this.load.image('farm_well', '/assets/items/chest.png');
-    this.load.image('farm_barn', '/assets/items/chest.png');
-    this.load.image('farm_house', '/assets/items/chest.png');
-
-    // Load animated decorations (using existing animations as fallback)
-    this.load.spritesheet('farm_windmill', '/assets/animations/water_flow.png', {
-      frameWidth: 16,
-      frameHeight: 16
-    });
   }
 
-
-
-  create() {
-    console.log('PreloadScene create() called');
-
-    try {
-      // 处理Overworld.png图集分割
-      this.processOverworldAtlas();
-
-      // Start the main game scene
-      console.log('Starting GameScene...');
-      this.scene.start('GameScene');
-      console.log('Starting UIScene...');
-      this.scene.start('UIScene');
-      console.log('All scenes started successfully');
-    } catch (error) {
-      console.error('Failed to start game scenes:', error);
-      // Try to recover by starting just the GameScene
-      try {
-        this.scene.start('GameScene');
-        console.log('GameScene started in recovery mode');
-      } catch (recoveryError) {
-        console.error('Failed to start GameScene in recovery mode:', recoveryError);
-      }
-    }
-  }
-
-  /**
- * 处理多个图集分割
- * 使用SpriteAtlasManager动态分割各个图集中的精灵
- */
-  private processOverworldAtlas(): void {
-    try {
-      console.log('Processing multiple atlases...');
-
-      // 处理Overworld.png图集
-      console.log('Processing Overworld.png atlas...');
-      const overworldManager = new SpriteAtlasManager(this, 'farm_overworld', 32, 32);
-      const overworldInfo = overworldManager.getAtlasInfo();
-      console.log('Overworld atlas info:', overworldInfo);
-      overworldManager.extractFarmSprites();
-
-      // 处理Plants.png图集
-      console.log('Processing Plants.png atlas...');
-      const plantsManager = new SpriteAtlasManager(this, 'farm_plants', 16, 16);
-      const plantsInfo = plantsManager.getAtlasInfo();
-      console.log('Plants atlas info:', plantsInfo);
-      plantsManager.extractPlantSprites();
-
-      // 处理Objects.png图集
-      console.log('Processing Objects.png atlas...');
-      const objectsManager = new SpriteAtlasManager(this, 'farm_objects', 16, 16);
-      const objectsInfo = objectsManager.getAtlasInfo();
-      console.log('Objects atlas info:', objectsInfo);
-      objectsManager.extractObjectSprites();
-
-      // 处理Character.png图集
-      console.log('Processing Character.png atlas...');
-      const characterManager = new SpriteAtlasManager(this, 'farm_character', 16, 16);
-      const characterInfo = characterManager.getAtlasInfo();
-      console.log('Character atlas info:', characterInfo);
-      characterManager.extractCharacterSprites();
-
-      console.log('All atlases processing completed');
-    } catch (error) {
-      console.error('Failed to process atlases:', error);
-    }
-  }
 }

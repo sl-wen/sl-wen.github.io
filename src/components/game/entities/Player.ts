@@ -21,17 +21,17 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
  * @param y 初始Y坐标
  */
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    // 确定使用的纹理
-    let textureKey = 'cat_walk';
+    // 确定使用的纹理 - 使用cat_idle作为默认纹理
+    let textureKey = 'cat_idle';
 
     // 检查纹理是否存在，如果不存在则创建fallback
-    if (!scene.textures.exists('cat_walk')) {
-      console.warn('cat_walk texture not found, creating fallback');
-      // 创建一个简单的fallback纹理（橙色方块）
+    if (!scene.textures.exists('cat_idle')) {
+      console.warn('cat_idle texture not found, creating fallback');
+      // 创建一个简单的fallback纹理（橙色方块，代表小猫）
       scene.add.graphics()
         .fillStyle(0xffa500) // 橙色
-        .fillRect(0, 0, 16, 16)
-        .generateTexture('cat_fallback', 16, 16)
+        .fillRect(0, 0, 32, 32)
+        .generateTexture('cat_fallback', 32, 32)
         .destroy();
 
       textureKey = 'cat_fallback';

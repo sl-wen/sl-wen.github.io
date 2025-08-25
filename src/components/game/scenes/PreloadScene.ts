@@ -120,7 +120,7 @@ export class PreloadScene extends Phaser.Scene {
    */
   private loadCatAssets() {
     // 基础小猫精灵
-    this.load.image('cat_idle', '/assets/farm-assets/cat/cat-0.png');
+    this.load.image('cat_idle', '/assets/farm-assets/cat/cat_idle_down.png');
     
     // 小猫各方向静止状态
     this.load.image('cat_idle_down', '/assets/farm-assets/cat/cat_idle_down.png');
@@ -153,59 +153,61 @@ export class PreloadScene extends Phaser.Scene {
    * 加载作物资源
    */
   private loadCropAssets() {
-    // 胡萝卜生长阶段
-    this.load.image('carrot_seed', '/assets/farm-assets/plants/carrot_seed.png');
-    this.load.image('carrot_sprout', '/assets/farm-assets/plants/carrot_sprout.png');
-    this.load.image('carrot_mature', '/assets/farm-assets/plants/carrot_mature.png');
-    this.load.image('carrot_ready', '/assets/farm-assets/plants/carrot_ready.png');
+    // 使用现有的植物资源，为缺失的作物创建占位符
     
-    // 番茄生长阶段
+    // 胡萝卜生长阶段 - 使用通用植物图片作为占位符
+    this.load.image('carrot_seed', '/assets/farm-assets/plants/plants-47.png');
+    this.load.image('carrot_sprout', '/assets/farm-assets/plants/plants-48.png');
+    this.load.image('carrot_mature', '/assets/farm-assets/plants/plants-49.png');
+    this.load.image('carrot_ready', '/assets/farm-assets/plants/plants-50.png');
+    
+    // 番茄生长阶段 - 使用现有的番茄资源
     this.load.image('tomato_seed', '/assets/farm-assets/plants/tomato_seed.png');
     this.load.image('tomato_sprout', '/assets/farm-assets/plants/tomato_sprout.png');
     this.load.image('tomato_mature', '/assets/farm-assets/plants/tomato_mature.png');
     this.load.image('tomato_ready', '/assets/farm-assets/plants/tomato_ready.png');
     
-    // 小麦生长阶段
+    // 小麦生长阶段 - 使用现有的小麦资源
     this.load.image('wheat_seed', '/assets/farm-assets/plants/wheat_seed.png');
     this.load.image('wheat_sprout', '/assets/farm-assets/plants/wheat_sprout.png');
     this.load.image('wheat_mature', '/assets/farm-assets/plants/wheat_mature.png');
     this.load.image('wheat_ready', '/assets/farm-assets/plants/wheat_ready.png');
     
-    // 玉米生长阶段
-    this.load.image('corn_seed', '/assets/farm-assets/plants/corn_seed.png');
-    this.load.image('corn_sprout', '/assets/farm-assets/plants/corn_sprout.png');
-    this.load.image('corn_mature', '/assets/farm-assets/plants/corn_mature.png');
-    this.load.image('corn_ready', '/assets/farm-assets/plants/corn_ready.png');
+    // 玉米生长阶段 - 使用通用植物图片作为占位符
+    this.load.image('corn_seed', '/assets/farm-assets/plants/plants-51.png');
+    this.load.image('corn_sprout', '/assets/farm-assets/plants/plants-52.png');
+    this.load.image('corn_mature', '/assets/farm-assets/plants/plants-53.png');
+    this.load.image('corn_ready', '/assets/farm-assets/plants/plants-54.png');
     
-    // 草莓生长阶段
+    // 草莓生长阶段 - 使用现有的草莓资源
     this.load.image('strawberry_seed', '/assets/farm-assets/plants/strawberry_seed.png');
     this.load.image('strawberry_sprout', '/assets/farm-assets/plants/strawberry_sprout.png');
     this.load.image('strawberry_mature', '/assets/farm-assets/plants/strawberry_mature.png');
     this.load.image('strawberry_ready', '/assets/farm-assets/plants/strawberry_ready.png');
     
-    // 生菜生长阶段
-    this.load.image('lettuce_seed', '/assets/farm-assets/plants/lettuce_seed.png');
-    this.load.image('lettuce_sprout', '/assets/farm-assets/plants/lettuce_sprout.png');
-    this.load.image('lettuce_mature', '/assets/farm-assets/plants/lettuce_mature.png');
-    this.load.image('lettuce_ready', '/assets/farm-assets/plants/lettuce_ready.png');
+    // 生菜生长阶段 - 使用通用植物图片作为占位符
+    this.load.image('lettuce_seed', '/assets/farm-assets/plants/plants-55.png');
+    this.load.image('lettuce_sprout', '/assets/farm-assets/plants/plants-56.png');
+    this.load.image('lettuce_mature', '/assets/farm-assets/plants/plants-57.png');
+    this.load.image('lettuce_ready', '/assets/farm-assets/plants/plants-58.png');
     
-    // 土豆生长阶段
+    // 土豆生长阶段 - 使用现有的土豆资源
     this.load.image('potato_seed', '/assets/farm-assets/plants/potato_seed.png');
     this.load.image('potato_sprout', '/assets/farm-assets/plants/potato_sprout.png');
     this.load.image('potato_mature', '/assets/farm-assets/plants/potato_mature.png');
     this.load.image('potato_ready', '/assets/farm-assets/plants/potato_ready.png');
     
-    // 南瓜生长阶段
+    // 南瓜生长阶段 - 使用现有的南瓜资源
     this.load.image('pumpkin_seed', '/assets/farm-assets/plants/pumpkin_seed.png');
     this.load.image('pumpkin_sprout', '/assets/farm-assets/plants/pumpkin_sprout.png');
     this.load.image('pumpkin_mature', '/assets/farm-assets/plants/pumpkin_mature.png');
     this.load.image('pumpkin_ready', '/assets/farm-assets/plants/pumpkin_ready.png');
     
-    // 枯萎植物
-    this.load.image('plant_withered_1', '/assets/farm-assets/plants/plant_withered_1.png');
-    this.load.image('plant_withered_2', '/assets/farm-assets/plants/plant_withered_2.png');
-    this.load.image('plant_withered_3', '/assets/farm-assets/plants/plant_withered_3.png');
-    this.load.image('plant_withered_4', '/assets/farm-assets/plants/plant_withered_4.png');
+    // 枯萎植物 - 使用通用植物图片作为占位符
+    this.load.image('plant_withered_1', '/assets/farm-assets/plants/plants-59.png');
+    this.load.image('plant_withered_2', '/assets/farm-assets/plants/plants-60.png');
+    this.load.image('plant_withered_3', '/assets/farm-assets/plants/plants-61.png');
+    this.load.image('plant_withered_4', '/assets/farm-assets/plants/plants-62.png');
   }
 
   /**
@@ -234,15 +236,15 @@ export class PreloadScene extends Phaser.Scene {
    * 加载UI资源
    */
   private loadUIAssets() {
-    // 按钮
-    this.load.image('button_stone_normal', '/assets/farm-assets/UI/button_stone_normal.png');
-    this.load.image('button_stone_hover', '/assets/farm-assets/UI/button_stone_hover.png');
-    this.load.image('button_stone_pressed', '/assets/farm-assets/UI/button_stone_pressed.png');
+    // 按钮 - 使用现有的UI资源
+    this.load.image('button_stone_normal', '/assets/farm-assets/UI/UI-890.png');
+    this.load.image('button_stone_hover', '/assets/farm-assets/UI/UI-891.png');
+    this.load.image('button_stone_pressed', '/assets/farm-assets/UI/UI-892.png');
     
-    // 面板
-    this.load.image('panel_wood_small', '/assets/farm-assets/UI/panel_wood_small.png');
-    this.load.image('panel_wood_medium', '/assets/farm-assets/UI/panel_wood_medium.png');
-    this.load.image('panel_wood_large', '/assets/farm-assets/UI/panel_wood_large.png');
+    // 面板 - 使用现有的UI资源
+    this.load.image('panel_wood_small', '/assets/farm-assets/UI/UI-950.png');
+    this.load.image('panel_wood_medium', '/assets/farm-assets/UI/UI-951.png');
+    this.load.image('panel_wood_large', '/assets/farm-assets/UI/UI-952.png');
   }
 
   /**
@@ -254,16 +256,21 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('farm_plot_plowed', '/assets/farm-assets/farmplants/framplant-1.png');
     this.load.image('farm_plot_planted', '/assets/farm-assets/farmplants/framplant-2.png');
     
-    // 围栏
-    this.load.image('fence', '/assets/farm-assets/fence/fence-0.png');
-    this.load.image('fence_alt', '/assets/farm-assets/fence/fence-1.png');
+    // 围栏 - 使用现有的围栏资源
+    this.load.image('fence', '/assets/farm-assets/fence/Fences-0.png');
+    this.load.image('fence_alt', '/assets/farm-assets/fence/Fences-1.png');
+    
+    // 额外的农场装饰
+    this.load.image('farm_decoration_1', '/assets/farm-assets/farmplants/framplant-3.png');
+    this.load.image('farm_decoration_2', '/assets/farm-assets/farmplants/framplant-4.png');
+    this.load.image('farm_decoration_3', '/assets/farm-assets/farmplants/framplant-5.png');
   }
 
   /**
    * 加载动物资源
    */
   private loadAnimalAssets() {
-    // 鸡的动画
+    // 鸡的动画 - 使用现有的鸡资源
     this.load.image('chicken_idle_1', '/assets/farm-assets/chicken/chicken_idle_1.png');
     this.load.image('chicken_idle_2', '/assets/farm-assets/chicken/chicken_idle_2.png');
     this.load.image('chicken_walk_1', '/assets/farm-assets/chicken/chicken_walk_1.png');
@@ -272,6 +279,103 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('chicken_peck_2', '/assets/farm-assets/chicken/chicken_peck_2.png');
     this.load.image('chicken_flap_1', '/assets/farm-assets/chicken/chicken_flap_1.png');
     this.load.image('chicken_flap_2', '/assets/farm-assets/chicken/chicken_flap_2.png');
+  }
+
+  /**
+   * 场景创建方法 - 资源加载完成后的处理
+   * 启动主游戏场景和UI场景
+   */
+  create() {
+    console.log('PreloadScene create() called - All assets loaded successfully');
+    
+    // 创建小猫的行走动画
+    this.createCatAnimations();
+    
+    // 启动主游戏场景
+    console.log('Starting GameScene...');
+    this.scene.start('GameScene');
+    
+    // 启动UI场景
+    console.log('Launching UIScene...');
+    this.scene.launch('UIScene');
+    
+    console.log('Scene transitions completed');
+  }
+
+  /**
+   * 创建小猫的动画
+   */
+  private createCatAnimations() {
+    // 向下行走动画
+    this.anims.create({
+      key: 'cat_walk_down',
+      frames: [
+        { key: 'cat_walk_down_1' },
+        { key: 'cat_walk_down_2' }
+      ],
+      frameRate: 8,
+      repeat: -1
+    });
+
+    // 向上行走动画
+    this.anims.create({
+      key: 'cat_walk_up',
+      frames: [
+        { key: 'cat_walk_up_1' },
+        { key: 'cat_walk_up_2' }
+      ],
+      frameRate: 8,
+      repeat: -1
+    });
+
+    // 向左行走动画
+    this.anims.create({
+      key: 'cat_walk_left',
+      frames: [
+        { key: 'cat_walk_left_1' },
+        { key: 'cat_walk_left_2' }
+      ],
+      frameRate: 8,
+      repeat: -1
+    });
+
+    // 向右行走动画
+    this.anims.create({
+      key: 'cat_walk_right',
+      frames: [
+        { key: 'cat_walk_right_1' },
+        { key: 'cat_walk_right_2' }
+      ],
+      frameRate: 8,
+      repeat: -1
+    });
+
+    // 小猫静止动画（各方向）
+    this.anims.create({
+      key: 'cat_idle_down',
+      frames: [{ key: 'cat_idle_down' }],
+      frameRate: 1
+    });
+
+    this.anims.create({
+      key: 'cat_idle_up',
+      frames: [{ key: 'cat_idle_up' }],
+      frameRate: 1
+    });
+
+    this.anims.create({
+      key: 'cat_idle_left',
+      frames: [{ key: 'cat_idle_left' }],
+      frameRate: 1
+    });
+
+    this.anims.create({
+      key: 'cat_idle_right',
+      frames: [{ key: 'cat_idle_right' }],
+      frameRate: 1
+    });
+
+    console.log('Cat animations created successfully');
   }
 
 }

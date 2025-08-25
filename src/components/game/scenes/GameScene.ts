@@ -69,52 +69,52 @@ export class GameScene extends Phaser.Scene {
       // 初始化背包系统
       console.log('Initializing inventory system...');
       this.inventoryManager = new InventoryManager();
-      this.inventoryManager.addTestItems(); // 添加测试物品
+      // this.inventoryManager.addTestItems(); // 添加测试物品
       console.log('Inventory system initialized');
 
       // 创建游戏世界背景
-      console.log('Creating game world background...');
-      this.createWorldBackground();
-      console.log('Game world background created');
+      // console.log('Creating game world background...');
+      // this.createWorldBackground();
+      // console.log('Game world background created');
 
       // 初始化UI布局管理器（优先初始化）
-      console.log('Initializing UI layout manager...');
+      // console.log('Initializing UI layout manager...');
       this.uiLayoutManager = new UILayoutManager(this);
-      console.log('UI layout manager initialized');
+      // console.log('UI layout manager initialized');
 
-      // 初始化瓦片地图管理器
+      // 初始化瓦片地图管理器（根据参考图启用预设布局）
       console.log('Initializing tile map manager...');
       this.tileMapManager = new TileMapManager(this);
       await this.loadTileResources();
-      this.tileMapManager.createDefaultFarmMap();
+      this.tileMapManager.createReferenceIslandsMap();
       console.log('Tile map manager initialized');
 
       // 初始化农场布局管理器
       console.log('Initializing farm layout manager...');
-      this.farmLayoutManager = new FarmLayoutManager(this);
+      //this.farmLayoutManager = new FarmLayoutManager(this);
       console.log('Farm layout manager initialized');
 
-      // 初始化天气系统
-      console.log('Initializing weather system...');
-      this.weatherSystem = new WeatherSystem(this);
-      this.setupWeatherEventHandlers();
-      console.log('Weather system initialized');
+      // // 初始化天气系统
+      // console.log('Initializing weather system...');
+      // this.weatherSystem = new WeatherSystem(this);
+      // this.setupWeatherEventHandlers();
+      // console.log('Weather system initialized');
 
       // 创建玩家角色（小猫）
       console.log('Creating cat player...');
       this.cat = new Cat(this, 200, 200);
       console.log('Cat player created successfully');
 
-      // 创建农田地块组
-      this.farmPlots = this.add.group();
-      this.createFarmPlots();
+      // // 创建农田地块组
+      // this.farmPlots = this.add.group();
+      // this.createFarmPlots();
 
-      // 创建烹饪站组
-      this.cookingStations = this.add.group();
-      this.createCookingStations();
+      // // 创建烹饪站组
+      // this.cookingStations = this.add.group();
+      // this.createCookingStations();
 
-      // 使用新的布局管理器创建装饰物组
-      this.decorations = this.farmLayoutManager.createFarmLayout();
+      // // 使用新的布局管理器创建装饰物组
+      // this.decorations = this.farmLayoutManager.createFarmLayout();
 
       // 设置输入控制（包含平台检测）
       this.setupInput();
@@ -174,7 +174,7 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#4a7c59'); // 深绿色背景，模拟草地
 
     // 创建地面纹理（使用现有的农田纹理作为地面）
-    const groundTileSize = 64; // 地面瓦片大小
+    const groundTileSize = 108; // 地面瓦片大小
     const worldWidth = 1200;   // 世界宽度
     const worldHeight = 800;   // 世界高度
 
@@ -265,7 +265,12 @@ export class GameScene extends Phaser.Scene {
    * 根据平台类型设置不同的控制方式（PC端键盘，移动端触摸）
    */
   private setupInput() {
-    // UI布局管理器已经在create()中初始化，直接使用
+    // 检查UI布局管理器是否已初始化
+    if (!this.uiLayoutManager) {
+      console.warn('UILayoutManager not initialized, skipping input setup');
+      return;
+    }
+
     const screenInfo = this.uiLayoutManager.getScreenInfo();
 
     if (!screenInfo.isMobile) {
@@ -354,7 +359,12 @@ export class GameScene extends Phaser.Scene {
    * 初始化虚拟摇杆、动作按钮和触摸交互
    */
   private setupMobileControls() {
-    // UI布局管理器已经在create()中初始化，直接使用
+    // 检查UI布局管理器是否已初始化
+    if (!this.uiLayoutManager) {
+      console.warn('UILayoutManager not initialized, skipping mobile controls setup');
+      return;
+    }
+
     this.initializeVirtualJoystick();    // 初始化虚拟摇杆
     this.setupActionButtons();           // 设置动作按钮
 
@@ -983,20 +993,31 @@ export class GameScene extends Phaser.Scene {
    * 添加环境粒子效果（蝴蝶、树叶等）增强游戏氛围
    */
   private createAtmosphere() {
-    // 添加环境粒子（蝴蝶、树叶等）
-    const butterflies = this.add.particles(0, 0, 'sparkle', {
-      x: { min: 0, max: 800 },        // X坐标范围
-      y: { min: 0, max: 600 },        // Y坐标范围
-      scale: { start: 0.1, end: 0.3 }, // 缩放范围
-      alpha: { start: 0.8, end: 0.3 }, // 透明度范围
-      tint: [0xFFD700, 0xFF69B4, 0x87CEEB], // 颜色数组（金色、粉色、天蓝色）
-      lifespan: 5000,                 // 生命周期5秒
-      frequency: 2000,                // 生成频率2秒
-      quantity: 1,                    // 每次生成1个粒子
-      speed: { min: 20, max: 40 },    // 速度范围
-      gravityY: -10                   // 向上的重力（模拟飘浮）
+    // 添加枫叶飘落粒子
+    const leafKeys = ['leaf0', 'leaf1', 'leaf2', 'leaf3', 'leaf4', 'leaf5'];
+
+    const createLeafEmitter = (key: string) => this.add.particles(0, -50, key, {
+      x: { min: 0, max: this.cameras.main.width },
+      y: { min: -100, max: -20 },
+      speedY: { min: 1, max: 2 },
+      speedX: { min: -5, max: 5 },
+      accelerationX: { min: -30, max: 30 },
+      // dragX is not a valid ParticleEmitterConfig property, so we remove it
+      angle: { min: -30, max: 30 },
+      rotate: { min: -180, max: 180 },
+      scale: { start: 1.6, end: 1.2 },
+      alpha: { start: 1, end: 0.8 },
+      lifespan: { min: 6000, max: 10000 },
+      quantity: 1,
+      frequency: 5000,
+      gravityY: 5
     });
-    butterflies.setDepth(15);  // 设置渲染深度
+
+    leafKeys.forEach((k) => {
+      const emitter = createLeafEmitter(k);
+      emitter.setDepth(6);
+      this.particlePool.push(emitter);
+    });
   }
 
   /**
@@ -1296,7 +1317,7 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // 更新瓦片地图系统（动画、效果等）
+    // 更新瓦片地图系统
     if (this.tileMapManager) {
       this.tileMapManager.update(this.time.now, this.game.loop.delta);
     }

@@ -48,7 +48,6 @@ export class UIScene extends Phaser.Scene {
 
     // 创建响应式设计的UI元素
     this.createDialogueBox();              // 创建对话框
-    this.createNotificationArea();         // 创建通知区域
     this.createResponsiveCatStats();       // 创建响应式状态栏
     this.createToolIndicator();            // 创建工具指示器
     this.createInventoryInterface();       // 创建背包界面
@@ -123,37 +122,6 @@ export class UIScene extends Phaser.Scene {
     this.dialogueBox.setVisible(false);
     this.dialogueBox.setScrollFactor(0);
     this.dialogueBox.setDepth(1000);
-  }
-
-  private createNotificationArea() {
-    const width = this.cameras.main.width;
-
-    // Create notification container for better styling
-    const notificationContainer = this.add.container(width / 2, 50);
-    notificationContainer.setScrollFactor(0);
-    notificationContainer.setDepth(1100);
-
-    // Modern notification background with glassmorphism
-    const notificationBg = this.add.graphics();
-    notificationBg.fillStyle(0x000000, 0.6);
-    notificationBg.lineStyle(2, 0x4a90e2, 0.8);
-    notificationBg.fillRoundedRect(-120, -20, 240, 40, 20);
-    notificationBg.strokeRoundedRect(-120, -20, 240, 40, 20);
-
-    this.notificationText = this.add.text(0, 0, '', {
-      fontSize: '16px',
-      color: '#ffffff',
-      align: 'center',
-      fontFamily: 'Arial, sans-serif',
-      fontStyle: 'bold'
-    });
-    this.notificationText.setOrigin(0.5);
-
-    notificationContainer.add([notificationBg, this.notificationText]);
-    notificationContainer.setVisible(false);
-
-    // Store reference
-    (this as any).notificationContainer = notificationContainer;
   }
 
   private createResponsiveCatStats() {

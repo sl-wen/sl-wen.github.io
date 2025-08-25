@@ -196,15 +196,15 @@ export class TileMapManager {
         this.tilemap = this.scene.make.tilemap(tilemapConfig);
 
         // 为每个图层创建瓦片集和图层
-        mapData.layers.forEach(layerData => {
-            this.createTileLayer(layerData, mapData);
-        });
+        // mapData.layers.forEach(layerData => {
+        //     this.createTileLayer(layerData, mapData);
+        // });
 
         // 设置碰撞属性
-        this.setupCollisions();
+        // this.setupCollisions();
 
-        // 创建动画瓦片
-        this.createAnimatedTiles();
+        // // 创建动画瓦片
+        // this.createAnimatedTiles();
     }
 
     /**
@@ -379,6 +379,92 @@ export class TileMapManager {
                     opacity: 1.0,
                     depth: 3
                 }
+            ]
+        };
+
+        this.createTileMap(mapData);
+    }
+
+    /**
+     * 基于参考截图创建“群岛”预设地图
+     * - 背景为水面
+     * - 若干草地岛屿与连接的木桥/小径
+     */
+    public createReferenceIslandsMap(): void {
+        const width = 60;
+        const height = 40;
+
+        // 背景：全部水
+        const background: number[] = new Array(width * height).fill(6); // 6 = WATER
+
+        // 地形层：绘制主要岛屿（草地）和路径/桥
+        const terrain: number[] = new Array(width * height).fill(0);
+
+        const setRect = (sx: number, sy: number, w: number, h: number, id: number) => {
+            for (let y = sy; y < sy + h; y++) {
+                for (let x = sx; x < sx + w; x++) {
+                    if (x >= 0 && x < width && y >= 0 && y < height) {
+                        terrain[y * width + x] = id;
+                    }
+                }
+            }
+        };
+
+        // 主岛（左中）
+        setRect(6, 6, 22, 18, 1); // 草地
+        // 农田区域（主岛中央偏上）
+        setRect(14, 12, 10, 8, 3); // 泥土
+
+        // 右侧大岛
+        setRect(40, 16, 12, 10, 1);
+
+        // 左下小岛
+        setRect(10, 30, 10, 6, 1);
+
+        // 中央小岛
+        setRect(28, 18, 6, 6, 1);
+
+        // 桥/小径（用 PATH 连接主岛与右侧岛、主岛与中央小岛）
+        for (let x = 28; x <= 40; x++) {
+            if (x >= 0 && x < width) {
+                terrain[18 * width + x] = 8; // PATH
+                terrain[19 * width + x] = 8;
+            }
+        }
+
+        for (let y = 22; y <= 26; y++) {
+            if (y >= 0 && y < height) {
+                terrain[y * width + 31] = 8; // PATH 竖向
+            }
+        }
+
+        // 装饰层：在边界加深色草地，略微描边主岛
+        const decorations: number[] = new Array(width * height).fill(0);
+        const outline = (sx: number, sy: number, w: number, h: number) => {
+            for (let x = sx; x < sx + w; x++) {
+                if (sy - 1 >= 0) decorations[(sy - 1) * width + x] = 2; // 深色草地
+                if (sy + h < height) decorations[(sy + h) * width + x] = 2;
+            }
+            for (let y = sy; y < sy + h; y++) {
+                if (sx - 1 >= 0) decorations[y * width + (sx - 1)] = 2;
+                if (sx + w < width) decorations[y * width + (sx + w)] = 2;
+            }
+        };
+
+        outline(6, 6, 22, 18);
+        outline(40, 16, 12, 10);
+        outline(10, 30, 10, 6);
+        outline(28, 18, 6, 6);
+
+        const mapData: TileMapData = {
+            width,
+            height,
+            tileWidth: this.TILE_WIDTH,
+            tileHeight: this.TILE_HEIGHT,
+            layers: [
+                { name: 'background', data: background, visible: true, opacity: 1, depth: 1 },
+                { name: 'terrain', data: terrain, visible: true, opacity: 1, depth: 2 },
+                { name: 'decorations', data: decorations, visible: true, opacity: 1, depth: 3 }
             ]
         };
 

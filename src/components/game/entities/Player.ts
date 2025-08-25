@@ -13,7 +13,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   private currentTool: ToolType | null = null;  // 当前选中的工具
   private inventory: InventoryItem[] = [];      // 背包物品列表
   public isActing: boolean = false;             // 是否正在执行动作（防止动作重叠）
-  
+
   // 增强移动系统相关属性
   private tileMapManager: TileMapManager | null = null;  // 瓦片地图管理器引用
   private targetPosition: { x: number; y: number } | null = null; // 目标位置（用于路径寻找）
@@ -277,9 +277,9 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     }
 
     // 动态速度系统 - 增加加速度感
-    const baseSpeed = 140; // 提高基础速度
+    const baseSpeed = 80; // 提高基础速度
     const inputStrength = Math.min(inputMagnitude, 1);
-    
+
     // 使用缓动函数增加速度响应感
     const easedInput = this.easeInOutQuad(inputStrength);
     const adjustedSpeed = baseSpeed * (0.3 + 0.7 * easedInput); // 最低30%速度，最高100%
@@ -293,7 +293,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
       // 如果不能移动到目标位置，尝试沿轴移动
       const canMoveX = this.tileMapManager.canMoveTo(nextX, this.y, 24, 24);
       const canMoveY = this.tileMapManager.canMoveTo(this.x, nextY, 24, 24);
-      
+
       if (canMoveX && !canMoveY) {
         // 只能水平移动
         y = 0;
@@ -313,7 +313,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
 
     // 设置速度，使用标准化的方向向量和抖动
     this.setVelocity(
-      (x + jitterX) * adjustedSpeed, 
+      (x + jitterX) * adjustedSpeed,
       (y + jitterY) * adjustedSpeed
     );
 
@@ -382,17 +382,17 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     if (currentVelocity) {
       const currentSpeedX = currentVelocity.velocity.x;
       const currentSpeedY = currentVelocity.velocity.y;
-      
+
       // 应用减速
       currentVelocity.setVelocity(
         currentSpeedX * deceleration,
         currentSpeedY * deceleration
       );
-      
+
       // 如果速度很小就完全停止
       if (Math.abs(currentSpeedX) < 8 && Math.abs(currentSpeedY) < 8) {
         currentVelocity.setVelocity(0, 0);
-        
+
         // 播放静止动画（如果不在执行动作）
         if (!this.isActing) {
           const idleAnimKey = `cat_idle_${this.direction}`;
@@ -408,7 +408,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   // 立即停止（紧急情况使用）
   public hardStop(): this {
     this.setVelocity(0, 0);
-    
+
     // 播放静止动画（如果不在执行动作）
     if (!this.isActing) {
       const idleAnimKey = `cat_idle_${this.direction}`;
@@ -566,7 +566,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   // 创建移动时的微粒效果
   private createMovementParticles() {
     // 避免过度创建粒子效果
-    if (Math.random() < 0.3) {
+    if (Math.random() < 0.05) {
       const particles = this.scene.add.particles(this.x, this.y + 10, 'grass', {
         scale: { start: 0.1, end: 0 },
         alpha: { start: 0.6, end: 0 },

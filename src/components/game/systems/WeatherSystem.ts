@@ -60,7 +60,7 @@ export class WeatherSystem {
     private weatherParticles: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
     private weatherOverlay: Phaser.GameObjects.Rectangle | null = null;
     private lightingOverlay: Phaser.GameObjects.Rectangle | null = null;
-    private cloudSprites: Phaser.GameObjects.Sprite[] = [];
+    private cloudSprites: Phaser.GameObjects.Ellipse[] = [];
 
     // 音效相关
     private weatherSounds: Map<WeatherType, Phaser.Sound.BaseSound> = new Map();
@@ -145,7 +145,7 @@ export class WeatherSystem {
             windSpeed: 0.3
         };
 
-        this.initializeWeatherSystem();
+        //this.initializeWeatherSystem();
     }
 
     /**
@@ -154,7 +154,7 @@ export class WeatherSystem {
     private initializeWeatherSystem(): void {
         this.createWeatherOverlay();
         this.createLightingSystem();
-        this.generateRandomWeather();
+        //this.generateRandomWeather();
 
         // 设置天气更新定时器
         this.scene.time.addEvent({
@@ -251,7 +251,7 @@ export class WeatherSystem {
     private applySeasonEffects(): void {
         const seasonConfig = this.seasonConfigs[this.currentSeason];
 
-        // 应用季节色调
+        // 应用季节色调（Rectangle 没有 setTint，使用 setFillStyle）
         if (this.lightingOverlay) {
             this.scene.tweens.add({
                 targets: this.lightingOverlay,
@@ -260,7 +260,8 @@ export class WeatherSystem {
                 ease: 'Power2',
                 onComplete: () => {
                     if (this.lightingOverlay) {
-                        this.lightingOverlay.setTint(seasonConfig.tintColor);
+                        const currentAlpha = this.lightingOverlay.alpha;
+                        this.lightingOverlay.setFillStyle(seasonConfig.tintColor, currentAlpha);
                     }
                 }
             });
@@ -415,7 +416,7 @@ export class WeatherSystem {
                 if (this.lightingOverlay) {
                     // 闪电闪烁
                     this.lightingOverlay.setAlpha(0.8);
-                    this.lightingOverlay.setTint(0xFFFFFF);
+                    this.lightingOverlay.setFillStyle(0xFFFFFF, this.lightingOverlay.alpha);
 
                     this.scene.tweens.add({
                         targets: this.lightingOverlay,

@@ -239,7 +239,21 @@ export class Crop extends Phaser.GameObjects.Sprite {
    * 根据当前生长阶段更新纹理和粒子效果
    */
   private updateVisual() {
-    const textureName = `${this.cropData.type}_${this.cropData.stage}`;  // 构建纹理名称
+    let textureName: string;
+    
+    // 根据生长阶段构建纹理名称
+    if (this.cropData.stage === CropStage.SEED) {
+      textureName = `${this.cropData.type}_seed`;
+    } else if (this.cropData.stage === CropStage.SPROUT) {
+      textureName = `${this.cropData.type}_sprout`;
+    } else if (this.cropData.stage === CropStage.GROWING) {
+      textureName = `${this.cropData.type}_mature`;
+    } else if (this.cropData.stage === CropStage.MATURE) {
+      textureName = `${this.cropData.type}_ready`;
+    } else {
+      textureName = `${this.cropData.type}_seed`; // 默认使用种子纹理
+    }
+    
     this.setTexture(textureName);  // 设置新的纹理
 
     // 添加生长粒子效果（枯萎的作物不显示粒子）
@@ -372,7 +386,10 @@ export class Crop extends Phaser.GameObjects.Sprite {
     if (this.cropData.stage === CropStage.WITHERED) return;  // 已经枯萎的作物不再处理
 
     this.cropData.stage = CropStage.WITHERED;  // 设置生长阶段为枯萎
-    this.setTexture(`${this.cropData.type}_withered`);  // 设置枯萎纹理
+    // 使用通用的枯萎纹理
+    const witheredTextures = ['plant_withered_1', 'plant_withered_2', 'plant_withered_3', 'plant_withered_4'];
+    const randomWithered = witheredTextures[Math.floor(Math.random() * witheredTextures.length)];
+    this.setTexture(randomWithered);  // 设置枯萎纹理
     this.setTint(0x8B4513);  // 设置棕色色调，表示枯萎状态
 
     // 停止生长

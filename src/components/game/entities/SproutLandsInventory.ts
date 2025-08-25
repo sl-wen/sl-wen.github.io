@@ -46,13 +46,13 @@ export class SproutLandsInventory {
 
   private initializeStartingItems(): void {
     // Add basic tools
-    this.addTool('hoe', 'Basic Hoe', 100, 'A simple hoe for tilling soil');
-    this.addTool('wateringCan', 'Watering Can', 100, 'Waters your crops');
+    this.addTool('hoe', '基础锄头', 100, '用于翻耕土地的简单工具');
+    this.addTool('wateringCan', '洒水壶', 100, '给作物浇水的工具');
     
     // Add starting seeds
-    this.addSeed('carrot', 'Carrot Seeds', 5, 20, 45000, ['spring', 'fall']);
-    this.addSeed('wheat', 'Wheat Seeds', 10, 10, 30000, ['spring', 'summer', 'fall']);
-    this.addSeed('lettuce', 'Lettuce Seeds', 8, 15, 25000, ['spring', 'fall']);
+    this.addSeed('carrot', '胡萝卜种子', 5, 20, 45000, ['春季', '秋季']);
+    this.addSeed('wheat', '小麦种子', 10, 10, 30000, ['春季', '夏季', '秋季']);
+    this.addSeed('lettuce', '生菜种子', 8, 15, 25000, ['春季', '秋季']);
   }
 
   private addTool(
@@ -92,7 +92,7 @@ export class SproutLandsInventory {
       type: 'seed',
       quantity,
       value,
-      description: `Seeds for growing ${cropType}`,
+      description: `用于种植${cropType}的种子`,
       stackable: true,
       maxStack: 99,
       cropType,

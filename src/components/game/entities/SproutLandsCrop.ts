@@ -36,82 +36,82 @@ export class SproutLandsCrop {
   private static cropDatabase: Record<CropType, CropData> = {
     carrot: {
       type: 'carrot',
-      name: 'Carrot',
+      name: '胡萝卜',
       growthTime: 45000, // 45 seconds
       sellPrice: 35,
       seedCost: 20,
       waterRequirement: 3,
-      seasons: ['spring', 'fall'],
+      seasons: ['春季', '秋季'],
       harvestYield: 1
     },
     tomato: {
       type: 'tomato',
-      name: 'Tomato',
+      name: '番茄',
       growthTime: 60000, // 60 seconds
       sellPrice: 60,
       seedCost: 50,
       waterRequirement: 4,
-      seasons: ['summer'],
+      seasons: ['夏季'],
       harvestYield: 2
     },
     wheat: {
       type: 'wheat',
-      name: 'Wheat',
+      name: '小麦',
       growthTime: 30000, // 30 seconds
       sellPrice: 25,
       seedCost: 10,
       waterRequirement: 2,
-      seasons: ['spring', 'summer', 'fall'],
+      seasons: ['春季', '夏季', '秋季'],
       harvestYield: 3
     },
     corn: {
       type: 'corn',
-      name: 'Corn',
+      name: '玉米',
       growthTime: 90000, // 90 seconds
       sellPrice: 100,
       seedCost: 80,
       waterRequirement: 5,
-      seasons: ['summer'],
+      seasons: ['夏季'],
       harvestYield: 2
     },
     strawberry: {
       type: 'strawberry',
-      name: 'Strawberry',
+      name: '草莓',
       growthTime: 75000, // 75 seconds
       sellPrice: 120,
       seedCost: 100,
       waterRequirement: 4,
-      seasons: ['spring', 'summer'],
+      seasons: ['春季', '夏季'],
       harvestYield: 3
     },
     lettuce: {
       type: 'lettuce',
-      name: 'Lettuce',
+      name: '生菜',
       growthTime: 25000, // 25 seconds
       sellPrice: 20,
       seedCost: 15,
       waterRequirement: 3,
-      seasons: ['spring', 'fall'],
+      seasons: ['春季', '秋季'],
       harvestYield: 1
     },
     potato: {
       type: 'potato',
-      name: 'Potato',
+      name: '土豆',
       growthTime: 50000, // 50 seconds
       sellPrice: 40,
       seedCost: 25,
       waterRequirement: 3,
-      seasons: ['spring', 'fall'],
+      seasons: ['春季', '秋季'],
       harvestYield: 2
     },
     pumpkin: {
       type: 'pumpkin',
-      name: 'Pumpkin',
+      name: '南瓜',
       growthTime: 120000, // 120 seconds
       sellPrice: 200,
       seedCost: 100,
       waterRequirement: 6,
-      seasons: ['fall'],
+      seasons: ['秋季'],
       harvestYield: 1
     }
   };

@@ -2,19 +2,23 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import NextDynamic from 'next/dynamic';
-import { SproutLandsGame } from '../../components/game/SproutLandsGame';
+import { SproutLandsEngine } from '../../components/game/SproutLandsEngine';
 import { SproutLandsInventory } from '../../components/game/entities/SproutLandsInventory';
+import { ResourceLoader, LoadingProgress } from '../../components/game/utils/ResourceLoader';
+import { GameAudioTriggers } from '../../components/game/utils/AudioManager';
+import LoadingScreen from '../../components/game/ui/LoadingScreen';
+import MobileControls from '../../components/game/ui/MobileControls';
 
 // Force dynamic rendering to prevent SSR issues
 export const dynamic = 'force-dynamic';
 
 // Dynamically import UI components to avoid SSR issues
-const SproutLandsUI = NextDynamic(() => import('../../components/game/ui/SproutLandsUI'), {
+const EnhancedChineseUI = NextDynamic(() => import('../../components/game/ui/EnhancedChineseUI'), {
   ssr: false,
   loading: () => <div className="animate-pulse bg-gray-200 rounded">Loading UI...</div>
 });
 
-const SproutLandsShop = NextDynamic(() => import('../../components/game/ui/SproutLandsShop'), {
+const ChineseSproutLandsShop = NextDynamic(() => import('../../components/game/ui/ChineseSproutLandsShop'), {
   ssr: false,
   loading: () => <div className="animate-pulse bg-gray-200 rounded">Loading Shop...</div>
 });
@@ -31,6 +35,14 @@ const SproutLandsPage: React.FC = () => {
   const [, setGameState] = useState<any>(null);
   const [isUIVisible, setIsUIVisible] = useState(false);
   const [isShopVisible, setIsShopVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState<LoadingProgress>({
+    loaded: 0,
+    total: 0,
+    percentage: 0,
+    currentResource: '',
+    isComplete: false
+  });
   const [currentTool, setCurrentTool] = useState<string>('hoe');
   const [gameStats, setGameStats] = useState<GameStats>({
     totalPlayTime: 0,
@@ -38,9 +50,55 @@ const SproutLandsPage: React.FC = () => {
     goldEarned: 0,
     toolsUsed: 0
   });
+  const [isMobile, setIsMobile] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
   
   const inventoryRef = useRef<SproutLandsInventory>(new SproutLandsInventory());
   const gameStartTimeRef = useRef<number>(Date.now());
+  const resourceLoaderRef = useRef<ResourceLoader>(ResourceLoader.getInstance());
+  const audioRef = useRef<GameAudioTriggers>(new GameAudioTriggers());
+
+  // 移动端检测
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768 || 'ontouchstart' in window);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // 资源加载
+  useEffect(() => {
+    const initializeGame = async () => {
+      try {
+        const resourceLoader = resourceLoaderRef.current;
+        
+        // 设置进度回调
+        resourceLoader.setProgressCallback(setLoadingProgress);
+        
+        // 预加载游戏资源
+        resourceLoader.preloadGameResources();
+        
+        // 开始加载
+        await resourceLoader.loadResources();
+        
+        // 预加载音效
+        await audioRef.current.audioManager?.preloadGameSounds();
+        
+        setIsLoading(false);
+        setGameStarted(true);
+      } catch (error) {
+        console.error('Failed to initialize game:', error);
+        setIsLoading(false);
+      }
+    };
+
+    if (isClient) {
+      initializeGame();
+    }
+  }, [isClient]);
 
   // Client-side initialization
   useEffect(() => {
@@ -260,11 +318,11 @@ const SproutLandsPage: React.FC = () => {
               </div>
               
               <div className="flex justify-center">
-                <SproutLandsGame
-                  width={800}
-                  height={600}
-                  onStateChange={handleGameStateChange}
-                />
+                          <SproutLandsEngine
+            width={800}
+            height={600}
+            onStateChange={handleGameStateChange}
+          />
               </div>
             </div>
           </div>

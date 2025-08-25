@@ -254,7 +254,7 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  // 移动小猫 - 改进的移动系统，参考top-down游戏最佳实践
+  // 移动小猫 - 改进的移动系统，增加Joy感和响应性
   public move(x: number, y: number) {
     if (this.isActing) return; // 执行动作时无法移动
 
@@ -265,20 +265,49 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
       y = y / inputMagnitude;
     }
 
-    const baseSpeed = 120;
-    // 根据输入强度调整速度（支持摇杆的精确控制）
+    // 动态速度系统 - 增加加速度感
+    const baseSpeed = 140; // 提高基础速度
     const inputStrength = Math.min(inputMagnitude, 1);
-    const adjustedSpeed = baseSpeed * inputStrength;
+    
+    // 使用缓动函数增加速度响应感
+    const easedInput = this.easeInOutQuad(inputStrength);
+    const adjustedSpeed = baseSpeed * (0.3 + 0.7 * easedInput); // 最低30%速度，最高100%
 
-    // 设置速度，使用标准化的方向向量
-    this.setVelocity(x * adjustedSpeed, y * adjustedSpeed);
+    // 添加微小的随机抖动，增加自然感
+    const jitterX = (Math.random() - 0.5) * 0.02 * inputStrength;
+    const jitterY = (Math.random() - 0.5) * 0.02 * inputStrength;
+
+    // 设置速度，使用标准化的方向向量和抖动
+    this.setVelocity(
+      (x + jitterX) * adjustedSpeed, 
+      (y + jitterY) * adjustedSpeed
+    );
 
     // 更新朝向和动画
     this.updateDirectionAndAnimation(x, y, inputStrength);
 
-    // 添加移动时的微粒效果（快速移动时）
-    if (inputStrength > 0.7) {
+    // 增强的移动效果
+    if (inputStrength > 0.3) {
       this.createMovementParticles();
+    }
+
+    // 添加移动音效（概率性）
+    if (inputStrength > 0.5 && Math.random() < 0.1) {
+      this.playMovementSound();
+    }
+  }
+
+  // 缓动函数 - 增加输入响应的平滑感
+  private easeInOutQuad(t: number): number {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+  // 播放移动音效
+  private playMovementSound() {
+    // 这里可以添加脚步声或其他移动音效
+    // 暂时使用控制台输出作为占位符
+    if (Math.random() < 0.05) { // 降低频率避免控制台污染
+      console.log('🐾 Cat step sound');
     }
   }
 
@@ -301,9 +330,44 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  // 停止移动 - 改进的停止系统，支持渐进式减速
+  // 停止移动 - 改进的停止系统，增加惯性和缓动效果
   public stop(): this {
-    // 立即停止或渐进式减速
+    // 使用惯性停止而非立即停止
+    this.smoothStop(0.85);
+    return this;
+  }
+
+  // 平滑停止移动（用于更自然的移动感觉）
+  public smoothStop(deceleration: number = 0.85): this {
+    const currentVelocity = this.body as Phaser.Physics.Arcade.Body;
+    if (currentVelocity) {
+      const currentSpeedX = currentVelocity.velocity.x;
+      const currentSpeedY = currentVelocity.velocity.y;
+      
+      // 应用减速
+      currentVelocity.setVelocity(
+        currentSpeedX * deceleration,
+        currentSpeedY * deceleration
+      );
+      
+      // 如果速度很小就完全停止
+      if (Math.abs(currentSpeedX) < 8 && Math.abs(currentSpeedY) < 8) {
+        currentVelocity.setVelocity(0, 0);
+        
+        // 播放静止动画（如果不在执行动作）
+        if (!this.isActing) {
+          const idleAnimKey = `cat_idle_${this.direction}`;
+          if (this.scene.anims.exists(idleAnimKey)) {
+            this.play(idleAnimKey, true);
+          }
+        }
+      }
+    }
+    return this;
+  }
+
+  // 立即停止（紧急情况使用）
+  public hardStop(): this {
     this.setVelocity(0, 0);
     
     // 播放静止动画（如果不在执行动作）
@@ -311,23 +375,6 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
       const idleAnimKey = `cat_idle_${this.direction}`;
       if (this.scene.anims.exists(idleAnimKey)) {
         this.play(idleAnimKey, true);
-      }
-    }
-    return this;
-  }
-
-  // 平滑停止移动（用于更自然的移动感觉）
-  public smoothStop(deceleration: number = 0.8): this {
-    const currentVelocity = this.body as Phaser.Physics.Arcade.Body;
-    if (currentVelocity) {
-      currentVelocity.setVelocity(
-        currentVelocity.velocity.x * deceleration,
-        currentVelocity.velocity.y * deceleration
-      );
-      
-      // 如果速度很小就完全停止
-      if (Math.abs(currentVelocity.velocity.x) < 5 && Math.abs(currentVelocity.velocity.y) < 5) {
-        this.stop();
       }
     }
     return this;

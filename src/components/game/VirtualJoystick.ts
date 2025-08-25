@@ -32,9 +32,9 @@ export class VirtualJoystick {
   private config: JoystickConfig;
 
   // 视觉元素
-  private base!: any;
-  private knob!: any;
-  private outerRing!: any;
+  private base!: Phaser.GameObjects.Arc;
+  private knob!: Phaser.GameObjects.Arc;
+  private outerRing!: Phaser.GameObjects.Arc;
   private container!: Phaser.GameObjects.Container;
 
   // 状态管理
@@ -61,17 +61,17 @@ export class VirtualJoystick {
     this.container.setDepth(1000);
     this.container.setScrollFactor(0);
 
-    // 外圈指示器 - 半透明边界
-    this.outerRing = this.scene.add.circle(0, 0, this.config.radius + 5, 0x4a90e2, 0.1);
-    this.outerRing.setStrokeStyle(1, 0x4a90e2, 0.3);
+    // 外圈指示器 - 更明显的边界提示
+    this.outerRing = this.scene.add.circle(0, 0, this.config.radius + 8, 0x4a90e2, 0.15);
+    this.outerRing.setStrokeStyle(2, 0x4a90e2, 0.4);
 
-    // 摇杆底座 - 简洁设计
-    this.base = this.scene.add.circle(0, 0, this.config.radius, 0x000000, 0.3);
-    this.base.setStrokeStyle(2, 0x4a90e2, 0.6);
+    // 摇杆底座 - 增强视觉效果
+    this.base = this.scene.add.circle(0, 0, this.config.radius, 0x000000, 0.4);
+    this.base.setStrokeStyle(3, 0x4a90e2, 0.7);
 
-    // 摇杆手柄 - 清晰可见
-    this.knob = this.scene.add.circle(0, 0, this.config.knobRadius, 0x74b9ff, 0.9);
-    this.knob.setStrokeStyle(2, 0xffffff, 0.8);
+    // 摇杆手柄 - 更清晰的反馈
+    this.knob = this.scene.add.circle(0, 0, this.config.knobRadius, 0x74b9ff, 1.0);
+    this.knob.setStrokeStyle(3, 0xffffff, 1.0);
 
     // 添加到容器
     this.container.add([this.outerRing, this.base, this.knob]);
@@ -82,11 +82,11 @@ export class VirtualJoystick {
     this.container.add(interactiveArea);
 
     // 存储交互区域引用
-    (this as any).interactiveArea = interactiveArea;
+    (this as unknown as { interactiveArea: Phaser.GameObjects.Arc }).interactiveArea = interactiveArea;
   }
 
   private setupEventHandlers() {
-    const interactiveArea = (this as any).interactiveArea;
+    const interactiveArea = (this as unknown as { interactiveArea: Phaser.GameObjects.Arc }).interactiveArea;
 
     // 简化的触摸开始处理
     interactiveArea.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
@@ -137,10 +137,14 @@ export class VirtualJoystick {
       this.activePointerId = pointer.id;       // 记录指针ID
       this.lastUpdateTime = this.scene.time.now;  // 记录最后更新时间
 
-      // 视觉反馈 - 改变手柄颜色和大小
+      // 增强视觉反馈 - 改变手柄颜色和大小
       this.knob.setFillStyle(0xa29bfe, 1);     // 设置手柄填充颜色为紫色
-      this.knob.setScale(1.1);                 // 手柄放大1.1倍
-      this.base.setStrokeStyle(3, 0x74b9ff, 0.8);  // 底座边框加粗并变亮
+      this.knob.setScale(1.15);                // 手柄放大1.15倍，更明显
+      this.base.setStrokeStyle(4, 0x74b9ff, 0.9);  // 底座边框加粗并变亮
+      this.outerRing.setStrokeStyle(3, 0x74b9ff, 0.6); // 外圈也变亮
+
+      // 添加触觉反馈
+      this.triggerHapticFeedback([30]);
 
       // 触发开始回调
       if (this.onStart) {
@@ -240,8 +244,12 @@ export class VirtualJoystick {
     });
 
     // 重置视觉状态
-    this.knob.setFillStyle(0x74b9ff, 0.9);   // 恢复手柄颜色
-    this.base.setStrokeStyle(2, 0x4a90e2, 0.6);  // 恢复底座边框
+    this.knob.setFillStyle(0x74b9ff, 1.0);   // 恢复手柄颜色
+    this.base.setStrokeStyle(3, 0x4a90e2, 0.7);  // 恢复底座边框
+    this.outerRing.setStrokeStyle(2, 0x4a90e2, 0.4); // 恢复外圈
+
+    // 添加释放时的触觉反馈
+    this.triggerHapticFeedback([20]);
 
     // 触发结束回调
     if (this.onEnd) {
@@ -405,5 +413,21 @@ export class VirtualJoystick {
       lastUpdateTime: this.lastUpdateTime,                       // 最后更新时间
       timeSinceLastUpdate: this.scene.time.now - this.lastUpdateTime  // 距离上次更新的时间
     };
+  }
+
+  /**
+   * 触发触觉反馈（振动）
+   * @param pattern 振动模式数组
+   */
+  private triggerHapticFeedback(pattern: number[]) {
+    try {
+      // 检查设备是否支持振动
+      if ('vibrate' in navigator && navigator.vibrate) {
+        navigator.vibrate(pattern);
+      }
+    } catch (error) {
+      // 静默处理振动错误，避免影响游戏体验
+      console.debug('Haptic feedback not available:', error);
+    }
   }
 }

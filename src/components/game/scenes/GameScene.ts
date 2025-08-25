@@ -66,6 +66,11 @@ export class GameScene extends Phaser.Scene {
       this.inventoryManager.addTestItems(); // 添加测试物品
       console.log('Inventory system initialized');
 
+      // 创建游戏世界背景
+      console.log('Creating game world background...');
+      this.createWorldBackground();
+      console.log('Game world background created');
+
       // 初始化UI布局管理器（优先初始化）
       console.log('Initializing UI layout manager...');
       this.uiLayoutManager = new UILayoutManager(this);

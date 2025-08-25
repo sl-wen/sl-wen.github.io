@@ -37,7 +37,7 @@ export const SproutLandsUI: React.FC<SproutLandsUIProps> = ({
     const sellValue = inventory.sellItem(item.id, 1);
     if (sellValue > 0) {
       // Could add a notification system here
-      console.log(`Sold ${item.name} for ${sellValue} gold`);
+      console.log(`出售 ${item.name} 获得 ${sellValue} 金币`);
     }
   }, [inventory]);
 
@@ -113,7 +113,7 @@ export const SproutLandsUI: React.FC<SproutLandsUIProps> = ({
     
     return (
       <div className="p-4">
-        <h3 className="text-lg font-bold mb-4 text-green-800">Tools</h3>
+        <h3 className="text-lg font-bold mb-4 text-green-800">工具</h3>
         <div className="grid grid-cols-2 gap-4">
           {tools.map((tool) => (
             <div
@@ -134,7 +134,7 @@ export const SproutLandsUI: React.FC<SproutLandsUIProps> = ({
                 <div>
                   <h4 className="font-semibold">{tool.name}</h4>
                   <p className="text-sm text-gray-600">
-                    Durability: {tool.durability}/{tool.maxDurability}
+                    耐久度: {tool.durability}/{tool.maxDurability}
                   </p>
                 </div>
               </div>
@@ -162,33 +162,33 @@ export const SproutLandsUI: React.FC<SproutLandsUIProps> = ({
 
   const renderStatsTab = () => (
     <div className="p-4">
-      <h3 className="text-lg font-bold mb-4 text-green-800">Statistics</h3>
+      <h3 className="text-lg font-bold mb-4 text-green-800">统计信息</h3>
       <div className="space-y-4">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
-            <span className="font-semibold text-yellow-800">Gold</span>
+            <span className="font-semibold text-yellow-800">金币</span>
             <span className="text-xl font-bold text-yellow-600">{stats.gold}g</span>
           </div>
         </div>
         
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <div className="text-sm text-blue-600">Total Items</div>
+            <div className="text-sm text-blue-600">物品总数</div>
             <div className="text-lg font-bold text-blue-800">{stats.totalItems}</div>
           </div>
           
           <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-            <div className="text-sm text-green-600">Inventory Slots</div>
+            <div className="text-sm text-green-600">背包格子</div>
             <div className="text-lg font-bold text-green-800">{stats.usedSlots}/{stats.maxSlots}</div>
           </div>
           
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-            <div className="text-sm text-purple-600">Total Value</div>
+            <div className="text-sm text-purple-600">总价值</div>
             <div className="text-lg font-bold text-purple-800">{stats.totalValue}g</div>
           </div>
           
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-            <div className="text-sm text-orange-600">Used Slots</div>
+            <div className="text-sm text-orange-600">已用格子</div>
             <div className="text-lg font-bold text-orange-800">
               {Math.round((stats.usedSlots / stats.maxSlots) * 100)}%
             </div>
@@ -204,7 +204,7 @@ export const SproutLandsUI: React.FC<SproutLandsUIProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-green-50 rounded-t-xl">
           <h2 className="text-xl font-bold text-green-800 flex items-center">
-            🌱 Sprout Lands Inventory
+            🌱 萌芽之地 背包
           </h2>
           <button
             onClick={onClose}
@@ -217,11 +217,11 @@ export const SproutLandsUI: React.FC<SproutLandsUIProps> = ({
         {/* Tab Navigation */}
         <div className="flex border-b border-gray-200 bg-gray-50">
           {[
-            { id: 'inventory', label: '📦 All Items', icon: '📦' },
-            { id: 'tools', label: '🔨 Tools', icon: '🔨' },
-            { id: 'seeds', label: '🌱 Seeds', icon: '🌱' },
-            { id: 'crops', label: '🥕 Crops', icon: '🥕' },
-            { id: 'stats', label: '📊 Stats', icon: '📊' }
+            { id: 'inventory', label: '📦 所有物品', icon: '📦' },
+            { id: 'tools', label: '🔨 工具', icon: '🔨' },
+            { id: 'seeds', label: '🌱 种子', icon: '🌱' },
+            { id: 'crops', label: '🥕 作物', icon: '🥕' },
+            { id: 'stats', label: '📊 统计', icon: '📊' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -256,21 +256,21 @@ export const SproutLandsUI: React.FC<SproutLandsUIProps> = ({
               <div className="flex-1">
                 <h4 className="font-bold text-lg">{selectedItem.name}</h4>
                 <p className="text-sm text-gray-600 mb-2">
-                  {selectedItem.type} • Quantity: {selectedItem.quantity}
+                  {getTypeDisplayName(selectedItem.type)} • 数量: {selectedItem.quantity}
                 </p>
                 {selectedItem.description && (
                   <p className="text-sm text-gray-700 mb-2">{selectedItem.description}</p>
                 )}
                 {selectedItem.quality && (
                   <div className="flex items-center mb-2">
-                    <span className="text-sm font-medium mr-2">Quality:</span>
+                    <span className="text-sm font-medium mr-2">品质:</span>
                     <span className={`text-sm font-bold ${getQualityTextClass(selectedItem.quality)}`}>
-                      {selectedItem.quality.toUpperCase()}
+                      {getQualityDisplayName(selectedItem.quality)}
                     </span>
                   </div>
                 )}
                 <p className="text-sm">
-                  <span className="font-medium">Value:</span> {selectedItem.value}g each
+                  <span className="font-medium">价值:</span> 每个 {selectedItem.value} 金币
                 </p>
               </div>
               
@@ -280,14 +280,14 @@ export const SproutLandsUI: React.FC<SproutLandsUIProps> = ({
                     onClick={() => handleSellItem(selectedItem)}
                     className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm"
                   >
-                    Sell (1)
+                    出售 (1)
                   </button>
                 )}
                 <button
                   onClick={() => setSelectedItem(null)}
                   className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm"
                 >
-                  Close
+                  关闭
                 </button>
               </div>
             </div>
@@ -350,6 +350,27 @@ const getQualityTextClass = (quality: string): string => {
     case 'good': return 'text-green-600';
     case 'excellent': return 'text-yellow-600';
     default: return 'text-gray-600';
+  }
+};
+
+const getTypeDisplayName = (type: string): string => {
+  switch (type) {
+    case 'tool': return '工具';
+    case 'seed': return '种子';
+    case 'crop': return '作物';
+    case 'food': return '食物';
+    case 'material': return '材料';
+    default: return '未知';
+  }
+};
+
+const getQualityDisplayName = (quality: string): string => {
+  switch (quality) {
+    case 'poor': return '差';
+    case 'normal': return '普通';
+    case 'good': return '良好';
+    case 'excellent': return '优秀';
+    default: return '未知';
   }
 };
 

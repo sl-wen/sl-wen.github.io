@@ -55,8 +55,8 @@ export default function MultiAtlasDebugPage() {
                     const assets = await response.json();
                     console.log('Found assets:', assets);
 
-                    const configs = {};
-                    assets.forEach((asset) => {
+                    const configs: Record<string, AtlasConfig> = {};
+                    assets.forEach((asset: string) => {
                         const name = asset;
                         const key = `farm_${asset.replace('.png', '').toLowerCase()}`;
 
@@ -299,12 +299,6 @@ export default function MultiAtlasDebugPage() {
         if (config) {
             setGridSize(config.defaultGridSize);
         }
-    };
-
-    // 清除所有选择
-    const clearSelections = () => {
-        setSelectedGrids([]);
-        setCurrentSelection(null);
     };
 
     // 生成代码

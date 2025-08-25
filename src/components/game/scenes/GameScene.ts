@@ -3,10 +3,13 @@ import { CookingStation } from '../entities/CookingStation';
 import { FarmPlot } from '../entities/FarmPlot';
 import { InventoryManager } from '../entities/InventoryManager';
 import { Cat } from '../entities/Player';
+import { TileMapManager } from '../entities/TileMapManager';
 import { FarmLayoutManager } from '../FarmLayoutManager';
 import { CropType, ToolType } from '../types/GameTypes';
 import { UILayoutManager } from '../UILayoutManager';
 import { VirtualJoystick } from '../VirtualJoystick';
+import { TileResourceConfig } from '../utils/TileResourceConfig';
+import { ResourceLoader } from '../utils/ResourceLoader';
 
 /**
  * 游戏主场景类
@@ -31,6 +34,7 @@ export class GameScene extends Phaser.Scene {
   private virtualJoystick!: VirtualJoystick;                // 虚拟摇杆
   private uiLayoutManager!: UILayoutManager;                 // UI布局管理器
   private farmLayoutManager!: FarmLayoutManager;             // 农场布局管理器
+  private tileMapManager!: TileMapManager;                   // 瓦片地图管理器
   private actionButtons: Phaser.GameObjects.Container[] = []; // 动作按钮数组
 
   // 游戏状态属性
@@ -56,7 +60,7 @@ export class GameScene extends Phaser.Scene {
    * 场景创建方法 - 游戏初始化入口
    * 负责创建所有游戏元素和设置游戏系统
    */
-  create() {
+  async create() {
     console.log('GameScene create() called');
 
     try {
@@ -75,6 +79,13 @@ export class GameScene extends Phaser.Scene {
       console.log('Initializing UI layout manager...');
       this.uiLayoutManager = new UILayoutManager(this);
       console.log('UI layout manager initialized');
+
+      // 初始化瓦片地图管理器
+      console.log('Initializing tile map manager...');
+      this.tileMapManager = new TileMapManager(this);
+      await this.loadTileResources();
+      this.tileMapManager.createDefaultFarmMap();
+      console.log('Tile map manager initialized');
 
       // 初始化农场布局管理器
       console.log('Initializing farm layout manager...');
@@ -1349,7 +1360,81 @@ export class GameScene extends Phaser.Scene {
     console.log('GameScene cleanup completed');  // 记录清理完成
   }
 
+  /**
+   * 加载瓦片资源
+   * 使用ResourceLoader加载所有需要的瓦片纹理
+   */
+  private async loadTileResources(): Promise<void> {
+    try {
+      console.log('Loading tile resources...');
+      
+      const resourceLoader = ResourceLoader.getInstance();
+      const tileResources = TileResourceConfig.getPreloadTileResources();
+      
+      // 添加瓦片资源到加载队列
+      resourceLoader.addResources(tileResources);
+      
+      // 设置进度回调
+      resourceLoader.setProgressCallback((progress) => {
+        console.log(`Tile loading progress: ${progress.percentage}% - ${progress.currentResource}`);
+      });
+      
+      // 开始加载资源
+      await resourceLoader.loadResources();
+      
+      // 将加载的资源注册到Phaser场景
+      this.registerTileTextures(resourceLoader);
+      
+      console.log('Tile resources loaded successfully');
+    } catch (error) {
+      console.error('Failed to load tile resources:', error);
+      // 即使加载失败，也继续游戏，使用默认纹理
+    }
+  }
 
-
-
+  /**
+   * 将加载的瓦片纹理注册到Phaser场景
+   */
+  private registerTileTextures(resourceLoader: ResourceLoader): void {
+    const tileResources = TileResourceConfig.getPreloadTileResources();
+    
+    tileResources.forEach(resource => {
+      const spritesheetData = resourceLoader.getResource(resource.key);
+      
+      if (spritesheetData && spritesheetData.image && resource.frameConfig) {
+        // 将图像添加到Phaser纹理管理器
+        if (!this.textures.exists(resource.key)) {
+          this.textures.addImage(resource.key, spritesheetData.image);
+          
+          // 如果是精灵图集，创建帧数据
+          if (resource.type === 'spritesheet') {
+            this.textures.get(resource.key).add('__BASE', 0, 0, 
+              spritesheetData.image.width, spritesheetData.image.height);
+            
+            // 生成精灵帧
+            const frameWidth = resource.frameConfig.frameWidth;
+            const frameHeight = resource.frameConfig.frameHeight;
+            const cols = Math.floor(spritesheetData.image.width / frameWidth);
+            const rows = Math.floor(spritesheetData.image.height / frameHeight);
+            
+            for (let row = 0; row < rows; row++) {
+              for (let col = 0; col < cols; col++) {
+                const frameIndex = row * cols + col;
+                const frameName = frameIndex.toString();
+                
+                this.textures.get(resource.key).add(
+                  frameName,
+                  0,
+                  col * frameWidth,
+                  row * frameHeight,
+                  frameWidth,
+                  frameHeight
+                );
+              }
+            }
+          }
+        }
+      }
+    });
+  }
 }

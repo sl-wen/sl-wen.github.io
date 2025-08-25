@@ -254,23 +254,27 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  // 移动小猫 - 设置速度并更新朝向
+  // 移动小猫 - 改进的移动系统，参考top-down游戏最佳实践
   public move(x: number, y: number) {
     if (this.isActing) return; // 执行动作时无法移动
 
+    // 标准化输入向量以防止对角线移动过快
+    const inputMagnitude = Math.sqrt(x * x + y * y);
+    if (inputMagnitude > 0) {
+      x = x / inputMagnitude;
+      y = y / inputMagnitude;
+    }
+
     const baseSpeed = 120;
     // 根据输入强度调整速度（支持摇杆的精确控制）
-    const inputStrength = Math.sqrt(x * x + y * y);
-    const adjustedSpeed = baseSpeed * Math.min(inputStrength, 1);
+    const inputStrength = Math.min(inputMagnitude, 1);
+    const adjustedSpeed = baseSpeed * inputStrength;
 
+    // 设置速度，使用标准化的方向向量
     this.setVelocity(x * adjustedSpeed, y * adjustedSpeed);
 
-    // 根据移动方向确定朝向
-    if (Math.abs(x) > Math.abs(y)) {
-      this.setDirection(x > 0 ? 'right' : 'left');
-    } else if (y !== 0) {
-      this.setDirection(y > 0 ? 'down' : 'up');
-    }
+    // 更新朝向和动画
+    this.updateDirectionAndAnimation(x, y, inputStrength);
 
     // 添加移动时的微粒效果（快速移动时）
     if (inputStrength > 0.7) {
@@ -278,11 +282,53 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  // 停止移动 - 将速度设为0并播放静止动画
+  // 更新朝向和播放相应动画
+  private updateDirectionAndAnimation(x: number, y: number, inputStrength: number) {
+    // 只在有明显移动时更新朝向
+    if (inputStrength > 0.1) {
+      // 根据移动方向确定朝向（优先考虑水平方向）
+      if (Math.abs(x) > Math.abs(y)) {
+        this.setDirection(x > 0 ? 'right' : 'left');
+      } else if (y !== 0) {
+        this.setDirection(y > 0 ? 'down' : 'up');
+      }
+
+      // 播放行走动画
+      const walkAnimKey = `cat_walk_${this.direction}`;
+      if (this.scene.anims.exists(walkAnimKey) && !this.anims.isPlaying) {
+        this.play(walkAnimKey, true);
+      }
+    }
+  }
+
+  // 停止移动 - 改进的停止系统，支持渐进式减速
   public stop(): this {
+    // 立即停止或渐进式减速
     this.setVelocity(0, 0);
+    
+    // 播放静止动画（如果不在执行动作）
     if (!this.isActing) {
-      this.play(`cat_idle_${this.direction}`, true);
+      const idleAnimKey = `cat_idle_${this.direction}`;
+      if (this.scene.anims.exists(idleAnimKey)) {
+        this.play(idleAnimKey, true);
+      }
+    }
+    return this;
+  }
+
+  // 平滑停止移动（用于更自然的移动感觉）
+  public smoothStop(deceleration: number = 0.8): this {
+    const currentVelocity = this.body as Phaser.Physics.Arcade.Body;
+    if (currentVelocity) {
+      currentVelocity.setVelocity(
+        currentVelocity.velocity.x * deceleration,
+        currentVelocity.velocity.y * deceleration
+      );
+      
+      // 如果速度很小就完全停止
+      if (Math.abs(currentVelocity.velocity.x) < 5 && Math.abs(currentVelocity.velocity.y) < 5) {
+        this.stop();
+      }
     }
     return this;
   }

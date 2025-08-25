@@ -253,7 +253,7 @@ export class GameScene extends Phaser.Scene {
       // 桌面端：设置键盘控制
       console.log('Setting up keyboard controls for desktop');
       this.cursors = this.input.keyboard!.createCursorKeys();                    // 方向键
-      this.wasdKeys = this.input.keyboard!.addKeys('W,S,A,D');                   // WASD键
+      this.wasdKeys = this.input.keyboard!.addKeys('W,S,A,D') as Record<string, Phaser.Input.Keyboard.Key>;                   // WASD键
       this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);  // 空格键（交互）
       this.inventoryKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.I);     // I键（背包）
       this.cookingKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.C);       // C键（烹饪）

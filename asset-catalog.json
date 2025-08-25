@@ -1,0 +1,1669 @@
+{
+  "generated": "2025-08-25T02:05:48.676Z",
+  "atlases": {
+    "Overworld.png": {
+      "width": 640,
+      "height": 576,
+      "spriteCount": 31,
+      "outputDir": "overworld"
+    },
+    "Plants.png": {
+      "width": 391,
+      "height": 672,
+      "spriteCount": 30,
+      "outputDir": "plants"
+    },
+    "objects.png": {
+      "width": 528,
+      "height": 320,
+      "spriteCount": 23,
+      "outputDir": "objects"
+    },
+    "character.png": {
+      "width": 272,
+      "height": 256,
+      "spriteCount": 20,
+      "outputDir": "characters"
+    }
+  },
+  "sprites": {
+    "grass_basic": {
+      "file": "sprites/overworld/grass_basic.png",
+      "atlas": "Overworld.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 32,
+      "category": "terrain"
+    },
+    "grass_flowers": {
+      "file": "sprites/overworld/grass_flowers.png",
+      "atlas": "Overworld.png",
+      "x": 32,
+      "y": 0,
+      "width": 32,
+      "height": 32,
+      "category": "terrain"
+    },
+    "dirt_basic": {
+      "file": "sprites/overworld/dirt_basic.png",
+      "atlas": "Overworld.png",
+      "x": 64,
+      "y": 0,
+      "width": 32,
+      "height": 32,
+      "category": "terrain"
+    },
+    "dirt_tilled": {
+      "file": "sprites/overworld/dirt_tilled.png",
+      "atlas": "Overworld.png",
+      "x": 96,
+      "y": 0,
+      "width": 32,
+      "height": 32,
+      "category": "terrain"
+    },
+    "stone_path": {
+      "file": "sprites/overworld/stone_path.png",
+      "atlas": "Overworld.png",
+      "x": 128,
+      "y": 0,
+      "width": 32,
+      "height": 32,
+      "category": "terrain"
+    },
+    "water_basic": {
+      "file": "sprites/overworld/water_basic.png",
+      "atlas": "Overworld.png",
+      "x": 160,
+      "y": 0,
+      "width": 32,
+      "height": 32,
+      "category": "terrain"
+    },
+    "house_small": {
+      "file": "sprites/overworld/house_small.png",
+      "atlas": "Overworld.png",
+      "x": 0,
+      "y": 32,
+      "width": 64,
+      "height": 64,
+      "category": "buildings"
+    },
+    "barn": {
+      "file": "sprites/overworld/barn.png",
+      "atlas": "Overworld.png",
+      "x": 64,
+      "y": 32,
+      "width": 96,
+      "height": 64,
+      "category": "buildings"
+    },
+    "well": {
+      "file": "sprites/overworld/well.png",
+      "atlas": "Overworld.png",
+      "x": 160,
+      "y": 32,
+      "width": 32,
+      "height": 48,
+      "category": "buildings"
+    },
+    "tree_oak": {
+      "file": "sprites/overworld/tree_oak.png",
+      "atlas": "Overworld.png",
+      "x": 0,
+      "y": 96,
+      "width": 48,
+      "height": 64,
+      "category": "decorations"
+    },
+    "tree_pine": {
+      "file": "sprites/overworld/tree_pine.png",
+      "atlas": "Overworld.png",
+      "x": 48,
+      "y": 96,
+      "width": 32,
+      "height": 64,
+      "category": "decorations"
+    },
+    "bush_small": {
+      "file": "sprites/overworld/bush_small.png",
+      "atlas": "Overworld.png",
+      "x": 80,
+      "y": 96,
+      "width": 16,
+      "height": 16,
+      "category": "decorations"
+    },
+    "rock_small": {
+      "file": "sprites/overworld/rock_small.png",
+      "atlas": "Overworld.png",
+      "x": 96,
+      "y": 96,
+      "width": 16,
+      "height": 16,
+      "category": "decorations"
+    },
+    "rock_large": {
+      "file": "sprites/overworld/rock_large.png",
+      "atlas": "Overworld.png",
+      "x": 112,
+      "y": 96,
+      "width": 32,
+      "height": 24,
+      "category": "decorations"
+    },
+    "fence_horizontal": {
+      "file": "sprites/overworld/fence_horizontal.png",
+      "atlas": "Overworld.png",
+      "x": 0,
+      "y": 160,
+      "width": 32,
+      "height": 16,
+      "category": "fences"
+    },
+    "fence_vertical": {
+      "file": "sprites/overworld/fence_vertical.png",
+      "atlas": "Overworld.png",
+      "x": 32,
+      "y": 160,
+      "width": 16,
+      "height": 32,
+      "category": "fences"
+    },
+    "fence_corner_tl": {
+      "file": "sprites/overworld/fence_corner_tl.png",
+      "atlas": "Overworld.png",
+      "x": 48,
+      "y": 160,
+      "width": 16,
+      "height": 16,
+      "category": "fences"
+    },
+    "fence_corner_tr": {
+      "file": "sprites/overworld/fence_corner_tr.png",
+      "atlas": "Overworld.png",
+      "x": 64,
+      "y": 160,
+      "width": 16,
+      "height": 16,
+      "category": "fences"
+    },
+    "fence_corner_bl": {
+      "file": "sprites/overworld/fence_corner_bl.png",
+      "atlas": "Overworld.png",
+      "x": 48,
+      "y": 176,
+      "width": 16,
+      "height": 16,
+      "category": "fences"
+    },
+    "fence_corner_br": {
+      "file": "sprites/overworld/fence_corner_br.png",
+      "atlas": "Overworld.png",
+      "x": 64,
+      "y": 176,
+      "width": 16,
+      "height": 16,
+      "category": "fences"
+    },
+    "road_straight_h": {
+      "file": "sprites/overworld/road_straight_h.png",
+      "atlas": "Overworld.png",
+      "x": 0,
+      "y": 192,
+      "width": 32,
+      "height": 32,
+      "category": "roads"
+    },
+    "road_straight_v": {
+      "file": "sprites/overworld/road_straight_v.png",
+      "atlas": "Overworld.png",
+      "x": 32,
+      "y": 192,
+      "width": 32,
+      "height": 32,
+      "category": "roads"
+    },
+    "road_corner_tl": {
+      "file": "sprites/overworld/road_corner_tl.png",
+      "atlas": "Overworld.png",
+      "x": 64,
+      "y": 192,
+      "width": 32,
+      "height": 32,
+      "category": "roads"
+    },
+    "road_corner_tr": {
+      "file": "sprites/overworld/road_corner_tr.png",
+      "atlas": "Overworld.png",
+      "x": 96,
+      "y": 192,
+      "width": 32,
+      "height": 32,
+      "category": "roads"
+    },
+    "road_corner_bl": {
+      "file": "sprites/overworld/road_corner_bl.png",
+      "atlas": "Overworld.png",
+      "x": 64,
+      "y": 224,
+      "width": 32,
+      "height": 32,
+      "category": "roads"
+    },
+    "road_corner_br": {
+      "file": "sprites/overworld/road_corner_br.png",
+      "atlas": "Overworld.png",
+      "x": 96,
+      "y": 224,
+      "width": 32,
+      "height": 32,
+      "category": "roads"
+    },
+    "road_cross": {
+      "file": "sprites/overworld/road_cross.png",
+      "atlas": "Overworld.png",
+      "x": 128,
+      "y": 192,
+      "width": 32,
+      "height": 32,
+      "category": "roads"
+    },
+    "road_t_up": {
+      "file": "sprites/overworld/road_t_up.png",
+      "atlas": "Overworld.png",
+      "x": 160,
+      "y": 192,
+      "width": 32,
+      "height": 32,
+      "category": "roads"
+    },
+    "road_t_down": {
+      "file": "sprites/overworld/road_t_down.png",
+      "atlas": "Overworld.png",
+      "x": 192,
+      "y": 192,
+      "width": 32,
+      "height": 32,
+      "category": "roads"
+    },
+    "road_t_left": {
+      "file": "sprites/overworld/road_t_left.png",
+      "atlas": "Overworld.png",
+      "x": 128,
+      "y": 224,
+      "width": 32,
+      "height": 32,
+      "category": "roads"
+    },
+    "road_t_right": {
+      "file": "sprites/overworld/road_t_right.png",
+      "atlas": "Overworld.png",
+      "x": 160,
+      "y": 224,
+      "width": 32,
+      "height": 32,
+      "category": "roads"
+    },
+    "wheat_stage_1": {
+      "file": "sprites/plants/wheat_stage_1.png",
+      "atlas": "Plants.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "wheat_stage_2": {
+      "file": "sprites/plants/wheat_stage_2.png",
+      "atlas": "Plants.png",
+      "x": 16,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "wheat_stage_3": {
+      "file": "sprites/plants/wheat_stage_3.png",
+      "atlas": "Plants.png",
+      "x": 32,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "wheat_stage_4": {
+      "file": "sprites/plants/wheat_stage_4.png",
+      "atlas": "Plants.png",
+      "x": 48,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "wheat_harvest": {
+      "file": "sprites/plants/wheat_harvest.png",
+      "atlas": "Plants.png",
+      "x": 64,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "carrot_stage_1": {
+      "file": "sprites/plants/carrot_stage_1.png",
+      "atlas": "Plants.png",
+      "x": 0,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "carrot_stage_2": {
+      "file": "sprites/plants/carrot_stage_2.png",
+      "atlas": "Plants.png",
+      "x": 16,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "carrot_stage_3": {
+      "file": "sprites/plants/carrot_stage_3.png",
+      "atlas": "Plants.png",
+      "x": 32,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "carrot_stage_4": {
+      "file": "sprites/plants/carrot_stage_4.png",
+      "atlas": "Plants.png",
+      "x": 48,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "carrot_harvest": {
+      "file": "sprites/plants/carrot_harvest.png",
+      "atlas": "Plants.png",
+      "x": 64,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "potato_stage_1": {
+      "file": "sprites/plants/potato_stage_1.png",
+      "atlas": "Plants.png",
+      "x": 0,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "potato_stage_2": {
+      "file": "sprites/plants/potato_stage_2.png",
+      "atlas": "Plants.png",
+      "x": 16,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "potato_stage_3": {
+      "file": "sprites/plants/potato_stage_3.png",
+      "atlas": "Plants.png",
+      "x": 32,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "potato_stage_4": {
+      "file": "sprites/plants/potato_stage_4.png",
+      "atlas": "Plants.png",
+      "x": 48,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "potato_harvest": {
+      "file": "sprites/plants/potato_harvest.png",
+      "atlas": "Plants.png",
+      "x": 64,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "crops"
+    },
+    "flower_red": {
+      "file": "sprites/plants/flower_red.png",
+      "atlas": "Plants.png",
+      "x": 248,
+      "y": 128,
+      "width": 8,
+      "height": 8,
+      "category": "flowers"
+    },
+    "flower_blue": {
+      "file": "sprites/plants/flower_blue.png",
+      "atlas": "Plants.png",
+      "x": 256,
+      "y": 128,
+      "width": 8,
+      "height": 8,
+      "category": "flowers"
+    },
+    "flower_yellow": {
+      "file": "sprites/plants/flower_yellow.png",
+      "atlas": "Plants.png",
+      "x": 256,
+      "y": 136,
+      "width": 8,
+      "height": 8,
+      "category": "flowers"
+    },
+    "flower_white": {
+      "file": "sprites/plants/flower_white.png",
+      "atlas": "Plants.png",
+      "x": 248,
+      "y": 136,
+      "width": 8,
+      "height": 8,
+      "category": "flowers"
+    },
+    "flower_pink": {
+      "file": "sprites/plants/flower_pink.png",
+      "atlas": "Plants.png",
+      "x": 248,
+      "y": 144,
+      "width": 8,
+      "height": 8,
+      "category": "flowers"
+    },
+    "flower_purple": {
+      "file": "sprites/plants/flower_purple.png",
+      "atlas": "Plants.png",
+      "x": 256,
+      "y": 144,
+      "width": 8,
+      "height": 8,
+      "category": "flowers"
+    },
+    "flower_orange": {
+      "file": "sprites/plants/flower_orange.png",
+      "atlas": "Plants.png",
+      "x": 248,
+      "y": 152,
+      "width": 8,
+      "height": 8,
+      "category": "flowers"
+    },
+    "flower_green": {
+      "file": "sprites/plants/flower_green.png",
+      "atlas": "Plants.png",
+      "x": 256,
+      "y": 152,
+      "width": 8,
+      "height": 8,
+      "category": "flowers"
+    },
+    "sapling": {
+      "file": "sprites/plants/sapling.png",
+      "atlas": "Plants.png",
+      "x": 0,
+      "y": 48,
+      "width": 16,
+      "height": 16,
+      "category": "trees"
+    },
+    "young_tree": {
+      "file": "sprites/plants/young_tree.png",
+      "atlas": "Plants.png",
+      "x": 16,
+      "y": 48,
+      "width": 16,
+      "height": 32,
+      "category": "trees"
+    },
+    "mature_tree": {
+      "file": "sprites/plants/mature_tree.png",
+      "atlas": "Plants.png",
+      "x": 32,
+      "y": 48,
+      "width": 32,
+      "height": 48,
+      "category": "trees"
+    },
+    "grass_wild": {
+      "file": "sprites/plants/grass_wild.png",
+      "atlas": "Plants.png",
+      "x": 0,
+      "y": 64,
+      "width": 16,
+      "height": 16,
+      "category": "wild"
+    },
+    "mushroom_red": {
+      "file": "sprites/plants/mushroom_red.png",
+      "atlas": "Plants.png",
+      "x": 16,
+      "y": 64,
+      "width": 8,
+      "height": 8,
+      "category": "wild"
+    },
+    "mushroom_brown": {
+      "file": "sprites/plants/mushroom_brown.png",
+      "atlas": "Plants.png",
+      "x": 24,
+      "y": 64,
+      "width": 8,
+      "height": 8,
+      "category": "wild"
+    },
+    "berries": {
+      "file": "sprites/plants/berries.png",
+      "atlas": "Plants.png",
+      "x": 32,
+      "y": 64,
+      "width": 16,
+      "height": 16,
+      "category": "wild"
+    },
+    "hoe": {
+      "file": "sprites/objects/hoe.png",
+      "atlas": "objects.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "tools"
+    },
+    "watering_can": {
+      "file": "sprites/objects/watering_can.png",
+      "atlas": "objects.png",
+      "x": 16,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "tools"
+    },
+    "axe": {
+      "file": "sprites/objects/axe.png",
+      "atlas": "objects.png",
+      "x": 32,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "tools"
+    },
+    "pickaxe": {
+      "file": "sprites/objects/pickaxe.png",
+      "atlas": "objects.png",
+      "x": 48,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "tools"
+    },
+    "scythe": {
+      "file": "sprites/objects/scythe.png",
+      "atlas": "objects.png",
+      "x": 64,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "tools"
+    },
+    "shovel": {
+      "file": "sprites/objects/shovel.png",
+      "atlas": "objects.png",
+      "x": 80,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "tools"
+    },
+    "seeds_wheat": {
+      "file": "sprites/objects/seeds_wheat.png",
+      "atlas": "objects.png",
+      "x": 0,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "seeds"
+    },
+    "seeds_carrot": {
+      "file": "sprites/objects/seeds_carrot.png",
+      "atlas": "objects.png",
+      "x": 16,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "seeds"
+    },
+    "seeds_potato": {
+      "file": "sprites/objects/seeds_potato.png",
+      "atlas": "objects.png",
+      "x": 32,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "seeds"
+    },
+    "seeds_corn": {
+      "file": "sprites/objects/seeds_corn.png",
+      "atlas": "objects.png",
+      "x": 48,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "seeds"
+    },
+    "chest_wooden": {
+      "file": "sprites/objects/chest_wooden.png",
+      "atlas": "objects.png",
+      "x": 0,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "storage"
+    },
+    "chest_metal": {
+      "file": "sprites/objects/chest_metal.png",
+      "atlas": "objects.png",
+      "x": 16,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "storage"
+    },
+    "barrel": {
+      "file": "sprites/objects/barrel.png",
+      "atlas": "objects.png",
+      "x": 32,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "storage"
+    },
+    "crate": {
+      "file": "sprites/objects/crate.png",
+      "atlas": "objects.png",
+      "x": 48,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "storage"
+    },
+    "sack": {
+      "file": "sprites/objects/sack.png",
+      "atlas": "objects.png",
+      "x": 64,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "storage"
+    },
+    "scarecrow": {
+      "file": "sprites/objects/scarecrow.png",
+      "atlas": "objects.png",
+      "x": 0,
+      "y": 48,
+      "width": 16,
+      "height": 32,
+      "category": "decorations"
+    },
+    "mailbox": {
+      "file": "sprites/objects/mailbox.png",
+      "atlas": "objects.png",
+      "x": 16,
+      "y": 48,
+      "width": 16,
+      "height": 16,
+      "category": "decorations"
+    },
+    "signpost": {
+      "file": "sprites/objects/signpost.png",
+      "atlas": "objects.png",
+      "x": 32,
+      "y": 48,
+      "width": 16,
+      "height": 24,
+      "category": "decorations"
+    },
+    "lantern": {
+      "file": "sprites/objects/lantern.png",
+      "atlas": "objects.png",
+      "x": 48,
+      "y": 48,
+      "width": 12,
+      "height": 16,
+      "category": "decorations"
+    },
+    "bread": {
+      "file": "sprites/objects/bread.png",
+      "atlas": "objects.png",
+      "x": 0,
+      "y": 80,
+      "width": 16,
+      "height": 16,
+      "category": "food"
+    },
+    "milk": {
+      "file": "sprites/objects/milk.png",
+      "atlas": "objects.png",
+      "x": 16,
+      "y": 80,
+      "width": 16,
+      "height": 16,
+      "category": "food"
+    },
+    "cheese": {
+      "file": "sprites/objects/cheese.png",
+      "atlas": "objects.png",
+      "x": 32,
+      "y": 80,
+      "width": 16,
+      "height": 16,
+      "category": "food"
+    },
+    "egg": {
+      "file": "sprites/objects/egg.png",
+      "atlas": "objects.png",
+      "x": 48,
+      "y": 80,
+      "width": 16,
+      "height": 16,
+      "category": "food"
+    },
+    "player_down_idle": {
+      "file": "sprites/characters/player_down_idle.png",
+      "atlas": "character.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_down_walk1": {
+      "file": "sprites/characters/player_down_walk1.png",
+      "atlas": "character.png",
+      "x": 16,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_down_walk2": {
+      "file": "sprites/characters/player_down_walk2.png",
+      "atlas": "character.png",
+      "x": 32,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_down_walk3": {
+      "file": "sprites/characters/player_down_walk3.png",
+      "atlas": "character.png",
+      "x": 48,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_up_idle": {
+      "file": "sprites/characters/player_up_idle.png",
+      "atlas": "character.png",
+      "x": 0,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_up_walk1": {
+      "file": "sprites/characters/player_up_walk1.png",
+      "atlas": "character.png",
+      "x": 16,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_up_walk2": {
+      "file": "sprites/characters/player_up_walk2.png",
+      "atlas": "character.png",
+      "x": 32,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_up_walk3": {
+      "file": "sprites/characters/player_up_walk3.png",
+      "atlas": "character.png",
+      "x": 48,
+      "y": 16,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_left_idle": {
+      "file": "sprites/characters/player_left_idle.png",
+      "atlas": "character.png",
+      "x": 0,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_left_walk1": {
+      "file": "sprites/characters/player_left_walk1.png",
+      "atlas": "character.png",
+      "x": 16,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_left_walk2": {
+      "file": "sprites/characters/player_left_walk2.png",
+      "atlas": "character.png",
+      "x": 32,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_left_walk3": {
+      "file": "sprites/characters/player_left_walk3.png",
+      "atlas": "character.png",
+      "x": 48,
+      "y": 32,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_right_idle": {
+      "file": "sprites/characters/player_right_idle.png",
+      "atlas": "character.png",
+      "x": 0,
+      "y": 48,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_right_walk1": {
+      "file": "sprites/characters/player_right_walk1.png",
+      "atlas": "character.png",
+      "x": 16,
+      "y": 48,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_right_walk2": {
+      "file": "sprites/characters/player_right_walk2.png",
+      "atlas": "character.png",
+      "x": 32,
+      "y": 48,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_right_walk3": {
+      "file": "sprites/characters/player_right_walk3.png",
+      "atlas": "character.png",
+      "x": 48,
+      "y": 48,
+      "width": 16,
+      "height": 16,
+      "category": "player"
+    },
+    "player_action_hoe": {
+      "file": "sprites/characters/player_action_hoe.png",
+      "atlas": "character.png",
+      "x": 0,
+      "y": 64,
+      "width": 16,
+      "height": 16,
+      "category": "actions"
+    },
+    "player_action_water": {
+      "file": "sprites/characters/player_action_water.png",
+      "atlas": "character.png",
+      "x": 16,
+      "y": 64,
+      "width": 16,
+      "height": 16,
+      "category": "actions"
+    },
+    "player_action_harvest": {
+      "file": "sprites/characters/player_action_harvest.png",
+      "atlas": "character.png",
+      "x": 32,
+      "y": 64,
+      "width": 16,
+      "height": 16,
+      "category": "actions"
+    },
+    "player_action_plant": {
+      "file": "sprites/characters/player_action_plant.png",
+      "atlas": "character.png",
+      "x": 48,
+      "y": 64,
+      "width": 16,
+      "height": 16,
+      "category": "actions"
+    },
+    "ALL UI ASSETS on one sheet": {
+      "file": "sprites/ui/ALL UI ASSETS on one sheet.png",
+      "atlas": "ALL UI ASSETS on one sheet.png",
+      "x": 0,
+      "y": 0,
+      "width": 1024,
+      "height": 1024,
+      "category": "ui"
+    },
+    "Teemo Basic emote animations sprite sheet": {
+      "file": "sprites/ui/Teemo Basic emote animations sprite sheet.png",
+      "atlas": "Teemo Basic emote animations sprite sheet.png",
+      "x": 0,
+      "y": 0,
+      "width": 160,
+      "height": 480,
+      "category": "ui"
+    },
+    "Teemo premium emote animations sprite sheet-export": {
+      "file": "sprites/ui/Teemo premium emote animations sprite sheet-export.png",
+      "atlas": "Teemo premium emote animations sprite sheet-export.png",
+      "x": 0,
+      "y": 0,
+      "width": 416,
+      "height": 1472,
+      "category": "ui"
+    },
+    "Premade dialog box  big": {
+      "file": "sprites/ui/Premade dialog box  big.png",
+      "atlas": "Premade dialog box  big.png",
+      "x": 0,
+      "y": 0,
+      "width": 304,
+      "height": 64,
+      "category": "ui"
+    },
+    "Premade dialog box medium": {
+      "file": "sprites/ui/Premade dialog box medium.png",
+      "atlas": "Premade dialog box medium.png",
+      "x": 0,
+      "y": 0,
+      "width": 240,
+      "height": 64,
+      "category": "ui"
+    },
+    "Premade dialog box small": {
+      "file": "sprites/ui/Premade dialog box small.png",
+      "atlas": "Premade dialog box small.png",
+      "x": 0,
+      "y": 0,
+      "width": 176,
+      "height": 64,
+      "category": "ui"
+    },
+    "dialog box big": {
+      "file": "sprites/ui/dialog box big.png",
+      "atlas": "dialog box big.png",
+      "x": 0,
+      "y": 0,
+      "width": 176,
+      "height": 48,
+      "category": "ui"
+    },
+    "dialog box character finished talking click to continue indicator - spritesheet ": {
+      "file": "sprites/ui/dialog box character finished talking click to continue indicator - spritesheet .png",
+      "atlas": "dialog box character finished talking click to continue indicator - spritesheet .png",
+      "x": 0,
+      "y": 0,
+      "width": 112,
+      "height": 16,
+      "category": "ui"
+    },
+    "dialog box medium": {
+      "file": "sprites/ui/dialog box medium.png",
+      "atlas": "dialog box medium.png",
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 48,
+      "category": "ui"
+    },
+    "dialog box small": {
+      "file": "sprites/ui/dialog box small.png",
+      "atlas": "dialog box small.png",
+      "x": 0,
+      "y": 0,
+      "width": 112,
+      "height": 48,
+      "category": "ui"
+    },
+    "dialog box": {
+      "file": "sprites/ui/dialog box.png",
+      "atlas": "dialog box.png",
+      "x": 0,
+      "y": 0,
+      "width": 48,
+      "height": 48,
+      "category": "ui"
+    },
+    "All Icons": {
+      "file": "sprites/ui/All Icons.png",
+      "atlas": "All Icons.png",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 320,
+      "category": "ui"
+    },
+    "Hearts in wood": {
+      "file": "sprites/ui/Hearts in wood.png",
+      "atlas": "Hearts in wood.png",
+      "x": 0,
+      "y": 0,
+      "width": 96,
+      "height": 64,
+      "category": "ui"
+    },
+    "Hearts": {
+      "file": "sprites/ui/Hearts.png",
+      "atlas": "Hearts.png",
+      "x": 0,
+      "y": 0,
+      "width": 240,
+      "height": 384,
+      "category": "ui"
+    },
+    "Medium Happines-Sadness icons": {
+      "file": "sprites/ui/Medium Happines-Sadness icons.png",
+      "atlas": "Medium Happines-Sadness icons.png",
+      "x": 0,
+      "y": 0,
+      "width": 96,
+      "height": 96,
+      "category": "ui"
+    },
+    "Small Happines-Sadness icons": {
+      "file": "sprites/ui/Small Happines-Sadness icons.png",
+      "atlas": "Small Happines-Sadness icons.png",
+      "x": 0,
+      "y": 0,
+      "width": 96,
+      "height": 32,
+      "category": "ui"
+    },
+    "coins": {
+      "file": "sprites/ui/coins.png",
+      "atlas": "coins.png",
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 48,
+      "category": "ui"
+    },
+    "stars in wood": {
+      "file": "sprites/ui/stars in wood.png",
+      "atlas": "stars in wood.png",
+      "x": 0,
+      "y": 0,
+      "width": 64,
+      "height": 32,
+      "category": "ui"
+    },
+    "stars": {
+      "file": "sprites/ui/stars.png",
+      "atlas": "stars.png",
+      "x": 0,
+      "y": 0,
+      "width": 144,
+      "height": 128,
+      "category": "ui"
+    },
+    "white icons": {
+      "file": "sprites/ui/white icons.png",
+      "atlas": "white icons.png",
+      "x": 0,
+      "y": 0,
+      "width": 64,
+      "height": 160,
+      "category": "ui"
+    },
+    "Arrow Mouse icon 1": {
+      "file": "sprites/ui/Arrow Mouse icon 1.png",
+      "atlas": "Arrow Mouse icon 1.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "Arrow Mouse icon 2": {
+      "file": "sprites/ui/Arrow Mouse icon 2.png",
+      "atlas": "Arrow Mouse icon 2.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "Arrow Mouse icon 3": {
+      "file": "sprites/ui/Arrow Mouse icon 3.png",
+      "atlas": "Arrow Mouse icon 3.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "Catpaw Mouse icon": {
+      "file": "sprites/ui/Catpaw Mouse icon.png",
+      "atlas": "Catpaw Mouse icon.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "Catpaw holding Mouse icon": {
+      "file": "sprites/ui/Catpaw holding Mouse icon.png",
+      "atlas": "Catpaw holding Mouse icon.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "Catpaw pointing Mouse icon": {
+      "file": "sprites/ui/Catpaw pointing Mouse icon.png",
+      "atlas": "Catpaw pointing Mouse icon.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "Triangle Mouse icon 1": {
+      "file": "sprites/ui/Triangle Mouse icon 1.png",
+      "atlas": "Triangle Mouse icon 1.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "Triangle Mouse icon 2": {
+      "file": "sprites/ui/Triangle Mouse icon 2.png",
+      "atlas": "Triangle Mouse icon 2.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "Triangle Mouse icon 3": {
+      "file": "sprites/ui/Triangle Mouse icon 3.png",
+      "atlas": "Triangle Mouse icon 3.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "Triangle small Mouse icon 1": {
+      "file": "sprites/ui/Triangle small Mouse icon 1.png",
+      "atlas": "Triangle small Mouse icon 1.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "Triangle small Mouse icon 2": {
+      "file": "sprites/ui/Triangle small Mouse icon 2.png",
+      "atlas": "Triangle small Mouse icon 2.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "Triangle small Mouse icon 3": {
+      "file": "sprites/ui/Triangle small Mouse icon 3.png",
+      "atlas": "Triangle small Mouse icon 3.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "Setting menu": {
+      "file": "sprites/ui/Setting menu.png",
+      "atlas": "Setting menu.png",
+      "x": 0,
+      "y": 0,
+      "width": 256,
+      "height": 144,
+      "category": "ui"
+    },
+    "Stamina circle with black outline sprite sheet ": {
+      "file": "sprites/ui/Stamina circle with black outline sprite sheet .png",
+      "atlas": "Stamina circle with black outline sprite sheet .png",
+      "x": 0,
+      "y": 0,
+      "width": 592,
+      "height": 16,
+      "category": "ui"
+    },
+    "Stamina circle with white outline sprite sheet ": {
+      "file": "sprites/ui/Stamina circle with white outline sprite sheet .png",
+      "atlas": "Stamina circle with white outline sprite sheet .png",
+      "x": 0,
+      "y": 0,
+      "width": 592,
+      "height": 16,
+      "category": "ui"
+    },
+    "UI Big Play Button": {
+      "file": "sprites/ui/UI Big Play Button.png",
+      "atlas": "UI Big Play Button.png",
+      "x": 0,
+      "y": 0,
+      "width": 192,
+      "height": 64,
+      "category": "ui"
+    },
+    "UI Settings Buttons": {
+      "file": "sprites/ui/UI Settings Buttons.png",
+      "atlas": "UI Settings Buttons.png",
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 240,
+      "category": "ui"
+    },
+    "X pressed": {
+      "file": "sprites/ui/X pressed.png",
+      "atlas": "X pressed.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "X": {
+      "file": "sprites/ui/X.png",
+      "atlas": "X.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 16,
+      "category": "ui"
+    },
+    "big X pressed": {
+      "file": "sprites/ui/big X pressed.png",
+      "atlas": "big X pressed.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "big X": {
+      "file": "sprites/ui/big X.png",
+      "atlas": "big X.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 16,
+      "category": "ui"
+    },
+    "big check mark pressed": {
+      "file": "sprites/ui/big check mark pressed.png",
+      "atlas": "big check mark pressed.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "big check mark": {
+      "file": "sprites/ui/big check mark.png",
+      "atlas": "big check mark.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "check mark pressed": {
+      "file": "sprites/ui/check mark pressed.png",
+      "atlas": "check mark pressed.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "check mark": {
+      "file": "sprites/ui/check mark.png",
+      "atlas": "check mark.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker X prssed": {
+      "file": "sprites/ui/darker X prssed.png",
+      "atlas": "darker X prssed.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker X": {
+      "file": "sprites/ui/darker X.png",
+      "atlas": "darker X.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker big X pressed": {
+      "file": "sprites/ui/darker big X pressed.png",
+      "atlas": "darker big X pressed.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker big X": {
+      "file": "sprites/ui/darker big X.png",
+      "atlas": "darker big X.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker big check mark pres": {
+      "file": "sprites/ui/darker big check mark pres.png",
+      "atlas": "darker big check mark pres.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker big check mark": {
+      "file": "sprites/ui/darker big check mark.png",
+      "atlas": "darker big check mark.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker check mark pressed": {
+      "file": "sprites/ui/darker check mark pressed.png",
+      "atlas": "darker check mark pressed.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker check mark": {
+      "file": "sprites/ui/darker check mark.png",
+      "atlas": "darker check mark.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker small X pressed": {
+      "file": "sprites/ui/darker small X pressed.png",
+      "atlas": "darker small X pressed.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker small X": {
+      "file": "sprites/ui/darker small X.png",
+      "atlas": "darker small X.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker small check mark pr": {
+      "file": "sprites/ui/darker small check mark pr.png",
+      "atlas": "darker small check mark pr.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker small check mark": {
+      "file": "sprites/ui/darker small check mark.png",
+      "atlas": "darker small check mark.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "small X pressed": {
+      "file": "sprites/ui/small X pressed.png",
+      "atlas": "small X pressed.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "small X": {
+      "file": "sprites/ui/small X.png",
+      "atlas": "small X.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 16,
+      "category": "ui"
+    },
+    "small check mark pressed": {
+      "file": "sprites/ui/small check mark pressed.png",
+      "atlas": "small check mark pressed.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "small check mark": {
+      "file": "sprites/ui/small check mark.png",
+      "atlas": "small check mark.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "category": "ui"
+    },
+    "big check marks": {
+      "file": "sprites/ui/big check marks.png",
+      "atlas": "big check marks.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 16,
+      "category": "ui"
+    },
+    "check marks": {
+      "file": "sprites/ui/check marks.png",
+      "atlas": "check marks.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker big check marks": {
+      "file": "sprites/ui/darker big check marks.png",
+      "atlas": "darker big check marks.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker big x": {
+      "file": "sprites/ui/darker big x.png",
+      "atlas": "darker big x.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker check marks": {
+      "file": "sprites/ui/darker check marks.png",
+      "atlas": "darker check marks.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker small check marks": {
+      "file": "sprites/ui/darker small check marks.png",
+      "atlas": "darker small check marks.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker small x": {
+      "file": "sprites/ui/darker small x.png",
+      "atlas": "darker small x.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 16,
+      "category": "ui"
+    },
+    "darker x": {
+      "file": "sprites/ui/darker x.png",
+      "atlas": "darker x.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 16,
+      "category": "ui"
+    },
+    "small check marks": {
+      "file": "sprites/ui/small check marks.png",
+      "atlas": "small check marks.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 16,
+      "category": "ui"
+    },
+    "Xs and check marks": {
+      "file": "sprites/ui/Xs and check marks.png",
+      "atlas": "Xs and check marks.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 192,
+      "category": "ui"
+    },
+    "Icon Buttons Spritesheet": {
+      "file": "sprites/ui/Icon Buttons Spritesheet.png",
+      "atlas": "Icon Buttons Spritesheet.png",
+      "x": 0,
+      "y": 0,
+      "width": 192,
+      "height": 480,
+      "category": "ui"
+    },
+    "medium colored round buttons": {
+      "file": "sprites/ui/medium colored round buttons.png",
+      "atlas": "medium colored round buttons.png",
+      "x": 0,
+      "y": 0,
+      "width": 96,
+      "height": 416,
+      "category": "ui"
+    },
+    "small colored round buttons": {
+      "file": "sprites/ui/small colored round buttons.png",
+      "atlas": "small colored round buttons.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 208,
+      "category": "ui"
+    },
+    "Small Square Buttons": {
+      "file": "sprites/ui/Small Square Buttons.png",
+      "atlas": "Small Square Buttons.png",
+      "x": 0,
+      "y": 0,
+      "width": 32,
+      "height": 128,
+      "category": "ui"
+    },
+    "Square Buttons 19x26": {
+      "file": "sprites/ui/Square Buttons 19x26.png",
+      "atlas": "Square Buttons 19x26.png",
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 96,
+      "category": "ui"
+    },
+    "Square Buttons 26x19": {
+      "file": "sprites/ui/Square Buttons 26x19.png",
+      "atlas": "Square Buttons 26x19.png",
+      "x": 0,
+      "y": 0,
+      "width": 96,
+      "height": 128,
+      "category": "ui"
+    },
+    "Square Buttons 26x26": {
+      "file": "sprites/ui/Square Buttons 26x26.png",
+      "atlas": "Square Buttons 26x26.png",
+      "x": 0,
+      "y": 0,
+      "width": 96,
+      "height": 192,
+      "category": "ui"
+    }
+  }
+}

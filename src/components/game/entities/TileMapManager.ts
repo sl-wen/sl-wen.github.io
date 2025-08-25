@@ -535,8 +535,42 @@ export class TileMapManager {
      * 更新动画瓦片
      */
     update(time: number, delta: number): void {
-        // 这里可以添加瓦片动画更新逻辑
-        // 例如水波纹动画、风吹草动等
+        // 更新水瓦片动画
+        this.updateWaterAnimation(time);
+        
+        // 更新其他动画瓦片
+        this.updateAnimatedTiles(time, delta);
+    }
+
+    /**
+     * 更新水瓦片动画
+     */
+    private updateWaterAnimation(time: number): void {
+        // 水波动画逻辑
+        const waterTiles = this.animatedTiles.get('water');
+        if (waterTiles) {
+            const animationSpeed = 0.002; // 动画速度
+            const waveOffset = Math.sin(time * animationSpeed) * 2;
+            
+            waterTiles.forEach(tile => {
+                tile.setTint(0x4A90E2 + Math.floor(waveOffset) * 0x111111);
+            });
+        }
+    }
+
+    /**
+     * 更新其他动画瓦片
+     */
+    private updateAnimatedTiles(time: number, delta: number): void {
+        // 草地摆动效果
+        this.animatedTiles.forEach((tiles, tileType) => {
+            if (tileType === 'grass' || tileType === 'darker_grass') {
+                const windEffect = Math.sin(time * 0.001) * 0.5;
+                tiles.forEach(tile => {
+                    tile.setRotation(windEffect * 0.02);
+                });
+            }
+        });
     }
 
     /**
@@ -551,5 +585,200 @@ export class TileMapManager {
      */
     getTilemap(): Phaser.Tilemaps.Tilemap | null {
         return this.tilemap;
+    }
+
+    /**
+     * 高级碰撞检测 - 检查玩家是否可以移动到指定位置
+     */
+    canMoveTo(x: number, y: number, playerWidth: number = 32, playerHeight: number = 32): boolean {
+        const tileX = Math.floor(x / this.TILE_WIDTH);
+        const tileY = Math.floor(y / this.TILE_HEIGHT);
+        
+        // 检查玩家占用的所有瓦片
+        const tilesWidth = Math.ceil(playerWidth / this.TILE_WIDTH);
+        const tilesHeight = Math.ceil(playerHeight / this.TILE_HEIGHT);
+        
+        for (let dy = 0; dy < tilesHeight; dy++) {
+            for (let dx = 0; dx < tilesWidth; dx++) {
+                const checkX = (tileX + dx) * this.TILE_WIDTH;
+                const checkY = (tileY + dy) * this.TILE_HEIGHT;
+                
+                if (!this.isWalkable(checkX, checkY)) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * 获取最近的可耕种瓦片位置
+     */
+    getNearestFarmableTile(x: number, y: number, radius: number = 100): { x: number, y: number } | null {
+        const centerTileX = Math.floor(x / this.TILE_WIDTH);
+        const centerTileY = Math.floor(y / this.TILE_HEIGHT);
+        const searchRadius = Math.floor(radius / this.TILE_WIDTH);
+        
+        let nearestTile: { x: number, y: number } | null = null;
+        let nearestDistance = Infinity;
+        
+        for (let dy = -searchRadius; dy <= searchRadius; dy++) {
+            for (let dx = -searchRadius; dx <= searchRadius; dx++) {
+                const tileX = centerTileX + dx;
+                const tileY = centerTileY + dy;
+                const worldX = tileX * this.TILE_WIDTH;
+                const worldY = tileY * this.TILE_HEIGHT;
+                
+                if (this.isFarmable(worldX, worldY)) {
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < nearestDistance) {
+                        nearestDistance = distance;
+                        nearestTile = { x: worldX, y: worldY };
+                    }
+                }
+            }
+        }
+        
+        return nearestTile;
+    }
+
+    /**
+     * 获取最近的水源位置
+     */
+    getNearestWaterSource(x: number, y: number, radius: number = 200): { x: number, y: number } | null {
+        const centerTileX = Math.floor(x / this.TILE_WIDTH);
+        const centerTileY = Math.floor(y / this.TILE_HEIGHT);
+        const searchRadius = Math.floor(radius / this.TILE_WIDTH);
+        
+        let nearestWater: { x: number, y: number } | null = null;
+        let nearestDistance = Infinity;
+        
+        for (let dy = -searchRadius; dy <= searchRadius; dy++) {
+            for (let dx = -searchRadius; dx <= searchRadius; dx++) {
+                const tileX = centerTileX + dx;
+                const tileY = centerTileY + dy;
+                const worldX = tileX * this.TILE_WIDTH;
+                const worldY = tileY * this.TILE_HEIGHT;
+                
+                if (this.isWaterSource(worldX, worldY)) {
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < nearestDistance) {
+                        nearestDistance = distance;
+                        nearestWater = { x: worldX, y: worldY };
+                    }
+                }
+            }
+        }
+        
+        return nearestWater;
+    }
+
+    /**
+     * 瓦片交互处理
+     */
+    interactWithTile(x: number, y: number, tool: string): boolean {
+        const properties = this.getTilePropertiesAt(x, y);
+        if (!properties) return false;
+        
+        switch (tool) {
+            case 'hoe':
+                // 锄头可以将泥土变为耕地
+                if (properties.type === TileType.DIRT) {
+                    this.setTile(x, y, 4); // 设置为耕地
+                    return true;
+                }
+                break;
+                
+            case 'watering_can':
+                // 水壶可以给耕地浇水
+                if (properties.type === TileType.TILLED_DIRT) {
+                    // 添加浇水效果
+                    this.addWateringEffect(x, y);
+                    return true;
+                }
+                break;
+                
+            case 'seeds':
+                // 种子可以种植在耕地上
+                if (properties.type === TileType.TILLED_DIRT) {
+                    // 种植逻辑由其他系统处理
+                    return true;
+                }
+                break;
+        }
+        
+        return false;
+    }
+
+    /**
+     * 添加浇水视觉效果
+     */
+    private addWateringEffect(x: number, y: number): void {
+        // 创建水滴粒子效果
+        const tileX = Math.floor(x / this.TILE_WIDTH) * this.TILE_WIDTH + this.TILE_WIDTH / 2;
+        const tileY = Math.floor(y / this.TILE_HEIGHT) * this.TILE_HEIGHT + this.TILE_HEIGHT / 2;
+        
+        // 创建简单的水滴效果
+        for (let i = 0; i < 5; i++) {
+            const droplet = this.scene.add.circle(
+                tileX + (Math.random() - 0.5) * 20,
+                tileY + (Math.random() - 0.5) * 20,
+                2,
+                0x4A90E2
+            );
+            
+            // 水滴动画
+            this.scene.tweens.add({
+                targets: droplet,
+                alpha: 0,
+                scaleX: 0.5,
+                scaleY: 0.5,
+                duration: 500,
+                ease: 'Power2',
+                onComplete: () => {
+                    droplet.destroy();
+                }
+            });
+        }
+    }
+
+    /**
+     * 获取瓦片在指定位置的详细信息
+     */
+    getTileInfo(x: number, y: number): {
+        tileX: number;
+        tileY: number;
+        worldX: number;
+        worldY: number;
+        properties: TileProperties | null;
+        layer: string | null;
+    } {
+        const tileX = Math.floor(x / this.TILE_WIDTH);
+        const tileY = Math.floor(y / this.TILE_HEIGHT);
+        const worldX = tileX * this.TILE_WIDTH;
+        const worldY = tileY * this.TILE_HEIGHT;
+        
+        let properties: TileProperties | null = null;
+        let layer: string | null = null;
+        
+        // 检查所有图层找到第一个非空瓦片
+        for (const [layerName, tileLayer] of this.layers) {
+            const tile = tileLayer.getTileAt(tileX, tileY);
+            if (tile && tile.index > 0) {
+                properties = this.tileProperties.get(tile.index) || null;
+                layer = layerName;
+                break;
+            }
+        }
+        
+        return {
+            tileX,
+            tileY,
+            worldX,
+            worldY,
+            properties,
+            layer
+        };
     }
 }

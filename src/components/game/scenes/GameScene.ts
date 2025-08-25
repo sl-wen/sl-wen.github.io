@@ -10,6 +10,7 @@ import { UILayoutManager } from '../UILayoutManager';
 import { VirtualJoystick } from '../VirtualJoystick';
 import { TileResourceConfig } from '../utils/TileResourceConfig';
 import { ResourceLoader } from '../utils/ResourceLoader';
+import { WeatherSystem, WeatherType, SeasonType } from '../systems/WeatherSystem';
 
 /**
  * 游戏主场景类
@@ -35,6 +36,7 @@ export class GameScene extends Phaser.Scene {
   private uiLayoutManager!: UILayoutManager;                 // UI布局管理器
   private farmLayoutManager!: FarmLayoutManager;             // 农场布局管理器
   private tileMapManager!: TileMapManager;                   // 瓦片地图管理器
+  private weatherSystem!: WeatherSystem;                     // 天气系统
   private actionButtons: Phaser.GameObjects.Container[] = []; // 动作按钮数组
 
   // 游戏状态属性
@@ -91,6 +93,12 @@ export class GameScene extends Phaser.Scene {
       console.log('Initializing farm layout manager...');
       this.farmLayoutManager = new FarmLayoutManager(this);
       console.log('Farm layout manager initialized');
+
+      // 初始化天气系统
+      console.log('Initializing weather system...');
+      this.weatherSystem = new WeatherSystem(this);
+      this.setupWeatherEventHandlers();
+      console.log('Weather system initialized');
 
       // 创建玩家角色（小猫）
       console.log('Creating cat player...');
@@ -1281,6 +1289,16 @@ export class GameScene extends Phaser.Scene {
     // 更新小猫状态
     this.cat.update();
 
+    // 更新瓦片地图系统（动画、效果等）
+    if (this.tileMapManager) {
+      this.tileMapManager.update(this.time.now, this.game.loop.delta);
+    }
+
+    // 更新天气系统
+    if (this.weatherSystem) {
+      this.weatherSystem.update(this.time.now, this.game.loop.delta);
+    }
+
     // 性能优化的更新 - 非关键元素每几帧更新一次
     if (this.frameCounter % 3 === 0) {  // 每3帧更新一次
       // 更新农田地块（降低频率以提高性能）
@@ -1320,6 +1338,16 @@ export class GameScene extends Phaser.Scene {
 
     if (this.uiLayoutManager) {
       this.uiLayoutManager.destroy();  // 销毁UI布局管理器
+    }
+
+    // 清理天气系统
+    if (this.weatherSystem) {
+      this.weatherSystem.destroy();  // 销毁天气系统
+    }
+
+    // 清理瓦片地图管理器
+    if (this.tileMapManager) {
+      this.tileMapManager.destroy();  // 销毁瓦片地图管理器
     }
 
     // 清理新的动作按钮
@@ -1434,6 +1462,149 @@ export class GameScene extends Phaser.Scene {
             }
           }
         }
+      }
+    });
+  }
+
+  /**
+   * 设置天气事件处理器
+   */
+  private setupWeatherEventHandlers(): void {
+    // 监听天气变化事件
+    this.events.on('weatherChanged', (weather: any) => {
+      console.log(`Weather changed to: ${weather.type} (intensity: ${weather.intensity})`);
+      
+      // 天气对农作物的影响
+      this.applyWeatherEffectsToFarm(weather);
+      
+      // 显示天气提示
+      this.showWeatherNotification(weather);
+    });
+
+    // 监听季节变化事件
+    this.events.on('seasonChanged', (season: SeasonType) => {
+      console.log(`Season changed to: ${season}`);
+      
+      // 季节对农作物的影响
+      this.applySeasonEffectsToFarm(season);
+      
+      // 显示季节提示
+      this.showSeasonNotification(season);
+    });
+  }
+
+  /**
+   * 应用天气对农场的影响
+   */
+  private applyWeatherEffectsToFarm(weather: any): void {
+    this.farmPlots.children.entries.forEach((plot: any) => {
+      if (plot.applyWeatherEffect) {
+        plot.applyWeatherEffect(weather);
+      }
+    });
+  }
+
+  /**
+   * 应用季节对农场的影响
+   */
+  private applySeasonEffectsToFarm(season: SeasonType): void {
+    const seasonConfig = this.weatherSystem.getSeasonConfig(season);
+    
+    this.farmPlots.children.entries.forEach((plot: any) => {
+      if (plot.applySeasonEffect) {
+        plot.applySeasonEffect(seasonConfig);
+      }
+    });
+  }
+
+  /**
+   * 显示天气通知
+   */
+  private showWeatherNotification(weather: any): void {
+    const weatherNames = {
+      sunny: '☀️ 晴天',
+      cloudy: '☁️ 多云',
+      rainy: '🌧️ 雨天',
+      stormy: '⛈️ 暴风雨',
+      snowy: '❄️ 下雪',
+      foggy: '🌫️ 雾天'
+    };
+
+    const weatherName = weatherNames[weather.type as keyof typeof weatherNames] || weather.type;
+    
+    // 创建通知文本
+    const notification = this.add.text(
+      this.cameras.main.width / 2,
+      100,
+      `天气变化: ${weatherName}`,
+      {
+        fontSize: '24px',
+        color: '#ffffff',
+        backgroundColor: '#000000',
+        padding: { x: 20, y: 10 }
+      }
+    );
+    
+    notification.setOrigin(0.5);
+    notification.setDepth(2000);
+    
+    // 淡入淡出动画
+    notification.setAlpha(0);
+    this.tweens.add({
+      targets: notification,
+      alpha: 1,
+      duration: 500,
+      ease: 'Power2',
+      yoyo: true,
+      hold: 2000,
+      onComplete: () => {
+        notification.destroy();
+      }
+    });
+  }
+
+  /**
+   * 显示季节通知
+   */
+  private showSeasonNotification(season: SeasonType): void {
+    const seasonNames = {
+      spring: '🌸 春天',
+      summer: '☀️ 夏天',
+      autumn: '🍂 秋天',
+      winter: '❄️ 冬天'
+    };
+
+    const seasonName = seasonNames[season];
+    
+    // 创建通知文本
+    const notification = this.add.text(
+      this.cameras.main.width / 2,
+      150,
+      `季节更替: ${seasonName}`,
+      {
+        fontSize: '28px',
+        color: '#ffffff',
+        backgroundColor: '#4a5568',
+        padding: { x: 25, y: 15 }
+      }
+    );
+    
+    notification.setOrigin(0.5);
+    notification.setDepth(2000);
+    
+    // 季节变化特效
+    notification.setAlpha(0);
+    notification.setScale(0.5);
+    this.tweens.add({
+      targets: notification,
+      alpha: 1,
+      scale: 1,
+      duration: 800,
+      ease: 'Back',
+      yoyo: true,
+      hold: 3000,
+      onComplete: () => {
+        notification.destroy();
       }
     });
   }

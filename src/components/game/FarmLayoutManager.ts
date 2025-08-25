@@ -234,7 +234,7 @@ export class FarmLayoutManager {
                 ripple.setDepth(4);
                 group.add(ripple);
 
-                this.scene.tweens.add({
+                const tweenConfig: Phaser.Types.Tweens.TweenBuilderConfig = {
                     targets: ripple,
                     scaleX: 4,
                     scaleY: 4,
@@ -244,7 +244,8 @@ export class FarmLayoutManager {
                     onComplete: () => {
                         ripple.destroy();
                     }
-                });
+                } as Phaser.Types.Tweens.TweenBuilderConfig;
+                this.scene.tweens.add(tweenConfig);
             },
             loop: true
         });
@@ -291,14 +292,20 @@ export class FarmLayoutManager {
         windmill.setDepth(12);
         group.add(windmill);
 
-        // 创建风车动画
-        this.scene.anims.create({
-            key: 'windmill_spin',
-            frames: this.scene.anims.generateFrameNumbers('farm_windmill', { start: 0, end: 7 }),
-            frameRate: 3,
-            repeat: -1
-        });
-        windmill.play('windmill_spin');
+        // 创建风车动画（资源存在时）
+        if (this.scene.textures.exists('farm_windmill')) {
+            if (!this.scene.anims.exists('windmill_spin')) {
+                this.scene.anims.create({
+                    key: 'windmill_spin',
+                    frames: this.scene.anims.generateFrameNumbers('farm_windmill', { start: 0, end: 7 }),
+                    frameRate: 3,
+                    repeat: -1
+                });
+            }
+            if (windmill.anims) {
+                windmill.play('windmill_spin');
+            }
+        }
     }
 
     private createFarmFence(area: FarmArea, group: Phaser.GameObjects.Group) {

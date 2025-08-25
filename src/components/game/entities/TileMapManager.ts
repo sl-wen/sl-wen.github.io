@@ -65,7 +65,7 @@ export class TileMapManager {
     private tileset: Phaser.Tilemaps.Tileset | null = null;
     private layers: Map<string, Phaser.Tilemaps.TilemapLayer> = new Map();
     private animatedTiles: Map<string, Phaser.GameObjects.Sprite[]> = new Map();
-    
+
     // 瓦片尺寸配置
     private readonly TILE_WIDTH = 32;
     private readonly TILE_HEIGHT = 32;
@@ -160,7 +160,7 @@ export class TileMapManager {
      */
     private checkTileAssets(): boolean {
         const requiredTextures = [
-            'grass_tiles', 'darker_grass_tiles', 'soil_tiles', 
+            'grass_tiles', 'darker_grass_tiles', 'soil_tiles',
             'stone_tiles', 'bush_tiles', 'tilled_dirt_tiles',
             'water_tiles', 'path_tiles'
         ];
@@ -213,35 +213,42 @@ export class TileMapManager {
     private createTileLayer(layerData: TileLayer, mapData: TileMapData): void {
         if (!this.tilemap) return;
 
-        // 为每种瓦片类型创建瓦片集
-        const tilesetKeys = ['grass_tiles', 'darker_grass_tiles', 'soil_tiles', 'stone_tiles', 'bush_tiles', 'tilled_dirt_tiles', 'water_tiles', 'path_tiles'];
-        const tilesets: Phaser.Tilemaps.Tileset[] = [];
-        
-        tilesetKeys.forEach(key => {
-            if (this.scene.textures.exists(key)) {
-                const tileset = this.tilemap!.addTilesetImage(key, key, this.TILE_WIDTH, this.TILE_HEIGHT);
-                if (tileset) {
-                    tilesets.push(tileset);
-                }
-            }
-        });
+        // 选取一个可用的瓦片集（使用单一 tileset 避免多集索引问题）
+        const candidateKeys = ['grass_tiles', 'soil_tiles', 'darker_grass_tiles', 'tilled_dirt_tiles', 'stone_tiles', 'bush_tiles', 'water_tiles', 'path_tiles'];
+        const selectedKey = candidateKeys.find(key => this.scene.textures.exists(key));
+        if (!selectedKey) {
+            console.warn('No tileset textures available for layer', layerData.name);
+            return;
+        }
 
-        // 使用手动方式创建图层，因为我们需要设置瓦片数据
-        if (tilesets.length > 0) {
-            // 创建空白图层
-            const layer = this.tilemap.createBlankLayer(layerData.name, tilesets);
-            
-            if (layer) {
-                // 设置图层数据
-                this.setLayerData(layer, layerData.data, mapData.width, mapData.height);
-                
-                // 设置图层属性
-                layer.setVisible(layerData.visible);
-                layer.setAlpha(layerData.opacity);
-                layer.setDepth(layerData.depth);
-                
-                this.layers.set(layerData.name, layer);
-            }
+        const tileset = this.tilemap.addTilesetImage(selectedKey, selectedKey, this.TILE_WIDTH, this.TILE_HEIGHT);
+        if (!tileset) {
+            console.warn('Failed to create tileset for', selectedKey);
+            return;
+        }
+
+        // 正确传入尺寸创建空白图层
+        const layer = this.tilemap.createBlankLayer(
+            layerData.name,
+            tileset,
+            0,
+            0,
+            mapData.width,
+            mapData.height,
+            this.TILE_WIDTH,
+            this.TILE_HEIGHT
+        );
+
+        if (layer) {
+            // 设置图层数据
+            this.setLayerData(layer, layerData.data, mapData.width, mapData.height);
+
+            // 设置图层属性
+            layer.setVisible(layerData.visible);
+            layer.setAlpha(layerData.opacity);
+            layer.setDepth(layerData.depth);
+
+            this.layers.set(layerData.name, layer);
         }
     }
 
@@ -249,16 +256,24 @@ export class TileMapManager {
      * 设置图层瓦片数据
      */
     private setLayerData(layer: Phaser.Tilemaps.TilemapLayer, data: number[], width: number, height: number): void {
+        if (!Array.isArray(data) || data.length < width * height) {
+            console.warn('TileMapManager.setLayerData: data size mismatch', { dataLength: data ? data.length : -1, expected: width * height, width, height });
+        }
+
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 const index = y * width + x;
-                const tileId = data[index];
-                
+                const tileId = data[index] ?? 0;
+
                 if (tileId > 0) {
                     // 根据瓦片ID选择合适的瓦片集和帧
-                    const tileInfo = this.getTileInfo(tileId);
+                    const tileInfo = this.getTileInfoById(tileId);
                     if (tileInfo) {
-                        layer.putTileAt(tileInfo.frameIndex, x, y);
+                        try {
+                            layer.putTileAt(tileInfo.frameIndex, x, y);
+                        } catch (e) {
+                            console.warn('putTileAt failed', { x, y, tileId, tileInfo }, e);
+                        }
                     }
                 }
             }
@@ -268,7 +283,7 @@ export class TileMapManager {
     /**
      * 根据瓦片ID获取瓦片信息
      */
-    private getTileInfo(tileId: number): { textureKey: string; frameIndex: number } | null {
+    private getTileInfoById(tileId: number): { textureKey: string; frameIndex: number } | null {
         const properties = this.tileProperties.get(tileId);
         if (!properties) return null;
 
@@ -389,11 +404,11 @@ export class TileMapManager {
      */
     private generateTerrainLayer(width: number, height: number): number[] {
         const data: number[] = [];
-        
+
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 let tileId = 0; // 0 表示空瓦片（透明）
-                
+
                 // 创建池塘区域
                 if (x >= 35 && x <= 45 && y >= 5 && y <= 15) {
                     tileId = 6; // 水瓦片
@@ -403,8 +418,8 @@ export class TileMapManager {
                     tileId = 3; // 泥土瓦片
                 }
                 // 创建小径
-                else if ((x >= 20 && x <= 25 && y >= 0 && y <= height) || 
-                         (y >= 15 && y <= 20 && x >= 0 && x <= width)) {
+                else if ((x >= 20 && x <= 25 && y >= 0 && y <= height) ||
+                    (y >= 15 && y <= 20 && x >= 0 && x <= width)) {
                     tileId = 8; // 小径瓦片
                 }
                 // 添加一些石头障碍
@@ -415,7 +430,7 @@ export class TileMapManager {
                 else if (Math.random() < 0.01) {
                     tileId = 7; // 灌木瓦片
                 }
-                
+
                 data.push(tileId);
             }
         }
@@ -427,16 +442,16 @@ export class TileMapManager {
      */
     private generateDecorationLayer(width: number, height: number): number[] {
         const data: number[] = [];
-        
+
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 let tileId = 0; // 默认空瓦片
-                
+
                 // 在边界添加深色草地
                 if (x === 0 || x === width - 1 || y === 0 || y === height - 1) {
                     tileId = 2; // 深色草地
                 }
-                
+
                 data.push(tileId);
             }
         }
@@ -489,7 +504,7 @@ export class TileMapManager {
 
         const tileX = Math.floor(x / this.TILE_WIDTH);
         const tileY = Math.floor(y / this.TILE_HEIGHT);
-        
+
         layer.putTileAt(tileId, tileX, tileY);
     }
 
@@ -537,7 +552,7 @@ export class TileMapManager {
     update(time: number, delta: number): void {
         // 更新水瓦片动画
         this.updateWaterAnimation(time);
-        
+
         // 更新其他动画瓦片
         this.updateAnimatedTiles(time, delta);
     }
@@ -551,7 +566,7 @@ export class TileMapManager {
         if (waterTiles) {
             const animationSpeed = 0.002; // 动画速度
             const waveOffset = Math.sin(time * animationSpeed) * 2;
-            
+
             waterTiles.forEach(tile => {
                 tile.setTint(0x4A90E2 + Math.floor(waveOffset) * 0x111111);
             });
@@ -593,22 +608,22 @@ export class TileMapManager {
     canMoveTo(x: number, y: number, playerWidth: number = 32, playerHeight: number = 32): boolean {
         const tileX = Math.floor(x / this.TILE_WIDTH);
         const tileY = Math.floor(y / this.TILE_HEIGHT);
-        
+
         // 检查玩家占用的所有瓦片
         const tilesWidth = Math.ceil(playerWidth / this.TILE_WIDTH);
         const tilesHeight = Math.ceil(playerHeight / this.TILE_HEIGHT);
-        
+
         for (let dy = 0; dy < tilesHeight; dy++) {
             for (let dx = 0; dx < tilesWidth; dx++) {
                 const checkX = (tileX + dx) * this.TILE_WIDTH;
                 const checkY = (tileY + dy) * this.TILE_HEIGHT;
-                
+
                 if (!this.isWalkable(checkX, checkY)) {
                     return false;
                 }
             }
         }
-        
+
         return true;
     }
 
@@ -619,17 +634,17 @@ export class TileMapManager {
         const centerTileX = Math.floor(x / this.TILE_WIDTH);
         const centerTileY = Math.floor(y / this.TILE_HEIGHT);
         const searchRadius = Math.floor(radius / this.TILE_WIDTH);
-        
+
         let nearestTile: { x: number, y: number } | null = null;
         let nearestDistance = Infinity;
-        
+
         for (let dy = -searchRadius; dy <= searchRadius; dy++) {
             for (let dx = -searchRadius; dx <= searchRadius; dx++) {
                 const tileX = centerTileX + dx;
                 const tileY = centerTileY + dy;
                 const worldX = tileX * this.TILE_WIDTH;
                 const worldY = tileY * this.TILE_HEIGHT;
-                
+
                 if (this.isFarmable(worldX, worldY)) {
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance < nearestDistance) {
@@ -639,7 +654,7 @@ export class TileMapManager {
                 }
             }
         }
-        
+
         return nearestTile;
     }
 
@@ -650,17 +665,17 @@ export class TileMapManager {
         const centerTileX = Math.floor(x / this.TILE_WIDTH);
         const centerTileY = Math.floor(y / this.TILE_HEIGHT);
         const searchRadius = Math.floor(radius / this.TILE_WIDTH);
-        
+
         let nearestWater: { x: number, y: number } | null = null;
         let nearestDistance = Infinity;
-        
+
         for (let dy = -searchRadius; dy <= searchRadius; dy++) {
             for (let dx = -searchRadius; dx <= searchRadius; dx++) {
                 const tileX = centerTileX + dx;
                 const tileY = centerTileY + dy;
                 const worldX = tileX * this.TILE_WIDTH;
                 const worldY = tileY * this.TILE_HEIGHT;
-                
+
                 if (this.isWaterSource(worldX, worldY)) {
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance < nearestDistance) {
@@ -670,7 +685,7 @@ export class TileMapManager {
                 }
             }
         }
-        
+
         return nearestWater;
     }
 
@@ -680,7 +695,7 @@ export class TileMapManager {
     interactWithTile(x: number, y: number, tool: string): boolean {
         const properties = this.getTilePropertiesAt(x, y);
         if (!properties) return false;
-        
+
         switch (tool) {
             case 'hoe':
                 // 锄头可以将泥土变为耕地
@@ -689,7 +704,7 @@ export class TileMapManager {
                     return true;
                 }
                 break;
-                
+
             case 'watering_can':
                 // 水壶可以给耕地浇水
                 if (properties.type === TileType.TILLED_DIRT) {
@@ -698,7 +713,7 @@ export class TileMapManager {
                     return true;
                 }
                 break;
-                
+
             case 'seeds':
                 // 种子可以种植在耕地上
                 if (properties.type === TileType.TILLED_DIRT) {
@@ -707,7 +722,7 @@ export class TileMapManager {
                 }
                 break;
         }
-        
+
         return false;
     }
 
@@ -718,7 +733,7 @@ export class TileMapManager {
         // 创建水滴粒子效果
         const tileX = Math.floor(x / this.TILE_WIDTH) * this.TILE_WIDTH + this.TILE_WIDTH / 2;
         const tileY = Math.floor(y / this.TILE_HEIGHT) * this.TILE_HEIGHT + this.TILE_HEIGHT / 2;
-        
+
         // 创建简单的水滴效果
         for (let i = 0; i < 5; i++) {
             const droplet = this.scene.add.circle(
@@ -727,7 +742,7 @@ export class TileMapManager {
                 2,
                 0x4A90E2
             );
-            
+
             // 水滴动画
             this.scene.tweens.add({
                 targets: droplet,
@@ -758,20 +773,22 @@ export class TileMapManager {
         const tileY = Math.floor(y / this.TILE_HEIGHT);
         const worldX = tileX * this.TILE_WIDTH;
         const worldY = tileY * this.TILE_HEIGHT;
-        
+
         let properties: TileProperties | null = null;
         let layer: string | null = null;
-        
-        // 检查所有图层找到第一个非空瓦片
-        for (const [layerName, tileLayer] of this.layers) {
+
+        // 检查所有图层找到第一个非空瓦片（避免 for..of 迭代 Map）
+        this.layers.forEach((tileLayer, layerName) => {
+            if (properties !== null) {
+                return;
+            }
             const tile = tileLayer.getTileAt(tileX, tileY);
             if (tile && tile.index > 0) {
                 properties = this.tileProperties.get(tile.index) || null;
                 layer = layerName;
-                break;
             }
-        }
-        
+        });
+
         return {
             tileX,
             tileY,

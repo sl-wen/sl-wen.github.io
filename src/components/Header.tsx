@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/utils/auth-context';
-import { supabase } from '@/utils/supabase-config';
 import { incrementVisitCount } from '@/utils/stats';
+import { supabase } from '@/utils/supabase-config';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useEffect, useRef, useState } from 'react';
 
 // Header组件 - 网站顶部导航栏，包含logo、导航菜单和用户功能
 const Header: React.FC = () => {
@@ -76,7 +76,7 @@ const Header: React.FC = () => {
     { href: '/', label: '首页', icon: '🏠' },
     { href: '/category', label: '分类', icon: '📁' },
     { href: '/search', label: '搜索', icon: '🔍' },
-    { href: '/sprout-lands', label: 'Sprout Lands', icon: '🌱' },
+    { href: '/sprout-lands', label: '萌芽', icon: '🌱' },
     { href: '/about', label: '关于', icon: 'ℹ️' }
   ];
 

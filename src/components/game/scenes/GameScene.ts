@@ -5,12 +5,12 @@ import { InventoryManager } from '../entities/InventoryManager';
 import { Cat } from '../entities/Player';
 import { TileMapManager } from '../entities/TileMapManager';
 import { FarmLayoutManager } from '../FarmLayoutManager';
+import { SeasonType, WeatherSystem } from '../systems/WeatherSystem';
 import { CropType, ToolType } from '../types/GameTypes';
 import { UILayoutManager } from '../UILayoutManager';
-import { VirtualJoystick } from '../VirtualJoystick';
-import { TileResourceConfig } from '../utils/TileResourceConfig';
 import { ResourceLoader } from '../utils/ResourceLoader';
-import { WeatherSystem, WeatherType, SeasonType } from '../systems/WeatherSystem';
+import { TileResourceConfig } from '../utils/TileResourceConfig';
+import { VirtualJoystick } from '../VirtualJoystick';
 
 /**
  * 游戏主场景类
@@ -172,12 +172,12 @@ export class GameScene extends Phaser.Scene {
   private createWorldBackground() {
     // 创建基础背景颜色
     this.cameras.main.setBackgroundColor('#4a7c59'); // 深绿色背景，模拟草地
-    
+
     // 创建地面纹理（使用现有的农田纹理作为地面）
     const groundTileSize = 64; // 地面瓦片大小
     const worldWidth = 1200;   // 世界宽度
     const worldHeight = 800;   // 世界高度
-    
+
     // 创建地面瓦片
     for (let x = 0; x < worldWidth; x += groundTileSize) {
       for (let y = 0; y < worldHeight; y += groundTileSize) {
@@ -188,7 +188,7 @@ export class GameScene extends Phaser.Scene {
         groundTile.setDepth(-100); // 确保在最底层
       }
     }
-    
+
     // 设置世界边界
     this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
   }
@@ -1264,30 +1264,37 @@ export class GameScene extends Phaser.Scene {
         moveY = joystickVector.y;  // 设置Y方向移动
       }
     } else {
-      // PC端：只使用键盘
-      if (this.cursors.left.isDown || this.wasdKeys.A.isDown) {
+      // PC端：只使用键盘（增加健壮性检查）
+      const hasCursors = !!this.cursors && (this.cursors as any).left && (this.cursors as any).right && (this.cursors as any).up && (this.cursors as any).down;
+      const hasWASD = !!this.wasdKeys && (this.wasdKeys as any).A && (this.wasdKeys as any).D && (this.wasdKeys as any).W && (this.wasdKeys as any).S;
+
+      if ((hasCursors && this.cursors.left!.isDown) || (hasWASD && this.wasdKeys.A!.isDown)) {
         moveX = -1;  // 向左移动
-      } else if (this.cursors.right.isDown || this.wasdKeys.D.isDown) {
+      } else if ((hasCursors && this.cursors.right!.isDown) || (hasWASD && this.wasdKeys.D!.isDown)) {
         moveX = 1;   // 向右移动
       }
 
-      if (this.cursors.up.isDown || this.wasdKeys.W.isDown) {
+      if ((hasCursors && this.cursors.up!.isDown) || (hasWASD && this.wasdKeys.W!.isDown)) {
         moveY = -1;  // 向上移动
-      } else if (this.cursors.down.isDown || this.wasdKeys.S.isDown) {
+      } else if ((hasCursors && this.cursors.down!.isDown) || (hasWASD && this.wasdKeys.S!.isDown)) {
         moveY = 1;   // 向下移动
       }
     }
 
-    // 应用移动 - 使用改进的移动系统
-    if (Math.abs(moveX) > 0.01 || Math.abs(moveY) > 0.01) {  // 如果有移动输入
-      this.cat.move(moveX, moveY);  // 让小猫移动
-    } else {
-      // 使用平滑停止而非立即停止，增加游戏手感
-      this.cat.smoothStop(0.88);  // 使用稍高的减速率
-    }
+    // 应用移动 - 使用改进的移动系统（在小猫存在时）
+    if (this.cat) {
+      if (Math.abs(moveX) > 0.01 || Math.abs(moveY) > 0.01) {  // 如果有移动输入
+        this.cat.move(moveX, moveY);  // 让小猫移动
+      } else if (typeof (this.cat as any).smoothStop === 'function') {
+        // 使用平滑停止而非立即停止，增加游戏手感
+        this.cat.smoothStop(0.88);  // 使用稍高的减速率
+      }
 
-    // 更新小猫状态
-    this.cat.update();
+      // 更新小猫状态
+      if (typeof this.cat.update === 'function') {
+        this.cat.update();
+      }
+    }
 
     // 更新瓦片地图系统（动画、效果等）
     if (this.tileMapManager) {
@@ -1302,24 +1309,28 @@ export class GameScene extends Phaser.Scene {
     // 性能优化的更新 - 非关键元素每几帧更新一次
     if (this.frameCounter % 3 === 0) {  // 每3帧更新一次
       // 更新农田地块（降低频率以提高性能）
-      this.farmPlots.children.entries.forEach((plot: any) => {
-        if (plot.update) {
-          plot.update();  // 更新农田地块
-        }
-      });
+      if (this.farmPlots && this.farmPlots.children && Array.isArray((this.farmPlots.children as any).entries)) {
+        this.farmPlots.children.entries.forEach((plot: any) => {
+          if (plot && typeof plot.update === 'function') {
+            plot.update();  // 更新农田地块
+          }
+        });
+      }
     }
 
     if (this.frameCounter % 5 === 0) {  // 每5帧更新一次
       // 更新烹饪站（更低频率）
-      this.cookingStations.children.entries.forEach((station: any) => {
-        if (station.update) {
-          station.update();  // 更新烹饪站
-        }
-      });
+      if (this.cookingStations && this.cookingStations.children && Array.isArray((this.cookingStations.children as any).entries)) {
+        this.cookingStations.children.entries.forEach((station: any) => {
+          if (station && typeof station.update === 'function') {
+            station.update();  // 更新烹饪站
+          }
+        });
+      }
     }
 
     // 处理交互键（仅桌面端）
-    if (!screenInfo.isMobile && Phaser.Input.Keyboard.JustDown(this.interactKey)) {
+    if (!screenInfo.isMobile && this.interactKey && typeof (this.interactKey as any)._justDown !== 'undefined' && Phaser.Input.Keyboard.JustDown(this.interactKey)) {
       this.handleInteraction();  // 执行交互
     }
 
@@ -1395,24 +1406,24 @@ export class GameScene extends Phaser.Scene {
   private async loadTileResources(): Promise<void> {
     try {
       console.log('Loading tile resources...');
-      
+
       const resourceLoader = ResourceLoader.getInstance();
       const tileResources = TileResourceConfig.getPreloadTileResources();
-      
+
       // 添加瓦片资源到加载队列
       resourceLoader.addResources(tileResources);
-      
+
       // 设置进度回调
       resourceLoader.setProgressCallback((progress) => {
         console.log(`Tile loading progress: ${progress.percentage}% - ${progress.currentResource}`);
       });
-      
+
       // 开始加载资源
       await resourceLoader.loadResources();
-      
+
       // 将加载的资源注册到Phaser场景
       this.registerTileTextures(resourceLoader);
-      
+
       console.log('Tile resources loaded successfully');
     } catch (error) {
       console.error('Failed to load tile resources:', error);
@@ -1425,31 +1436,31 @@ export class GameScene extends Phaser.Scene {
    */
   private registerTileTextures(resourceLoader: ResourceLoader): void {
     const tileResources = TileResourceConfig.getPreloadTileResources();
-    
+
     tileResources.forEach(resource => {
       const spritesheetData = resourceLoader.getResource(resource.key);
-      
+
       if (spritesheetData && spritesheetData.image && resource.frameConfig) {
         // 将图像添加到Phaser纹理管理器
         if (!this.textures.exists(resource.key)) {
           this.textures.addImage(resource.key, spritesheetData.image);
-          
+
           // 如果是精灵图集，创建帧数据
           if (resource.type === 'spritesheet') {
-            this.textures.get(resource.key).add('__BASE', 0, 0, 
+            this.textures.get(resource.key).add('__BASE', 0, 0, 0,
               spritesheetData.image.width, spritesheetData.image.height);
-            
+
             // 生成精灵帧
             const frameWidth = resource.frameConfig.frameWidth;
             const frameHeight = resource.frameConfig.frameHeight;
             const cols = Math.floor(spritesheetData.image.width / frameWidth);
             const rows = Math.floor(spritesheetData.image.height / frameHeight);
-            
+
             for (let row = 0; row < rows; row++) {
               for (let col = 0; col < cols; col++) {
                 const frameIndex = row * cols + col;
                 const frameName = frameIndex.toString();
-                
+
                 this.textures.get(resource.key).add(
                   frameName,
                   0,
@@ -1473,10 +1484,10 @@ export class GameScene extends Phaser.Scene {
     // 监听天气变化事件
     this.events.on('weatherChanged', (weather: any) => {
       console.log(`Weather changed to: ${weather.type} (intensity: ${weather.intensity})`);
-      
+
       // 天气对农作物的影响
       this.applyWeatherEffectsToFarm(weather);
-      
+
       // 显示天气提示
       this.showWeatherNotification(weather);
     });
@@ -1484,10 +1495,10 @@ export class GameScene extends Phaser.Scene {
     // 监听季节变化事件
     this.events.on('seasonChanged', (season: SeasonType) => {
       console.log(`Season changed to: ${season}`);
-      
+
       // 季节对农作物的影响
       this.applySeasonEffectsToFarm(season);
-      
+
       // 显示季节提示
       this.showSeasonNotification(season);
     });
@@ -1509,7 +1520,7 @@ export class GameScene extends Phaser.Scene {
    */
   private applySeasonEffectsToFarm(season: SeasonType): void {
     const seasonConfig = this.weatherSystem.getSeasonConfig(season);
-    
+
     this.farmPlots.children.entries.forEach((plot: any) => {
       if (plot.applySeasonEffect) {
         plot.applySeasonEffect(seasonConfig);
@@ -1531,7 +1542,7 @@ export class GameScene extends Phaser.Scene {
     };
 
     const weatherName = weatherNames[weather.type as keyof typeof weatherNames] || weather.type;
-    
+
     // 创建通知文本
     const notification = this.add.text(
       this.cameras.main.width / 2,
@@ -1544,10 +1555,10 @@ export class GameScene extends Phaser.Scene {
         padding: { x: 20, y: 10 }
       }
     );
-    
+
     notification.setOrigin(0.5);
     notification.setDepth(2000);
-    
+
     // 淡入淡出动画
     notification.setAlpha(0);
     this.tweens.add({
@@ -1575,7 +1586,7 @@ export class GameScene extends Phaser.Scene {
     };
 
     const seasonName = seasonNames[season];
-    
+
     // 创建通知文本
     const notification = this.add.text(
       this.cameras.main.width / 2,
@@ -1588,10 +1599,10 @@ export class GameScene extends Phaser.Scene {
         padding: { x: 25, y: 15 }
       }
     );
-    
+
     notification.setOrigin(0.5);
     notification.setDepth(2000);
-    
+
     // 季节变化特效
     notification.setAlpha(0);
     notification.setScale(0.5);

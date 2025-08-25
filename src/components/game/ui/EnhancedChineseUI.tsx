@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 
 interface InventoryItem {
   id: string;
   name: string;
-  type: 'crop' | 'seed' | 'tool' | 'material' | 'fertilizer';
+  type: 'crop' | 'seed' | 'tool' | 'material' | 'fertilizer' | 'food';
   quantity: number;
   quality?: 'poor' | 'normal' | 'good' | 'excellent';
   value: number;
@@ -61,12 +61,12 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
   // 过滤和排序库存
   const getFilteredAndSortedInventory = useCallback(() => {
     let filtered = inventory;
-    
+
     // 类型过滤
     if (filterType !== 'all') {
       filtered = filtered.filter(item => item.type === filterType);
     }
-    
+
     // 排序
     filtered.sort((a, b) => {
       switch (sortBy) {
@@ -83,7 +83,7 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
           return 0;
       }
     });
-    
+
     return filtered;
   }, [inventory, filterType, sortBy]);
 
@@ -161,7 +161,7 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
       lettuce: '🥬',
       strawberry: '🍓',
       pumpkin: '🎃',
-      
+
       // 种子
       carrot_seeds: '🥕',
       tomato_seeds: '🍅',
@@ -171,27 +171,27 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
       lettuce_seeds: '🥬',
       strawberry_seeds: '🍓',
       pumpkin_seeds: '🎃',
-      
+
       // 工具
       hoe: '🪓',
       watering_can: '🚿',
       axe: '🪓',
       pickaxe: '⛏️',
       fishing_rod: '🎣',
-      
+
       // 肥料
       basic_fertilizer: '🌱',
       quality_fertilizer: '✨',
-      
+
       // 材料
       wood: '🪵',
       stone: '🪨',
       ore: '⚡'
     };
-    
-    return iconMap[item.id] || (item.type === 'tool' ? '🔨' : 
-                                item.type === 'seed' ? '🌱' : 
-                                item.type === 'crop' ? '🥕' : '📦');
+
+    return iconMap[item.id] || (item.type === 'tool' ? '🔨' :
+      item.type === 'seed' ? '🌱' :
+        item.type === 'crop' ? '🥕' : '📦');
   };
 
   const handleSellItem = useCallback(() => {
@@ -204,7 +204,7 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
 
   const renderInventoryTab = () => {
     const filteredItems = getFilteredAndSortedInventory();
-    
+
     return (
       <div className="p-4">
         {/* 过滤和排序控件 */}
@@ -224,7 +224,7 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
               <option value="fertilizer">肥料</option>
             </select>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-700">排序:</label>
             <select
@@ -238,7 +238,7 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
               <option value="rarity">稀有度</option>
             </select>
           </div>
-          
+
           <button
             onClick={onSortInventory}
             className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors"
@@ -252,45 +252,42 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
           {filteredItems.map((item) => (
             <div
               key={`${item.id}-${item.quantity}`}
-              className={`relative border-2 rounded-lg p-3 cursor-pointer transition-all hover:shadow-md ${
-                selectedItem?.id === item.id 
-                  ? 'border-blue-400 bg-blue-50 shadow-md' 
-                  : `${getRarityColor(item.rarity)} hover:border-gray-400`
-              }`}
+              className={`relative border-2 rounded-lg p-3 cursor-pointer transition-all hover:shadow-md ${selectedItem?.id === item.id
+                ? 'border-blue-400 bg-blue-50 shadow-md'
+                : `${getRarityColor(item.rarity)} hover:border-gray-400`
+                }`}
               onClick={() => setSelectedItem(item)}
             >
               {/* 物品图标 */}
               <div className="text-2xl text-center mb-2">{getItemIcon(item)}</div>
-              
+
               {/* 数量 */}
               {item.quantity > 1 && (
                 <span className="absolute top-1 right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                   {item.quantity > 99 ? '99+' : item.quantity}
                 </span>
               )}
-              
+
               {/* 品质指示器 */}
               {item.quality && (
                 <div className={`absolute bottom-1 left-1 w-3 h-3 rounded-full ${getQualityColor(item.quality)}`} />
               )}
-              
+
               {/* 稀有度边框 */}
               {item.rarity && item.rarity !== 'common' && (
-                <div className={`absolute inset-0 rounded-lg pointer-events-none ${
-                  item.rarity === 'legendary' ? 'shadow-yellow-400 shadow-lg' :
+                <div className={`absolute inset-0 rounded-lg pointer-events-none ${item.rarity === 'legendary' ? 'shadow-yellow-400 shadow-lg' :
                   item.rarity === 'epic' ? 'shadow-purple-400 shadow-md' :
-                  item.rarity === 'rare' ? 'shadow-blue-400 shadow-sm' : ''
-                }`} />
+                    item.rarity === 'rare' ? 'shadow-blue-400 shadow-sm' : ''
+                  }`} />
               )}
-              
+
               {/* 耐久度条 */}
               {item.durability !== undefined && item.maxDurability && (
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 rounded-b">
-                  <div 
-                    className={`h-full rounded-b transition-all ${
-                      item.durability > item.maxDurability * 0.5 ? 'bg-green-500' :
+                  <div
+                    className={`h-full rounded-b transition-all ${item.durability > item.maxDurability * 0.5 ? 'bg-green-500' :
                       item.durability > item.maxDurability * 0.25 ? 'bg-yellow-500' : 'bg-red-500'
-                    }`}
+                      }`}
                     style={{ width: `${(item.durability / item.maxDurability) * 100}%` }}
                   />
                 </div>
@@ -326,7 +323,7 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
             <div className="text-sm text-gray-600">金币</div>
           </div>
         </div>
-        
+
         {/* 经验条 */}
         <div className="mt-3">
           <div className="flex justify-between text-sm text-gray-600 mb-1">
@@ -334,13 +331,13 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
             <span>{gameStats.experience}/{gameStats.maxExperience}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
+            <div
               className="bg-green-500 h-2 rounded-full transition-all"
               style={{ width: `${(gameStats.experience / gameStats.maxExperience) * 100}%` }}
             />
           </div>
         </div>
-        
+
         {/* 体力条 */}
         <div className="mt-3">
           <div className="flex justify-between text-sm text-gray-600 mb-1">
@@ -348,7 +345,7 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
             <span>{gameStats.energy}/{gameStats.maxEnergy}</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
+            <div
               className="bg-blue-500 h-2 rounded-full transition-all"
               style={{ width: `${(gameStats.energy / gameStats.maxEnergy) * 100}%` }}
             />
@@ -418,11 +415,10 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as UITab)}
-              className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${
-                activeTab === tab.id
-                  ? 'text-green-700 border-b-2 border-green-500 bg-white'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
-              }`}
+              className={`px-6 py-3 font-medium transition-colors flex items-center gap-2 ${activeTab === tab.id
+                ? 'text-green-700 border-b-2 border-green-500 bg-white'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                }`}
             >
               <span>{tab.icon}</span>
               <span className="hidden sm:inline">{tab.label.split(' ').slice(1).join(' ')}</span>
@@ -460,26 +456,25 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="font-bold text-lg">{selectedItem.name}</h4>
                     {selectedItem.rarity && (
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        selectedItem.rarity === 'legendary' ? 'bg-yellow-200 text-yellow-800' :
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedItem.rarity === 'legendary' ? 'bg-yellow-200 text-yellow-800' :
                         selectedItem.rarity === 'epic' ? 'bg-purple-200 text-purple-800' :
-                        selectedItem.rarity === 'rare' ? 'bg-blue-200 text-blue-800' :
-                        'bg-gray-200 text-gray-800'
-                      }`}>
+                          selectedItem.rarity === 'rare' ? 'bg-blue-200 text-blue-800' :
+                            'bg-gray-200 text-gray-800'
+                        }`}>
                         {getRarityDisplayName(selectedItem.rarity)}
                       </span>
                     )}
                   </div>
-                  
+
                   <div className="text-sm text-gray-600 mb-2">
                     {getTypeDisplayName(selectedItem.type)} • 数量: {selectedItem.quantity}
                     {selectedItem.quality && ` • 品质: ${getQualityDisplayName(selectedItem.quality)}`}
                   </div>
-                  
+
                   {selectedItem.description && (
                     <p className="text-sm text-gray-700 mb-2">{selectedItem.description}</p>
                   )}
-                  
+
                   <div className="flex items-center gap-4 text-sm">
                     <span><span className="font-medium">价值:</span> {selectedItem.value} 金币</span>
                     {selectedItem.durability !== undefined && selectedItem.maxDurability && (
@@ -488,7 +483,7 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 {selectedItem.type !== 'tool' && onSellItem && (
                   <>
@@ -508,7 +503,7 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
                     </button>
                   </>
                 )}
-                
+
                 {selectedItem.type === 'tool' && onUseItem && (
                   <button
                     onClick={() => onUseItem && onUseItem(selectedItem.id)}
@@ -517,7 +512,7 @@ const EnhancedChineseUI: React.FC<EnhancedChineseUIProps> = ({
                     🔧 装备
                   </button>
                 )}
-                
+
                 <button
                   onClick={() => setSelectedItem(null)}
                   className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm font-medium transition-colors"

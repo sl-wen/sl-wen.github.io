@@ -139,7 +139,7 @@ export class AudioManager {
       { name: 'background_winter', url: '/assets/audio/winter_theme.mp3' }
     ];
 
-    const loadPromises = soundFiles.map(({ name, url }) => 
+    const loadPromises = soundFiles.map(({ name, url }) =>
       this.loadSound(name, url).catch(() => {
         // 如果音效文件不存在，创建简单的音效
         this.createSyntheticSound(name);
@@ -259,6 +259,11 @@ export class GameAudioTriggers {
 
   constructor() {
     this.audioManager = AudioManager.getInstance();
+  }
+
+  // 公开的预加载方法，避免直接访问私有 audioManager
+  public async preloadGameSounds(): Promise<void> {
+    return this.audioManager.preloadGameSounds();
   }
 
   // 工具使用音效

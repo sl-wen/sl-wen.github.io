@@ -1,13 +1,11 @@
 'use client';
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
 import NextDynamic from 'next/dynamic';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SproutLandsEngine } from '../../components/game/SproutLandsEngine';
 import { SproutLandsInventory } from '../../components/game/entities/SproutLandsInventory';
-import { ResourceLoader, LoadingProgress } from '../../components/game/utils/ResourceLoader';
 import { GameAudioTriggers } from '../../components/game/utils/AudioManager';
-import LoadingScreen from '../../components/game/ui/LoadingScreen';
-import MobileControls from '../../components/game/ui/MobileControls';
+import { LoadingProgress, ResourceLoader } from '../../components/game/utils/ResourceLoader';
 
 // Force dynamic rendering to prevent SSR issues
 export const dynamic = 'force-dynamic';
@@ -52,7 +50,7 @@ const SproutLandsPage: React.FC = () => {
   });
   const [isMobile, setIsMobile] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
-  
+
   const inventoryRef = useRef<SproutLandsInventory>(new SproutLandsInventory());
   const gameStartTimeRef = useRef<number>(Date.now());
   const resourceLoaderRef = useRef<ResourceLoader>(ResourceLoader.getInstance());
@@ -63,7 +61,7 @@ const SproutLandsPage: React.FC = () => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768 || 'ontouchstart' in window);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -74,19 +72,19 @@ const SproutLandsPage: React.FC = () => {
     const initializeGame = async () => {
       try {
         const resourceLoader = resourceLoaderRef.current;
-        
+
         // 设置进度回调
         resourceLoader.setProgressCallback(setLoadingProgress);
-        
+
         // 预加载游戏资源
         resourceLoader.preloadGameResources();
-        
+
         // 开始加载
         await resourceLoader.loadResources();
-        
-        // 预加载音效
-        await audioRef.current.audioManager?.preloadGameSounds();
-        
+
+        // 预加载音效（通过公开方法）
+        await audioRef.current.preloadGameSounds();
+
         setIsLoading(false);
         setGameStarted(true);
       } catch (error) {
@@ -103,7 +101,7 @@ const SproutLandsPage: React.FC = () => {
   // Client-side initialization
   useEffect(() => {
     setIsClient(true);
-    
+
     // Load saved game data if available
     const savedData = localStorage.getItem('sproutLandsGameData');
     if (savedData) {
@@ -135,7 +133,7 @@ const SproutLandsPage: React.FC = () => {
       stats: gameStats,
       timestamp: Date.now()
     };
-    
+
     try {
       localStorage.setItem('sproutLandsGameData', JSON.stringify(saveData));
     } catch (error) {
@@ -157,7 +155,7 @@ const SproutLandsPage: React.FC = () => {
   // Handle shop purchases
   const handleShopPurchase = useCallback((item: any, quantity: number) => {
     const totalCost = item.price * quantity;
-    
+
     if (inventoryRef.current.getGold() < totalCost) {
       return false;
     }
@@ -271,33 +269,33 @@ const SproutLandsPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <h1 className="text-3xl font-bold text-green-800 mr-6">
-                🌱 Sprout Lands
+                🌱 萌芽之地
               </h1>
               <div className="hidden md:flex items-center space-x-4 text-sm">
                 <div className="bg-yellow-100 border border-yellow-300 rounded-lg px-3 py-1">
-                  <span className="text-yellow-800">💰 {inventoryRef.current.getGold()}g</span>
+                  <span className="text-yellow-800">💰 {inventoryRef.current.getGold()} 金币</span>
                 </div>
                 <div className="bg-blue-100 border border-blue-300 rounded-lg px-3 py-1">
-                  <span className="text-blue-800">⏱️ {formatPlayTime(gameStats.totalPlayTime)}</span>
+                  <span className="text-blue-800">⏱️ 游戏时长 {formatPlayTime(gameStats.totalPlayTime)}</span>
                 </div>
                 <div className="bg-green-100 border border-green-300 rounded-lg px-3 py-1">
-                  <span className="text-green-800">🥕 {gameStats.cropsHarvested} harvested</span>
+                  <span className="text-green-800">🥕 收获 {gameStats.cropsHarvested}</span>
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setIsUIVisible(true)}
                 className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
-                📦 Inventory (I)
+                📦 背包 (I)
               </button>
               <button
                 onClick={() => setIsShopVisible(true)}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
               >
-                🏪 Shop (P)
+                🏪 商店 (P)
               </button>
             </div>
           </div>
@@ -311,18 +309,18 @@ const SproutLandsPage: React.FC = () => {
           <div className="flex-1">
             <div className="bg-white rounded-xl shadow-lg p-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-800">Your Farm</h2>
+                <h2 className="text-xl font-bold text-gray-800">你的农场</h2>
                 <div className="text-sm text-gray-600">
-                  Current Tool: <span className="font-bold text-green-600">{currentTool}</span>
+                  当前工具: <span className="font-bold text-green-600">{currentTool}</span>
                 </div>
               </div>
-              
+
               <div className="flex justify-center">
-                          <SproutLandsEngine
-            width={800}
-            height={600}
-            onStateChange={handleGameStateChange}
-          />
+                <SproutLandsEngine
+                  width={800}
+                  height={600}
+                  onStateChange={handleGameStateChange}
+                />
               </div>
             </div>
           </div>
@@ -332,22 +330,22 @@ const SproutLandsPage: React.FC = () => {
             <div className="space-y-4">
               {/* Quick Stats */}
               <div className="bg-white rounded-xl shadow-lg p-4">
-                <h3 className="text-lg font-bold text-gray-800 mb-3">Quick Stats</h3>
+                <h3 className="text-lg font-bold text-gray-800 mb-3">快速统计</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Gold:</span>
-                    <span className="font-bold text-yellow-600">{inventoryRef.current.getGold()}g</span>
+                    <span className="text-gray-600">金币:</span>
+                    <span className="font-bold text-yellow-600">{inventoryRef.current.getGold()} 金币</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Crops Harvested:</span>
+                    <span className="text-gray-600">收获作物:</span>
                     <span className="font-bold text-green-600">{gameStats.cropsHarvested}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Tools Used:</span>
+                    <span className="text-gray-600">使用工具次数:</span>
                     <span className="font-bold text-blue-600">{gameStats.toolsUsed}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Play Time:</span>
+                    <span className="text-gray-600">游戏时长:</span>
                     <span className="font-bold text-purple-600">{formatPlayTime(gameStats.totalPlayTime)}</span>
                   </div>
                 </div>
@@ -355,26 +353,26 @@ const SproutLandsPage: React.FC = () => {
 
               {/* Controls Guide */}
               <div className="bg-white rounded-xl shadow-lg p-4">
-                <h3 className="text-lg font-bold text-gray-800 mb-3">Controls</h3>
+                <h3 className="text-lg font-bold text-gray-800 mb-3">操作说明</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Move:</span>
-                    <span className="font-mono bg-gray-100 px-2 py-1 rounded">WASD / Arrows</span>
+                    <span className="text-gray-600">移动:</span>
+                    <span className="font-mono bg-gray-100 px-2 py-1 rounded">WASD / 方向键</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Use Tool:</span>
-                    <span className="font-mono bg-gray-100 px-2 py-1 rounded">Space</span>
+                    <span className="text-gray-600">使用工具:</span>
+                    <span className="font-mono bg-gray-100 px-2 py-1 rounded">空格</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Select Tool:</span>
+                    <span className="text-gray-600">选择工具:</span>
                     <span className="font-mono bg-gray-100 px-2 py-1 rounded">1-4</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Inventory:</span>
+                    <span className="text-gray-600">背包:</span>
                     <span className="font-mono bg-gray-100 px-2 py-1 rounded">I</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Shop:</span>
+                    <span className="text-gray-600">商店:</span>
                     <span className="font-mono bg-gray-100 px-2 py-1 rounded">P</span>
                   </div>
                 </div>
@@ -382,19 +380,19 @@ const SproutLandsPage: React.FC = () => {
 
               {/* Current Season/Weather */}
               <div className="bg-white rounded-xl shadow-lg p-4">
-                <h3 className="text-lg font-bold text-gray-800 mb-3">Farm Status</h3>
+                <h3 className="text-lg font-bold text-gray-800 mb-3">农场状态</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Season:</span>
-                    <span className="font-bold text-green-600">🌸 Spring</span>
+                    <span className="text-gray-600">季节:</span>
+                    <span className="font-bold text-green-600">🌸 春季</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Weather:</span>
-                    <span className="font-bold text-blue-600">☀️ Sunny</span>
+                    <span className="text-gray-600">天气:</span>
+                    <span className="font-bold text-blue-600">☀️ 晴天</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Day:</span>
-                    <span className="font-bold text-purple-600">Day 1</span>
+                    <span className="text-gray-600">天数:</span>
+                    <span className="font-bold text-purple-600">第 1 天</span>
                   </div>
                 </div>
               </div>
@@ -405,33 +403,56 @@ const SproutLandsPage: React.FC = () => {
 
       {/* UI Modals */}
       {isUIVisible && (
-        <SproutLandsUI
+        <EnhancedChineseUI
           isVisible={isUIVisible}
           onClose={() => setIsUIVisible(false)}
-          inventory={inventoryRef.current}
-          onToolSelect={handleToolSelect}
-          currentTool={currentTool}
+          inventory={inventoryRef.current.getAllItems()}
+          gameStats={{
+            gold: inventoryRef.current.getGold(),
+            level: 1,
+            experience: 0,
+            maxExperience: 100,
+            energy: 100,
+            maxEnergy: 100,
+            totalItemsCollected: inventoryRef.current.getAllItems().reduce((s, i) => s + i.quantity, 0),
+            cropsHarvested: gameStats.cropsHarvested,
+            totalPlayTime: Math.floor(gameStats.totalPlayTime / 1000),
+            currentSeason: 'spring',
+            daysPassed: 1
+          }}
+          onSortInventory={() => inventoryRef.current.sortInventory()}
+          onSellItem={(itemId, qty) => {
+            const earned = inventoryRef.current.sellItem(itemId, qty);
+            if (earned > 0) {
+              setGameStats(prev => ({ ...prev, goldEarned: prev.goldEarned + earned }));
+            }
+          }}
+          onUseItem={(itemId) => {
+            // Optional: handle equip/use events
+          }}
         />
       )}
 
       {isShopVisible && (
-        <SproutLandsShop
+        <ChineseSproutLandsShop
           isVisible={isShopVisible}
           onClose={() => setIsShopVisible(false)}
           playerGold={inventoryRef.current.getGold()}
-          onPurchase={handleShopPurchase}
+          onPurchase={handleShopPurchase as any}
+          playerLevel={1}
+          season={'spring'}
         />
       )}
 
       {/* Footer */}
       <footer className="bg-green-800 text-white py-8 mt-12">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-lg mb-2">🌱 Welcome to Sprout Lands! 🌱</p>
+          <p className="text-lg mb-2">🌱 欢迎来到萌芽之地！🌱</p>
           <p className="text-green-200">
-            A peaceful farming game where you can grow crops, care for your land, and build your dream farm.
+            一个宁静的农场游戏，在这里你可以种植作物、照料土地、建设梦想农场。
           </p>
           <div className="mt-4 text-sm text-green-300">
-            <p>Press <kbd className="bg-green-700 px-2 py-1 rounded">I</kbd> for inventory • <kbd className="bg-green-700 px-2 py-1 rounded">P</kbd> for shop • <kbd className="bg-green-700 px-2 py-1 rounded">ESC</kbd> to close menus</p>
+            <p>按 <kbd className="bg-green-700 px-2 py-1 rounded">I</kbd> 打开背包 • 按 <kbd className="bg-green-700 px-2 py-1 rounded">P</kbd> 打开商店 • 按 <kbd className="bg-green-700 px-2 py-1 rounded">ESC</kbd> 关闭菜单</p>
           </div>
         </div>
       </footer>

@@ -129,7 +129,7 @@ export class UIScene extends Phaser.Scene {
     const statsPosition = this.uiLayoutManager.getStatsBarPosition();
 
     // 根据屏幕尺寸调整状态栏
-    const barWidth = screenInfo.isMobile ? (screenInfo.isPortrait ? 140 : 160) : 180;
+    const barWidth = screenInfo.isMobile ? (screenInfo.isPortrait ? 65 : 70) : 80;
     const barHeight = screenInfo.isMobile ? 16 : 18;
     const spacing = screenInfo.isMobile ? 24 : 28;
     const fontSize = screenInfo.isMobile ? '10px' : '11px';

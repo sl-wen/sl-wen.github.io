@@ -71,6 +71,14 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
 
     // 设置初始显示属性
     this.setDepth(10); // 设置渲染层级，确保小猫在其他对象之上
+    this.setScale(1.5); // 放大主角小猫
+
+    // 适配缩放后的碰撞盒（按比例扩展）
+    const scaleFactor = 1.5;
+    if (this.body && (this.body as Phaser.Physics.Arcade.Body).setSize) {
+      (this.body as Phaser.Physics.Arcade.Body).setSize(24 * scaleFactor, 24 * scaleFactor);
+      (this.body as Phaser.Physics.Arcade.Body).setOffset(4 * scaleFactor, 8 * scaleFactor);
+    }
 
     // 创建小猫的各种动画
     try {
@@ -566,11 +574,11 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
   // 创建移动时的微粒效果
   private createMovementParticles() {
     // 避免过度创建粒子效果
-    if (Math.random() < 0.05) {
+    if (Math.random() < 0.20) {
       const particles = this.scene.add.particles(this.x, this.y + 10, 'grass', {
         scale: { start: 0.1, end: 0 },
         alpha: { start: 0.6, end: 0 },
-        tint: [0x27ae60, 0x2ecc71, 0x58d68d],
+        tint: [0x27ae60, 0x2ecc71, 0x58d68d, 0x27ae60, 0x2ecc71, 0x58d68d],
         lifespan: 300,
         quantity: 2,
         speed: { min: 10, max: 30 },

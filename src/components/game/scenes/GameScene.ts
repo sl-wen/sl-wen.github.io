@@ -998,24 +998,30 @@ export class GameScene extends Phaser.Scene {
 
     const createLeafEmitter = (key: string) => this.add.particles(0, -50, key, {
       x: { min: 0, max: this.cameras.main.width },
-      y: { min: -100, max: -20 },
-      speedY: { min: 1, max: 2 },
-      speedX: { min: -5, max: 5 },
-      accelerationX: { min: -30, max: 30 },
-      // dragX is not a valid ParticleEmitterConfig property, so we remove it
-      angle: { min: -30, max: 30 },
+      y: { min: -100, max: 50 },
+      speedY: { min: 0.3, max: 0.5 },
+      speedX: 0,
+      angle: { min: -10, max: 10 },
       rotate: { min: -180, max: 180 },
       scale: { start: 1.6, end: 1.2 },
       alpha: { start: 1, end: 0.8 },
       lifespan: { min: 6000, max: 10000 },
       quantity: 1,
-      frequency: 5000,
-      gravityY: 5
+      frequency: 8000,
+      gravityY: 5,
+      emitCallback: (particle: any) => {
+        // 为每片叶子附加独立的摆动参数（更慢、更柔和）
+        particle._swayPhase = Math.random() * Math.PI * 2;
+        particle._swayFreq = 0.001 + Math.random() * 0.0008; // 约3.5s-6.3s一周期
+        particle._swayAmp = 50 + Math.random() * 20;         // 25-45 像素/秒
+      }
     });
 
     leafKeys.forEach((k) => {
       const emitter = createLeafEmitter(k);
-      emitter.setDepth(6);
+      // 标记为枫叶发射器
+      (emitter as any).isLeafEmitter = true;
+      emitter.setDepth(2);
       this.particlePool.push(emitter);
     });
   }
@@ -1276,6 +1282,23 @@ export class GameScene extends Phaser.Scene {
     }
 
     const screenInfo = this.uiLayoutManager.getScreenInfo();  // 获取屏幕信息
+
+    // 对枫叶发射器施加S形左右摆动（逐粒子）
+    if (this.particlePool && this.particlePool.length) {
+      const now = this.time.now;
+      this.particlePool.forEach((em) => {
+        const anyEm = em as any;
+        if (anyEm && anyEm.isLeafEmitter && typeof (em as any).forEachAlive === 'function') {
+          (em as any).forEachAlive((p: any) => {
+            const phase = p._swayPhase || 0;
+            const freq = p._swayFreq || 0.006;
+            const amp = p._swayAmp || 50;
+            // 使用正弦改变水平速度，实现明显的S形左右飘
+            p.velocityX = Math.sin(now * freq + phase) * amp;
+          }, this);
+        }
+      });
+    }
 
     if (screenInfo.isMobile) {
       // 移动端：只使用虚拟摇杆

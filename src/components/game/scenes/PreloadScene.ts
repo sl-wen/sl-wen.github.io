@@ -94,30 +94,184 @@ export class PreloadScene extends Phaser.Scene {
   private loadSpriteAssets() {
     console.log('Loading sprite assets...');
 
-    // 加载小猫角色精灵（使用player作为备用）
-    this.load.image('cat', '/assets/farm-assets/cat/cat-0.png');
+    // 加载小猫角色精灵和动画
+    this.loadCatAssets();
+    
+    // 加载作物资源
+    this.loadCropAssets();
+    
+    // 加载工具资源
+    this.loadToolAssets();
+    
+    // 加载UI资源
+    this.loadUIAssets();
+    
+    // 加载农场建筑和装饰
+    this.loadFarmAssets();
+    
+    // 加载动物资源
+    this.loadAnimalAssets();
 
-    // 加载小猫动画精灵表（使用player动画作为备用）
-    this.load.spritesheet('cat_walk', '/assets/farm-assets/cat/cat-1.png', {
-      frameWidth: 16,    // 帧宽度
-      frameHeight: 16    // 帧高度
-    });
+    console.log('All sprite assets loaded successfully');
+  }
 
-    this.load.spritesheet('cat_actions', '/assets/farm-assets/cat/cat-2.png', {
-      frameWidth: 16,    // 帧宽度
-      frameHeight: 16    // 帧高度
-    });
+  /**
+   * 加载小猫角色资源
+   */
+  private loadCatAssets() {
+    // 基础小猫精灵
+    this.load.image('cat_idle', '/assets/farm-assets/cat/cat-0.png');
+    
+    // 小猫各方向静止状态
+    this.load.image('cat_idle_down', '/assets/farm-assets/cat/cat_idle_down.png');
+    this.load.image('cat_idle_up', '/assets/farm-assets/cat/cat_idle_up.png');
+    this.load.image('cat_idle_left', '/assets/farm-assets/cat/cat_idle_left.png');
+    this.load.image('cat_idle_right', '/assets/farm-assets/cat/cat_idle_right.png');
+    
+    // 小猫行走动画
+    this.load.image('cat_walk_down_1', '/assets/farm-assets/cat/cat_walk_down_1.png');
+    this.load.image('cat_walk_down_2', '/assets/farm-assets/cat/cat_walk_down_2.png');
+    this.load.image('cat_walk_up_1', '/assets/farm-assets/cat/cat_walk_up_1.png');
+    this.load.image('cat_walk_up_2', '/assets/farm-assets/cat/cat_walk_up_2.png');
+    this.load.image('cat_walk_left_1', '/assets/farm-assets/cat/cat_walk_left_1.png');
+    this.load.image('cat_walk_left_2', '/assets/farm-assets/cat/cat_walk_left_2.png');
+    this.load.image('cat_walk_right_1', '/assets/farm-assets/cat/cat_walk_right_1.png');
+    this.load.image('cat_walk_right_2', '/assets/farm-assets/cat/cat_walk_right_2.png');
+    
+    // 小猫工作动画
+    this.load.image('cat_work_hoe', '/assets/farm-assets/cat/cat_work_hoe.png');
+    this.load.image('cat_work_water', '/assets/farm-assets/cat/cat_work_water.png');
+    this.load.image('cat_work_harvest', '/assets/farm-assets/cat/cat_work_harvest.png');
+    
+    // 小猫表情状态
+    this.load.image('cat_happy', '/assets/farm-assets/cat/cat_happy.png');
+    this.load.image('cat_tired', '/assets/farm-assets/cat/cat_tired.png');
+    this.load.image('cat_eating', '/assets/farm-assets/cat/cat_eating.png');
+  }
 
-    console.log('Cat sprites loaded successfully');
+  /**
+   * 加载作物资源
+   */
+  private loadCropAssets() {
+    // 胡萝卜生长阶段
+    this.load.image('carrot_seed', '/assets/farm-assets/plants/carrot_seed.png');
+    this.load.image('carrot_sprout', '/assets/farm-assets/plants/carrot_sprout.png');
+    this.load.image('carrot_mature', '/assets/farm-assets/plants/carrot_mature.png');
+    this.load.image('carrot_ready', '/assets/farm-assets/plants/carrot_ready.png');
+    
+    // 番茄生长阶段
+    this.load.image('tomato_seed', '/assets/farm-assets/plants/tomato_seed.png');
+    this.load.image('tomato_sprout', '/assets/farm-assets/plants/tomato_sprout.png');
+    this.load.image('tomato_mature', '/assets/farm-assets/plants/tomato_mature.png');
+    this.load.image('tomato_ready', '/assets/farm-assets/plants/tomato_ready.png');
+    
+    // 小麦生长阶段
+    this.load.image('wheat_seed', '/assets/farm-assets/plants/wheat_seed.png');
+    this.load.image('wheat_sprout', '/assets/farm-assets/plants/wheat_sprout.png');
+    this.load.image('wheat_mature', '/assets/farm-assets/plants/wheat_mature.png');
+    this.load.image('wheat_ready', '/assets/farm-assets/plants/wheat_ready.png');
+    
+    // 玉米生长阶段
+    this.load.image('corn_seed', '/assets/farm-assets/plants/corn_seed.png');
+    this.load.image('corn_sprout', '/assets/farm-assets/plants/corn_sprout.png');
+    this.load.image('corn_mature', '/assets/farm-assets/plants/corn_mature.png');
+    this.load.image('corn_ready', '/assets/farm-assets/plants/corn_ready.png');
+    
+    // 草莓生长阶段
+    this.load.image('strawberry_seed', '/assets/farm-assets/plants/strawberry_seed.png');
+    this.load.image('strawberry_sprout', '/assets/farm-assets/plants/strawberry_sprout.png');
+    this.load.image('strawberry_mature', '/assets/farm-assets/plants/strawberry_mature.png');
+    this.load.image('strawberry_ready', '/assets/farm-assets/plants/strawberry_ready.png');
+    
+    // 生菜生长阶段
+    this.load.image('lettuce_seed', '/assets/farm-assets/plants/lettuce_seed.png');
+    this.load.image('lettuce_sprout', '/assets/farm-assets/plants/lettuce_sprout.png');
+    this.load.image('lettuce_mature', '/assets/farm-assets/plants/lettuce_mature.png');
+    this.load.image('lettuce_ready', '/assets/farm-assets/plants/lettuce_ready.png');
+    
+    // 土豆生长阶段
+    this.load.image('potato_seed', '/assets/farm-assets/plants/potato_seed.png');
+    this.load.image('potato_sprout', '/assets/farm-assets/plants/potato_sprout.png');
+    this.load.image('potato_mature', '/assets/farm-assets/plants/potato_mature.png');
+    this.load.image('potato_ready', '/assets/farm-assets/plants/potato_ready.png');
+    
+    // 南瓜生长阶段
+    this.load.image('pumpkin_seed', '/assets/farm-assets/plants/pumpkin_seed.png');
+    this.load.image('pumpkin_sprout', '/assets/farm-assets/plants/pumpkin_sprout.png');
+    this.load.image('pumpkin_mature', '/assets/farm-assets/plants/pumpkin_mature.png');
+    this.load.image('pumpkin_ready', '/assets/farm-assets/plants/pumpkin_ready.png');
+    
+    // 枯萎植物
+    this.load.image('plant_withered_1', '/assets/farm-assets/plants/plant_withered_1.png');
+    this.load.image('plant_withered_2', '/assets/farm-assets/plants/plant_withered_2.png');
+    this.load.image('plant_withered_3', '/assets/farm-assets/plants/plant_withered_3.png');
+    this.load.image('plant_withered_4', '/assets/farm-assets/plants/plant_withered_4.png');
+  }
 
-    // Load farm plot sprites (using existing tiles as fallback)
+  /**
+   * 加载工具资源
+   */
+  private loadToolAssets() {
+    this.load.image('hoe', '/assets/farm-assets/tools/hoe.png');
+    this.load.image('watering_can', '/assets/farm-assets/tools/watering_can.png');
+    this.load.image('fertilizer_bag', '/assets/farm-assets/tools/fertilizer_bag.png');
+    this.load.image('seed_packet', '/assets/farm-assets/tools/seed_packet.png');
+    this.load.image('shovel', '/assets/farm-assets/tools/shovel.png');
+    this.load.image('rake', '/assets/farm-assets/tools/rake.png');
+    this.load.image('scissors', '/assets/farm-assets/tools/scissors.png');
+    this.load.image('basket', '/assets/farm-assets/tools/basket.png');
+    this.load.image('bucket', '/assets/farm-assets/tools/bucket.png');
+    this.load.image('hammer', '/assets/farm-assets/tools/hammer.png');
+    this.load.image('axe', '/assets/farm-assets/tools/axe.png');
+    this.load.image('pickaxe', '/assets/farm-assets/tools/pickaxe.png');
+    this.load.image('fishing_rod', '/assets/farm-assets/tools/fishing_rod.png');
+    this.load.image('net', '/assets/farm-assets/tools/net.png');
+    this.load.image('rope', '/assets/farm-assets/tools/rope.png');
+    this.load.image('knife', '/assets/farm-assets/tools/knife.png');
+  }
+
+  /**
+   * 加载UI资源
+   */
+  private loadUIAssets() {
+    // 按钮
+    this.load.image('button_stone_normal', '/assets/farm-assets/UI/button_stone_normal.png');
+    this.load.image('button_stone_hover', '/assets/farm-assets/UI/button_stone_hover.png');
+    this.load.image('button_stone_pressed', '/assets/farm-assets/UI/button_stone_pressed.png');
+    
+    // 面板
+    this.load.image('panel_wood_small', '/assets/farm-assets/UI/panel_wood_small.png');
+    this.load.image('panel_wood_medium', '/assets/farm-assets/UI/panel_wood_medium.png');
+    this.load.image('panel_wood_large', '/assets/farm-assets/UI/panel_wood_large.png');
+  }
+
+  /**
+   * 加载农场建筑资源
+   */
+  private loadFarmAssets() {
+    // 农田地块
     this.load.image('farm_plot_empty', '/assets/farm-assets/farmplants/framplant-0.png');
     this.load.image('farm_plot_plowed', '/assets/farm-assets/farmplants/framplant-1.png');
     this.load.image('farm_plot_planted', '/assets/farm-assets/farmplants/framplant-2.png');
-
+    
+    // 围栏
     this.load.image('fence', '/assets/farm-assets/fence/fence-0.png');
-    this.load.image('fence', '/assets/farm-assets/fence/fence-1.png');
+    this.load.image('fence_alt', '/assets/farm-assets/fence/fence-1.png');
+  }
 
+  /**
+   * 加载动物资源
+   */
+  private loadAnimalAssets() {
+    // 鸡的动画
+    this.load.image('chicken_idle_1', '/assets/farm-assets/chicken/chicken_idle_1.png');
+    this.load.image('chicken_idle_2', '/assets/farm-assets/chicken/chicken_idle_2.png');
+    this.load.image('chicken_walk_1', '/assets/farm-assets/chicken/chicken_walk_1.png');
+    this.load.image('chicken_walk_2', '/assets/farm-assets/chicken/chicken_walk_2.png');
+    this.load.image('chicken_peck_1', '/assets/farm-assets/chicken/chicken_peck_1.png');
+    this.load.image('chicken_peck_2', '/assets/farm-assets/chicken/chicken_peck_2.png');
+    this.load.image('chicken_flap_1', '/assets/farm-assets/chicken/chicken_flap_1.png');
+    this.load.image('chicken_flap_2', '/assets/farm-assets/chicken/chicken_flap_2.png');
   }
 
 }

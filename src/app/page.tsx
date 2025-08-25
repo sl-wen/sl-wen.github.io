@@ -103,6 +103,30 @@ export default function HomePage() {
                   {/* 按钮悬停效果背景 */}
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                 </a>
+                
+                {/* Sprout Lands 游戏按钮 - 新特色功能 */}
+                <a
+                  href="/sprout-lands"
+                  className="group inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  <span className="flex items-center gap-2">
+                    🌱 Sprout Lands
+                    <svg
+                      className="w-5 h-5 transform group-hover:rotate-12 transition-transform duration-200"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                      />
+                    </svg>
+                  </span>
+                </a>
+                
                 {/* 了解更多按钮 - 次要行动按钮 */}
                 <a
                   href="/about"

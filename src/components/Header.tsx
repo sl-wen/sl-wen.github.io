@@ -76,6 +76,7 @@ const Header: React.FC = () => {
     { href: '/', label: '首页', icon: '🏠' },
     { href: '/category', label: '分类', icon: '📁' },
     { href: '/search', label: '搜索', icon: '🔍' },
+    { href: '/sprout-lands', label: 'Sprout Lands', icon: '🌱' },
     { href: '/about', label: '关于', icon: 'ℹ️' }
   ];
 
@@ -83,13 +84,13 @@ const Header: React.FC = () => {
   const userNavItems = [
     { href: '/tools', label: '工具', icon: '🛠️' },
     { href: '/post', label: '发布', icon: '✏️' },
-    { href: '/game', label: '游戏', icon: '🎮' }
+    { href: '/game', label: '小猫农场', icon: '🐱' }
   ];
 
   // 根据用户状态动态组合导航项
   const navItems =
     mounted && userProfile
-      ? [...baseNavItems.slice(0, 3), ...userNavItems, baseNavItems[3]]
+      ? [...baseNavItems.slice(0, 4), ...userNavItems, baseNavItems[4]]
       : baseNavItems;
 
   // 在组件挂载之前返回占位内容 - 避免布局偏移

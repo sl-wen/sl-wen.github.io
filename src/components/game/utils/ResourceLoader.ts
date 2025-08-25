@@ -1,9 +1,15 @@
 export interface ResourceItem {
   key: string;
   url: string;
-  type: 'image' | 'audio' | 'json';
+  type: 'image' | 'audio' | 'json' | 'spritesheet';
   priority: 'high' | 'medium' | 'low';
   preload?: boolean;
+  frameConfig?: {
+    frameWidth: number;
+    frameHeight: number;
+    startFrame?: number;
+    endFrame?: number;
+  };
 }
 
 export interface LoadingProgress {
@@ -137,6 +143,9 @@ export class ResourceLoader {
       case 'image':
         await this.loadImage(resource);
         break;
+      case 'spritesheet':
+        await this.loadSpritesheet(resource);
+        break;
       case 'audio':
         await this.loadAudio(resource);
         break;
@@ -161,6 +170,31 @@ export class ResourceLoader {
       
       img.onerror = () => {
         reject(new Error(`Failed to load image: ${resource.url}`));
+      };
+      
+      // 设置跨域属性
+      img.crossOrigin = 'anonymous';
+      img.src = resource.url;
+    });
+  }
+
+  // 加载精灵图集
+  private async loadSpritesheet(resource: ResourceItem): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        const spritesheetData = {
+          image: img,
+          frameConfig: resource.frameConfig
+        };
+        this.resources.set(resource.key, spritesheetData);
+        this.cache.set(resource.url, spritesheetData);
+        resolve();
+      };
+      
+      img.onerror = () => {
+        reject(new Error(`Failed to load spritesheet: ${resource.url}`));
       };
       
       // 设置跨域属性

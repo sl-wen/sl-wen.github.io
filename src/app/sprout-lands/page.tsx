@@ -28,7 +28,7 @@ interface GameStats {
 
 const SproutLandsPage: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
-  const [gameState, setGameState] = useState<any>(null);
+  const [, setGameState] = useState<any>(null);
   const [isUIVisible, setIsUIVisible] = useState(false);
   const [isShopVisible, setIsShopVisible] = useState(false);
   const [currentTool, setCurrentTool] = useState<string>('hoe');

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { SeedItem, ToolItem } from '../entities/SproutLandsInventory';
+// import { SeedItem, ToolItem } from '../entities/SproutLandsInventory';
 
 interface ShopItem {
   id: string;

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { SproutLandsPlayer } from './entities/SproutLandsPlayer';
 import { SproutLandsCrop } from './entities/SproutLandsCrop';
 import { SproutLandsInventory } from './entities/SproutLandsInventory';
 
@@ -135,35 +134,35 @@ export const SproutLandsGame: React.FC<SproutLandsGameProps> = ({
   const updateGame = useCallback(() => {
     setGameState(prevState => {
       const newState = { ...prevState };
-      let playerMoved = false;
+      // let playerMoved = false;
 
       // Handle player movement
       if (keys.has('ArrowUp') || keys.has('KeyW')) {
         if (newState.player.y > 0) {
           newState.player.y -= 1;
           newState.player.direction = 'up';
-          playerMoved = true;
+          // playerMoved = true;
         }
       }
       if (keys.has('ArrowDown') || keys.has('KeyS')) {
         if (newState.player.y < GRID_HEIGHT - 1) {
           newState.player.y += 1;
           newState.player.direction = 'down';
-          playerMoved = true;
+          // playerMoved = true;
         }
       }
       if (keys.has('ArrowLeft') || keys.has('KeyA')) {
         if (newState.player.x > 0) {
           newState.player.x -= 1;
           newState.player.direction = 'left';
-          playerMoved = true;
+          // playerMoved = true;
         }
       }
       if (keys.has('ArrowRight') || keys.has('KeyD')) {
         if (newState.player.x < GRID_WIDTH - 1) {
           newState.player.x += 1;
           newState.player.direction = 'right';
-          playerMoved = true;
+          // playerMoved = true;
         }
       }
 
@@ -251,7 +250,7 @@ export const SproutLandsGame: React.FC<SproutLandsGameProps> = ({
 
         // Draw crop if present
         if (tile.crop) {
-          const cropSprite = getCropSprite(tile.crop);
+          const cropSprite = getCropSprite();
           if (cropSprite) {
             ctx.drawImage(cropSprite, tileX + 4, tileY + 4, TILE_SIZE - 8, TILE_SIZE - 8);
           } else {
@@ -310,7 +309,7 @@ export const SproutLandsGame: React.FC<SproutLandsGameProps> = ({
     }
   };
 
-  const getCropSprite = (crop: SproutLandsCrop): HTMLImageElement | null => {
+  const getCropSprite = (): HTMLImageElement | null => {
     // This would return the appropriate sprite based on crop type and growth stage
     return sprites.farmingPlants || null;
   };

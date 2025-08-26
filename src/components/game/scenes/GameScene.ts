@@ -1413,8 +1413,21 @@ export class GameScene extends Phaser.Scene {
       // 更新动作按钮位置（如果存在）
       if (this.actionButtons && this.actionButtons.length > 0 && this.uiLayoutManager) {
         const screenInfo = this.uiLayoutManager.getScreenInfo();
-        if (screenInfo) {
-          this.updateActionButtonsLayout(screenInfo);
+        if (screenInfo && screenInfo.isMobile) {
+          const buttonSize = screenInfo.isPortrait ? 50 : 60;
+          const positions = this.uiLayoutManager.getActionButtonsPosition(buttonSize, this.actionButtons.length);
+          
+          this.actionButtons.forEach((button, index) => {
+            if (positions[index]) {
+              this.tweens.add({
+                targets: button,
+                x: positions[index].x,
+                y: positions[index].y,
+                duration: 300,
+                ease: 'Power2.easeOut'
+              });
+            }
+          });
         }
       }
 

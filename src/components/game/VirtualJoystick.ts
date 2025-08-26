@@ -682,7 +682,6 @@ export class VirtualJoystick {
    */
   private adjustForNormalMode() {
     // 恢复原始配置
-    const gameWidth = this.scene.scale.gameSize.width;
     const gameHeight = this.scene.scale.gameSize.height;
     
     // 计算正常模式下的位置

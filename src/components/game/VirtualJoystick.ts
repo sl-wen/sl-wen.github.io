@@ -125,12 +125,28 @@ export class VirtualJoystick {
       return;  // 如果摇杆已经激活且不是同一个指针，则忽略
     }
 
+    // 在全屏模式下，需要调整触摸坐标
+    let adjustedPointerX = pointer.x;
+    let adjustedPointerY = pointer.y;
+    
+    if (this.isFullscreen) {
+      // 获取游戏画布的实际位置和缩放
+      const canvas = this.scene.game.canvas;
+      const canvasRect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / canvasRect.width;
+      const scaleY = canvas.height / canvasRect.height;
+      
+      // 调整坐标以适应全屏模式
+      adjustedPointerX = (pointer.x - canvasRect.left) * scaleX;
+      adjustedPointerY = (pointer.y - canvasRect.top) * scaleY;
+    }
+
     // 计算距离，确保在有效范围内
     const distance = Phaser.Math.Distance.Between(
-      pointer.x,        // 触摸点X坐标
-      pointer.y,        // 触摸点Y坐标
-      this.container.x, // 摇杆中心X坐标
-      this.container.y  // 摇杆中心Y坐标
+      adjustedPointerX,     // 调整后的触摸点X坐标
+      adjustedPointerY,     // 调整后的触摸点Y坐标
+      this.container.x,     // 摇杆中心X坐标
+      this.container.y      // 摇杆中心Y坐标
     );
 
     if (distance <= this.config.radius + 25) {  // 在有效触摸范围内
@@ -153,7 +169,7 @@ export class VirtualJoystick {
       }
 
       // 立即更新位置
-      this.updateKnobPosition(pointer);  // 更新手柄位置
+      this.updateKnobPositionWithCoords(adjustedPointerX, adjustedPointerY);  // 使用调整后的坐标更新手柄位置
     }
   }
 
@@ -167,7 +183,22 @@ export class VirtualJoystick {
     }
 
     this.lastUpdateTime = this.scene.time.now;  // 更新最后更新时间
-    this.updateKnobPosition(pointer);          // 更新手柄位置
+    
+    // 在全屏模式下调整坐标
+    let adjustedPointerX = pointer.x;
+    let adjustedPointerY = pointer.y;
+    
+    if (this.isFullscreen) {
+      const canvas = this.scene.game.canvas;
+      const canvasRect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / canvasRect.width;
+      const scaleY = canvas.height / canvasRect.height;
+      
+      adjustedPointerX = (pointer.x - canvasRect.left) * scaleX;
+      adjustedPointerY = (pointer.y - canvasRect.top) * scaleY;
+    }
+    
+    this.updateKnobPositionWithCoords(adjustedPointerX, adjustedPointerY);  // 使用调整后的坐标更新手柄位置
   }
 
   /**
@@ -188,8 +219,32 @@ export class VirtualJoystick {
    * @param pointer 触摸指针对象
    */
   private updateKnobPosition(pointer: Phaser.Input.Pointer) {
-    const deltaX = pointer.x - this.container.x;  // 计算X方向偏移
-    const deltaY = pointer.y - this.container.y;  // 计算Y方向偏移
+    // 在全屏模式下调整坐标
+    let adjustedPointerX = pointer.x;
+    let adjustedPointerY = pointer.y;
+    
+    if (this.isFullscreen) {
+      const canvas = this.scene.game.canvas;
+      const canvasRect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / canvasRect.width;
+      const scaleY = canvas.height / canvasRect.height;
+      
+      adjustedPointerX = (pointer.x - canvasRect.left) * scaleX;
+      adjustedPointerY = (pointer.y - canvasRect.top) * scaleY;
+    }
+    
+    this.updateKnobPositionWithCoords(adjustedPointerX, adjustedPointerY);
+  }
+
+  /**
+   * 更新手柄位置（使用具体坐标）
+   * 根据给定坐标计算手柄的新位置和输入向量
+   * @param pointerX 触摸点X坐标
+   * @param pointerY 触摸点Y坐标
+   */
+  private updateKnobPositionWithCoords(pointerX: number, pointerY: number) {
+    const deltaX = pointerX - this.container.x;  // 计算X方向偏移
+    const deltaY = pointerY - this.container.y;  // 计算Y方向偏移
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);  // 计算触摸点到中心的距离
 
     // 限制在摇杆范围内
@@ -439,20 +494,31 @@ export class VirtualJoystick {
     const gameWidth = this.scene.scale.gameSize.width;
     const gameHeight = this.scene.scale.gameSize.height;
     
-    // 调整摇杆位置到屏幕左下角，考虑安全区域
-    const safeAreaBottom = 50; // 安全区域高度
-    const safeAreaLeft = 30;   // 安全区域宽度
+    // 获取实际屏幕尺寸
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
     
-    this.container.setPosition(
-      safeAreaLeft + this.config.radius,
-      gameHeight - safeAreaBottom - this.config.radius
-    );
+    // 调整摇杆位置到屏幕左下角，考虑安全区域和实际屏幕尺寸
+    const safeAreaBottom = Math.max(50, screenHeight * 0.08); // 动态安全区域高度
+    const safeAreaLeft = Math.max(30, screenWidth * 0.05);    // 动态安全区域宽度
     
-    // 增加摇杆大小以适应全屏操作
-    this.container.setScale(1.2);
+    // 计算相对于游戏坐标系的位置
+    const scaleX = gameWidth / screenWidth;
+    const scaleY = gameHeight / screenHeight;
     
-    // 提高透明度，避免遮挡游戏内容
-    this.container.setAlpha(0.7);
+    const newX = (safeAreaLeft + this.config.radius) * scaleX;
+    const newY = (screenHeight - safeAreaBottom - this.config.radius) * scaleY;
+    
+    this.container.setPosition(newX, newY);
+    
+    // 根据屏幕大小调整摇杆尺寸
+    const scaleFactor = Math.min(screenWidth / 800, screenHeight / 600) * 1.2;
+    this.container.setScale(Math.max(1.0, Math.min(1.5, scaleFactor)));
+    
+    // 在全屏模式下稍微降低透明度，避免遮挡游戏内容
+    this.container.setAlpha(0.8);
+    
+    console.log(`Joystick adjusted for fullscreen: position(${newX}, ${newY}), scale(${scaleFactor})`);
   }
 
   /**

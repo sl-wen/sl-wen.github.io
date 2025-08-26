@@ -13,11 +13,55 @@ export class RPGGame {
 
   /**
    * 设置全屏模式
-   * 通知游戏场景全屏状态变化
+   * 通知游戏场景全屏状态变化并调整游戏缩放
    * @param isFullscreen 是否处于全屏模式
    */
   public setFullscreenMode(isFullscreen: boolean) {
-    // 获取当前活跃的GameScene
+    console.log(`RPGGame setFullscreenMode: ${isFullscreen}`);
+    
+    // 调整游戏缩放以适应全屏模式
+    if (this.game && this.game.scale) {
+      if (isFullscreen) {
+        // 全屏模式：使用整个屏幕
+        this.game.scale.setGameSize(window.innerWidth, window.innerHeight);
+        this.game.scale.refresh();
+        
+        // 确保摄像机视口正确调整
+        const cameras = this.game.scene.cameras;
+        if (cameras && cameras.main) {
+          cameras.main.setViewport(0, 0, window.innerWidth, window.innerHeight);
+        }
+        
+        console.log(`Fullscreen mode enabled: ${window.innerWidth}x${window.innerHeight}`);
+      } else {
+        // 非全屏模式：恢复原始尺寸
+        const container = this.game.canvas.parentElement;
+        if (container) {
+          const containerWidth = container.clientWidth;
+          const containerHeight = container.clientHeight;
+          
+          this.game.scale.setGameSize(containerWidth, containerHeight);
+          this.game.scale.refresh();
+          
+          // 恢复摄像机视口
+          const cameras = this.game.scene.cameras;
+          if (cameras && cameras.main) {
+            cameras.main.setViewport(0, 0, containerWidth, containerHeight);
+          }
+          
+          console.log(`Normal mode restored: ${containerWidth}x${containerHeight}`);
+        }
+      }
+      
+      // 延迟一帧后再次刷新，确保所有调整生效
+      setTimeout(() => {
+        if (this.game && this.game.scale) {
+          this.game.scale.refresh();
+        }
+      }, 16);
+    }
+
+    // 获取当前活跃的GameScene并通知全屏状态变化
     const gameScene = this.game.scene.getScene('GameScene');
     if (gameScene && (gameScene as any).setFullscreenMode) {
       (gameScene as any).setFullscreenMode(isFullscreen);

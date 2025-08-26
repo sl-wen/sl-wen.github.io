@@ -96,10 +96,18 @@ const GamePage: React.FC = () => {
       }, 200);
     };
 
+    // 添加ESC键退出全屏功能
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isFullscreen) {
+        exitFullscreen();
+      }
+    };
+
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
     document.addEventListener('mozfullscreenchange', handleFullscreenChange);
     document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    document.addEventListener('keydown', handleKeyDown);
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleOrientationChange);
@@ -109,10 +117,11 @@ const GamePage: React.FC = () => {
       document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
       document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
       document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+      document.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleOrientationChange);
     };
-  }, [gameInstance]);
+  }, [gameInstance, isFullscreen]);
 
   // 计算游戏容器的最佳尺寸
   const getOptimalGameSize = () => {
@@ -519,9 +528,12 @@ const GamePage: React.FC = () => {
 
                   <button
                     onClick={isFullscreen ? exitFullscreen : enterFullscreen}
-                    className={`bg-black/50 hover:bg-black/70 text-white rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40 ${screenOrientation === 'portrait' ? 'p-2' : 'p-3'
+                    className={`${isFullscreen 
+                      ? 'bg-orange-500/80 hover:bg-orange-600/80 border-orange-400/40 hover:border-orange-300/60' 
+                      : 'bg-black/50 hover:bg-black/70 border-white/20 hover:border-white/40'
+                    } text-white rounded-lg transition-all duration-200 backdrop-blur-sm border ${screenOrientation === 'portrait' ? 'p-2' : 'p-3'
                       }`}
-                    title={isFullscreen ? "退出全屏" : (platformInfo.isIOS ? "进入沉浸模式" : "进入全屏")}
+                    title={isFullscreen ? "退出全屏 (ESC)" : (platformInfo.isIOS ? "进入沉浸模式" : "进入全屏")}
                   >
                     {isFullscreen ? (
                       <svg className={`${screenOrientation === 'portrait' ? 'w-4 h-4' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -533,6 +545,20 @@ const GamePage: React.FC = () => {
                       </svg>
                     )}
                   </button>
+                </div>
+              )}
+
+              {/* 全屏模式下的额外退出提示 - 仅移动端 */}
+              {isFullscreen && platformInfo.isMobile && !isLoading && (
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
+                  <div className="bg-black/60 text-white px-4 py-2 rounded-lg text-sm backdrop-blur-sm border border-white/20 animate-pulse">
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      <span>点击右上角 ✕ 退出全屏</span>
+                    </div>
+                  </div>
                 </div>
               )}
             </>

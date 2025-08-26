@@ -609,6 +609,20 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* 全屏模式下的虚拟控制器优化 */
+.game-container:fullscreen .virtual-joystick,
+.game-container.fullscreen-simulated .virtual-joystick {
+  z-index: 10001 !important;
+  position: fixed !important;
+  
+  /* 确保在全屏模式下可见 */
+  visibility: visible !important;
+  opacity: 1 !important;
+  
+  /* 防止被游戏画布覆盖 */
+  pointer-events: auto !important;
+}
+
 .action-button {
   touch-action: none;
   pointer-events: auto;
@@ -621,6 +635,33 @@
   /* 触摸反馈优化 */
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
   transition: transform 0.1s ease-out;
+}
+
+/* 全屏模式下的动作按钮优化 */
+.game-container:fullscreen .action-button,
+.game-container.fullscreen-simulated .action-button {
+  z-index: 10011 !important;
+  position: fixed !important;
+  
+  /* 确保在全屏模式下可见 */
+  visibility: visible !important;
+  opacity: 1 !important;
+  
+  /* 防止被游戏画布覆盖 */
+  pointer-events: auto !important;
+}
+
+/* 全屏模式下的Phaser游戏画布优化 */
+.game-container:fullscreen canvas,
+.game-container.fullscreen-simulated canvas {
+  /* 确保画布不会覆盖UI元素 */
+  z-index: 1 !important;
+  
+  /* 保持触摸事件穿透到控制器 */
+  pointer-events: auto;
+  
+  /* 防止画布阻止触摸事件 */
+  touch-action: none;
 }
 
 .action-button:active {

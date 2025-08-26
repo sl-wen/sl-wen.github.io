@@ -125,12 +125,15 @@ export class VirtualJoystick {
       return;  // 如果摇杆已经激活且不是同一个指针，则忽略
     }
 
+    // 获取正确的触摸坐标（考虑全屏模式）
+    const touchCoords = this.getTouchCoordinates(pointer);
+    
     // 计算距离，确保在有效范围内
     const distance = Phaser.Math.Distance.Between(
-      pointer.x,        // 触摸点X坐标
-      pointer.y,        // 触摸点Y坐标
-      this.container.x, // 摇杆中心X坐标
-      this.container.y  // 摇杆中心Y坐标
+      touchCoords.x,        // 触摸点X坐标
+      touchCoords.y,        // 触摸点Y坐标
+      this.container.x,     // 摇杆中心X坐标
+      this.container.y      // 摇杆中心Y坐标
     );
 
     if (distance <= this.config.radius + 25) {  // 在有效触摸范围内
@@ -188,8 +191,11 @@ export class VirtualJoystick {
    * @param pointer 触摸指针对象
    */
   private updateKnobPosition(pointer: Phaser.Input.Pointer) {
-    const deltaX = pointer.x - this.container.x;  // 计算X方向偏移
-    const deltaY = pointer.y - this.container.y;  // 计算Y方向偏移
+    // 获取正确的触摸坐标（考虑全屏模式）
+    const touchCoords = this.getTouchCoordinates(pointer);
+    
+    const deltaX = touchCoords.x - this.container.x;  // 计算X方向偏移
+    const deltaY = touchCoords.y - this.container.y;  // 计算Y方向偏移
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);  // 计算触摸点到中心的距离
 
     // 限制在摇杆范围内
@@ -329,6 +335,12 @@ export class VirtualJoystick {
    * @param screenHeight 屏幕高度
    */
   public updateLayout(screenWidth: number, screenHeight: number) {
+    // 如果处于全屏模式，使用特殊的全屏布局逻辑
+    if (this.isFullscreen) {
+      this.adjustForFullscreen();
+      return;
+    }
+    
     const isPortrait = screenHeight > screenWidth;  // 判断是否为竖屏
     const isMobile = screenWidth < 768;             // 判断是否为移动设备
 
@@ -355,6 +367,8 @@ export class VirtualJoystick {
     newY = Math.max(this.config.radius + 20, Math.min(newY, screenHeight - this.config.radius - 20)); // 限制Y坐标范围
 
     this.setPosition(newX, newY);  // 设置新位置
+    
+    console.log(`Joystick layout updated: ${newX}, ${newY} (fullscreen: ${this.isFullscreen})`);
   }
 
   /**
@@ -394,11 +408,47 @@ export class VirtualJoystick {
     if (this.base) {
       this.base.setStrokeStyle(2, 0x4a90e2, 0.6);  // 恢复底座边框
     }
+    
+    if (this.outerRing) {
+      this.outerRing.setStrokeStyle(2, 0x4a90e2, 0.4);  // 恢复外圈
+    }
+
+    // 重新调整位置（考虑当前全屏状态）
+    if (this.isFullscreen) {
+      this.adjustForFullscreen();
+    } else {
+      this.adjustForNormalMode();
+    }
 
     // 确保移动回调被调用
     if (this.onMove) {
       this.onMove({ x: 0, y: 0 });  // 发送零向量，表示停止移动
     }
+    
+    console.log('🔧 Joystick emergency reset completed');
+  }
+
+  /**
+   * 处理视口变化
+   * 当屏幕旋转或尺寸改变时调用
+   */
+  public handleViewportChange() {
+    // 延迟处理，确保DOM更新完成
+    setTimeout(() => {
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      
+      // 更新布局
+      this.updateLayout(screenWidth, screenHeight);
+      
+      // 如果摇杆处于激活状态，执行紧急重置以避免位置错误
+      if (this.isActive) {
+        console.log('🔄 Viewport changed while joystick active, resetting...');
+        this.emergencyReset();
+      }
+      
+      console.log(`📱 Viewport changed: ${screenWidth}x${screenHeight}, fullscreen: ${this.isFullscreen}`);
+    }, 100);
   }
 
   /**
@@ -439,20 +489,32 @@ export class VirtualJoystick {
     const gameWidth = this.scene.scale.gameSize.width;
     const gameHeight = this.scene.scale.gameSize.height;
     
+    // 获取实际的视口尺寸（全屏时使用window尺寸）
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
     // 调整摇杆位置到屏幕左下角，考虑安全区域
-    const safeAreaBottom = 50; // 安全区域高度
-    const safeAreaLeft = 30;   // 安全区域宽度
+    const safeAreaBottom = this.getSafeAreaInset('bottom');
+    const safeAreaLeft = this.getSafeAreaInset('left');
     
-    this.container.setPosition(
-      safeAreaLeft + this.config.radius,
-      gameHeight - safeAreaBottom - this.config.radius
-    );
+    // 计算摇杆位置 - 使用视口坐标而不是游戏坐标
+    const joystickX = safeAreaLeft + this.config.radius + 20;
+    const joystickY = viewportHeight - safeAreaBottom - this.config.radius - 20;
     
-    // 增加摇杆大小以适应全屏操作
-    this.container.setScale(1.2);
+    this.container.setPosition(joystickX, joystickY);
     
-    // 提高透明度，避免遮挡游戏内容
-    this.container.setAlpha(0.7);
+    // 增加摇杆大小和透明度以适应全屏操作
+    this.container.setScale(1.3);
+    this.container.setAlpha(0.85);
+    
+    // 确保摇杆在最高层级显示
+    this.container.setDepth(10000);
+    
+    // 更新配置以反映新位置
+    this.config.x = joystickX;
+    this.config.y = joystickY;
+    
+    console.log(`Fullscreen joystick positioned at: ${joystickX}, ${joystickY}`);
   }
 
   /**
@@ -460,9 +522,51 @@ export class VirtualJoystick {
    */
   private adjustForNormalMode() {
     // 恢复原始配置
-    this.container.setPosition(this.config.x, this.config.y);
+    const gameWidth = this.scene.scale.gameSize.width;
+    const gameHeight = this.scene.scale.gameSize.height;
+    
+    // 计算正常模式下的位置
+    const normalX = this.config.radius + 40;
+    const normalY = gameHeight - this.config.radius - 60;
+    
+    this.container.setPosition(normalX, normalY);
     this.container.setScale(1.0);
     this.container.setAlpha(0.8);
+    this.container.setDepth(1000);
+    
+    // 更新配置
+    this.config.x = normalX;
+    this.config.y = normalY;
+    
+    console.log(`Normal mode joystick positioned at: ${normalX}, ${normalY}`);
+  }
+
+  /**
+   * 获取安全区域插入值
+   * @param side 安全区域边（top, bottom, left, right）
+   * @returns 安全区域插入值（像素）
+   */
+  private getSafeAreaInset(side: 'top' | 'bottom' | 'left' | 'right'): number {
+    try {
+      // 尝试获取CSS环境变量
+      const insetValue = getComputedStyle(document.documentElement)
+        .getPropertyValue(`env(safe-area-inset-${side})`);
+      
+      if (insetValue && insetValue !== '') {
+        return parseInt(insetValue.replace('px', '')) || 0;
+      }
+    } catch (error) {
+      console.debug('Could not get safe area inset:', error);
+    }
+    
+    // 回退值
+    switch (side) {
+      case 'top': return 44; // 状态栏高度
+      case 'bottom': return 34; // Home indicator高度
+      case 'left':
+      case 'right': return 0;
+      default: return 0;
+    }
   }
 
   /**
@@ -478,6 +582,40 @@ export class VirtualJoystick {
     } catch (error) {
       // 静默处理振动错误，避免影响游戏体验
       console.debug('Haptic feedback not available:', error);
+    }
+  }
+
+  /**
+   * 获取正确的触摸坐标
+   * 处理全屏模式下的坐标转换
+   * @param pointer 触摸指针对象
+   * @returns 转换后的坐标
+   */
+  private getTouchCoordinates(pointer: Phaser.Input.Pointer): { x: number; y: number } {
+    if (this.isFullscreen) {
+      // 全屏模式下，使用屏幕坐标
+      // 需要考虑游戏画布的缩放和偏移
+      const canvas = this.scene.game.canvas;
+      const canvasRect = canvas.getBoundingClientRect();
+      
+      // 计算相对于画布的坐标
+      const canvasX = pointer.x - canvasRect.left;
+      const canvasY = pointer.y - canvasRect.top;
+      
+      // 考虑画布缩放
+      const scaleX = canvas.width / canvasRect.width;
+      const scaleY = canvas.height / canvasRect.height;
+      
+      return {
+        x: canvasX * scaleX,
+        y: canvasY * scaleY
+      };
+    } else {
+      // 正常模式下，直接使用pointer坐标
+      return {
+        x: pointer.x,
+        y: pointer.y
+      };
     }
   }
 }

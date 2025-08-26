@@ -932,6 +932,11 @@ export class GameScene extends Phaser.Scene {
         // 更新摄像机边界和缩放
         this.setupCamera();  // 重新设置摄像机
 
+        // 通知虚拟摇杆处理视口变化
+        if (this.virtualJoystick) {
+          this.virtualJoystick.handleViewportChange();
+        }
+
         // 显示简短通知
         this.showNotification('🔄 界面已适配新屏幕方向');
       });
@@ -1391,11 +1396,23 @@ export class GameScene extends Phaser.Scene {
     // 通知虚拟摇杆全屏状态变化
     if (this.virtualJoystick) {
       this.virtualJoystick.setFullscreenMode(isFullscreen);
+      
+      // 强制更新摇杆布局
+      const screenInfo = this.uiLayoutManager?.getScreenInfo();
+      if (screenInfo) {
+        this.virtualJoystick.updateLayout(screenInfo.width, screenInfo.height);
+      }
     }
 
     // 通知UI布局管理器全屏状态变化
     if (this.uiLayoutManager) {
       this.uiLayoutManager.setFullscreenMode(isFullscreen);
+    }
+
+    // 更新动作按钮位置（如果存在）
+    if (this.actionButtons.length > 0 && this.uiLayoutManager) {
+      const screenInfo = this.uiLayoutManager.getScreenInfo();
+      this.updateActionButtonsLayout(screenInfo);
     }
 
     console.log(`GameScene fullscreen mode: ${isFullscreen ? 'enabled' : 'disabled'}`);

@@ -1383,6 +1383,25 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
+   * 设置全屏模式
+   * 通知相关组件全屏状态变化
+   * @param isFullscreen 是否处于全屏模式
+   */
+  setFullscreenMode(isFullscreen: boolean) {
+    // 通知虚拟摇杆全屏状态变化
+    if (this.virtualJoystick) {
+      this.virtualJoystick.setFullscreenMode(isFullscreen);
+    }
+
+    // 通知UI布局管理器全屏状态变化
+    if (this.uiLayoutManager) {
+      this.uiLayoutManager.setFullscreenMode(isFullscreen);
+    }
+
+    console.log(`GameScene fullscreen mode: ${isFullscreen ? 'enabled' : 'disabled'}`);
+  }
+
+  /**
    * 场景清理 - 场景销毁时调用
    */
   destroy() {

@@ -11,8 +11,10 @@ const GamePage: React.FC = () => {
   const gameRef = useRef<HTMLDivElement>(null);
   // 游戏加载状态 - 控制加载界面的显示
   const [isLoading, setIsLoading] = useState(false);
-  // 游戏实例状态 - 保存Phaser游戏对象的引用
+  // 游戏实例状态 - 保存RPG游戏对象的引用
   const [gameInstance, setGameInstance] = useState<any>(null);
+  // RPG游戏实例引用 - 保存完整的RPGGame实例
+  const [rpgGameInstance, setRpgGameInstance] = useState<any>(null);
   // 客户端状态 - 确保组件在客户端环境中运行
   const [isClient, setIsClient] = useState(false);
   // 游戏启动状态 - 控制是否显示启动按钮
@@ -33,15 +35,28 @@ const GamePage: React.FC = () => {
 
   // 检测平台类型
   const getPlatformInfo = () => {
-    if (typeof window === 'undefined') return { isMobile: false, platform: 'unknown' };
+    if (typeof window === 'undefined') return { isMobile: false, platform: 'unknown', isIOS: false };
 
-    const isMobile = window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const userAgent = navigator.userAgent;
+    const isMobile = window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent);
     const platform = isMobile ? 'Mobile (Joystick Controls)' : 'Desktop (Keyboard Controls)';
 
-    return { isMobile, platform };
+    return { isMobile, platform, isIOS };
   };
 
   const platformInfo = getPlatformInfo();
+
+  // 检测是否支持真正的全屏API
+  const supportsFullscreen = () => {
+    if (typeof document === 'undefined') return false;
+    return !!(
+      document.fullscreenEnabled ||
+      (document as any).webkitFullscreenEnabled ||
+      (document as any).mozFullScreenEnabled ||
+      (document as any).msFullscreenEnabled
+    );
+  };
 
   // 更新视口尺寸和方向
   const updateViewportSize = () => {
@@ -54,7 +69,12 @@ const GamePage: React.FC = () => {
   // 监听全屏状态变化和屏幕尺寸变化
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      // 只有在支持真正全屏API的浏览器上才检查fullscreenElement
+      // iOS和不支持的浏览器使用状态管理
+      if (supportsFullscreen() && !platformInfo.isIOS) {
+        setIsFullscreen(!!document.fullscreenElement);
+      }
+      // 对于iOS等不支持的设备，fullscreen状态由手动管理
     };
 
     const handleResize = () => {
@@ -172,7 +192,8 @@ const GamePage: React.FC = () => {
       const game = new GameClass(gameRef.current);
       console.log('Game instance created:', game);
 
-      setGameInstance(game.game);
+      setRpgGameInstance(game);        // 保存完整的RPGGame实例
+      setGameInstance(game.game);      // 保存Phaser游戏实例
       setIsLoading(false); // 游戏加载完成
       console.log('Game started successfully');
     } catch (error) {
@@ -197,6 +218,7 @@ const GamePage: React.FC = () => {
     }
 
     // 重置所有状态
+    setRpgGameInstance(null);
     setGameInstance(null);
     setGameStarted(false);
     setIsLoading(false);
@@ -205,11 +227,42 @@ const GamePage: React.FC = () => {
     console.log('Game reset completed');
   };
 
-  // 进入全屏模式
+  // 进入全屏模式 - 增强移动端支持
   const enterFullscreen = async () => {
     if (!gameRef.current) return;
 
     try {
+      // 对于iOS设备，使用模拟全屏
+      if (platformInfo.isIOS || !supportsFullscreen()) {
+        // iOS Safari 不支持真正的全屏，使用模拟全屏
+        setIsFullscreen(true);
+        
+        // 隐藏地址栏（iOS Safari特殊处理）
+        if (platformInfo.isIOS) {
+          // 滚动到顶部以隐藏地址栏
+          window.scrollTo(0, 1);
+          setTimeout(() => window.scrollTo(0, 0), 100);
+          
+          // 设置viewport meta标签以防止缩放
+          let viewportMeta = document.querySelector('meta[name="viewport"]');
+          if (viewportMeta) {
+            viewportMeta.setAttribute('content', 
+              'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
+            );
+          }
+        }
+        
+        // 添加模拟全屏样式
+        document.body.classList.add('fullscreen-active');
+        if (gameRef.current) {
+          gameRef.current.classList.add('fullscreen-simulated');
+        }
+        
+        console.log('Mobile fullscreen simulation activated');
+        return;
+      }
+
+      // 标准全屏API（桌面端和支持的移动浏览器）
       if (gameRef.current.requestFullscreen) {
         await gameRef.current.requestFullscreen();
       } else if ((gameRef.current as any).webkitRequestFullscreen) {
@@ -221,12 +274,43 @@ const GamePage: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to enter fullscreen:', error);
+      // 降级到模拟全屏
+      setIsFullscreen(true);
+      document.body.classList.add('fullscreen-active');
+      if (gameRef.current) {
+        gameRef.current.classList.add('fullscreen-simulated');
+      }
     }
   };
 
-  // 退出全屏模式
+  // 退出全屏模式 - 增强移动端支持
   const exitFullscreen = async () => {
     try {
+      // 如果是模拟全屏或iOS设备
+      if (platformInfo.isIOS || !document.fullscreenElement) {
+        setIsFullscreen(false);
+        
+        // 恢复页面样式
+        document.body.classList.remove('fullscreen-active');
+        if (gameRef.current) {
+          gameRef.current.classList.remove('fullscreen-simulated');
+        }
+        
+        // 恢复viewport设置（iOS）
+        if (platformInfo.isIOS) {
+          let viewportMeta = document.querySelector('meta[name="viewport"]');
+          if (viewportMeta) {
+            viewportMeta.setAttribute('content', 
+              'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes'
+            );
+          }
+        }
+        
+        console.log('Mobile fullscreen simulation deactivated');
+        return;
+      }
+
+      // 标准全屏API退出
       if (document.exitFullscreen) {
         await document.exitFullscreen();
       } else if ((document as any).webkitExitFullscreen) {
@@ -238,8 +322,21 @@ const GamePage: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to exit fullscreen:', error);
+      // 强制退出模拟全屏
+      setIsFullscreen(false);
+      document.body.classList.remove('fullscreen-active');
+      if (gameRef.current) {
+        gameRef.current.classList.remove('fullscreen-simulated');
+      }
     }
   };
+
+  // 监听全屏状态变化，通知游戏实例
+  useEffect(() => {
+    if (rpgGameInstance && rpgGameInstance.setFullscreenMode) {
+      rpgGameInstance.setFullscreenMode(isFullscreen);
+    }
+  }, [isFullscreen, rpgGameInstance]);
 
   // 组件卸载时清理游戏实例
   useEffect(() => {
@@ -251,6 +348,7 @@ const GamePage: React.FC = () => {
           console.error('Error destroying game:', error);
         }
         setGameInstance(null);
+        setRpgGameInstance(null);
       }
     };
   }, [gameInstance]);
@@ -423,7 +521,7 @@ const GamePage: React.FC = () => {
                     onClick={isFullscreen ? exitFullscreen : enterFullscreen}
                     className={`bg-black/50 hover:bg-black/70 text-white rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40 ${screenOrientation === 'portrait' ? 'p-2' : 'p-3'
                       }`}
-                    title={isFullscreen ? "退出全屏" : "进入全屏"}
+                    title={isFullscreen ? "退出全屏" : (platformInfo.isIOS ? "进入沉浸模式" : "进入全屏")}
                   >
                     {isFullscreen ? (
                       <svg className={`${screenOrientation === 'portrait' ? 'w-4 h-4' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">

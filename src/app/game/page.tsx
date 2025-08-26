@@ -424,20 +424,17 @@ const GamePage: React.FC = () => {
         <div className="bg-slate-800 border-b border-slate-700 p-4">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-3xl font-bold text-white mb-2">🐱 小猫农场</h1>
-            <p className="text-slate-300">
-              使用 WASD 键或虚拟摇杆移动小猫，空格键交互，体验温馨治愈的农场生活！种植作物、烹饪美食、照料农场。
-            </p>
           </div>
         </div>
       )}
 
       {/* 游戏主体容器区域 */}
-      <div className={`flex flex-col items-center justify-center ${isFullscreen ? 'h-screen' : 'p-4'}`}>
-        <div className={`relative ${isFullscreen ? 'w-full h-full' : 'w-full max-w-7xl'}`}>
+      <div className={`flex flex-col items-center justify-center ${isFullscreen ? 'h-screen' : 'p-0'}`}>
+        <div className={`relative ${isFullscreen ? 'w-full h-full' : 'w-full'}`}>
           {/* 改进的游戏容器 - 更好的响应式设计 */}
           <div
             ref={gameRef}
-            className={`game-container ${gameStarted ? 'block' : 'hidden'} w-full bg-gradient-to-br from-slate-900 to-black overflow-hidden shadow-2xl border-2 border-slate-600/50 touch-none select-none ${isFullscreen
+            className={`game-container ${gameStarted ? 'block' : 'hidden'} w-full bg-gradient-to-br from-slate-900 to-black overflow-hidden border-slate-600/50 touch-none select-none ${isFullscreen
               ? 'fixed inset-0 z-50 rounded-none h-screen'
               : 'rounded-xl'
               }`}
@@ -459,11 +456,11 @@ const GamePage: React.FC = () => {
 
           {/* 游戏启动界面 */}
           {!gameStarted && (
-            <div className={`flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border-2 border-slate-600/50 ${screenOrientation === 'portrait' ? 'min-h-[50vh]' : 'min-h-[600px]'
+            <div className={`flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border-slate-600/50 ${screenOrientation === 'portrait' ? 'min-h-[70vh]' : 'min-h-[700px]'
               }`}>
               <div className="text-center p-8 max-w-md mx-auto">
                 <div className="text-6xl mb-6">🐱</div>
-                <h2 className="text-3xl font-bold text-white mb-4">小猫厨房农场</h2>
+                <h2 className="text-3xl font-bold text-white mb-4">小猫农场</h2>
                 <p className="text-slate-300 mb-8">
                   准备好体验温馨治愈的农场生活了吗？种植作物、烹饪美食、照料可爱的小猫！
                 </p>

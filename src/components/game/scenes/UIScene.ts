@@ -220,7 +220,7 @@ export class UIScene extends Phaser.Scene {
   }
 
   private createToolIndicator() {
-    this.currentToolText = this.add.text(20, this.cameras.main.height - 40, '工具: 无', {
+    this.currentToolText = this.add.text(this.cameras.main.width-40, this.cameras.main.height - 40, '工具', {
       fontSize: '14px',
       color: '#ffffff',
       backgroundColor: 'rgba(0,0,0,0.7)',
@@ -867,7 +867,7 @@ export class UIScene extends Phaser.Scene {
 
     // 更新对话框和通知的位置以适应屏幕变化
     this.updateDialoguePosition();
-    this.updateNotificationPosition();
+    //this.updateNotificationPosition();
   }
 
   private updateDialoguePosition() {
@@ -882,21 +882,6 @@ export class UIScene extends Phaser.Scene {
         : height - 120;
 
       this.dialogueBox.setPosition(width / 2, dialogueY);
-    }
-  }
-
-  private updateNotificationPosition() {
-    const notificationContainer = (this as any).notificationContainer;
-    if (notificationContainer) {
-      const width = this.cameras.main.width;
-      const screenInfo = this.uiLayoutManager.getScreenInfo();
-
-      // 根据屏幕尺寸调整通知位置
-      const notificationY = screenInfo.isMobile
-        ? (screenInfo.isPortrait ? 40 : 30)
-        : 50;
-
-      notificationContainer.setPosition(width / 2, notificationY);
     }
   }
 

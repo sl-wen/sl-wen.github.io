@@ -477,7 +477,7 @@ export class UILayoutManager {
    */
   private updateAllElementPositions() {
     this.elements.forEach((element, id) => {
-      const position = this.calculateElementPosition(element);
+      const position = this.calculatePosition(element);
       // 这里可以添加实际更新UI元素位置的代码
       console.log(`Updated ${id} position:`, position);
     });

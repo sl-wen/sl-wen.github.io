@@ -30,7 +30,11 @@ const GamePage: React.FC = () => {
   useEffect(() => {
     setIsClient(true);
     // 初始化视口尺寸
-    updateViewportSize();
+    try {
+      updateViewportSize();
+    } catch (error) {
+      console.error('Error initializing viewport size:', error);
+    }
   }, []);
 
   // 检测平台类型
@@ -40,9 +44,8 @@ const GamePage: React.FC = () => {
     const userAgent = navigator.userAgent;
     const isMobile = window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
     const isIOS = /iPad|iPhone|iPod/.test(userAgent);
-    const platform = isMobile ? 'Mobile (Joystick Controls)' : 'Desktop (Keyboard Controls)';
 
-    return { isMobile, platform, isIOS };
+    return { isMobile, platform: userAgent, isIOS };
   };
 
   const platformInfo = getPlatformInfo();
@@ -60,59 +63,82 @@ const GamePage: React.FC = () => {
 
   // 更新视口尺寸和方向
   const updateViewportSize = () => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    setViewportSize({ width, height });
-    setScreenOrientation(width > height ? 'landscape' : 'portrait');
+    try {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      setViewportSize({ width, height });
+      setScreenOrientation(width > height ? 'landscape' : 'portrait');
+    } catch (error) {
+      console.error('Error updating viewport size:', error);
+    }
   };
 
   // 监听全屏状态变化和屏幕尺寸变化
   useEffect(() => {
     const handleFullscreenChange = () => {
-      // 只有在支持真正全屏API的浏览器上才检查fullscreenElement
-      // iOS和不支持的浏览器使用状态管理
-      if (supportsFullscreen() && !platformInfo.isIOS) {
-        setIsFullscreen(!!document.fullscreenElement);
+      try {
+        // 只有在支持真正全屏API的浏览器上才检查fullscreenElement
+        // iOS和不支持的浏览器使用状态管理
+        if (supportsFullscreen() && !platformInfo.isIOS) {
+          setIsFullscreen(!!document.fullscreenElement);
+        }
+        // 对于iOS等不支持的设备，fullscreen状态由手动管理
+      } catch (error) {
+        console.error('Error handling fullscreen change:', error);
       }
-      // 对于iOS等不支持的设备，fullscreen状态由手动管理
     };
 
     const handleResize = () => {
-      updateViewportSize();
-      // 通知游戏实例调整尺寸
-      if (gameInstance && gameInstance.scale) {
-        setTimeout(() => {
-          gameInstance.scale.refresh();
-        }, 100);
+      try {
+        setViewportSize({
+          width: window.innerWidth,
+          height: window.innerHeight
+        });
+      } catch (error) {
+        console.error('Error handling resize:', error);
       }
     };
 
     const handleOrientationChange = () => {
-      setTimeout(() => {
-        updateViewportSize();
-        if (gameInstance && gameInstance.scale) {
-          gameInstance.scale.refresh();
-        }
-      }, 200);
+      try {
+        setTimeout(() => {
+          const newOrientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+          setScreenOrientation(newOrientation);
+          setViewportSize({
+            width: window.innerWidth,
+            height: window.innerHeight
+          });
+        }, 200);
+      } catch (error) {
+        console.error('Error handling orientation change:', error);
+      }
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    try {
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleOrientationChange);
+      window.addEventListener('resize', handleResize);
+      window.addEventListener('orientationchange', handleOrientationChange);
+    } catch (error) {
+      console.error('Error adding event listeners:', error);
+    }
 
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleOrientationChange);
+      try {
+        document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('orientationchange', handleOrientationChange);
+      } catch (error) {
+        console.error('Error removing event listeners:', error);
+      }
     };
-  }, [gameInstance]);
+  }, [platformInfo.isIOS]);
 
   // 计算游戏容器的最佳尺寸
   const getOptimalGameSize = () => {
@@ -229,7 +255,10 @@ const GamePage: React.FC = () => {
 
   // 进入全屏模式 - 增强移动端支持
   const enterFullscreen = async () => {
-    if (!gameRef.current) return;
+    if (!gameRef.current) {
+      console.warn('Game container not available for fullscreen');
+      return;
+    }
 
     try {
       // 对于iOS设备，使用模拟全屏
@@ -271,14 +300,26 @@ const GamePage: React.FC = () => {
         await (gameRef.current as any).mozRequestFullScreen();
       } else if ((gameRef.current as any).msRequestFullscreen) {
         await (gameRef.current as any).msRequestFullscreen();
+      } else {
+        // 如果所有API都不支持，降级到模拟全屏
+        console.log('No fullscreen API available, using simulated fullscreen');
+        setIsFullscreen(true);
+        document.body.classList.add('fullscreen-active');
+        if (gameRef.current) {
+          gameRef.current.classList.add('fullscreen-simulated');
+        }
       }
     } catch (error) {
       console.error('Failed to enter fullscreen:', error);
       // 降级到模拟全屏
-      setIsFullscreen(true);
-      document.body.classList.add('fullscreen-active');
-      if (gameRef.current) {
-        gameRef.current.classList.add('fullscreen-simulated');
+      try {
+        setIsFullscreen(true);
+        document.body.classList.add('fullscreen-active');
+        if (gameRef.current) {
+          gameRef.current.classList.add('fullscreen-simulated');
+        }
+      } catch (fallbackError) {
+        console.error('Failed to activate simulated fullscreen:', fallbackError);
       }
     }
   };
@@ -323,18 +364,27 @@ const GamePage: React.FC = () => {
     } catch (error) {
       console.error('Failed to exit fullscreen:', error);
       // 强制退出模拟全屏
-      setIsFullscreen(false);
-      document.body.classList.remove('fullscreen-active');
-      if (gameRef.current) {
-        gameRef.current.classList.remove('fullscreen-simulated');
+      try {
+        setIsFullscreen(false);
+        document.body.classList.remove('fullscreen-active');
+        if (gameRef.current) {
+          gameRef.current.classList.remove('fullscreen-simulated');
+        }
+      } catch (fallbackError) {
+        console.error('Failed to deactivate simulated fullscreen:', fallbackError);
       }
     }
   };
 
   // 监听全屏状态变化，通知游戏实例
   useEffect(() => {
-    if (rpgGameInstance && rpgGameInstance.setFullscreenMode) {
-      rpgGameInstance.setFullscreenMode(isFullscreen);
+    try {
+      if (rpgGameInstance && typeof rpgGameInstance.setFullscreenMode === 'function') {
+        rpgGameInstance.setFullscreenMode(isFullscreen);
+      }
+    } catch (error) {
+      console.error('Error notifying game instance of fullscreen change:', error);
+      // Don't throw the error to prevent application crash
     }
   }, [isFullscreen, rpgGameInstance]);
 

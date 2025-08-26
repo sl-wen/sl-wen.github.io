@@ -43,6 +43,13 @@ export class VirtualJoystick {
   private vector: JoystickVector = { x: 0, y: 0 };
   private lastUpdateTime: number = 0;
   private isFullscreen: boolean = false;
+  
+  // 拖拽移动相关状态
+  private isDraggingJoystick: boolean = false;
+  private dragStartTime: number = 0;
+  private longPressThreshold: number = 500; // 长按阈值（毫秒）
+  private dragThreshold: number = 10; // 拖拽阈值（像素）
+  private dragStartPos: { x: number; y: number } = { x: 0, y: 0 };
 
   // 事件回调
   private onMove: ((vector: JoystickVector) => void) | null = null;
@@ -125,21 +132,10 @@ export class VirtualJoystick {
       return;  // 如果摇杆已经激活且不是同一个指针，则忽略
     }
 
-    // 在全屏模式下，需要调整触摸坐标
-    let adjustedPointerX = pointer.x;
-    let adjustedPointerY = pointer.y;
-    
-    if (this.isFullscreen) {
-      // 获取游戏画布的实际位置和缩放
-      const canvas = this.scene.game.canvas;
-      const canvasRect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / canvasRect.width;
-      const scaleY = canvas.height / canvasRect.height;
-      
-      // 调整坐标以适应全屏模式
-      adjustedPointerX = (pointer.x - canvasRect.left) * scaleX;
-      adjustedPointerY = (pointer.y - canvasRect.top) * scaleY;
-    }
+    // 使用统一的坐标转换方法
+    const adjustedPos = this.adjustPointerCoordinates(pointer);
+    const adjustedPointerX = adjustedPos.x;
+    const adjustedPointerY = adjustedPos.y;
 
     // 计算距离，确保在有效范围内
     const distance = Phaser.Math.Distance.Between(
@@ -150,6 +146,11 @@ export class VirtualJoystick {
     );
 
     if (distance <= this.config.radius + 25) {  // 在有效触摸范围内
+      // 记录拖拽开始信息
+      this.dragStartTime = this.scene.time.now;
+      this.dragStartPos = { x: adjustedPointerX, y: adjustedPointerY };
+      this.isDraggingJoystick = false; // 初始不是拖拽状态
+      
       this.isActive = true;                    // 激活摇杆
       this.activePointerId = pointer.id;       // 记录指针ID
       this.lastUpdateTime = this.scene.time.now;  // 记录最后更新时间
@@ -184,21 +185,42 @@ export class VirtualJoystick {
 
     this.lastUpdateTime = this.scene.time.now;  // 更新最后更新时间
     
-    // 在全屏模式下调整坐标
-    let adjustedPointerX = pointer.x;
-    let adjustedPointerY = pointer.y;
+    // 使用统一的坐标转换方法
+    const adjustedPos = this.adjustPointerCoordinates(pointer);
+    const adjustedPointerX = adjustedPos.x;
+    const adjustedPointerY = adjustedPos.y;
     
-    if (this.isFullscreen) {
-      const canvas = this.scene.game.canvas;
-      const canvasRect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / canvasRect.width;
-      const scaleY = canvas.height / canvasRect.height;
+    // 检查是否应该进入拖拽模式
+    if (!this.isDraggingJoystick) {
+      const timeSinceStart = this.scene.time.now - this.dragStartTime;
+      const dragDistance = Phaser.Math.Distance.Between(
+        adjustedPointerX, adjustedPointerY,
+        this.dragStartPos.x, this.dragStartPos.y
+      );
       
-      adjustedPointerX = (pointer.x - canvasRect.left) * scaleX;
-      adjustedPointerY = (pointer.y - canvasRect.top) * scaleY;
+      // 如果长按时间足够或者拖拽距离足够，进入拖拽模式
+      if (timeSinceStart > this.longPressThreshold || dragDistance > this.dragThreshold) {
+        this.isDraggingJoystick = true;
+        
+        // 视觉反馈：摇杆进入拖拽模式
+        this.base.setStrokeStyle(5, 0xffd700, 0.8); // 金色边框表示拖拽模式
+        this.outerRing.setStrokeStyle(4, 0xffd700, 0.6);
+        this.container.setAlpha(0.9); // 稍微提高透明度
+        
+        // 触觉反馈
+        this.triggerHapticFeedback([50, 50, 50]);
+        
+        console.log('Joystick entered drag mode');
+      }
     }
     
-    this.updateKnobPositionWithCoords(adjustedPointerX, adjustedPointerY);  // 使用调整后的坐标更新手柄位置
+    if (this.isDraggingJoystick) {
+      // 拖拽模式：移动整个摇杆
+      this.moveJoystickTo(adjustedPointerX, adjustedPointerY);
+    } else {
+      // 正常模式：更新手柄位置
+      this.updateKnobPositionWithCoords(adjustedPointerX, adjustedPointerY);
+    }
   }
 
   /**
@@ -219,21 +241,9 @@ export class VirtualJoystick {
    * @param pointer 触摸指针对象
    */
   private updateKnobPosition(pointer: Phaser.Input.Pointer) {
-    // 在全屏模式下调整坐标
-    let adjustedPointerX = pointer.x;
-    let adjustedPointerY = pointer.y;
-    
-    if (this.isFullscreen) {
-      const canvas = this.scene.game.canvas;
-      const canvasRect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / canvasRect.width;
-      const scaleY = canvas.height / canvasRect.height;
-      
-      adjustedPointerX = (pointer.x - canvasRect.left) * scaleX;
-      adjustedPointerY = (pointer.y - canvasRect.top) * scaleY;
-    }
-    
-    this.updateKnobPositionWithCoords(adjustedPointerX, adjustedPointerY);
+    // 使用统一的坐标转换方法
+    const adjustedPos = this.adjustPointerCoordinates(pointer);
+    this.updateKnobPositionWithCoords(adjustedPos.x, adjustedPos.y);
   }
 
   /**
@@ -280,6 +290,35 @@ export class VirtualJoystick {
   }
 
   /**
+   * 移动摇杆到指定位置
+   * @param targetX 目标X坐标
+   * @param targetY 目标Y坐标
+   */
+  private moveJoystickTo(targetX: number, targetY: number) {
+    // 获取屏幕边界信息
+    const gameWidth = this.scene.scale.gameSize.width;
+    const gameHeight = this.scene.scale.gameSize.height;
+    const radius = this.config.radius;
+    const margin = 20;
+    
+    // 限制摇杆位置在屏幕边界内
+    const newX = Math.max(radius + margin, Math.min(targetX, gameWidth - radius - margin));
+    const newY = Math.max(radius + margin, Math.min(targetY, gameHeight - radius - margin));
+    
+    // 更新摇杆位置
+    this.setPosition(newX, newY);
+    
+    // 重置手柄到中心位置（拖拽时手柄应该保持在中心）
+    this.knob.setPosition(0, 0);
+    this.vector = { x: 0, y: 0 };
+    
+    // 通知移动回调
+    if (this.onMove) {
+      this.onMove({ x: 0, y: 0 });
+    }
+  }
+
+  /**
    * 重置摇杆状态
    * 将摇杆恢复到初始状态
    */
@@ -287,6 +326,11 @@ export class VirtualJoystick {
     this.isActive = false;                    // 取消激活状态
     this.activePointerId = null;              // 清空指针ID
     this.vector = { x: 0, y: 0 };            // 重置输入向量
+    
+    // 重置拖拽状态
+    this.isDraggingJoystick = false;
+    this.dragStartTime = 0;
+    this.dragStartPos = { x: 0, y: 0 };
 
     // 动画回到中心
     this.scene.tweens.add({
@@ -303,6 +347,7 @@ export class VirtualJoystick {
     this.knob.setFillStyle(0x74b9ff, 1.0);   // 恢复手柄颜色
     this.base.setStrokeStyle(3, 0x4a90e2, 0.7);  // 恢复底座边框
     this.outerRing.setStrokeStyle(2, 0x4a90e2, 0.4); // 恢复外圈
+    this.container.setAlpha(this.isFullscreen ? 0.85 : 0.8); // 恢复透明度
 
     // 添加释放时的触觉反馈
     this.triggerHapticFeedback([20]);
@@ -316,6 +361,8 @@ export class VirtualJoystick {
     if (this.onMove) {
       this.onMove({ x: 0, y: 0 });  // 发送零向量，表示停止移动
     }
+    
+    console.log('Joystick reset, drag mode disabled');
   }
 
   /**
@@ -457,6 +504,14 @@ export class VirtualJoystick {
   }
 
   /**
+   * 检查摇杆是否处于拖拽模式
+   * @returns 摇杆是否处于拖拽状态
+   */
+  public isDragging(): boolean {
+    return this.isDraggingJoystick;
+  }
+
+  /**
    * 获取摇杆状态信息（用于调试）
    * @returns 摇杆的调试信息
    */
@@ -467,7 +522,9 @@ export class VirtualJoystick {
       vector: this.vector,                                        // 当前输入向量
       position: { x: this.container.x, y: this.container.y },    // 摇杆位置
       lastUpdateTime: this.lastUpdateTime,                       // 最后更新时间
-      timeSinceLastUpdate: this.scene.time.now - this.lastUpdateTime  // 距离上次更新的时间
+      timeSinceLastUpdate: this.scene.time.now - this.lastUpdateTime,  // 距离上次更新的时间
+      isDragging: this.isDraggingJoystick,                      // 拖拽状态
+      dragStartTime: this.dragStartTime                          // 拖拽开始时间
     };
   }
 
@@ -498,9 +555,9 @@ export class VirtualJoystick {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
     
-    // 调整摇杆位置到屏幕左下角，考虑安全区域和实际屏幕尺寸
-    const safeAreaBottom = Math.max(50, screenHeight * 0.08); // 动态安全区域高度
-    const safeAreaLeft = Math.max(30, screenWidth * 0.05);    // 动态安全区域宽度
+    // 增加全屏模式下的底部安全距离，使摇杆向上移动
+    const safeAreaBottom = Math.max(80, screenHeight * 0.12); // 增加底部安全区域
+    const safeAreaLeft = Math.max(40, screenWidth * 0.06);    // 增加左侧安全区域
     
     // 计算相对于游戏坐标系的位置
     const scaleX = gameWidth / screenWidth;
@@ -511,12 +568,12 @@ export class VirtualJoystick {
     
     this.container.setPosition(newX, newY);
     
-    // 根据屏幕大小调整摇杆尺寸
-    const scaleFactor = Math.min(screenWidth / 800, screenHeight / 600) * 1.2;
-    this.container.setScale(Math.max(1.0, Math.min(1.5, scaleFactor)));
+    // 根据屏幕大小调整摇杆尺寸，在全屏模式下稍微增大
+    const scaleFactor = Math.min(screenWidth / 800, screenHeight / 600) * 1.3; // 增加缩放因子
+    this.container.setScale(Math.max(1.1, Math.min(1.6, scaleFactor))); // 提高最小和最大缩放值
     
-    // 在全屏模式下稍微降低透明度，避免遮挡游戏内容
-    this.container.setAlpha(0.8);
+    // 在全屏模式下保持较好的可见性
+    this.container.setAlpha(0.85); // 提高透明度
     
     console.log(`Joystick adjusted for fullscreen: position(${newX}, ${newY}), scale(${scaleFactor})`);
   }
@@ -545,5 +602,43 @@ export class VirtualJoystick {
       // 静默处理振动错误，避免影响游戏体验
       console.debug('Haptic feedback not available:', error);
     }
+  }
+
+  /**
+   * 转换触摸坐标以适应全屏模式
+   * @param pointer 触摸指针对象
+   * @returns 调整后的坐标
+   */
+  private adjustPointerCoordinates(pointer: Phaser.Input.Pointer): { x: number; y: number } {
+    let adjustedX = pointer.x;
+    let adjustedY = pointer.y;
+    
+    if (this.isFullscreen) {
+      try {
+        // 获取游戏画布的实际位置和缩放
+        const canvas = this.scene.game.canvas;
+        const canvasRect = canvas.getBoundingClientRect();
+        
+        // 计算缩放比例
+        const scaleX = canvas.width / canvasRect.width;
+        const scaleY = canvas.height / canvasRect.height;
+        
+        // 调整坐标以适应全屏模式
+        adjustedX = (pointer.x - canvasRect.left) * scaleX;
+        adjustedY = (pointer.y - canvasRect.top) * scaleY;
+        
+        // 确保坐标在有效范围内
+        adjustedX = Math.max(0, Math.min(adjustedX, canvas.width));
+        adjustedY = Math.max(0, Math.min(adjustedY, canvas.height));
+        
+      } catch (error) {
+        console.warn('Error adjusting pointer coordinates:', error);
+        // 降级到原始坐标
+        adjustedX = pointer.x;
+        adjustedY = pointer.y;
+      }
+    }
+    
+    return { x: adjustedX, y: adjustedY };
   }
 }

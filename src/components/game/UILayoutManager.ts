@@ -442,6 +442,48 @@ export class UILayoutManager {
   }
 
   /**
+   * 设置全屏模式
+   * 调整UI布局以适应全屏模式
+   * @param isFullscreen 是否处于全屏模式
+   */
+  public setFullscreenMode(isFullscreen: boolean) {
+    if (isFullscreen) {
+      // 全屏模式下，增加安全区域以避免被系统UI遮挡
+      this.safeArea = {
+        top: 20,
+        right: 20,
+        bottom: 30,
+        left: 20
+      };
+    } else {
+      // 正常模式下，恢复默认安全区域
+      this.safeArea = {
+        top: 10,
+        right: 10,
+        bottom: 20,
+        left: 10
+      };
+    }
+    
+    // 重新计算所有UI元素位置
+    this.updateAllElementPositions();
+    
+    console.log(`UILayoutManager fullscreen mode: ${isFullscreen ? 'enabled' : 'disabled'}`);
+  }
+
+  /**
+   * 更新所有UI元素位置
+   * 重新计算并应用所有元素的布局
+   */
+  private updateAllElementPositions() {
+    this.elements.forEach((element, id) => {
+      const position = this.calculateElementPosition(element);
+      // 这里可以添加实际更新UI元素位置的代码
+      console.log(`Updated ${id} position:`, position);
+    });
+  }
+
+  /**
    * 清理资源
    * 清空所有UI元素
    */

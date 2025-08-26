@@ -12,6 +12,19 @@ export class RPGGame {
   public game: Phaser.Game;  // Phaser游戏实例的公共引用
 
   /**
+   * 设置全屏模式
+   * 通知游戏场景全屏状态变化
+   * @param isFullscreen 是否处于全屏模式
+   */
+  public setFullscreenMode(isFullscreen: boolean) {
+    // 获取当前活跃的GameScene
+    const gameScene = this.game.scene.getScene('GameScene');
+    if (gameScene && (gameScene as any).setFullscreenMode) {
+      (gameScene as any).setFullscreenMode(isFullscreen);
+    }
+  }
+
+  /**
    * 构造函数
    * 创建并配置Phaser游戏实例
    * @param container 游戏容器DOM元素

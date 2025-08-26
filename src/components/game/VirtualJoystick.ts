@@ -42,6 +42,7 @@ export class VirtualJoystick {
   private activePointerId: number | null = null;
   private vector: JoystickVector = { x: 0, y: 0 };
   private lastUpdateTime: number = 0;
+  private isFullscreen: boolean = false;
 
   // 事件回调
   private onMove: ((vector: JoystickVector) => void) | null = null;
@@ -413,6 +414,55 @@ export class VirtualJoystick {
       lastUpdateTime: this.lastUpdateTime,                       // 最后更新时间
       timeSinceLastUpdate: this.scene.time.now - this.lastUpdateTime  // 距离上次更新的时间
     };
+  }
+
+  /**
+   * 设置全屏状态
+   * @param isFullscreen 是否处于全屏模式
+   */
+  setFullscreenMode(isFullscreen: boolean) {
+    this.isFullscreen = isFullscreen;
+    
+    // 在全屏模式下调整摇杆位置和大小
+    if (isFullscreen) {
+      this.adjustForFullscreen();
+    } else {
+      this.adjustForNormalMode();
+    }
+  }
+
+  /**
+   * 调整摇杆以适应全屏模式
+   */
+  private adjustForFullscreen() {
+    // 在全屏模式下，摇杆可能需要重新定位
+    const gameWidth = this.scene.scale.gameSize.width;
+    const gameHeight = this.scene.scale.gameSize.height;
+    
+    // 调整摇杆位置到屏幕左下角，考虑安全区域
+    const safeAreaBottom = 50; // 安全区域高度
+    const safeAreaLeft = 30;   // 安全区域宽度
+    
+    this.container.setPosition(
+      safeAreaLeft + this.config.radius,
+      gameHeight - safeAreaBottom - this.config.radius
+    );
+    
+    // 增加摇杆大小以适应全屏操作
+    this.container.setScale(1.2);
+    
+    // 提高透明度，避免遮挡游戏内容
+    this.container.setAlpha(0.7);
+  }
+
+  /**
+   * 调整摇杆以适应正常模式
+   */
+  private adjustForNormalMode() {
+    // 恢复原始配置
+    this.container.setPosition(this.config.x, this.config.y);
+    this.container.setScale(1.0);
+    this.container.setAlpha(0.8);
   }
 
   /**

@@ -17,10 +17,30 @@ export class RPGGame {
    * @param isFullscreen 是否处于全屏模式
    */
   public setFullscreenMode(isFullscreen: boolean) {
-    // 获取当前活跃的GameScene
-    const gameScene = this.game.scene.getScene('GameScene');
-    if (gameScene && (gameScene as any).setFullscreenMode) {
-      (gameScene as any).setFullscreenMode(isFullscreen);
+    try {
+      // 检查游戏实例是否存在
+      if (!this.game) {
+        console.warn('Game instance is not initialized, skipping fullscreen mode setting');
+        return;
+      }
+
+      // 检查场景管理器是否存在
+      if (!this.game.scene) {
+        console.warn('Game scene manager is not initialized, skipping fullscreen mode setting');
+        return;
+      }
+
+      // 获取当前活跃的GameScene
+      const gameScene = this.game.scene.getScene('GameScene');
+      if (gameScene && typeof (gameScene as any).setFullscreenMode === 'function') {
+        (gameScene as any).setFullscreenMode(isFullscreen);
+        console.log(`RPGGame fullscreen mode set to: ${isFullscreen}`);
+      } else {
+        console.warn('GameScene not found or setFullscreenMode method not available');
+      }
+    } catch (error) {
+      console.error('Error setting fullscreen mode in RPGGame:', error);
+      // Don't throw the error to prevent application crash
     }
   }
 

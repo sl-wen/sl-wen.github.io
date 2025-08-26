@@ -1393,29 +1393,36 @@ export class GameScene extends Phaser.Scene {
    * @param isFullscreen 是否处于全屏模式
    */
   setFullscreenMode(isFullscreen: boolean) {
-    // 通知虚拟摇杆全屏状态变化
-    if (this.virtualJoystick) {
-      this.virtualJoystick.setFullscreenMode(isFullscreen);
-      
-      // 强制更新摇杆布局
-      const screenInfo = this.uiLayoutManager?.getScreenInfo();
-      if (screenInfo) {
-        this.virtualJoystick.updateLayout(screenInfo.width, screenInfo.height);
+    try {
+      // 通知虚拟摇杆全屏状态变化
+      if (this.virtualJoystick) {
+        this.virtualJoystick.setFullscreenMode(isFullscreen);
+        
+        // 强制更新摇杆布局
+        const screenInfo = this.uiLayoutManager?.getScreenInfo();
+        if (screenInfo) {
+          this.virtualJoystick.updateLayout(screenInfo.width, screenInfo.height);
+        }
       }
-    }
 
-    // 通知UI布局管理器全屏状态变化
-    if (this.uiLayoutManager) {
-      this.uiLayoutManager.setFullscreenMode(isFullscreen);
-    }
+      // 通知UI布局管理器全屏状态变化
+      if (this.uiLayoutManager) {
+        this.uiLayoutManager.setFullscreenMode(isFullscreen);
+      }
 
-    // 更新动作按钮位置（如果存在）
-    if (this.actionButtons.length > 0 && this.uiLayoutManager) {
-      const screenInfo = this.uiLayoutManager.getScreenInfo();
-      this.updateActionButtonsLayout(screenInfo);
-    }
+      // 更新动作按钮位置（如果存在）
+      if (this.actionButtons && this.actionButtons.length > 0 && this.uiLayoutManager) {
+        const screenInfo = this.uiLayoutManager.getScreenInfo();
+        if (screenInfo) {
+          this.updateActionButtonsLayout(screenInfo);
+        }
+      }
 
-    console.log(`GameScene fullscreen mode: ${isFullscreen ? 'enabled' : 'disabled'}`);
+      console.log(`GameScene fullscreen mode: ${isFullscreen ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+      console.error('Error setting fullscreen mode in GameScene:', error);
+      // Don't throw the error to prevent application crash
+    }
   }
 
   /**

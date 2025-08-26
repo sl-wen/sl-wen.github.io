@@ -1398,7 +1398,50 @@ export class GameScene extends Phaser.Scene {
       this.uiLayoutManager.setFullscreenMode(isFullscreen);
     }
 
+    // 在全屏模式下，重新调整所有移动端UI元素
+    if (isFullscreen && this.uiLayoutManager) {
+      const screenInfo = this.uiLayoutManager.getScreenInfo();
+      if (screenInfo.isMobile) {
+        // 延迟执行以确保屏幕尺寸已更新
+        this.time.delayedCall(100, () => {
+          // 重新初始化虚拟摇杆位置
+          if (this.virtualJoystick) {
+            this.virtualJoystick.updateLayout(window.innerWidth, window.innerHeight);
+          }
+          
+          // 重新定位动作按钮
+          this.repositionActionButtons();
+        });
+      }
+    }
+
     console.log(`GameScene fullscreen mode: ${isFullscreen ? 'enabled' : 'disabled'}`);
+  }
+
+  /**
+   * 重新定位动作按钮
+   * 在屏幕尺寸或方向变化时调用
+   */
+  private repositionActionButtons() {
+    if (!this.actionButtons || this.actionButtons.length === 0) {
+      return;
+    }
+
+    const screenInfo = this.uiLayoutManager.getScreenInfo();
+    if (!screenInfo.isMobile) {
+      return;
+    }
+
+    const buttonSize = screenInfo.isPortrait ? 50 : 60;
+    const positions = this.uiLayoutManager.getActionButtonsPosition(buttonSize, this.actionButtons.length);
+
+    this.actionButtons.forEach((button, index) => {
+      if (button && positions[index]) {
+        button.setPosition(positions[index].x, positions[index].y);
+      }
+    });
+
+    console.log('Action buttons repositioned for fullscreen mode');
   }
 
   /**

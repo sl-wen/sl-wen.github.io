@@ -86,6 +86,20 @@
     top: 0 !important;
     left: 0 !important;
     z-index: 9999 !important;
+    
+    /* 优化触摸事件处理 */
+    touch-action: none !important;
+    -ms-touch-action: none !important;
+    
+    /* 防止选择和上下文菜单 */
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    
+    /* 防止长按菜单 */
+    -webkit-touch-callout: none !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
 
   .game-container:-webkit-full-screen {

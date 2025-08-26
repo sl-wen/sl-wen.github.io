@@ -86,8 +86,25 @@ export class GameScene extends Phaser.Scene {
       console.log('Initializing tile map manager...');
       this.tileMapManager = new TileMapManager(this);
       await this.loadTileResources();
-      this.tileMapManager.createReferenceIslandsMap();
-      console.log('Tile map manager initialized');
+      // 使用全草地地图填充地面
+      this.tileMapManager.createAllGrassMap();
+
+      // 根据实际地图尺寸设置世界边界
+      const mapSize = this.tileMapManager.getPixelSize();
+      // 使用完整地图尺寸作为世界边界，让猫能到达地图边缘
+      this.physics.world.setBounds(0, 0, mapSize.width, mapSize.height);
+      this.cameras.main.setBounds(0, 0, mapSize.width, mapSize.height);
+
+      console.log('Map size:', mapSize);
+      console.log('World bounds set to full map size');
+
+      console.log('Tile map manager initialized with bounds:', {
+        original: mapSize,
+        worldBounds: { width: mapSize.width, height: mapSize.height }
+      });
+
+      // 添加调试可视化 - 显示世界边界
+      this.addWorldBoundsDebug(mapSize.width, mapSize.height, mapSize.width, mapSize.height);
 
       // 初始化农场布局管理器
       console.log('Initializing farm layout manager...');
@@ -189,8 +206,8 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // 设置世界边界
-    this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
+    // 世界边界现在由 TileMapManager 设置，这里不再设置
+    // this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
   }
 
   /**
@@ -899,22 +916,10 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.cat);      // 开始跟随小猫
     this.cameras.main.setZoom(optimalZoom);       // 设置缩放比例
 
-    // 根据屏幕尺寸动态设置世界边界
-    // 在开发环境中，确保游戏内容不会被开发者工具遮挡
-    const effectiveWidth = isDevelopment ? Math.min(screenWidth, 1200) : screenWidth;
-    const worldWidth = Math.max(1000, effectiveWidth * 1.5);   // 世界宽度（至少1000像素）
-    const worldHeight = Math.max(800, screenHeight * 1.5);  // 世界高度（至少800像素）
-    this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);  // 设置摄像机边界
-
+    // 摄像机边界现在由 TileMapManager 设置，这里只设置跟随和缩放
     // 平滑摄像机跟随
     this.cameras.main.setLerp(0.1, 0.1);        // 设置线性插值（平滑跟随）
     this.cameras.main.setDeadzone(100, 100);     // 设置死区（避免微小移动）
-
-    // 在开发环境中，限制摄像机右边界以避免内容被遮挡
-    if (isDevelopment) {
-      const maxRightBound = Math.min(worldWidth, screenWidth - 400); // 预留400像素给开发者工具
-      this.cameras.main.setBounds(0, 0, maxRightBound, worldHeight);
-    }
   }
 
   /**
@@ -1345,10 +1350,10 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // 更新瓦片地图系统
-    if (this.tileMapManager) {
-      this.tileMapManager.update(this.time.now, this.game.loop.delta);
-    }
+    // // 更新瓦片地图系统
+    // if (this.tileMapManager) {
+    //   this.tileMapManager.update(this.time.now, this.game.loop.delta);
+    // }
 
     // 更新天气系统
     if (this.weatherSystem) {
@@ -1397,7 +1402,7 @@ export class GameScene extends Phaser.Scene {
       // 通知虚拟摇杆全屏状态变化
       if (this.virtualJoystick) {
         this.virtualJoystick.setFullscreenMode(isFullscreen);
-        
+
         // 强制更新摇杆布局
         const screenInfo = this.uiLayoutManager?.getScreenInfo();
         if (screenInfo) {
@@ -1416,7 +1421,7 @@ export class GameScene extends Phaser.Scene {
         if (screenInfo && screenInfo.isMobile) {
           const buttonSize = screenInfo.isPortrait ? 50 : 60;
           const positions = this.uiLayoutManager.getActionButtonsPosition(buttonSize, this.actionButtons.length);
-          
+
           this.actionButtons.forEach((button, index) => {
             if (positions[index]) {
               this.tweens.add({
@@ -1718,5 +1723,24 @@ export class GameScene extends Phaser.Scene {
         notification.destroy();
       }
     });
+  }
+
+  // 添加调试可视化 - 显示世界边界
+  private addWorldBoundsDebug(adjustedWidth: number, adjustedHeight: number, mapWidth: number, mapHeight: number): void {
+    // 创建物理世界边界可视化
+    const graphics = this.add.graphics();
+    graphics.lineStyle(2, 0xff0000, 1);
+    graphics.strokeRect(0, 0, adjustedWidth, adjustedHeight);
+    graphics.setDepth(999);
+
+    // 创建相机边界可视化
+    const cameraGraphics = this.add.graphics();
+    cameraGraphics.lineStyle(2, 0x00ff00, 1);
+    cameraGraphics.strokeRect(0, 0, mapWidth, mapHeight);
+    cameraGraphics.setDepth(998);
+
+    console.log('Debug visualization added:');
+    console.log('- Red rectangle: Physics world bounds (0, 0,', adjustedWidth, ',', adjustedHeight, ')');
+    console.log('- Green rectangle: Camera bounds (0, 0,', mapWidth, ',', mapHeight, ')');
   }
 }

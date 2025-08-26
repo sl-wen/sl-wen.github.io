@@ -66,19 +66,22 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
 
     // 设置物理属性
     this.setCollideWorldBounds(true); // 限制在游戏世界边界内
-    this.setSize(24, 24); // 设置碰撞体积大小
-    this.setOffset(4, 8); // 设置碰撞体积偏移，使其与精灵图像对齐
+    this.setSize(12, 12); // 进一步减小碰撞体积以精确到达边缘
+    this.setOffset(10, 10); // 调整偏移以保持视觉对齐
 
     // 设置初始显示属性
     this.setDepth(10); // 设置渲染层级，确保小猫在其他对象之上
     this.setScale(1.5); // 放大主角小猫
 
-    // 适配缩放后的碰撞盒（按比例扩展）
+    // 适配缩放后的碰撞盒（精确控制碰撞体积）
     const scaleFactor = 1.5;
     if (this.body && (this.body as Phaser.Physics.Arcade.Body).setSize) {
-      (this.body as Phaser.Physics.Arcade.Body).setSize(24 * scaleFactor, 24 * scaleFactor);
-      (this.body as Phaser.Physics.Arcade.Body).setOffset(4 * scaleFactor, 8 * scaleFactor);
+      (this.body as Phaser.Physics.Arcade.Body).setSize(12 * scaleFactor, 12 * scaleFactor);
+      (this.body as Phaser.Physics.Arcade.Body).setOffset(10 * scaleFactor, 10 * scaleFactor);
     }
+
+    // 添加调试可视化 - 显示碰撞体边界
+    this.addDebugVisualization();
 
     // 创建小猫的各种动画
     try {
@@ -296,24 +299,8 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     const nextX = this.x + x * adjustedSpeed * 0.016; // 假设60FPS
     const nextY = this.y + y * adjustedSpeed * 0.016;
 
-    // 瓦片碰撞检测
-    if (this.tileMapManager && !this.tileMapManager.canMoveTo(nextX, nextY, 24, 24)) {
-      // 如果不能移动到目标位置，尝试沿轴移动
-      const canMoveX = this.tileMapManager.canMoveTo(nextX, this.y, 24, 24);
-      const canMoveY = this.tileMapManager.canMoveTo(this.x, nextY, 24, 24);
-
-      if (canMoveX && !canMoveY) {
-        // 只能水平移动
-        y = 0;
-      } else if (canMoveY && !canMoveX) {
-        // 只能垂直移动
-        x = 0;
-      } else if (!canMoveX && !canMoveY) {
-        // 完全不能移动，停止
-        this.smoothStop(0.7);
-        return;
-      }
-    }
+    // 移除瓦片碰撞检测 - 由于使用直接草地渲染，不再需要瓦片碰撞检测
+    // 物理世界边界已经通过 setCollideWorldBounds(true) 和 physics.world.setBounds 设置
 
     // 添加微小的随机抖动，增加自然感
     const jitterX = (Math.random() - 0.5) * 0.02 * inputStrength;
@@ -324,6 +311,20 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
       (x + jitterX) * adjustedSpeed,
       (y + jitterY) * adjustedSpeed
     );
+
+    // 调试：记录位置和边界信息
+    if (inputStrength > 0.5) {
+      const worldBounds = this.scene.physics.world.bounds;
+      console.log('Cat movement debug:', {
+        position: { x: this.x, y: this.y },
+        velocity: { x: this.body!.velocity.x, y: this.body!.velocity.y },
+        worldBounds: { x: worldBounds.x, y: worldBounds.y, width: worldBounds.width, height: worldBounds.height },
+        canMoveRight: this.x < worldBounds.width,
+        canMoveDown: this.y < worldBounds.height,
+        canMoveLeft: this.x > worldBounds.x,
+        canMoveUp: this.y > worldBounds.y
+      });
+    }
 
     // 更新朝向和动画
     this.updateDirectionAndAnimation(x, y, inputStrength);
@@ -640,5 +641,29 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     if (this.stats.energy < 20) {
       this.loseHappiness(0.005);
     }
+  }
+
+  // 添加调试可视化 - 显示碰撞体边界
+  private addDebugVisualization() {
+    const debugGraphics = this.scene.add.graphics();
+    debugGraphics.setDepth(1000);
+
+    this.scene.physics.world.on('postupdate', () => {
+      debugGraphics.clear();
+      if (this.body) {
+        // 显示碰撞体边界（蓝色）
+        debugGraphics.lineStyle(2, 0x0000ff, 1);
+        debugGraphics.strokeRect(
+          this.x - this.body.width / 2,
+          this.y - this.body.height / 2,
+          this.body.width,
+          this.body.height
+        );
+
+        // 显示精灵中心点（黄色点）
+        debugGraphics.fillStyle(0xffff00, 1);
+        debugGraphics.fillCircle(this.x, this.y, 2);
+      }
+    });
   }
 }

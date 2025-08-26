@@ -66,93 +66,37 @@ export class TileMapManager {
     private layers: Map<string, Phaser.Tilemaps.TilemapLayer> = new Map();
     private animatedTiles: Map<string, Phaser.GameObjects.Sprite[]> = new Map();
 
+    // 通过 Grass_tiles_v2.png 选出的 11 个 16x16 帧索引（运行时计算）
+    private grassFrameIndices: number[] = [];
+    private grassEdgeIndices: number[] = [];
+    private debugEnabled: boolean = false;
+    private debugLogCount: number = 0;
+
+    // 使用 atlas 直接渲染（经由 PreloadScene 提取的纹理）
+    private grassAtlasKeys: string[] = [
+        'grass_v2_1', 'grass_v2_2', 'grass_v2_3', 'grass_v2_4', 'grass_v2_5',
+        'grass_v2_6', 'grass_v2_7', 'grass_v2_8', 'grass_v2_9', 'grass_v2_10', 'grass_v2_11'
+    ];
+    private grassAtlasEdgeKeys: string[] = ['grass_v2_1', 'grass_v2_2', 'grass_v2_3', 'grass_v2_4'];
+    private grassContainer: Phaser.GameObjects.Container | null = null;
+
     // 瓦片尺寸配置
-    private readonly TILE_WIDTH = 32;
-    private readonly TILE_HEIGHT = 32;
+    private readonly TILE_WIDTH = 16;
+    private readonly TILE_HEIGHT = 16;
 
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
-        this.initializeTileProperties();
+        this.computeGrassFrameIndices();
+
+        // 读取本地开关：localStorage.tileDebug === '1' 时开启瓦片调试日志
+        if (typeof window !== 'undefined') {
+            try {
+                this.debugEnabled = localStorage.getItem('tileDebug') === '1';
+            } catch (_) { /* ignore */ }
+        }
     }
 
-    /**
-     * 初始化瓦片属性
-     * 定义所有瓦片类型的基本属性
-     */
-    private initializeTileProperties(): void {
-        // 草地瓦片
-        this.tileProperties.set(1, {
-            type: TileType.GRASS,
-            walkable: true,
-            farmable: false,
-            waterSource: false,
-            textureKey: 'grass_tiles'
-        });
 
-        // 深色草地瓦片
-        this.tileProperties.set(2, {
-            type: TileType.DARKER_GRASS,
-            walkable: true,
-            farmable: false,
-            waterSource: false,
-            textureKey: 'darker_grass_tiles'
-        });
-
-        // 泥土瓦片
-        this.tileProperties.set(3, {
-            type: TileType.DIRT,
-            walkable: true,
-            farmable: true,
-            waterSource: false,
-            textureKey: 'soil_tiles'
-        });
-
-        // 耕地瓦片
-        this.tileProperties.set(4, {
-            type: TileType.TILLED_DIRT,
-            walkable: true,
-            farmable: true,
-            waterSource: false,
-            textureKey: 'tilled_dirt_tiles'
-        });
-
-        // 石头瓦片
-        this.tileProperties.set(5, {
-            type: TileType.STONE,
-            walkable: false,
-            farmable: false,
-            waterSource: false,
-            textureKey: 'stone_tiles'
-        });
-
-        // 水瓦片（带动画）
-        this.tileProperties.set(6, {
-            type: TileType.WATER,
-            walkable: false,
-            farmable: false,
-            waterSource: true,
-            textureKey: 'water_tiles',
-            animationFrames: [0, 1, 2, 3]
-        });
-
-        // 灌木瓦片
-        this.tileProperties.set(7, {
-            type: TileType.BUSH,
-            walkable: false,
-            farmable: false,
-            waterSource: false,
-            textureKey: 'bush_tiles'
-        });
-
-        // 小径瓦片
-        this.tileProperties.set(8, {
-            type: TileType.PATH,
-            walkable: true,
-            farmable: false,
-            waterSource: false,
-            textureKey: 'path_tiles'
-        });
-    }
 
     /**
      * 检查瓦片资源是否已加载
@@ -195,16 +139,22 @@ export class TileMapManager {
         // 创建空白瓦片地图
         this.tilemap = this.scene.make.tilemap(tilemapConfig);
 
-        // 为每个图层创建瓦片集和图层
-        // mapData.layers.forEach(layerData => {
-        //     this.createTileLayer(layerData, mapData);
-        // });
+        // 使用 atlas 直接渲染背景层
+        const bgLayer = mapData.layers.find(l => l.name === 'background');
+        if (bgLayer) {
+            this.renderGrassAtlasLayer(bgLayer, mapData);
+        }
 
-        // 设置碰撞属性
+        // 其他图层仍可按原 tilemap 方式渲染（目前只处理非 background 名称）
+        mapData.layers.filter(l => l.name !== 'background').forEach(layerData => {
+            this.createTileLayer(layerData, mapData);
+        });
+
+        // 设置碰撞属性（如有需要可开启）
         // this.setupCollisions();
 
-        // // 创建动画瓦片
-        // this.createAnimatedTiles();
+        // 创建动画瓦片（如有需要可开启）
+        this.createAnimatedTiles();
     }
 
     /**
@@ -266,16 +216,47 @@ export class TileMapManager {
                 const tileId = data[index] ?? 0;
 
                 if (tileId > 0) {
-                    // 根据瓦片ID选择合适的瓦片集和帧
-                    const tileInfo = this.getTileInfoById(tileId);
-                    if (tileInfo) {
-                        try {
-                            layer.putTileAt(tileInfo.frameIndex, x, y);
-                        } catch (e) {
-                            console.warn('putTileAt failed', { x, y, tileId, tileInfo }, e);
-                        }
+                    try {
+                        const frameIndex = this.chooseGrassFrameIndex(x, y, width, height);
+                        this.debugTileChoice(x, y, frameIndex, 'grass_tiles');
+                        layer.putTileAt(frameIndex, x, y);
+                    } catch (e) {
+                        console.warn('putTileAt failed', { x, y, tileId }, e);
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * 使用 atlas 的独立纹理直接渲染草地背景
+     */
+    private renderGrassAtlasLayer(layerData: TileLayer, mapData: TileMapData): void {
+        // 清理旧容器
+        if (this.grassContainer) {
+            this.grassContainer.destroy(true);
+        }
+        this.grassContainer = this.scene.add.container(0, 0);
+        this.grassContainer.setDepth(layerData.depth);
+
+        for (let y = 0; y < mapData.height; y++) {
+            for (let x = 0; x < mapData.width; x++) {
+                const index = y * mapData.width + x;
+                const tileId = layerData.data[index] ?? 0;
+                if (tileId <= 0) continue;
+
+                const key = this.chooseGrassAtlasKey(x, y, mapData.width, mapData.height);
+                // 若纹理不存在则跳过
+                if (!this.scene.textures.exists(key)) continue;
+
+                const img = this.scene.add.image(
+                    x * this.TILE_WIDTH + this.TILE_WIDTH / 2,
+                    y * this.TILE_HEIGHT + this.TILE_HEIGHT / 2,
+                    key
+                );
+                img.setOrigin(0.5, 0.5);
+                img.setDisplaySize(this.TILE_WIDTH, this.TILE_HEIGHT);
+                this.grassContainer.add(img);
             }
         }
     }
@@ -291,7 +272,7 @@ export class TileMapManager {
         let frameIndex = 0;
         switch (properties.type) {
             case TileType.GRASS:
-                frameIndex = 0;
+                frameIndex = 0; // 默认索引，后续在 setLayerData 中替换为更合适的帧
                 break;
             case TileType.DARKER_GRASS:
                 frameIndex = 0;
@@ -323,6 +304,106 @@ export class TileMapManager {
     }
 
     /**
+     * 计算草地11个帧在 spritesheet 中的索引
+     */
+    private computeGrassFrameIndices(): void {
+        try {
+            if (!this.scene.textures.exists('grass_tiles')) {
+                if (this.debugEnabled) {
+                    console.warn('[TileMapManager] texture "grass_tiles" not found when computing indices');
+                }
+                return;
+            }
+            const texture = this.scene.textures.get('grass_tiles');
+            // 通过 __BASE 源图片拿尺寸
+            const source = texture.getSourceImage() as HTMLImageElement;
+            const cols = Math.floor(source.width / this.TILE_WIDTH);
+            if (this.debugEnabled) {
+                console.log('[TileMapManager] grass source size:', source.width, 'x', source.height, 'tile:', this.TILE_WIDTH, 'cols:', cols);
+            }
+
+            // 用户在多图集工具里导出的 11 个坐标（单位像素）
+            const coords = [
+                { x: 0, y: 80 },
+                { x: 24, y: 80 },
+                { x: 48, y: 80 },
+                { x: 64, y: 80 },
+                { x: 0, y: 96 },
+                { x: 48, y: 96 },
+                { x: 80, y: 96 },
+                { x: 80, y: 80 },
+                { x: 64, y: 96 },
+                { x: 32, y: 96 },
+                { x: 16, y: 96 }
+            ];
+
+            this.grassFrameIndices = coords.map(c => {
+                const col = Math.floor(c.x / this.TILE_WIDTH);
+                const row = Math.floor(c.y / this.TILE_HEIGHT);
+                // Tilemap tileset 索引从 1 开始
+                return row * cols + col + 1;
+            });
+
+            // 简单划分：前4个作为边缘候选，其余用于中心随机
+            this.grassEdgeIndices = this.grassFrameIndices.slice(0, Math.min(4, this.grassFrameIndices.length));
+
+            if (this.debugEnabled) {
+                console.log('[TileMapManager] grassFrameIndices:', [...this.grassFrameIndices], 'edge:', [...this.grassEdgeIndices]);
+            }
+        } catch (e) {
+            console.warn('computeGrassFrameIndices failed', e);
+            this.grassFrameIndices = [];
+            this.grassEdgeIndices = [];
+        }
+    }
+
+    /**
+     * 根据位置选择草地帧索引（边缘更稳定、中心更随机）
+     */
+    private chooseGrassFrameIndex(x: number, y: number, width: number, height: number): number {
+        // 如果没有可用索引，回退到0
+        if (this.grassFrameIndices.length === 0) return 0;
+
+        const isEdge = (x === 0 || y === 0 || x === width - 1 || y === height - 1);
+        if (isEdge && this.grassEdgeIndices.length > 0) {
+            const idx = Math.floor(Math.random() * this.grassEdgeIndices.length);
+            return this.grassEdgeIndices[idx];
+        }
+
+        const idx = Math.floor(Math.random() * this.grassFrameIndices.length);
+        return this.grassFrameIndices[idx];
+    }
+
+    /**
+     * 调试输出：记录瓦片选择
+     */
+    private debugTileChoice(x: number, y: number, frameIndex: number, textureKey: string): void {
+        if (!this.debugEnabled) return;
+        // 限制日志量，边缘必打，内部抽样
+        const isEdge = (x === 0 || y === 0 || !this.tilemap || x === this.tilemap.width - 1 || y === this.tilemap.height - 1);
+        const sampled = ((x + y) % 19 === 0);
+        if (isEdge || sampled) {
+            if (this.debugLogCount < 500) {
+                console.log(`[TileDebug] (${x},${y}) -> texture=${textureKey || 'N/A'} frame=${frameIndex ?? 'N/A'}`);
+                this.debugLogCount++;
+            }
+        }
+    }
+
+    /**
+     * 选择 atlas 的草地纹理 key
+     */
+    private chooseGrassAtlasKey(x: number, y: number, width: number, height: number): string {
+        const isEdge = (x === 0 || y === 0 || x === width - 1 || y === height - 1);
+        if (isEdge && this.grassAtlasEdgeKeys.length > 0) {
+            const idx = Math.floor(Math.random() * this.grassAtlasEdgeKeys.length);
+            return this.grassAtlasEdgeKeys[idx];
+        }
+        const idx = Math.floor(Math.random() * this.grassAtlasKeys.length);
+        return this.grassAtlasKeys[idx];
+    }
+
+    /**
      * 设置碰撞属性
      */
     private setupCollisions(): void {
@@ -348,113 +429,11 @@ export class TileMapManager {
     }
 
     /**
-     * 创建默认农场地图
-     * 创建一个基础的农场地图布局
+     * 创建全草地图
+     * 用草地填满整个地图，不包含水、道路或装饰
      */
-    createDefaultFarmMap(width: number = 50, height: number = 40): void {
-        const mapData: TileMapData = {
-            width: width,
-            height: height,
-            tileWidth: this.TILE_WIDTH,
-            tileHeight: this.TILE_HEIGHT,
-            layers: [
-                {
-                    name: 'background',
-                    data: this.generateBackgroundLayer(width, height),
-                    visible: true,
-                    opacity: 1.0,
-                    depth: 1
-                },
-                {
-                    name: 'terrain',
-                    data: this.generateTerrainLayer(width, height),
-                    visible: true,
-                    opacity: 1.0,
-                    depth: 2
-                },
-                {
-                    name: 'decorations',
-                    data: this.generateDecorationLayer(width, height),
-                    visible: true,
-                    opacity: 1.0,
-                    depth: 3
-                }
-            ]
-        };
-
-        this.createTileMap(mapData);
-    }
-
-    /**
-     * 基于参考截图创建“群岛”预设地图
-     * - 背景为水面
-     * - 若干草地岛屿与连接的木桥/小径
-     */
-    public createReferenceIslandsMap(): void {
-        const width = 60;
-        const height = 40;
-
-        // 背景：全部水
-        const background: number[] = new Array(width * height).fill(6); // 6 = WATER
-
-        // 地形层：绘制主要岛屿（草地）和路径/桥
-        const terrain: number[] = new Array(width * height).fill(0);
-
-        const setRect = (sx: number, sy: number, w: number, h: number, id: number) => {
-            for (let y = sy; y < sy + h; y++) {
-                for (let x = sx; x < sx + w; x++) {
-                    if (x >= 0 && x < width && y >= 0 && y < height) {
-                        terrain[y * width + x] = id;
-                    }
-                }
-            }
-        };
-
-        // 主岛（左中）
-        setRect(6, 6, 22, 18, 1); // 草地
-        // 农田区域（主岛中央偏上）
-        setRect(14, 12, 10, 8, 3); // 泥土
-
-        // 右侧大岛
-        setRect(40, 16, 12, 10, 1);
-
-        // 左下小岛
-        setRect(10, 30, 10, 6, 1);
-
-        // 中央小岛
-        setRect(28, 18, 6, 6, 1);
-
-        // 桥/小径（用 PATH 连接主岛与右侧岛、主岛与中央小岛）
-        for (let x = 28; x <= 40; x++) {
-            if (x >= 0 && x < width) {
-                terrain[18 * width + x] = 8; // PATH
-                terrain[19 * width + x] = 8;
-            }
-        }
-
-        for (let y = 22; y <= 26; y++) {
-            if (y >= 0 && y < height) {
-                terrain[y * width + 31] = 8; // PATH 竖向
-            }
-        }
-
-        // 装饰层：在边界加深色草地，略微描边主岛
-        const decorations: number[] = new Array(width * height).fill(0);
-        const outline = (sx: number, sy: number, w: number, h: number) => {
-            for (let x = sx; x < sx + w; x++) {
-                if (sy - 1 >= 0) decorations[(sy - 1) * width + x] = 2; // 深色草地
-                if (sy + h < height) decorations[(sy + h) * width + x] = 2;
-            }
-            for (let y = sy; y < sy + h; y++) {
-                if (sx - 1 >= 0) decorations[y * width + (sx - 1)] = 2;
-                if (sx + w < width) decorations[y * width + (sx + w)] = 2;
-            }
-        };
-
-        outline(6, 6, 22, 18);
-        outline(40, 16, 12, 10);
-        outline(10, 30, 10, 6);
-        outline(28, 18, 6, 6);
+    public createAllGrassMap(width: number = 60, height: number = 40): void {
+        const data: number[] = new Array(width * height).fill(1); // 1 = GRASS
 
         const mapData: TileMapData = {
             width,
@@ -462,14 +441,32 @@ export class TileMapManager {
             tileWidth: this.TILE_WIDTH,
             tileHeight: this.TILE_HEIGHT,
             layers: [
-                { name: 'background', data: background, visible: true, opacity: 1, depth: 1 },
-                { name: 'terrain', data: terrain, visible: true, opacity: 1, depth: 2 },
-                { name: 'decorations', data: decorations, visible: true, opacity: 1, depth: 3 }
+                { name: 'background', data, visible: true, opacity: 1, depth: 1 }
             ]
         };
 
         this.createTileMap(mapData);
+
+        // 记录地图尺寸用于边界设置
+        this.mapWidth = width;
+        this.mapHeight = height;
     }
+
+    // 记录地图尺寸
+    private mapWidth: number = 0;
+    private mapHeight: number = 0;
+
+    /**
+     * 获取地图的像素尺寸
+     * @returns 地图的像素宽度和高度
+     */
+    public getPixelSize(): { width: number; height: number } {
+        return {
+            width: this.mapWidth * this.TILE_WIDTH,
+            height: this.mapHeight * this.TILE_HEIGHT
+        };
+    }
+
 
     /**
      * 生成背景图层
@@ -485,64 +482,8 @@ export class TileMapManager {
         return data;
     }
 
-    /**
-     * 生成地形图层
-     */
-    private generateTerrainLayer(width: number, height: number): number[] {
-        const data: number[] = [];
 
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                let tileId = 0; // 0 表示空瓦片（透明）
 
-                // 创建池塘区域
-                if (x >= 35 && x <= 45 && y >= 5 && y <= 15) {
-                    tileId = 6; // 水瓦片
-                }
-                // 创建农田区域
-                else if (x >= 30 && x <= 48 && y >= 20 && y <= 35) {
-                    tileId = 3; // 泥土瓦片
-                }
-                // 创建小径
-                else if ((x >= 20 && x <= 25 && y >= 0 && y <= height) ||
-                    (y >= 15 && y <= 20 && x >= 0 && x <= width)) {
-                    tileId = 8; // 小径瓦片
-                }
-                // 添加一些石头障碍
-                else if (Math.random() < 0.02) {
-                    tileId = 5; // 石头瓦片
-                }
-                // 添加一些灌木装饰
-                else if (Math.random() < 0.01) {
-                    tileId = 7; // 灌木瓦片
-                }
-
-                data.push(tileId);
-            }
-        }
-        return data;
-    }
-
-    /**
-     * 生成装饰图层
-     */
-    private generateDecorationLayer(width: number, height: number): number[] {
-        const data: number[] = [];
-
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                let tileId = 0; // 默认空瓦片
-
-                // 在边界添加深色草地
-                if (x === 0 || x === width - 1 || y === 0 || y === height - 1) {
-                    tileId = 2; // 深色草地
-                }
-
-                data.push(tileId);
-            }
-        }
-        return data;
-    }
 
     /**
      * 获取指定位置的瓦片属性
@@ -633,48 +574,6 @@ export class TileMapManager {
     }
 
     /**
-     * 更新动画瓦片
-     */
-    update(time: number, delta: number): void {
-        // 更新水瓦片动画
-        this.updateWaterAnimation(time);
-
-        // 更新其他动画瓦片
-        this.updateAnimatedTiles(time, delta);
-    }
-
-    /**
-     * 更新水瓦片动画
-     */
-    private updateWaterAnimation(time: number): void {
-        // 水波动画逻辑
-        const waterTiles = this.animatedTiles.get('water');
-        if (waterTiles) {
-            const animationSpeed = 0.002; // 动画速度
-            const waveOffset = Math.sin(time * animationSpeed) * 2;
-
-            waterTiles.forEach(tile => {
-                tile.setTint(0x4A90E2 + Math.floor(waveOffset) * 0x111111);
-            });
-        }
-    }
-
-    /**
-     * 更新其他动画瓦片
-     */
-    private updateAnimatedTiles(time: number, delta: number): void {
-        // 草地摆动效果
-        this.animatedTiles.forEach((tiles, tileType) => {
-            if (tileType === 'grass' || tileType === 'darker_grass') {
-                const windEffect = Math.sin(time * 0.001) * 0.5;
-                tiles.forEach(tile => {
-                    tile.setRotation(windEffect * 0.02);
-                });
-            }
-        });
-    }
-
-    /**
      * 获取所有图层
      */
     getLayers(): Map<string, Phaser.Tilemaps.TilemapLayer> {
@@ -713,67 +612,6 @@ export class TileMapManager {
         return true;
     }
 
-    /**
-     * 获取最近的可耕种瓦片位置
-     */
-    getNearestFarmableTile(x: number, y: number, radius: number = 100): { x: number, y: number } | null {
-        const centerTileX = Math.floor(x / this.TILE_WIDTH);
-        const centerTileY = Math.floor(y / this.TILE_HEIGHT);
-        const searchRadius = Math.floor(radius / this.TILE_WIDTH);
-
-        let nearestTile: { x: number, y: number } | null = null;
-        let nearestDistance = Infinity;
-
-        for (let dy = -searchRadius; dy <= searchRadius; dy++) {
-            for (let dx = -searchRadius; dx <= searchRadius; dx++) {
-                const tileX = centerTileX + dx;
-                const tileY = centerTileY + dy;
-                const worldX = tileX * this.TILE_WIDTH;
-                const worldY = tileY * this.TILE_HEIGHT;
-
-                if (this.isFarmable(worldX, worldY)) {
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < nearestDistance) {
-                        nearestDistance = distance;
-                        nearestTile = { x: worldX, y: worldY };
-                    }
-                }
-            }
-        }
-
-        return nearestTile;
-    }
-
-    /**
-     * 获取最近的水源位置
-     */
-    getNearestWaterSource(x: number, y: number, radius: number = 200): { x: number, y: number } | null {
-        const centerTileX = Math.floor(x / this.TILE_WIDTH);
-        const centerTileY = Math.floor(y / this.TILE_HEIGHT);
-        const searchRadius = Math.floor(radius / this.TILE_WIDTH);
-
-        let nearestWater: { x: number, y: number } | null = null;
-        let nearestDistance = Infinity;
-
-        for (let dy = -searchRadius; dy <= searchRadius; dy++) {
-            for (let dx = -searchRadius; dx <= searchRadius; dx++) {
-                const tileX = centerTileX + dx;
-                const tileY = centerTileY + dy;
-                const worldX = tileX * this.TILE_WIDTH;
-                const worldY = tileY * this.TILE_HEIGHT;
-
-                if (this.isWaterSource(worldX, worldY)) {
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < nearestDistance) {
-                        nearestDistance = distance;
-                        nearestWater = { x: worldX, y: worldY };
-                    }
-                }
-            }
-        }
-
-        return nearestWater;
-    }
 
     /**
      * 瓦片交互处理

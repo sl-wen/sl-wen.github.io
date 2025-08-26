@@ -18,13 +18,14 @@ export class TileResourceConfig {
             // 新瓦片资源
             {
                 key: 'grass_tiles',
-                url: newTilesPath + 'Grass_tiles_v2.png',
+                // 使用项目根下的新草地素材
+                url: '/assets/farm-assets/Grass_tiles_v2.png',
                 type: 'spritesheet',
                 priority: 'high',
                 preload: true,
                 frameConfig: {
-                    frameWidth: 32,
-                    frameHeight: 32
+                    frameWidth: 16,
+                    frameHeight: 16
                 }
             },
             {
@@ -115,7 +116,7 @@ export class TileResourceConfig {
                     frameHeight: 32
                 }
             },
-            
+
             // 旧瓦片资源
             {
                 key: 'tilled_dirt_tiles',

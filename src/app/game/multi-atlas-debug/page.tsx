@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface GridSelection {
     x: number;
@@ -25,18 +25,19 @@ export default function MultiAtlasDebugPage() {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [gridSize, setGridSize] = useState(16);
-    
+    const [zoomLevel, setZoomLevel] = useState(1.2); // 预览缩放，1.0=100%
+
     // 多选相关状态
     const [selectedGrids, setSelectedGrids] = useState<GridSelection[]>([]);
     const [isSelecting, setIsSelecting] = useState(false);
     const [selectionStart, setSelectionStart] = useState({ x: 0, y: 0 });
     const [currentSelection, setCurrentSelection] = useState<GridSelection | null>(null);
     const [selectionMode, setSelectionMode] = useState<'single' | 'multi'>('multi');
-    
+
     // 导出相关状态
     const [showExportModal, setShowExportModal] = useState(false);
     const [exportFormat, setExportFormat] = useState<'code' | 'json'>('code');
-    
+
     // 撤销/重做状态
     const [selectionHistory, setSelectionHistory] = useState<GridSelection[][]>([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
@@ -133,7 +134,8 @@ export default function MultiAtlasDebugPage() {
 
             canvas.width = img.width;
             canvas.height = img.height;
-            canvas.style.maxWidth = '100%';
+            // 由样式层控制缩放，不限制最大宽度
+            canvas.style.maxWidth = 'none';
             canvas.style.height = 'auto';
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -178,11 +180,11 @@ export default function MultiAtlasDebugPage() {
         selectedGrids.forEach((selection, index) => {
             ctx.fillStyle = `rgba(0, 123, 255, 0.3)`;
             ctx.fillRect(selection.x, selection.y, selection.width, selection.height);
-            
+
             ctx.strokeStyle = 'rgba(0, 123, 255, 0.8)';
             ctx.lineWidth = 2;
             ctx.strokeRect(selection.x, selection.y, selection.width, selection.height);
-            
+
             // 绘制选择编号
             ctx.fillStyle = 'rgba(0, 123, 255, 0.9)';
             ctx.font = '12px Arial';
@@ -195,7 +197,7 @@ export default function MultiAtlasDebugPage() {
         if (currentSelection) {
             ctx.fillStyle = 'rgba(255, 193, 7, 0.2)';
             ctx.fillRect(currentSelection.x, currentSelection.y, currentSelection.width, currentSelection.height);
-            
+
             ctx.strokeStyle = 'rgba(255, 193, 7, 0.8)';
             ctx.lineWidth = 2;
             ctx.setLineDash([5, 5]);
@@ -208,11 +210,11 @@ export default function MultiAtlasDebugPage() {
     const getCanvasCoordinates = (e: React.MouseEvent<HTMLCanvasElement>) => {
         const canvas = canvasRef.current;
         if (!canvas) return { x: 0, y: 0 };
-        
+
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
-        
+
         return {
             x: Math.floor(((e.clientX - rect.left) * scaleX) / gridSize) * gridSize,
             y: Math.floor(((e.clientY - rect.top) * scaleY) / gridSize) * gridSize
@@ -236,13 +238,13 @@ export default function MultiAtlasDebugPage() {
     const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
         const coords = getCanvasCoordinates(e);
         setMousePos(coords);
-        
+
         if (isSelecting && selectionStart) {
             const width = Math.abs(coords.x - selectionStart.x) + gridSize;
             const height = Math.abs(coords.y - selectionStart.y) + gridSize;
             const x = Math.min(coords.x, selectionStart.x);
             const y = Math.min(coords.y, selectionStart.y);
-            
+
             setCurrentSelection({ x, y, width, height });
         }
     }, [isSelecting, selectionStart, gridSize]);
@@ -319,15 +321,15 @@ const atlasConfig = {
     key: '${selectedAtlas}',
     path: '${config.path}',
     frames: [
-${frames.map(frame => 
-        `        {
+${frames.map(frame =>
+            `        {
             name: '${frame.name}',
             x: ${frame.x},
             y: ${frame.y},
             width: ${frame.width},
             height: ${frame.height}
         }`
-    ).join(',\n')}
+        ).join(',\n')}
     ]
 };
 
@@ -335,9 +337,9 @@ ${frames.map(frame =>
 this.load.atlas('${selectedAtlas}', '${config.path}', null, atlasConfig.frames);
 
 // 使用示例
-${frames.map(frame => 
-        `this.add.image(x, y, '${selectedAtlas}', '${frame.name}');`
-    ).join('\n')}`;
+${frames.map(frame =>
+            `this.add.image(x, y, '${selectedAtlas}', '${frame.name}');`
+        ).join('\n')}`;
     };
 
     // 导出合并图片（水平排列）
@@ -357,16 +359,16 @@ ${frames.map(frame =>
         mergedCanvas.width = totalWidth;
         mergedCanvas.height = maxHeight;
         const mergedCtx = mergedCanvas.getContext('2d');
-        
+
         if (!mergedCtx) return;
 
         // 复制选中的区域到新画布
         let currentX = 0;
         selectedGrids.forEach(selection => {
             const imageData = sourceCtx.getImageData(
-                selection.x, 
-                selection.y, 
-                selection.width, 
+                selection.x,
+                selection.y,
+                selection.width,
                 selection.height
             );
             mergedCtx.putImageData(imageData, currentX, 0);
@@ -405,16 +407,16 @@ ${frames.map(frame =>
         mergedCanvas.width = maxWidth;
         mergedCanvas.height = totalHeight;
         const mergedCtx = mergedCanvas.getContext('2d');
-        
+
         if (!mergedCtx) return;
 
         // 复制选中的区域到新画布
         let currentY = 0;
         selectedGrids.forEach(selection => {
             const imageData = sourceCtx.getImageData(
-                selection.x, 
-                selection.y, 
-                selection.width, 
+                selection.x,
+                selection.y,
+                selection.width,
                 selection.height
             );
             mergedCtx.putImageData(imageData, 0, currentY);
@@ -453,7 +455,7 @@ ${frames.map(frame =>
         mergedCanvas.width = maxWidth * cols;
         mergedCanvas.height = maxHeight * rows;
         const mergedCtx = mergedCanvas.getContext('2d');
-        
+
         if (!mergedCtx) return;
 
         // 复制选中的区域到新画布
@@ -464,9 +466,9 @@ ${frames.map(frame =>
             const y = row * maxHeight;
 
             const imageData = sourceCtx.getImageData(
-                selection.x, 
-                selection.y, 
-                selection.width, 
+                selection.x,
+                selection.y,
+                selection.width,
                 selection.height
             );
             mergedCtx.putImageData(imageData, x, y);
@@ -735,6 +737,21 @@ ${frames.map(frame =>
                             </select>
                         </div>
                         <div>
+                            <label className="block text-sm font-medium mb-2">预览缩放</label>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="range"
+                                    min="50"
+                                    max="300"
+                                    step="10"
+                                    value={Math.round(zoomLevel * 100)}
+                                    onChange={(e) => setZoomLevel((parseInt(e.target.value) || 100) / 100)}
+                                    className="flex-1"
+                                />
+                                <span className="w-12 text-right text-sm text-gray-300">{Math.round(zoomLevel * 100)}%</span>
+                            </div>
+                        </div>
+                        <div>
                             <label className="block text-sm font-medium mb-2">网格大小</label>
                             <input
                                 type="number"
@@ -794,7 +811,7 @@ ${frames.map(frame =>
                             </button>
                         </div>
                     </div>
-                    
+
                     {/* 快捷键提示 */}
                     <div className="mt-4 p-3 bg-gray-700 rounded-lg">
                         <h4 className="text-sm font-semibold mb-2 text-gray-300">键盘快捷键:</h4>
@@ -826,7 +843,7 @@ ${frames.map(frame =>
                                     className="block"
                                     style={{
                                         cursor: 'crosshair',
-                                        maxWidth: '100%',
+                                        width: `${zoomLevel * 100}%`,
                                         height: 'auto',
                                         imageRendering: 'pixelated',
                                         display: imageLoaded ? 'block' : 'none'
@@ -870,8 +887,8 @@ ${frames.map(frame =>
                                 <div className="max-h-32 overflow-y-auto space-y-1">
                                     {selectedGrids.map((selection, index) => (
                                         <div key={index} className="text-xs bg-gray-700 p-2 rounded">
-                                            <span className="text-blue-400">#{index + 1}</span> 
-                                            {' '}({selection.x}, {selection.y}) 
+                                            <span className="text-blue-400">#{index + 1}</span>
+                                            {' '}({selection.x}, {selection.y})
                                             {' '}{selection.width}×{selection.height}
                                         </div>
                                     ))}
@@ -900,7 +917,7 @@ ${frames.map(frame =>
                                             📄 JSON
                                         </button>
                                     </div>
-                                    
+
                                     <div className="border-t border-gray-600 pt-2">
                                         <p className="text-xs text-gray-400 mb-2">图片导出:</p>
                                         <div className="grid grid-cols-2 gap-2">
@@ -936,7 +953,7 @@ ${frames.map(frame =>
                                             </button>
                                         </div>
                                     </div>
-                                    
+
                                     <button
                                         onClick={() => setShowExportModal(true)}
                                         className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md text-white transition-colors flex items-center justify-center gap-2"
@@ -959,21 +976,19 @@ ${frames.map(frame =>
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => setExportFormat('code')}
-                                            className={`px-3 py-1 rounded text-sm transition-colors ${
-                                                exportFormat === 'code' 
-                                                    ? 'bg-blue-600 text-white' 
-                                                    : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                                            }`}
+                                            className={`px-3 py-1 rounded text-sm transition-colors ${exportFormat === 'code'
+                                                ? 'bg-blue-600 text-white'
+                                                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                                                }`}
                                         >
                                             Phaser代码
                                         </button>
                                         <button
                                             onClick={() => setExportFormat('json')}
-                                            className={`px-3 py-1 rounded text-sm transition-colors ${
-                                                exportFormat === 'json' 
-                                                    ? 'bg-blue-600 text-white' 
-                                                    : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                                            }`}
+                                            className={`px-3 py-1 rounded text-sm transition-colors ${exportFormat === 'json'
+                                                ? 'bg-blue-600 text-white'
+                                                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                                                }`}
                                         >
                                             JSON配置
                                         </button>

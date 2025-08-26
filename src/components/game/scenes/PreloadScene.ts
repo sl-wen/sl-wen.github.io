@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser';
+import { SpriteAtlasManager } from '../utils/SpriteAtlasManager';
 
 /**
  * 预加载场景类
@@ -271,6 +272,9 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('farm_decoration_1', '/assets/farm-assets/farmplants/framplant-3.png');
     this.load.image('farm_decoration_2', '/assets/farm-assets/farmplants/framplant-4.png');
     this.load.image('farm_decoration_3', '/assets/farm-assets/farmplants/framplant-5.png');
+
+    // 地板草地图集（自定义导入）
+    this.load.image('farm_grass_tiles_v2', '/assets/farm-assets/Grass_tiles_v2.png');
   }
 
   /**
@@ -307,6 +311,22 @@ export class PreloadScene extends Phaser.Scene {
     this.scene.launch('UIScene');
 
     console.log('Scene transitions completed');
+
+    // 将 Grass_tiles_v2.png 按提供的坐标提取为可用纹理
+    const grassAtlas = new SpriteAtlasManager(this, 'farm_grass_tiles_v2', 16, 16);
+    grassAtlas.extractSprites([
+      { key: 'grass_v2_1', x: 0, y: 80, width: 16, height: 16 },
+      { key: 'grass_v2_2', x: 24, y: 80, width: 16, height: 16 },
+      { key: 'grass_v2_3', x: 48, y: 80, width: 16, height: 16 },
+      { key: 'grass_v2_4', x: 64, y: 80, width: 16, height: 16 },
+      { key: 'grass_v2_5', x: 0, y: 96, width: 16, height: 16 },
+      { key: 'grass_v2_6', x: 48, y: 96, width: 16, height: 16 },
+      { key: 'grass_v2_7', x: 80, y: 96, width: 16, height: 16 },
+      { key: 'grass_v2_8', x: 80, y: 80, width: 16, height: 16 },
+      { key: 'grass_v2_9', x: 64, y: 96, width: 16, height: 16 },
+      { key: 'grass_v2_10', x: 32, y: 96, width: 16, height: 16 },
+      { key: 'grass_v2_11', x: 16, y: 96, width: 16, height: 16 }
+    ]);
   }
 
   /**

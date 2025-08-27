@@ -310,21 +310,7 @@ const Header: React.FC = () => {
         )}
       </header>
 
-      {/* 移动端底部导航栏 */}
-      <nav className="mobile-nav md:hidden fixed bottom-0 left-0 w-full bg-white z-50">
-        <div className="flex justify-around items-center px-4 h-full">
-          {navItems.slice(0, 6).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`mobile-nav-item ${isActive(item.href) ? 'mobile-nav-item-active' : ''}`}
-            >
-              <span className="text-lg mb-1">{item.icon}</span>
-              <span className="text-xs">{item.label}</span>
-            </Link>
-          ))}
-        </div>
-      </nav>
+
     </>
   );
 };

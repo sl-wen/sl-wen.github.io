@@ -321,8 +321,8 @@ export class UILayoutManager {
           Math.min(this.screenWidth * 0.15, this.screenWidth * 0.25)
         );
         y = this.screenHeight - Math.max(
-          this.safeArea.bottom + radius + baseMargin * 2,
-          this.screenHeight * 0.15
+          this.safeArea.bottom + radius + baseMargin,
+          this.screenHeight * 0.08
         );
       } else {
         // 横屏：左下角，考虑更小的边距以节省空间
@@ -332,7 +332,7 @@ export class UILayoutManager {
         );
         y = this.screenHeight - Math.max(
           this.safeArea.bottom + radius + baseMargin,
-          this.screenHeight * 0.12
+          this.screenHeight * 0.08
         );
       }
     } else {

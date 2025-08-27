@@ -102,8 +102,9 @@ export class EnhancedNPC extends Phaser.Physics.Arcade.Sprite {
     this.npcName = name;
     this.homePosition = { x, y };
     this.gameManager = GameManager.getInstance();
-    this.audioManager = new AudioManager(scene);
-    this.animationManager = new AnimationManager(scene);
+    // 从GameManager获取共享的系统实例，避免重复创建
+    this.audioManager = (scene as any).audioManager || new AudioManager(scene);
+    this.animationManager = (scene as any).animationManager || new AnimationManager(scene);
 
     // 添加到场景
     scene.add.existing(this);

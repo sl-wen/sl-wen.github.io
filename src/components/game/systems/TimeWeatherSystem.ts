@@ -81,7 +81,8 @@ export class TimeWeatherSystem {
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.gameManager = GameManager.getInstance();
-    this.audioManager = new AudioManager(scene);
+    // 从场景获取共享的系统实例，避免重复创建
+    this.audioManager = (scene as any).audioManager || new AudioManager(scene);
     
     this.initialize();
   }
@@ -535,13 +536,13 @@ export class TimeWeatherSystem {
     // 播放新的天气音效
     switch (this.currentWeather) {
       case WeatherType.RAINY:
-        const rainSound = this.audioManager.playAmbientSound('rain', true, this.weatherIntensity);
+        this.audioManager.playAmbientSound('rain', true, this.weatherIntensity);
         break;
       case WeatherType.WINDY:
-        const windSound = this.audioManager.playAmbientSound('wind', true, this.weatherIntensity);
+        this.audioManager.playAmbientSound('wind', true, this.weatherIntensity);
         break;
       case WeatherType.STORMY:
-        const stormSound = this.audioManager.playAmbientSound('storm', true, this.weatherIntensity);
+        this.audioManager.playAmbientSound('storm', true, this.weatherIntensity);
         break;
     }
   }

@@ -1,23 +1,9 @@
 import { CatStats, CropType, FarmPlot, InventoryItem, ToolType } from '../types/GameTypes';
 
 /**
- * 存档系统类
- * 参考top-down-react-phaser-game的存档处理方式
- * 提供完整的游戏状态保存和加载功能
+ * 游戏存档数据接口
  */
-export class SaveSystem {
-  private static readonly SAVE_KEY = 'cat-farm-game-save';
-  private static readonly SETTINGS_KEY = 'cat-farm-game-settings';
-  private static readonly MAX_SAVE_SLOTS = 3;
-  private static readonly AUTOSAVE_INTERVAL = 5 * 60 * 1000; // 5分钟自动保存
-
-  private autosaveTimer: NodeJS.Timeout | null = null;
-  private isAutoSaveEnabled = true;
-
-  /**
-   * 游戏存档数据接口
-   */
-  public interface GameSaveData {
+export interface GameSaveData {
     version: string;
     timestamp: number;
     playTime: number;
@@ -64,6 +50,21 @@ export class SaveSystem {
       timeSpentFarming: number;
     };
   }
+}
+
+/**
+ * 存档系统类
+ * 参考top-down-react-phaser-game的存档处理方式
+ * 提供完整的游戏状态保存和加载功能
+ */
+export class SaveSystem {
+  private static readonly SAVE_KEY = 'cat-farm-game-save';
+  private static readonly SETTINGS_KEY = 'cat-farm-game-settings';
+  private static readonly MAX_SAVE_SLOTS = 3;
+  private static readonly AUTOSAVE_INTERVAL = 5 * 60 * 1000; // 5分钟自动保存
+
+  private autosaveTimer: NodeJS.Timeout | null = null;
+  private isAutoSaveEnabled = true;
 
   /**
    * 初始化存档系统

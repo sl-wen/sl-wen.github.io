@@ -4,9 +4,23 @@ import { UIScene } from '../scenes/UIScene';
 import { PreloadScene } from '../scenes/PreloadScene';
 
 /**
- * 游戏管理器类
- * 参考top-down-react-phaser-game的架构，统一管理游戏状态、事件和场景间通信
- * 提供更好的状态管理和事件系统
+ * 游戏管理器类 - 核心系统管理器
+ * 
+ * 参考 top-down-react-phaser-game 的架构设计，采用单例模式统一管理游戏状态、
+ * 事件系统和场景间通信。这个类是整个游戏的中枢神经系统，负责协调各个
+ * 子系统的工作。
+ * 
+ * 主要功能：
+ * - 🎮 游戏状态管理：暂停、恢复、保存、加载
+ * - 📡 事件系统：统一的事件发射和监听机制
+ * - 🔗 场景通信：优化场景间的数据传递和同步
+ * - 💾 数据持久化：游戏进度的自动保存和恢复
+ * - 🏗️ 系统协调：各子系统的初始化和生命周期管理
+ * 
+ * 设计模式：
+ * - 单例模式：确保全局唯一的游戏状态
+ * - 观察者模式：事件驱动的系统通信
+ * - 状态模式：游戏状态的管理和切换
  */
 export class GameManager {
   private static instance: GameManager;

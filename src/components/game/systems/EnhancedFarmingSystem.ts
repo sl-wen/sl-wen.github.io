@@ -97,8 +97,9 @@ export class EnhancedFarmingSystem {
     this.scene = scene;
     this.gameManager = GameManager.getInstance();
     this.timeWeatherSystem = timeWeatherSystem;
-    this.audioManager = new AudioManager(scene);
-    this.animationManager = new AnimationManager(scene);
+    // 从场景获取共享的系统实例，避免重复创建
+    this.audioManager = (scene as any).audioManager || new AudioManager(scene);
+    this.animationManager = (scene as any).animationManager || new AnimationManager(scene);
 
     this.initializeCropDatabase();
     this.initializeTools();

@@ -778,8 +778,10 @@ const GamePage: React.FC = () => {
           {gameStarted && !isLoading && (
             <>
               {/* 游戏状态栏 */}
-              <div className="absolute top-4 left-4 z-50 bg-black/20 backdrop-blur-md rounded-lg p-4 text-white">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className={`absolute z-50 bg-black/20 backdrop-blur-md rounded-lg text-white max-w-xs ${
+                screenOrientation === 'portrait' ? 'top-2 left-2 p-3' : 'top-4 left-4 p-4'
+              }`}>
+                <div className={`grid grid-cols-2 gap-4 ${screenOrientation === 'portrait' ? 'text-xs' : 'text-sm'}`}>
                   <div>
                     <div>等级: {gameStats.level}</div>
                     <div>经验: {gameStats.experience}</div>
@@ -793,15 +795,19 @@ const GamePage: React.FC = () => {
                 </div>
               </div>
 
-              {/* 游戏控制面板 - 设置按钮 */}
-              <div className="absolute bottom-4 left-4 z-50 bg-black/20 backdrop-blur-md rounded-lg p-3">
+              {/* 游戏控制面板 - 设置按钮（右上角） */}
+              <div className={`absolute z-50 bg-black/20 backdrop-blur-md rounded-lg p-3 ${
+                screenOrientation === 'portrait' ? 'top-2 right-2' : 'top-4 right-4'
+              }`}>
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors flex items-center"
+                  className={`bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors flex items-center ${
+                    screenOrientation === 'portrait' ? 'px-2 py-1' : 'px-3 py-1'
+                  }`}
                   disabled={!gameStarted}
                 >
                   <span className="mr-1">⚙️</span>
-                  设置
+                  {screenOrientation === 'portrait' ? '' : '设置'}
                 </button>
               </div>
 
@@ -813,8 +819,8 @@ const GamePage: React.FC = () => {
             <>
               {/* 增强版游戏加载遮罩层 */}
               {isLoading && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-100">
-                  <div className="bg-white rounded-lg p-8 text-center max-w-md">
+                <div className="absolute inset-0 bg-black/50 flex items-end justify-center z-100 pb-4">
+                  <div className="bg-white rounded-lg p-8 text-center max-w-md mx-4">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
                     <h2 className="text-xl font-bold mb-2">正在加载农场...</h2>
                     <p className="text-gray-600">
@@ -832,8 +838,8 @@ const GamePage: React.FC = () => {
 
               {/* 错误界面 */}
               {error && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-100">
-                  <div className="bg-white rounded-lg p-8 text-center max-w-md">
+                <div className="absolute inset-0 bg-black/50 flex items-end justify-center z-100 pb-4">
+                  <div className="bg-white rounded-lg p-8 text-center max-w-md mx-4">
                     <div className="text-red-500 text-4xl mb-4">⚠️</div>
                     <h2 className="text-xl font-bold mb-2 text-red-600">游戏加载失败</h2>
                     <p className="text-gray-600 mb-4">{error}</p>

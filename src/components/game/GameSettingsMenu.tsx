@@ -38,8 +38,8 @@ const GameSettingsMenu: React.FC<GameSettingsMenuProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 w-full max-w-md mx-4 border border-slate-600 shadow-2xl">
+    <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-[100] backdrop-blur-sm pb-2 sm:pb-4">
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-4 sm:p-6 w-full max-w-md mx-2 sm:mx-4 border border-slate-600 shadow-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
         {/* 标题 */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white flex items-center">

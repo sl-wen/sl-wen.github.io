@@ -668,7 +668,7 @@ const GamePage: React.FC = () => {
   const gameSize = getOptimalGameSize();
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 ${isFullscreen ? 'overflow-hidden' : ''}`}>
+    <div className={`${isFullscreen ? 'fixed inset-0 w-screen h-screen overflow-hidden' : 'min-h-screen'} bg-gradient-to-b from-slate-900 to-slate-800`}>
       {/* 游戏标题头部区域 - 全屏时隐藏 */}
       {!isFullscreen && (
         <div className="bg-slate-800 border-b border-slate-700 p-4">
@@ -682,21 +682,21 @@ const GamePage: React.FC = () => {
       )}
 
       {/* 游戏主体容器区域 */}
-      <div className={`flex flex-col items-center justify-center ${isFullscreen ? 'h-screen' : 'p-0'}`}>
+      <div className={`flex flex-col items-center justify-center ${isFullscreen ? 'w-full h-full' : 'p-0'}`}>
         <div className={`relative ${isFullscreen ? 'w-full h-full' : 'w-full'}`}>
           {/* 改进的游戏容器 - 更好的响应式设计 */}
           <div
             ref={gameRef}
             className={`game-container ${gameStarted ? 'block' : 'hidden'} w-full bg-gradient-to-br from-slate-900 to-black overflow-hidden border-slate-600/50 touch-none select-none ${isFullscreen
-              ? 'fixed inset-0 z-50 rounded-none h-screen'
+              ? 'fixed inset-0 z-50 rounded-none w-screen h-screen'
               : 'rounded-xl'
               }`}
             style={{
-              width: gameSize.width,
-              height: gameSize.height,
-              maxWidth: gameSize.maxWidth,
-              maxHeight: gameSize.maxHeight,
-              aspectRatio: gameSize.aspectRatio,
+              width: isFullscreen ? '100vw' : gameSize.width,
+              height: isFullscreen ? '100vh' : gameSize.height,
+              maxWidth: isFullscreen ? '100vw' : gameSize.maxWidth,
+              maxHeight: isFullscreen ? '100vh' : gameSize.maxHeight,
+              aspectRatio: isFullscreen ? 'unset' : gameSize.aspectRatio,
               minHeight: isFullscreen ? '100vh' : '400px',
               touchAction: 'none', // 禁用触摸滚动，专用于游戏操作
               userSelect: 'none', // 禁用文本选择

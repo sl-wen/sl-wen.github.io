@@ -71,10 +71,10 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
 
     // 设置初始显示属性
     this.setDepth(10); // 设置渲染层级，确保小猫在其他对象之上
-    this.setScale(1.5); // 放大主角小猫
+    this.setScale(2.25); // 放大主角小猫 1.5倍 (原来1.5 * 1.5 = 2.25)
 
     // 适配缩放后的碰撞盒（精确控制碰撞体积）
-    const scaleFactor = 1.5;
+    const scaleFactor = 2.25;
     if (this.body && (this.body as Phaser.Physics.Arcade.Body).setSize) {
       (this.body as Phaser.Physics.Arcade.Body).setSize(12 * scaleFactor, 12 * scaleFactor);
       (this.body as Phaser.Physics.Arcade.Body).setOffset(10 * scaleFactor, 10 * scaleFactor);

@@ -458,7 +458,7 @@ const GamePage: React.FC = () => {
           {!gameStarted && (
             <div className={`flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border-slate-600/50 ${screenOrientation === 'portrait' ? 'min-h-[70vh]' : 'min-h-[700px]'
               }`}>
-              <div className="text-center p-8 max-w-md mx-auto">
+              <div className="text-center max-w-md mx-auto">
                 <div className="text-6xl mb-6">🐱</div>
                 <h2 className="text-3xl font-bold text-white mb-4">小猫农场</h2>
                 <p className="text-slate-300 mb-8">

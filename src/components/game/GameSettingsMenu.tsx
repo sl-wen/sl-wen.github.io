@@ -166,16 +166,14 @@ const GameSettingsMenu: React.FC<GameSettingsMenuProps> = ({
             保存游戏
           </button>
 
-          {/* 全屏模式下的退出游戏按钮 */}
-          {isFullscreen && (
-            <button
-              onClick={onExitGame}
-              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center"
-            >
-              <span className="mr-2">🚪</span>
-              退出游戏
-            </button>
-          )}
+          {/* 退出游戏按钮 */}
+          <button
+            onClick={onExitGame}
+            className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center"
+          >
+            <span className="mr-2">🚪</span>
+            退出游戏
+          </button>
 
           {/* 关闭按钮 */}
           <button

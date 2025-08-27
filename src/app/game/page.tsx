@@ -749,60 +749,6 @@ const GamePage: React.FC = () => {
                 </button>
               </div>
 
-              {/* 设置面板 */}
-              <div className="absolute bottom-4 right-4 z-50 bg-black/20 backdrop-blur-md rounded-lg p-3">
-                <div className="text-white text-sm space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span>音乐:</span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={gameSettings.musicVolume}
-                      onChange={(e) => handleSettingChange('musicVolume', parseInt(e.target.value))}
-                      className="w-16"
-                    />
-                    <span>{gameSettings.musicVolume}%</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span>音效:</span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={gameSettings.sfxVolume}
-                      onChange={(e) => handleSettingChange('sfxVolume', parseInt(e.target.value))}
-                      className="w-16"
-                    />
-                    <span>{gameSettings.sfxVolume}%</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={gameSettings.autoSave}
-                      onChange={(e) => handleSettingChange('autoSave', e.target.checked)}
-                    />
-                    <span>自动保存</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 帮助信息 */}
-              <div className="absolute top-20 left-4 z-40 bg-black/20 backdrop-blur-md rounded-lg p-3 text-white text-xs max-w-xs">
-                <h3 className="font-bold mb-2">🎮 游戏控制</h3>
-                <div className="space-y-1">
-                  <p><kbd>WASD</kbd> 或 <kbd>方向键</kbd> - 移动小猫</p>
-                  <p><kbd>空格</kbd> 或 <kbd>E</kbd> - 交互</p>
-                  <p><kbd>I</kbd> - 打开背包</p>
-                  <p><kbd>C</kbd> - 打开烹饪界面</p>
-                  <p><kbd>1-4</kbd> - 选择工具</p>
-                  <p><kbd>F5</kbd> - 保存游戏</p>
-                  <p><kbd>ESC</kbd> - 暂停游戏</p>
-                  <p><kbd>F11</kbd> - 全屏切换</p>
-                </div>
-                <h3 className="font-bold mt-3 mb-2">📱 移动端</h3>
-                <p>使用屏幕上的虚拟摇杆和按钮进行游戏</p>
-              </div>
             </>
           )}
 

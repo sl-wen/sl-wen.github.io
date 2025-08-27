@@ -431,8 +431,16 @@ export class TileMapManager {
     /**
      * 创建全草地图
      * 用草地填满整个地图，不包含水、道路或装饰
+     * 现在会根据屏幕尺寸动态调整地图大小以确保完整覆盖
      */
-    public createAllGrassMap(width: number = 60, height: number = 40): void {
+    public createAllGrassMap(width?: number, height?: number): void {
+        // 如果没有提供尺寸，则根据屏幕尺寸计算
+        if (width === undefined || height === undefined) {
+            const screenDimensions = this.calculateOptimalMapSize();
+            width = screenDimensions.width;
+            height = screenDimensions.height;
+        }
+
         const data: number[] = new Array(width * height).fill(1); // 1 = GRASS
 
         const mapData: TileMapData = {
@@ -450,6 +458,8 @@ export class TileMapManager {
         // 记录地图尺寸用于边界设置
         this.mapWidth = width;
         this.mapHeight = height;
+
+        console.log(`Created grass map with dimensions: ${width}x${height} tiles (${width * this.TILE_WIDTH}x${height * this.TILE_HEIGHT} pixels)`);
     }
 
     // 记录地图尺寸
@@ -465,6 +475,80 @@ export class TileMapManager {
             width: this.mapWidth * this.TILE_WIDTH,
             height: this.mapHeight * this.TILE_HEIGHT
         };
+    }
+
+    /**
+     * 计算最佳地图尺寸以覆盖整个屏幕
+     * 根据当前屏幕尺寸和设备类型动态计算地图大小
+     */
+    private calculateOptimalMapSize(): { width: number; height: number } {
+        // 获取屏幕尺寸
+        const screenWidth = this.scene.cameras.main.width;
+        const screenHeight = this.scene.cameras.main.height;
+        
+        // 检测设备类型
+        const isMobile = screenWidth < 768;
+        const isPortrait = screenHeight > screenWidth;
+        
+        // 计算需要的瓦片数量，确保完全覆盖屏幕
+        // 添加额外的缓冲区以确保在所有设备上都有足够的覆盖
+        const bufferMultiplier = isMobile ? 1.5 : 1.3;
+        
+        let tilesWidth = Math.ceil((screenWidth * bufferMultiplier) / this.TILE_WIDTH);
+        let tilesHeight = Math.ceil((screenHeight * bufferMultiplier) / this.TILE_HEIGHT);
+        
+        // 为移动设备设置最小尺寸，确保有足够的游戏空间
+        if (isMobile) {
+            if (isPortrait) {
+                // 竖屏模式：确保有足够的垂直空间
+                tilesWidth = Math.max(tilesWidth, 50);
+                tilesHeight = Math.max(tilesHeight, 70);
+            } else {
+                // 横屏模式：确保有足够的水平空间
+                tilesWidth = Math.max(tilesWidth, 80);
+                tilesHeight = Math.max(tilesHeight, 45);
+            }
+        } else {
+            // 桌面端：使用默认的较大尺寸
+            tilesWidth = Math.max(tilesWidth, 60);
+            tilesHeight = Math.max(tilesHeight, 40);
+        }
+        
+        // 设置合理的最大值以避免性能问题
+        tilesWidth = Math.min(tilesWidth, 120);
+        tilesHeight = Math.min(tilesHeight, 80);
+        
+        console.log(`Screen: ${screenWidth}x${screenHeight}, Mobile: ${isMobile}, Portrait: ${isPortrait}`);
+        console.log(`Calculated optimal map size: ${tilesWidth}x${tilesHeight} tiles`);
+        
+        return {
+            width: tilesWidth,
+            height: tilesHeight
+        };
+    }
+
+    /**
+     * 重新创建草地图以适应新的屏幕尺寸
+     * 在屏幕方向改变或窗口大小调整时调用
+     */
+    public refreshGrassMapForNewScreenSize(): void {
+        console.log('Refreshing grass map for new screen size...');
+        
+        // 清除现有的瓦片地图
+        if (this.tilemap) {
+            this.tilemap.destroy();
+            this.tilemap = null;
+        }
+        
+        // 重新创建草地图
+        this.createAllGrassMap();
+        
+        // 更新物理世界和摄像机边界
+        const mapSize = this.getPixelSize();
+        this.scene.physics.world.setBounds(0, 0, mapSize.width, mapSize.height);
+        this.scene.cameras.main.setBounds(0, 0, mapSize.width, mapSize.height);
+        
+        console.log(`Grass map refreshed with new size: ${mapSize.width}x${mapSize.height} pixels`);
     }
 
 

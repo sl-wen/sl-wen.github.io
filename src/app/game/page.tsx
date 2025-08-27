@@ -139,7 +139,13 @@ const GamePage: React.FC = () => {
         // 只有在支持真正全屏API的浏览器上才检查fullscreenElement
         // iOS和不支持的浏览器使用状态管理
         if (supportsFullscreen() && !platformInfo.isIOS) {
-          setIsFullscreen(!!document.fullscreenElement);
+          const isCurrentlyFullscreen = !!document.fullscreenElement;
+          setIsFullscreen(isCurrentlyFullscreen);
+          // 同步更新游戏设置状态
+          setGameSettings(prev => ({
+            ...prev,
+            fullscreen: isCurrentlyFullscreen
+          }));
         }
         // 对于iOS等不支持的设备，fullscreen状态由手动管理
       } catch (error) {
@@ -383,6 +389,12 @@ const GamePage: React.FC = () => {
     setIsFullscreen(false);
     setError(null);
     
+    // 同步更新游戏设置状态
+    setGameSettings(prev => ({
+      ...prev,
+      fullscreen: false
+    }));
+    
     // 重置游戏统计
     setGameStats({
       level: 1,
@@ -488,6 +500,11 @@ const GamePage: React.FC = () => {
       if (platformInfo.isIOS || !supportsFullscreen()) {
         // iOS Safari 不支持真正的全屏，使用模拟全屏
         setIsFullscreen(true);
+        // 同步更新游戏设置状态
+        setGameSettings(prev => ({
+          ...prev,
+          fullscreen: true
+        }));
         
         // 隐藏地址栏（iOS Safari特殊处理）
         if (platformInfo.isIOS) {
@@ -527,6 +544,11 @@ const GamePage: React.FC = () => {
         // 如果所有API都不支持，降级到模拟全屏
         console.log('No fullscreen API available, using simulated fullscreen');
         setIsFullscreen(true);
+        // 同步更新游戏设置状态
+        setGameSettings(prev => ({
+          ...prev,
+          fullscreen: true
+        }));
         document.body.classList.add('fullscreen-active');
         if (gameRef.current) {
           gameRef.current.classList.add('fullscreen-simulated');
@@ -537,6 +559,11 @@ const GamePage: React.FC = () => {
       // 降级到模拟全屏
       try {
         setIsFullscreen(true);
+        // 同步更新游戏设置状态
+        setGameSettings(prev => ({
+          ...prev,
+          fullscreen: true
+        }));
         document.body.classList.add('fullscreen-active');
         if (gameRef.current) {
           gameRef.current.classList.add('fullscreen-simulated');
@@ -553,6 +580,11 @@ const GamePage: React.FC = () => {
       // 如果是模拟全屏或iOS设备
       if (platformInfo.isIOS || !document.fullscreenElement) {
         setIsFullscreen(false);
+        // 同步更新游戏设置状态
+        setGameSettings(prev => ({
+          ...prev,
+          fullscreen: false
+        }));
         
         // 恢复页面样式
         document.body.classList.remove('fullscreen-active');
@@ -589,6 +621,11 @@ const GamePage: React.FC = () => {
       // 强制退出模拟全屏
       try {
         setIsFullscreen(false);
+        // 同步更新游戏设置状态
+        setGameSettings(prev => ({
+          ...prev,
+          fullscreen: false
+        }));
         document.body.classList.remove('fullscreen-active');
         if (gameRef.current) {
           gameRef.current.classList.remove('fullscreen-simulated');
@@ -688,16 +725,18 @@ const GamePage: React.FC = () => {
           <div
             ref={gameRef}
             className={`game-container ${gameStarted ? 'block' : 'hidden'} w-full bg-gradient-to-br from-slate-900 to-black overflow-hidden border-slate-600/50 touch-none select-none ${isFullscreen
-              ? 'fixed inset-0 z-50 rounded-none w-screen h-screen'
+              ? 'fixed inset-0 z-50 rounded-none'
               : 'rounded-xl'
               }`}
             style={{
-              width: isFullscreen ? '100vw' : gameSize.width,
-              height: isFullscreen ? '100vh' : gameSize.height,
-              maxWidth: isFullscreen ? '100vw' : gameSize.maxWidth,
-              maxHeight: isFullscreen ? '100vh' : gameSize.maxHeight,
-              aspectRatio: isFullscreen ? 'unset' : gameSize.aspectRatio,
-              minHeight: isFullscreen ? '100vh' : '400px',
+              ...(!isFullscreen && {
+                width: gameSize.width,
+                height: gameSize.height,
+                maxWidth: gameSize.maxWidth,
+                maxHeight: gameSize.maxHeight,
+                aspectRatio: gameSize.aspectRatio,
+                minHeight: '400px'
+              }),
               touchAction: 'none', // 禁用触摸滚动，专用于游戏操作
               userSelect: 'none', // 禁用文本选择
               WebkitUserSelect: 'none', // Safari兼容

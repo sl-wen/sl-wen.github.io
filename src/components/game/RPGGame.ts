@@ -230,8 +230,10 @@ export class RPGGame {
     });
 
     // 监听窗口大小变化，动态调整游戏尺寸
-    window.addEventListener('resize', this.handleResize.bind(this));           // 窗口大小变化
-    window.addEventListener('orientationchange', this.handleResize.bind(this)); // 屏幕方向变化
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', this.handleResize.bind(this));           // 窗口大小变化
+      window.addEventListener('orientationchange', this.handleResize.bind(this)); // 屏幕方向变化
+    }
   }
 
   /**
@@ -254,8 +256,10 @@ export class RPGGame {
   destroy() {
     if (this.game) {
       // 移除事件监听器
-      window.removeEventListener('resize', this.handleResize.bind(this));           // 移除窗口大小变化监听
-      window.removeEventListener('orientationchange', this.handleResize.bind(this)); // 移除方向变化监听
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', this.handleResize.bind(this));           // 移除窗口大小变化监听
+        window.removeEventListener('orientationchange', this.handleResize.bind(this)); // 移除方向变化监听
+      }
 
       // 销毁游戏实例
       this.game.destroy(true);  // 完全销毁游戏实例和相关资源

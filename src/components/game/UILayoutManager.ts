@@ -92,19 +92,21 @@ export class UILayoutManager {
    */
   private detectDeveloperTools() {
     // 监听窗口大小变化
-    window.addEventListener('resize', () => {
-      const currentWidth = window.innerWidth;
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', () => {
+        const currentWidth = window.innerWidth;
 
-      // 如果窗口宽度显著减少，可能是开发者工具打开了
-      if (currentWidth < this.screenWidth * 0.8) {
-        this.safeArea.right = Math.max(400, this.screenWidth - currentWidth + 50);
-        this.repositionAllElements();
-      } else {
-        // 窗口恢复正常，减少右侧安全区域
-        this.safeArea.right = this.isMobile ? 20 : 30;
-        this.repositionAllElements();
-      }
-    });
+        // 如果窗口宽度显著减少，可能是开发者工具打开了
+        if (currentWidth < this.screenWidth * 0.8) {
+          this.safeArea.right = Math.max(400, this.screenWidth - currentWidth + 50);
+          this.repositionAllElements();
+        } else {
+          // 窗口恢复正常，减少右侧安全区域
+          this.safeArea.right = this.isMobile ? 20 : 30;
+          this.repositionAllElements();
+        }
+      });
+    }
   }
 
   private setupResizeListener() {

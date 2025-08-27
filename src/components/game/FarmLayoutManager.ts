@@ -57,9 +57,11 @@ export class FarmLayoutManager {
         const margin = 50;  // 边距
 
         // 检测是否在开发环境中（可能打开开发者工具）
-        const isDevelopment = window.location.hostname === 'localhost' ||
+        const isDevelopment = typeof window !== 'undefined' && (
+            window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1' ||
-            window.location.port !== '';
+            window.location.port !== ''
+        );
 
         // 在开发环境中，预留更多空间给开发者工具
         const rightMargin = isDevelopment ? 450 : margin;

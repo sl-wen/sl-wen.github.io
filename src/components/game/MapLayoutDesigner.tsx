@@ -379,7 +379,7 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
             <h3 className="text-lg font-semibold text-red-600 mb-2">加载错误</h3>
             <p className="text-gray-600 mb-4">地图编辑器加载失败，请刷新页面重试。</p>
             <button 
-              onClick={() => window.location.reload()}
+              onClick={() => typeof window !== 'undefined' && window.location.reload()}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               刷新页面

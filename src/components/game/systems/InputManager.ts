@@ -147,9 +147,11 @@ export class InputManager {
    */
   private setupWindowEvents(): void {
     // 窗口失去焦点时清除输入状态
-    window.addEventListener('blur', () => {
-      this.clearInputState();
-    });
+    if (typeof window !== 'undefined') {
+      window.addEventListener('blur', () => {
+        this.clearInputState();
+      });
+    }
 
     // 防止右键菜单
     this.scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
@@ -340,6 +342,8 @@ export class InputManager {
    */
   public destroy(): void {
     this.clearInputState();
-    window.removeEventListener('blur', this.clearInputState);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('blur', this.clearInputState);
+    }
   }
 }

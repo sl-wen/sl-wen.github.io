@@ -169,19 +169,56 @@ export const TileEditor: React.FC<TileEditorProps> = ({
         }
 
         preload() {
-          // 这里应该预加载所有瓦片纹理
-          // 实际项目中需要根据资源路径调整
+          // 预加载瓦片纹理资源
           console.log('Preloading tile textures...');
+          
+          // 加载基础瓦片纹理
+          this.load.spritesheet('grass_tiles', '/assets/farm-assets/Grass_tiles_v2.png', {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          
+          // 加载其他瓦片纹理 - 使用简化路径
+          this.load.spritesheet('water_tiles', '/assets/farm-assets/Sprout Lands - Sprites - premium pack/Tilesets/ground tiles/New tiles/Grass_tiles_v2.png', {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          
+          this.load.spritesheet('path_tiles', '/assets/farm-assets/Sprout Lands - Sprites - premium pack/Tilesets/ground tiles/New tiles/Stone_Ground_Tiles.png', {
+            frameWidth: 32,
+            frameHeight: 32
+          });
+          
+          this.load.spritesheet('stone_tiles', '/assets/farm-assets/Sprout Lands - Sprites - premium pack/Tilesets/ground tiles/New tiles/Stone_Ground_Tiles.png', {
+            frameWidth: 32,
+            frameHeight: 32
+          });
+          
+          this.load.spritesheet('soil_tiles', '/assets/farm-assets/Sprout Lands - Sprites - premium pack/Tilesets/ground tiles/New tiles/Soil_Ground_Tiles.png', {
+            frameWidth: 32,
+            frameHeight: 32
+          });
+          
+          this.load.spritesheet('bush_tiles', '/assets/farm-assets/Sprout Lands - Sprites - premium pack/Tilesets/ground tiles/New tiles/Bush_Tiles.png', {
+            frameWidth: 32,
+            frameHeight: 32
+          });
+          
+          // 监听加载完成事件
+          this.load.on('complete', () => {
+            console.log('All tile textures loaded successfully');
+          });
+          
+          this.load.on('loaderror', (file: any) => {
+            console.error('Failed to load texture:', file.src);
+          });
         }
 
         create() {
           try {
-            // 创建瓦片地图管理器
-            tileMapManagerRef.current = new TileMapManager(this);
-            
             // 设置相机
             this.cameras.main.setBounds(0, 0, config.mapWidth * config.tileSize, config.mapHeight * config.tileSize);
-            this.cameras.main.setZoom(2); // 放大显示
+            this.cameras.main.setZoom(1.5); // 适度放大显示
             
             // 渲染初始地图
             renderMap();
@@ -190,6 +227,8 @@ export const TileEditor: React.FC<TileEditorProps> = ({
             this.input.on('pointerdown', handlePointerDown);
             this.input.on('pointerup', handlePointerUp);
             this.input.on('pointermove', handlePointerMove);
+            
+            console.log('Tile editor scene created successfully');
           } catch (error) {
             console.error('Error creating Phaser scene:', error);
           }
@@ -261,7 +300,7 @@ export const TileEditor: React.FC<TileEditorProps> = ({
    */
   const renderMap = () => {
     try {
-      if (!sceneRef.current || !tileMapManagerRef.current) return;
+      if (!sceneRef.current) return;
 
       // 清除现有显示对象
       sceneRef.current.children.removeAll();
@@ -273,14 +312,31 @@ export const TileEditor: React.FC<TileEditorProps> = ({
           const tileData = TILE_DEFINITIONS.find(t => t.id === tileId);
           
           if (tileData) {
-            const sprite = sceneRef.current.add.rectangle(
-              x * config.tileSize + config.tileSize / 2,
-              y * config.tileSize + config.tileSize / 2,
-              config.tileSize,
-              config.tileSize,
-              getTileColor(tileData.type)
-            );
-            sprite.setStrokeStyle(1, 0x000000, 0.3);
+            let sprite;
+            
+            // 尝试使用实际纹理，如果不可用则使用颜色矩形
+            if (sceneRef.current.textures.exists(tileData.textureKey)) {
+              sprite = sceneRef.current.add.sprite(
+                x * config.tileSize + config.tileSize / 2,
+                y * config.tileSize + config.tileSize / 2,
+                tileData.textureKey,
+                0
+              );
+              sprite.setDisplaySize(config.tileSize, config.tileSize);
+            } else {
+              // 回退到颜色矩形
+              sprite = sceneRef.current.add.rectangle(
+                x * config.tileSize + config.tileSize / 2,
+                y * config.tileSize + config.tileSize / 2,
+                config.tileSize,
+                config.tileSize,
+                getTileColor(tileData.type)
+              );
+              sprite.setStrokeStyle(1, 0x000000, 0.3);
+            }
+            
+            // 设置交互性
+            sprite.setInteractive();
           }
         }
       }
@@ -383,10 +439,17 @@ export const TileEditor: React.FC<TileEditorProps> = ({
    * 处理瓦片编辑
    */
   const handleTileEdit = (worldX: number, worldY: number) => {
-    const tileX = Math.floor(worldX / config.tileSize);
-    const tileY = Math.floor(worldY / config.tileSize);
+    // 考虑相机缩放和位置
+    const camera = sceneRef.current?.cameras.main;
+    if (!camera) return;
+    
+    const adjustedX = (worldX - camera.scrollX) / camera.zoom;
+    const adjustedY = (worldY - camera.scrollY) / camera.zoom;
+    
+    const tileX = Math.floor(adjustedX / config.tileSize);
+    const tileY = Math.floor(adjustedY / config.tileSize);
 
-    if (tileX < 0 || tileX >= config.mapWidth || tileY < 0 || tileY >= config.mapHeight) {
+    if (tileX < 0 || tileX >= mapData.width || tileY < 0 || tileY >= mapData.height) {
       return;
     }
 
@@ -407,6 +470,9 @@ export const TileEditor: React.FC<TileEditorProps> = ({
     newMapData.metadata.modifiedAt = new Date().toISOString();
     setMapData(newMapData);
     onMapChange?.(newMapData);
+    
+    // 重新渲染地图
+    renderMap();
   };
 
   /**
@@ -430,7 +496,13 @@ export const TileEditor: React.FC<TileEditorProps> = ({
    * 重新渲染地图
    */
   useEffect(() => {
-    renderMap();
+    const timeoutId = setTimeout(() => {
+      if (sceneRef.current) {
+        renderMap();
+      }
+    }, 100); // 等待场景初始化完成
+    
+    return () => clearTimeout(timeoutId);
   }, [mapData]);
 
   /**
@@ -461,7 +533,8 @@ export const TileEditor: React.FC<TileEditorProps> = ({
         const loadedData = JSON.parse(e.target?.result as string) as MapData;
         setMapData(loadedData);
       } catch (error) {
-        alert('地图文件格式错误');
+        console.error('Error loading map:', error);
+        alert('地图文件格式错误：' + (error as Error).message);
       }
     };
     reader.readAsText(file);

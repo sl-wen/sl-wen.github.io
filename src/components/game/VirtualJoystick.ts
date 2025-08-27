@@ -620,11 +620,12 @@ export class VirtualJoystick {
       joystickY = joystickY * scaleY;
     }
 
-    // 边界保护（不添加额外边距）
+    // 边界保护（增加一些边距确保摇杆完全可见）
     const gameWidth = this.scene.scale.gameSize.width;
     const gameHeight = this.scene.scale.gameSize.height;
-    joystickX = Math.max(this.config.radius, Math.min(joystickX, gameWidth - this.config.radius));
-    joystickY = Math.max(this.config.radius, Math.min(joystickY, gameHeight - this.config.radius));
+    const margin = this.config.radius + 10; // 增加10像素的边距
+    joystickX = Math.max(margin, Math.min(joystickX, gameWidth - margin));
+    joystickY = Math.max(margin, Math.min(joystickY, gameHeight - margin));
 
     this.container.setPosition(joystickX, joystickY);
 
@@ -645,12 +646,13 @@ export class VirtualJoystick {
    * 调整摇杆以适应正常模式
    */
   private adjustForNormalMode() {
-    // 正常模式：贴左下角（无任何边距）
+    // 正常模式：贴左下角（增加适当边距确保完全可见）
     const gameWidth = this.scene.scale.gameSize.width;
     const gameHeight = this.scene.scale.gameSize.height;
+    const margin = this.config.radius + 20; // 增加20像素边距
 
-    const normalX = Math.max(this.config.radius, Math.min(this.config.radius, gameWidth - this.config.radius));
-    const normalY = Math.max(this.config.radius, Math.min(gameHeight - this.config.radius, gameHeight - this.config.radius));
+    const normalX = margin;
+    const normalY = gameHeight - margin;
 
     this.container.setPosition(normalX, normalY);
     this.container.setScale(1.0);

@@ -834,14 +834,14 @@ const GamePage: React.FC = () => {
               </div>
 
               {/* 游戏控制面板 - 设置按钮（右上角） */}
-              <div className={`absolute z-50 bg-black/20 backdrop-blur-md`}>
+              <div className={`absolute z-50 ${screenOrientation === 'portrait' ? 'top-2 right-2' : 'top-4 right-4'}`}>
                 <button
                   onClick={() => setShowSettings(true)}
-                  className={`bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors flex items-center`}
+                  className={`bg-black/20 backdrop-blur-md hover:bg-black/30 text-white rounded-lg transition-all duration-300 flex items-center ${screenOrientation === 'portrait' ? 'p-2' : 'p-3'}`}
                   disabled={!gameStarted}
                 >
-                  <span className="mr-1">⚙️</span>
-                  {/* {screenOrientation === 'portrait' ? '' : '设置'} */}
+                  <span className={`${screenOrientation === 'portrait' ? 'text-lg' : 'text-xl mr-2'}`}>⚙️</span>
+                  {screenOrientation === 'portrait' ? '' : '设置'}
                 </button>
               </div>
 

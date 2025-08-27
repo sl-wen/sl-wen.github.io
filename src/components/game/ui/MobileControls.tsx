@@ -191,7 +191,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
   return (
     <div className="fixed inset-0 pointer-events-none z-40">
       {/* 虚拟摇杆 */}
-      <div className="absolute bottom-24 left-6 pointer-events-auto">
+      <div className="absolute bottom-8 left-6 pointer-events-auto">
         <div className="relative">
           {/* 摇杆外圈 */}
           <div
@@ -224,7 +224,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
       </div>
 
       {/* 动作按钮 */}
-      <div className="absolute bottom-24 right-6 pointer-events-auto">
+      <div className="absolute bottom-8 right-6 pointer-events-auto">
         <div className="relative">
           <button
             ref={actionButtonRef}
@@ -250,7 +250,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
       </div>
 
       {/* 工具选择栏 */}
-      <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 pointer-events-auto">
+      <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 pointer-events-auto">
         <div className="flex gap-2 bg-black bg-opacity-40 p-2 rounded-lg">
           {tools.slice(0, 4).map((tool, index) => (
             <button
@@ -291,7 +291,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
       </div>
 
       {/* 方向键（备用控制） */}
-      <div className="absolute bottom-40 right-24 pointer-events-auto">
+      <div className="absolute bottom-28 right-24 pointer-events-auto">
         <div className="grid grid-cols-3 gap-1 w-32 h-32">
           <div></div>
           <button

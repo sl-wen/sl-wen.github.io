@@ -62,12 +62,7 @@ export class UILayoutManager {
    */
   private calculateSafeArea() {
     // 基础边距
-    const basePadding = this.isMobile ? 20 : 30;
-
-    // 检测是否在开发环境中（可能打开开发者工具）
-    const isDevelopment = window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      window.location.port !== '';
+    const basePadding = 1;
 
     // 桌面端需要考虑开发者工具可能遮挡右侧内容
     if (this.isMobile) {
@@ -78,12 +73,10 @@ export class UILayoutManager {
         left: basePadding
       };
     } else {
-      // 桌面端安全区域，考虑开发者工具
-      const rightPadding = isDevelopment ? 400 : basePadding; // 开发环境预留更多右侧空间
 
       this.safeArea = {
         top: basePadding,
-        right: rightPadding, // 为开发者工具预留空间
+        right: basePadding, // 为开发者工具预留空间
         bottom: basePadding,
         left: basePadding
       };
@@ -451,17 +444,17 @@ export class UILayoutManager {
       // 全屏模式下，增加安全区域以避免被系统UI遮挡
       this.safeArea = {
         top: 20,
-        right: 20,
+        right: 1,
         bottom: 30,
-        left: 20
+        left: 1
       };
     } else {
       // 正常模式下，恢复默认安全区域
       this.safeArea = {
         top: 10,
-        right: 10,
+        right: 1,
         bottom: 20,
-        left: 10
+        left: 1
       };
     }
     

@@ -529,7 +529,7 @@ const GamePage: React.FC = () => {
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 z-10">
                   <div className="text-center">
                     <div className="relative mb-6">
-                      <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-400/30 border-t-blue-400 mx-auto"></div>
+                      <div className="animate-spinh-16 w-16 border-4 border-blue-400/30 border-t-blue-400 mx-auto"></div>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-2xl">🎮</div>
                       </div>
@@ -537,9 +537,9 @@ const GamePage: React.FC = () => {
                     <h3 className="text-white text-xl font-bold mb-2">正在加载游戏...</h3>
                     <p className="text-slate-300 text-sm">准备进入农场小猫的世界</p>
                     <div className="mt-4 flex justify-center space-x-2">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-blue-400 animate-bounce"></div>
+                      <div className="w-2 h-2 bg-blue-400 animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-blue-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>

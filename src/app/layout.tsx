@@ -149,7 +149,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Header />
 
             {/* 主要内容区域 - 页面内容将在这里渲染 */}
-            <main className="flex-1 w-full max-w-7xl mx-auto mobile-content">
+            <main className="flex-1 w-full max-w-7xl mx-auto h-full my-auto mobile-content">
               {children}
             </main>
 

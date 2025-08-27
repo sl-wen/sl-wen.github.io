@@ -48,7 +48,6 @@ export class UIScene extends Phaser.Scene {
 
     // 创建响应式设计的UI元素
     this.createDialogueBox();              // 创建对话框
-    this.createResponsiveCatStats();       // 创建响应式状态栏
     this.createToolIndicator();            // 创建工具指示器
     this.createInventoryInterface();       // 创建背包界面
     this.createCookingInterface();         // 创建烹饪界面
@@ -124,100 +123,6 @@ export class UIScene extends Phaser.Scene {
     this.dialogueBox.setDepth(1000);
   }
 
-  private createResponsiveCatStats() {
-    const screenInfo = this.uiLayoutManager.getScreenInfo();
-    const statsPosition = this.uiLayoutManager.getStatsBarPosition();
-
-    // 根据屏幕尺寸调整状态栏
-    const barWidth = screenInfo.isMobile ? (screenInfo.isPortrait ? 65 : 70) : 80;
-    const barHeight = screenInfo.isMobile ? 16 : 18;
-    const spacing = screenInfo.isMobile ? 24 : 28;
-    const fontSize = screenInfo.isMobile ? '10px' : '11px';
-
-    // 创建状态栏容器
-    this.statsContainer = this.add.container(statsPosition.x, statsPosition.y);
-    this.statsContainer.setScrollFactor(0);
-    this.statsContainer.setDepth(100);
-
-    // 健康值条
-    const healthContainer = this.add.container(0, 0);
-    const healthBg = this.add.graphics();
-    healthBg.fillStyle(0x000000, 0.4);
-    healthBg.lineStyle(2, 0xe74c3c, 0.6);
-    healthBg.fillRoundedRect(0, 0, barWidth, barHeight, 9);
-    healthBg.strokeRoundedRect(0, 0, barWidth, barHeight, 9);
-
-    this.healthBar = this.add.graphics();
-    this.healthBar.setDepth(1);
-
-    this.healthText = this.add.text(8, 2, '❤️ 100/100', {
-      fontSize: fontSize,
-      color: '#ffffff',
-      fontStyle: 'bold',
-      fontFamily: 'Arial, sans-serif'
-    });
-    this.healthText.setDepth(2);
-
-    healthContainer.add([healthBg, this.healthBar, this.healthText]);
-
-    // 能量值条
-    const energyContainer = this.add.container(0, spacing);
-    const energyBg = this.add.graphics();
-    energyBg.fillStyle(0x000000, 0.4);
-    energyBg.lineStyle(2, 0x74b9ff, 0.6);
-    energyBg.fillRoundedRect(0, 0, barWidth, barHeight, 9);
-    energyBg.strokeRoundedRect(0, 0, barWidth, barHeight, 9);
-
-    this.energyBar = this.add.graphics();
-    this.energyBar.setDepth(1);
-
-    this.energyText = this.add.text(8, 2, '⚡ 100/100', {
-      fontSize: fontSize,
-      color: '#ffffff',
-      fontStyle: 'bold',
-      fontFamily: 'Arial, sans-serif'
-    });
-    this.energyText.setDepth(2);
-
-    energyContainer.add([energyBg, this.energyBar, this.energyText]);
-
-    // 快乐值条
-    const happinessContainer = this.add.container(0, spacing * 2);
-    const happinessBg = this.add.graphics();
-    happinessBg.fillStyle(0x000000, 0.4);
-    happinessBg.lineStyle(2, 0xff6b9d, 0.6);
-    happinessBg.fillRoundedRect(0, 0, barWidth, barHeight, 9);
-    happinessBg.strokeRoundedRect(0, 0, barWidth, barHeight, 9);
-
-    this.happinessBar = this.add.graphics();
-    this.happinessBar.setDepth(1);
-
-    this.happinessText = this.add.text(8, 2, '😸 100/100', {
-      fontSize: fontSize,
-      color: '#ffffff',
-      fontStyle: 'bold',
-      fontFamily: 'Arial, sans-serif'
-    });
-    this.happinessText.setDepth(2);
-
-    happinessContainer.add([happinessBg, this.happinessBar, this.happinessText]);
-
-    // 等级文本
-    this.levelText = this.add.text(0, spacing * 3 + 5, '🐱 等级: 1', {
-      fontSize: screenInfo.isMobile ? '12px' : '14px',
-      color: '#ffd700',
-      fontStyle: 'bold'
-    });
-    this.levelText.setDepth(102);
-
-    // 添加到主容器
-    this.statsContainer.add([healthContainer, energyContainer, happinessContainer, this.levelText]);
-
-    // 存储容器尺寸信息用于响应式更新
-    (this.statsContainer as any).barWidth = barWidth;
-    (this.statsContainer as any).barHeight = barHeight;
-    (this.statsContainer as any).spacing = spacing;
-  }
 
   private createToolIndicator() {
     this.currentToolText = this.add.text(this.cameras.main.width-40, this.cameras.main.height - 40, '工具', {

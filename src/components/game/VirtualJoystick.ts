@@ -481,6 +481,7 @@ export class VirtualJoystick {
   public handleViewportChange() {
     // 延迟处理，确保DOM更新完成
     setTimeout(() => {
+      if (typeof window === 'undefined') return;
       const screenWidth = window.innerWidth;
       const screenHeight = window.innerHeight;
       
@@ -518,8 +519,8 @@ export class VirtualJoystick {
         height: this.scene.scale.gameSize.height
       },
       viewportSize: {                                            // 视口尺寸
-        width: window.innerWidth,
-        height: window.innerHeight
+        width: typeof window !== 'undefined' ? window.innerWidth : 800,
+        height: typeof window !== 'undefined' ? window.innerHeight : 600
       },
       canvasRect: canvasRect ? {                                 // 画布位置和尺寸
         left: canvasRect.left,
@@ -568,7 +569,7 @@ export class VirtualJoystick {
     }
     
     // 检查视口尺寸
-    if (window.innerWidth === 0 || window.innerHeight === 0) {
+    if (typeof window !== 'undefined' && (window.innerWidth === 0 || window.innerHeight === 0)) {
       issues.push('Invalid viewport size');
     }
     
@@ -615,6 +616,7 @@ export class VirtualJoystick {
    */
   private adjustForFullscreen() {
     // 在全屏模式下，使用实际的视口尺寸而不是游戏尺寸
+    if (typeof window === 'undefined') return;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     
@@ -720,11 +722,11 @@ export class VirtualJoystick {
     }
     
     // 检测设备类型和方向
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 800;
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 600;
     const isLandscape = viewportWidth > viewportHeight;
     
     if (!isMobile) {
@@ -788,9 +790,9 @@ export class VirtualJoystick {
    * @returns 缩放比例
    */
   private calculateOptimalScale(isLandscape: boolean): number {
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 800;
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 600;
+    const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
     // 基础缩放比例
     let baseScale = 1.0;

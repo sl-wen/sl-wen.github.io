@@ -806,7 +806,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     // 如果可用，强制垃圾回收
-    if (window.gc) {
+    if (typeof window !== 'undefined' && window.gc) {
       window.gc();  // 触发垃圾回收
     }
   }
@@ -929,9 +929,11 @@ export class GameScene extends Phaser.Scene {
     const screenHeight = this.cameras.main.height; // 屏幕高度
 
     // 检测是否在开发环境中（可能打开开发者工具）
-    const isDevelopment = window.location.hostname === 'localhost' ||
+    const isDevelopment = typeof window !== 'undefined' && (
+      window.location.hostname === 'localhost' ||
       window.location.hostname === '127.0.0.1' ||
-      window.location.port !== '';
+      window.location.port !== ''
+    );
 
     // 根据屏幕尺寸动态调整缩放
     const baseZoom = Math.min(screenWidth / 800, screenHeight / 600);  // 基础缩放比例
@@ -972,8 +974,10 @@ export class GameScene extends Phaser.Scene {
     };
 
     // 添加方向变化事件监听器
-    window.addEventListener('orientationchange', handleOrientationChange);  // 监听方向变化
-    window.addEventListener('resize', handleOrientationChange);             // 监听窗口大小变化
+    if (typeof window !== 'undefined') {
+      window.addEventListener('orientationchange', handleOrientationChange);  // 监听方向变化
+      window.addEventListener('resize', handleOrientationChange);             // 监听窗口大小变化
+    }
 
     // 存储处理器以便清理
     this.orientationHandlers = {
@@ -1519,7 +1523,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     // 清理方向变化处理器
-    if (this.orientationHandlers) {
+    if (this.orientationHandlers && typeof window !== 'undefined') {
       window.removeEventListener('orientationchange', this.orientationHandlers.orientationChange);  // 移除方向变化监听
       window.removeEventListener('resize', this.orientationHandlers.resize);                       // 移除大小变化监听
       this.orientationHandlers = null;  // 清空处理器引用

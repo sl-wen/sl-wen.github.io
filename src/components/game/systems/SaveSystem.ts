@@ -49,7 +49,6 @@ export interface GameSaveData {
       distanceWalked: number;
       timeSpentFarming: number;
     };
-  }
 }
 
 /**

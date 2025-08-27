@@ -6,6 +6,11 @@ import { Cat } from '../entities/Player';
 import { TileMapManager } from '../entities/TileMapManager';
 import { FarmLayoutManager } from '../FarmLayoutManager';
 import { SeasonType, WeatherSystem } from '../systems/WeatherSystem';
+import { GameManager } from '../systems/GameManager';
+import { InputManager } from '../systems/InputManager';
+import { AudioManager } from '../systems/AudioManager';
+import { AnimationManager } from '../systems/AnimationManager';
+import { SaveSystem } from '../systems/SaveSystem';
 import { CropType, ToolType } from '../types/GameTypes';
 import { UILayoutManager } from '../UILayoutManager';
 import { ResourceLoader } from '../utils/ResourceLoader';
@@ -39,6 +44,13 @@ export class GameScene extends Phaser.Scene {
   private weatherSystem!: WeatherSystem;                     // 天气系统
   private actionButtons: Phaser.GameObjects.Container[] = []; // 动作按钮数组
 
+  // 新的系统管理器
+  private gameManager!: GameManager;                         // 游戏管理器
+  private inputManager!: InputManager;                       // 输入管理器
+  private audioManager!: AudioManager;                       // 音频管理器
+  private animationManager!: AnimationManager;               // 动画管理器
+  private saveSystem!: SaveSystem;                          // 存档系统
+
   // 游戏状态属性
   private currentTool: ToolType | null = null;                                    // 当前选择的工具
   private toolTooltip: Phaser.GameObjects.Text | null = null;                    // 工具提示文本
@@ -66,6 +78,18 @@ export class GameScene extends Phaser.Scene {
     console.log('GameScene create() called');
 
     try {
+      // 初始化核心系统管理器
+      console.log('Initializing core systems...');
+      this.gameManager = GameManager.getInstance();
+      this.gameManager.initialize({ gameScene: this });
+      
+      this.inputManager = new InputManager(this);
+      this.audioManager = new AudioManager(this);
+      this.animationManager = new AnimationManager(this);
+      this.saveSystem = new SaveSystem();
+      this.saveSystem.initialize();
+      console.log('Core systems initialized');
+
       // 初始化背包系统
       console.log('Initializing inventory system...');
       this.inventoryManager = new InventoryManager();
@@ -1281,6 +1305,11 @@ export class GameScene extends Phaser.Scene {
   update() {
     // 性能监控 - 限制重操作的更新频率
     this.frameCounter++;  // 帧计数器递增
+
+    // 更新输入管理器
+    if (this.inputManager) {
+      this.inputManager.update();
+    }
 
     // 处理玩家移动 - 平台特定的控制逻辑
     let moveX = 0;  // X方向移动值

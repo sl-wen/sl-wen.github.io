@@ -191,7 +191,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
   return (
     <div className="fixed inset-0 pointer-events-none z-40">
       {/* 虚拟摇杆 */}
-      <div className="absolute bottom-16 left-6 pointer-events-auto">
+      <div className="absolute bottom-24 left-6 pointer-events-auto">
         <div className="relative">
           {/* 摇杆外圈 */}
           <div
@@ -224,7 +224,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
       </div>
 
       {/* 动作按钮 */}
-      <div className="absolute bottom-16 right-6 pointer-events-auto">
+      <div className="absolute bottom-24 right-6 pointer-events-auto">
         <div className="relative">
           <button
             ref={actionButtonRef}

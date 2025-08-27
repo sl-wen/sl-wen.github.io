@@ -346,7 +346,7 @@ export class FlexibleTileManager {
   /**
    * 创建瓦片精灵
    */
-  private createTileSprite(x: number, y: number, definition: FlexibleTileDefinition): Phaser.GameObjects.Sprite | null {
+  private createTileSprite(x: number, y: number, definition: FlexibleTileDefinition): Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle | null {
     if (!this.mapConfig) return null;
 
     const worldX = x * this.mapConfig.tileWidth + this.mapConfig.tileWidth / 2;

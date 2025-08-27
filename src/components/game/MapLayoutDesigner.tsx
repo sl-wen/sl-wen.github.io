@@ -318,7 +318,10 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
                   }
                 ]
               },
-              metadata: mapData.metadata
+              metadata: {
+                ...mapData.metadata,
+                version: '1.0.0'
+              }
             };
             setCurrentMapData(flexibleMapData);
           }}
@@ -417,7 +420,7 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
                     key={tile.id}
                     className="p-2 border rounded text-center text-xs"
                     style={{ 
-                      backgroundColor: `#${getTileColor(tile.type).toString(16).padStart(6, '0')}40` 
+                      backgroundColor: `#${getTileColor(tile.type as string).toString(16).padStart(6, '0')}40` 
                     }}
                   >
                     <div className="font-medium">{tile.name}</div>

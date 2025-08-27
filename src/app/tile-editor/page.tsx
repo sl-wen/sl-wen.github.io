@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { FlexibleMapData } from '../../components/game/FlexibleTileManager';
+import ErrorBoundary from '../../components/ErrorBoundary';
 
 // 动态导入组件以避免SSR问题
 const MapLayoutDesigner = dynamic(
@@ -78,10 +79,12 @@ export default function TileEditorPage() {
 
       {/* 主要内容 */}
       <main className="flex-1">
-        <MapLayoutDesigner
-          onMapSave={handleMapSave}
-          onMapLoad={handleMapLoad}
-        />
+        <ErrorBoundary>
+          <MapLayoutDesigner
+            onMapSave={handleMapSave}
+            onMapLoad={handleMapLoad}
+          />
+        </ErrorBoundary>
       </main>
 
       {/* 页面脚部信息 */}

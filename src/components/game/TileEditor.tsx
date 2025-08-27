@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useRef, useState } from 'react';
 import * as Phaser from 'phaser';
 import { TileMapManager, TileType } from './entities/TileMapManager';
@@ -156,60 +158,73 @@ export const TileEditor: React.FC<TileEditorProps> = ({
    * 初始化Phaser游戏实例
    */
   useEffect(() => {
-    if (!canvasRef.current) return;
+    // 确保在浏览器环境中运行
+    if (typeof window === 'undefined' || !canvasRef.current) return;
 
-    // Phaser场景配置
-    class TileEditorScene extends Phaser.Scene {
-      constructor() {
-        super({ key: 'TileEditorScene' });
+    try {
+      // Phaser场景配置
+      class TileEditorScene extends Phaser.Scene {
+        constructor() {
+          super({ key: 'TileEditorScene' });
+        }
+
+        preload() {
+          // 这里应该预加载所有瓦片纹理
+          // 实际项目中需要根据资源路径调整
+          console.log('Preloading tile textures...');
+        }
+
+        create() {
+          try {
+            // 创建瓦片地图管理器
+            tileMapManagerRef.current = new TileMapManager(this);
+            
+            // 设置相机
+            this.cameras.main.setBounds(0, 0, config.mapWidth * config.tileSize, config.mapHeight * config.tileSize);
+            this.cameras.main.setZoom(2); // 放大显示
+            
+            // 渲染初始地图
+            renderMap();
+            
+            // 设置鼠标事件
+            this.input.on('pointerdown', handlePointerDown);
+            this.input.on('pointerup', handlePointerUp);
+            this.input.on('pointermove', handlePointerMove);
+          } catch (error) {
+            console.error('Error creating Phaser scene:', error);
+          }
+        }
       }
 
-      preload() {
-        // 这里应该预加载所有瓦片纹理
-        // 实际项目中需要根据资源路径调整
-        console.log('Preloading tile textures...');
-      }
+      // Phaser游戏配置
+      const gameConfig: Phaser.Types.Core.GameConfig = {
+        type: Phaser.AUTO,
+        width: config.canvasWidth,
+        height: config.canvasHeight,
+        canvas: canvasRef.current,
+        scene: TileEditorScene,
+        physics: {
+          default: 'arcade'
+        },
+        backgroundColor: '#87CEEB'
+      };
 
-      create() {
-        // 创建瓦片地图管理器
-        tileMapManagerRef.current = new TileMapManager(this);
-        
-        // 设置相机
-        this.cameras.main.setBounds(0, 0, config.mapWidth * config.tileSize, config.mapHeight * config.tileSize);
-        this.cameras.main.setZoom(2); // 放大显示
-        
-        // 渲染初始地图
-        renderMap();
-        
-        // 设置鼠标事件
-        this.input.on('pointerdown', handlePointerDown);
-        this.input.on('pointerup', handlePointerUp);
-        this.input.on('pointermove', handlePointerMove);
-      }
+      gameRef.current = new Phaser.Game(gameConfig);
+      sceneRef.current = gameRef.current.scene.scenes[0];
+    } catch (error) {
+      console.error('Error initializing Phaser game:', error);
     }
 
-    // Phaser游戏配置
-    const gameConfig: Phaser.Types.Core.GameConfig = {
-      type: Phaser.AUTO,
-      width: config.canvasWidth,
-      height: config.canvasHeight,
-      canvas: canvasRef.current,
-      scene: TileEditorScene,
-      physics: {
-        default: 'arcade'
-      },
-      backgroundColor: '#87CEEB'
-    };
-
-    gameRef.current = new Phaser.Game(gameConfig);
-    sceneRef.current = gameRef.current.scene.scenes[0];
-
     return () => {
-      if (gameRef.current) {
-        gameRef.current.destroy(true);
-        gameRef.current = null;
-        sceneRef.current = null;
-        tileMapManagerRef.current = null;
+      try {
+        if (gameRef.current) {
+          gameRef.current.destroy(true);
+          gameRef.current = null;
+          sceneRef.current = null;
+          tileMapManagerRef.current = null;
+        }
+      } catch (error) {
+        console.error('Error destroying Phaser game:', error);
       }
     };
   }, [config]);
@@ -218,28 +233,32 @@ export const TileEditor: React.FC<TileEditorProps> = ({
    * 渲染地图
    */
   const renderMap = () => {
-    if (!sceneRef.current || !tileMapManagerRef.current) return;
+    try {
+      if (!sceneRef.current || !tileMapManagerRef.current) return;
 
-    // 清除现有显示对象
-    sceneRef.current.children.removeAll();
+      // 清除现有显示对象
+      sceneRef.current.children.removeAll();
 
-    // 渲染每个瓦片
-    for (let y = 0; y < mapData.height; y++) {
-      for (let x = 0; x < mapData.width; x++) {
-        const tileId = mapData.tiles[y][x];
-        const tileData = TILE_DEFINITIONS.find(t => t.id === tileId);
-        
-        if (tileData) {
-          const sprite = sceneRef.current.add.rectangle(
-            x * config.tileSize + config.tileSize / 2,
-            y * config.tileSize + config.tileSize / 2,
-            config.tileSize,
-            config.tileSize,
-            getTileColor(tileData.type)
-          );
-          sprite.setStrokeStyle(1, 0x000000, 0.3);
+      // 渲染每个瓦片
+      for (let y = 0; y < mapData.height; y++) {
+        for (let x = 0; x < mapData.width; x++) {
+          const tileId = mapData.tiles[y][x];
+          const tileData = TILE_DEFINITIONS.find(t => t.id === tileId);
+          
+          if (tileData) {
+            const sprite = sceneRef.current.add.rectangle(
+              x * config.tileSize + config.tileSize / 2,
+              y * config.tileSize + config.tileSize / 2,
+              config.tileSize,
+              config.tileSize,
+              getTileColor(tileData.type)
+            );
+            sprite.setStrokeStyle(1, 0x000000, 0.3);
+          }
         }
       }
+    } catch (error) {
+      console.error('Error rendering map:', error);
     }
   };
 

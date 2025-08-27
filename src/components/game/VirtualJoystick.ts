@@ -128,13 +128,13 @@ export class VirtualJoystick {
     try {
       // 获取正确的触摸坐标（考虑全屏模式）
       const touchCoords = this.getTouchCoordinates(pointer);
-      
+
       // 验证坐标有效性
       if (!isFinite(touchCoords.x) || !isFinite(touchCoords.y)) {
         console.warn('Invalid touch coordinates detected, ignoring touch start');
         return;
       }
-      
+
       // 计算距离，确保在有效范围内
       const distance = Phaser.Math.Distance.Between(
         touchCoords.x,        // 触摸点X坐标
@@ -145,7 +145,7 @@ export class VirtualJoystick {
 
       // 在全屏模式下增加触摸范围
       const touchRange = this.config.radius + (this.isFullscreen ? 35 : 25);
-      
+
       if (distance <= touchRange) {  // 在有效触摸范围内
         this.isActive = true;                    // 激活摇杆
         this.activePointerId = pointer.id;       // 记录指针ID
@@ -167,7 +167,7 @@ export class VirtualJoystick {
 
         // 立即更新位置
         this.updateKnobPosition(pointer);  // 更新手柄位置
-        
+
         console.debug(`Joystick activated at distance ${distance.toFixed(2)} (range: ${touchRange}, fullscreen: ${this.isFullscreen})`);
       } else {
         console.debug(`Touch outside joystick range: ${distance.toFixed(2)} > ${touchRange}`);
@@ -218,14 +218,14 @@ export class VirtualJoystick {
   private updateKnobPosition(pointer: Phaser.Input.Pointer) {
     // 获取正确的触摸坐标（考虑全屏模式）
     const touchCoords = this.getTouchCoordinates(pointer);
-    
+
     // 验证坐标有效性
     if (!isFinite(touchCoords.x) || !isFinite(touchCoords.y)) {
       console.warn('Invalid touch coordinates in updateKnobPosition, resetting joystick');
       this.emergencyReset();
       return;
     }
-    
+
     const deltaX = touchCoords.x - this.container.x;  // 计算X方向偏移
     const deltaY = touchCoords.y - this.container.y;  // 计算Y方向偏移
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);  // 计算触摸点到中心的距离
@@ -381,40 +381,23 @@ export class VirtualJoystick {
    * @param screenHeight 屏幕高度
    */
   public updateLayout(screenWidth: number, screenHeight: number) {
-    // 如果处于全屏模式，使用特殊的全屏布局逻辑
+    // 如果处于全屏模式，使用全屏定位逻辑
     if (this.isFullscreen) {
       this.adjustForFullscreen();
       return;
     }
-    
-    const isPortrait = screenHeight > screenWidth;  // 判断是否为竖屏
-    const isMobile = screenWidth < 768;             // 判断是否为移动设备
 
-    let newX: number, newY: number;  // 新的位置坐标
+    // 不计算任何边距与安全区域，直接贴近左下角，距离边界等于半径
+    let newX = this.config.radius;
+    let newY = screenHeight - this.config.radius;
 
-    if (isMobile) {
-      if (isPortrait) {
-        // 竖屏：左下角，但避开底部导航，向上移动更多空间
-        newX = Math.max(this.config.radius + 30, screenWidth * 0.15);  // 确保不贴边
-        newY = screenHeight - this.config.radius - 140;                 // 进一步增加底部边距，确保完全显示
-      } else {
-        // 横屏：左下角，标准位置，也向上移动一些
-        newX = this.config.radius + 40;  // 标准左边距
-        newY = screenHeight - this.config.radius - 100;  // 进一步增加下边距，确保完全显示
-      }
-    } else {
-      // 桌面端：固定位置
-      newX = this.config.radius + 50;  // 桌面端左边距
-      newY = screenHeight - this.config.radius - 60;  // 桌面端下边距
-    }
+    // 边界保护：仅保证不超出屏幕，可达边界处刚好为半径
+    newX = Math.max(this.config.radius, Math.min(newX, screenWidth - this.config.radius));
+    newY = Math.max(this.config.radius, Math.min(newY, screenHeight - this.config.radius));
 
-    // 确保不超出边界
-    newX = Math.max(this.config.radius + 20, Math.min(newX, screenWidth - this.config.radius - 20));  // 限制X坐标范围
-    newY = Math.max(this.config.radius + 20, Math.min(newY, screenHeight - this.config.radius - 20)); // 限制Y坐标范围
+    this.setPosition(newX, newY);
 
-    this.setPosition(newX, newY);  // 设置新位置
-    
-    console.log(`Joystick layout updated: ${newX}, ${newY} (fullscreen: ${this.isFullscreen})`);
+    console.log(`Joystick layout updated (no margins): ${newX}, ${newY} (fullscreen: ${this.isFullscreen})`);
   }
 
   /**
@@ -454,7 +437,7 @@ export class VirtualJoystick {
     if (this.base) {
       this.base.setStrokeStyle(2, 0x4a90e2, 0.6);  // 恢复底座边框
     }
-    
+
     if (this.outerRing) {
       this.outerRing.setStrokeStyle(2, 0x4a90e2, 0.4);  // 恢复外圈
     }
@@ -470,7 +453,7 @@ export class VirtualJoystick {
     if (this.onMove) {
       this.onMove({ x: 0, y: 0 });  // 发送零向量，表示停止移动
     }
-    
+
     console.log('🔧 Joystick emergency reset completed');
   }
 
@@ -484,16 +467,16 @@ export class VirtualJoystick {
       if (typeof window === 'undefined') return;
       const screenWidth = window.innerWidth;
       const screenHeight = window.innerHeight;
-      
+
       // 更新布局
       this.updateLayout(screenWidth, screenHeight);
-      
+
       // 如果摇杆处于激活状态，执行紧急重置以避免位置错误
       if (this.isActive) {
         console.log('🔄 Viewport changed while joystick active, resetting...');
         this.emergencyReset();
       }
-      
+
       console.log(`📱 Viewport changed: ${screenWidth}x${screenHeight}, fullscreen: ${this.isFullscreen}`);
     }, 100);
   }
@@ -505,7 +488,7 @@ export class VirtualJoystick {
   public getDebugInfo() {
     const canvas = this.scene.game.canvas;
     const canvasRect = canvas ? canvas.getBoundingClientRect() : null;
-    
+
     return {
       isActive: this.isActive,                                    // 激活状态
       activePointerId: this.activePointerId,                     // 当前指针ID
@@ -541,7 +524,7 @@ export class VirtualJoystick {
    */
   public validateFullscreenState(): { isValid: boolean; issues: string[] } {
     const issues: string[] = [];
-    
+
     // 检查画布状态
     const canvas = this.scene.game.canvas;
     if (!canvas) {
@@ -552,7 +535,7 @@ export class VirtualJoystick {
         issues.push('Canvas has zero dimensions');
       }
     }
-    
+
     // 检查容器状态
     if (!this.container) {
       issues.push('Joystick container not initialized');
@@ -561,18 +544,18 @@ export class VirtualJoystick {
         issues.push('Invalid container position');
       }
     }
-    
+
     // 检查游戏尺寸
     const gameSize = this.scene.scale.gameSize;
     if (!gameSize || gameSize.width === 0 || gameSize.height === 0) {
       issues.push('Invalid game size');
     }
-    
+
     // 检查视口尺寸
     if (typeof window !== 'undefined' && (window.innerWidth === 0 || window.innerHeight === 0)) {
       issues.push('Invalid viewport size');
     }
-    
+
     return {
       isValid: issues.length === 0,
       issues
@@ -586,17 +569,17 @@ export class VirtualJoystick {
   setFullscreenMode(isFullscreen: boolean) {
     const wasFullscreen = this.isFullscreen;
     this.isFullscreen = isFullscreen;
-    
+
     // 只在状态真正改变时才调整
     if (wasFullscreen !== isFullscreen) {
       console.log(`Virtual joystick fullscreen mode changed: ${wasFullscreen} -> ${isFullscreen}`);
-      
+
       // 如果摇杆当前处于激活状态，先执行紧急重置
       if (this.isActive) {
         console.log('Joystick was active during fullscreen change, performing emergency reset');
         this.emergencyReset();
       }
-      
+
       // 延迟调整以确保DOM更新完成
       setTimeout(() => {
         if (isFullscreen) {
@@ -604,7 +587,7 @@ export class VirtualJoystick {
         } else {
           this.adjustForNormalMode();
         }
-        
+
         // 强制刷新事件处理器
         this.refreshEventHandlers();
       }, 100);
@@ -616,100 +599,68 @@ export class VirtualJoystick {
    * 改进的移动端响应式定位算法
    */
   private adjustForFullscreen() {
-    // 在全屏模式下，使用实际的视口尺寸而不是游戏尺寸
+    // 在全屏模式下，使用实际的视口尺寸并贴左下角（无任何边距/安全区）
     if (typeof window === 'undefined') return;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    
-    // 检查是否为横屏模式和移动设备
-    const isLandscape = viewportWidth > viewportHeight;
-    const isMobile = viewportWidth < 768;
-    
-    // 调整摇杆位置到屏幕左下角，考虑安全区域
-    const safeAreaBottom = this.getSafeAreaInset('bottom');
-    const safeAreaLeft = this.getSafeAreaInset('left');
-    
-    // 根据设备类型和屏幕方向调整位置 - 使用视口坐标系
-    let joystickX, joystickY;
-    
-    if (isMobile) {
-      if (isLandscape) {
-        // 移动设备横屏：左下角，考虑更大的边距，向上移动
-        joystickX = Math.max(safeAreaLeft + this.config.radius + 20, viewportWidth * 0.08);
-        joystickY = viewportHeight - Math.max(safeAreaBottom + this.config.radius + 60, viewportHeight * 0.18);
-      } else {
-        // 移动设备竖屏：左下角，但需要更多底部空间避开手势区域
-        joystickX = Math.max(safeAreaLeft + this.config.radius + 15, viewportWidth * 0.12);
-        joystickY = viewportHeight - Math.max(safeAreaBottom + this.config.radius + 80, viewportHeight * 0.20);
-      }
-    } else {
-      // 桌面设备：标准位置，也向上移动一些
-      joystickX = safeAreaLeft + this.config.radius + 30;
-      joystickY = viewportHeight - safeAreaBottom - this.config.radius - 50;
-    }
-    
-    // 全屏模式下，需要将视口坐标转换为游戏坐标
+
+    // 视口坐标中，位置为左下角，距离边缘等于半径
+    let joystickX = this.config.radius;
+    let joystickY = viewportHeight - this.config.radius;
+
+    // 将视口坐标转换为游戏坐标
     const canvas = this.scene.game.canvas;
     if (canvas) {
       const canvasRect = canvas.getBoundingClientRect();
       const gameWidth = this.scene.scale.gameSize.width;
       const gameHeight = this.scene.scale.gameSize.height;
-      
-      // 计算缩放比例 - 改进的计算方法
       const scaleX = gameWidth / canvasRect.width;
       const scaleY = gameHeight / canvasRect.height;
-      
-      // 将视口坐标转换为游戏坐标
       joystickX = joystickX * scaleX;
       joystickY = joystickY * scaleY;
     }
-    
-    // 确保摇杆不会超出游戏边界 - 更严格的边界检查
+
+    // 边界保护（不添加额外边距）
     const gameWidth = this.scene.scale.gameSize.width;
     const gameHeight = this.scene.scale.gameSize.height;
-    const margin = this.config.radius + (isMobile ? 15 : 10);
-    
-    joystickX = Math.max(margin, Math.min(joystickX, gameWidth - margin));
-    joystickY = Math.max(margin, Math.min(joystickY, gameHeight - margin));
-    
+    joystickX = Math.max(this.config.radius, Math.min(joystickX, gameWidth - this.config.radius));
+    joystickY = Math.max(this.config.radius, Math.min(joystickY, gameHeight - this.config.radius));
+
     this.container.setPosition(joystickX, joystickY);
-    
-    // 根据屏幕尺寸和设备类型动态调整摇杆大小
+
+    // 保持其他视觉属性
+    const isLandscape = viewportWidth > viewportHeight;
     const scaleFactor = this.calculateOptimalScale(isLandscape);
     this.container.setScale(scaleFactor);
     this.container.setAlpha(0.9);
-    
-    // 确保摇杆在最高层级显示
     this.container.setDepth(10000);
-    
-    // 更新配置以反映新位置
+
     this.config.x = joystickX;
     this.config.y = joystickY;
-    
-    console.log(`Fullscreen joystick positioned at: ${joystickX}, ${joystickY} (landscape: ${isLandscape}, mobile: ${isMobile}, scale: ${scaleFactor})`);
+
+    console.log(`Fullscreen joystick positioned (no margins): ${joystickX}, ${joystickY}`);
   }
 
   /**
    * 调整摇杆以适应正常模式
    */
   private adjustForNormalMode() {
-    // 恢复原始配置
+    // 正常模式：贴左下角（无任何边距）
+    const gameWidth = this.scene.scale.gameSize.width;
     const gameHeight = this.scene.scale.gameSize.height;
-    
-    // 计算正常模式下的位置
-    const normalX = this.config.radius + 40;
-    const normalY = gameHeight - this.config.radius - 60;
-    
+
+    const normalX = Math.max(this.config.radius, Math.min(this.config.radius, gameWidth - this.config.radius));
+    const normalY = Math.max(this.config.radius, Math.min(gameHeight - this.config.radius, gameHeight - this.config.radius));
+
     this.container.setPosition(normalX, normalY);
     this.container.setScale(1.0);
     this.container.setAlpha(0.8);
     this.container.setDepth(1000);
-    
-    // 更新配置
+
     this.config.x = normalX;
     this.config.y = normalY;
-    
-    console.log(`Normal mode joystick positioned at: ${normalX}, ${normalY}`);
+
+    console.log(`Normal mode joystick positioned (no margins): ${normalX}, ${normalY}`);
   }
 
   /**
@@ -722,7 +673,7 @@ export class VirtualJoystick {
       // 尝试获取CSS环境变量
       const insetValue = getComputedStyle(document.documentElement)
         .getPropertyValue(`env(safe-area-inset-${side})`);
-      
+
       if (insetValue && insetValue !== '') {
         const value = parseInt(insetValue.replace('px', '')) || 0;
         if (value > 0) return value;
@@ -730,7 +681,7 @@ export class VirtualJoystick {
     } catch (error) {
       console.debug('Could not get safe area inset:', error);
     }
-    
+
     // 检测设备类型和方向
     const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -738,12 +689,12 @@ export class VirtualJoystick {
     const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 800;
     const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 600;
     const isLandscape = viewportWidth > viewportHeight;
-    
+
     if (!isMobile) {
       // 桌面端基本不需要安全区域
       return side === 'bottom' ? 20 : 10;
     }
-    
+
     // 移动端回退值
     switch (side) {
       case 'top':
@@ -754,7 +705,7 @@ export class VirtualJoystick {
           return isLandscape ? 24 : 32;
         }
         return 24;
-        
+
       case 'bottom':
         if (isIOS) {
           // iPhone X系列有Home indicator
@@ -764,7 +715,7 @@ export class VirtualJoystick {
           return isLandscape ? 48 : 56;
         }
         return 48;
-        
+
       case 'left':
       case 'right':
         if (isIOS && isLandscape) {
@@ -772,7 +723,7 @@ export class VirtualJoystick {
           return 44;
         }
         return 0;
-        
+
       default:
         return 0;
     }
@@ -803,14 +754,14 @@ export class VirtualJoystick {
     const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 800;
     const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 600;
     const isMobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
+
     // 基础缩放比例
     let baseScale = 1.0;
-    
+
     if (isMobile) {
       // 移动设备：根据屏幕尺寸调整
       const screenSize = Math.min(viewportWidth, viewportHeight);
-      
+
       if (screenSize <= 375) {
         // 小屏设备 (iPhone SE等)
         baseScale = isLandscape ? 1.0 : 1.1;
@@ -828,7 +779,7 @@ export class VirtualJoystick {
       // 桌面设备：保持适中的大小
       baseScale = 1.1;
     }
-    
+
     // 在全屏模式下稍微增大一点
     return this.isFullscreen ? baseScale * 1.1 : baseScale;
   }
@@ -839,24 +790,24 @@ export class VirtualJoystick {
    */
   private refreshEventHandlers() {
     console.log('Refreshing virtual joystick event handlers');
-    
+
     // 获取交互区域
     const interactiveArea = (this as unknown as { interactiveArea: Phaser.GameObjects.Arc }).interactiveArea;
     if (!interactiveArea) {
       console.warn('Interactive area not found, cannot refresh event handlers');
       return;
     }
-    
+
     // 移除现有的事件监听器
     interactiveArea.removeAllListeners();
     this.scene.input.off('pointermove');
     this.scene.input.off('pointerup');
     this.scene.input.off('pointerupoutside');
     this.scene.input.off('pointercancel');
-    
+
     // 重新设置事件处理器
     this.setupEventHandlers();
-    
+
     console.log('Virtual joystick event handlers refreshed');
   }
 
@@ -874,12 +825,12 @@ export class VirtualJoystick {
         console.warn('Canvas not available, using pointer coordinates directly');
         return { x: pointer.x, y: pointer.y };
       }
-      
+
       const canvasRect = canvas.getBoundingClientRect();
-      
+
       // 尝试获取原始DOM事件坐标
       let rawX, rawY;
-      
+
       // 如果有原始事件，使用原始事件的坐标
       if (pointer.event && 'clientX' in pointer.event && 'clientY' in pointer.event) {
         rawX = pointer.event.clientX;
@@ -893,35 +844,35 @@ export class VirtualJoystick {
         // 回退到pointer坐标，但需要考虑Phaser可能已经进行的变换
         rawX = pointer.x;
         rawY = pointer.y;
-        
+
         // 如果Phaser已经进行了坐标转换，我们需要逆向转换
         const gameWidth = this.scene.scale.gameSize.width;
         const gameHeight = this.scene.scale.gameSize.height;
         const reverseScaleX = canvasRect.width / gameWidth;
         const reverseScaleY = canvasRect.height / gameHeight;
-        
+
         rawX = rawX * reverseScaleX + canvasRect.left;
         rawY = rawY * reverseScaleY + canvasRect.top;
       }
-      
+
       // 计算相对于画布的坐标
       const canvasX = rawX - canvasRect.left;
       const canvasY = rawY - canvasRect.top;
-      
+
       // 获取游戏的实际尺寸和画布尺寸
       const gameWidth = this.scene.scale.gameSize.width;
       const gameHeight = this.scene.scale.gameSize.height;
-      
+
       // 计算缩放比例
       const scaleX = gameWidth / canvasRect.width;
       const scaleY = gameHeight / canvasRect.height;
-      
+
       // 转换为游戏坐标系
       const gameX = canvasX * scaleX;
       const gameY = canvasY * scaleY;
-      
+
       console.debug(`Fullscreen coords: raw(${rawX}, ${rawY}) -> canvas(${canvasX}, ${canvasY}) -> game(${gameX}, ${gameY})`);
-      
+
       return {
         x: gameX,
         y: gameY

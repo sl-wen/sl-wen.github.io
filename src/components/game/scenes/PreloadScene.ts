@@ -101,7 +101,7 @@ export class PreloadScene extends Phaser.Scene {
     this.loadCropAssets();
 
     // 加载工具资源
-    this.loadToolAssets();
+    // this.loadToolAssets();
 
     // 加载UI资源
     this.loadUIAssets();

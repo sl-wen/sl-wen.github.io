@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 
 interface GameSettingsMenuProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ const GameSettingsMenu: React.FC<GameSettingsMenuProps> = ({
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white flex items-center">
             <span className="mr-3">⚙️</span>
-            游戏设置
+            游戏  设置
           </h2>
           <button
             onClick={onClose}
@@ -64,7 +64,7 @@ const GameSettingsMenu: React.FC<GameSettingsMenuProps> = ({
               <span className="mr-2">🔊</span>
               音频设置
             </h3>
-            
+
             <div className="space-y-4">
               {/* 声音开关 */}
               <div className="flex items-center justify-between">
@@ -122,7 +122,7 @@ const GameSettingsMenu: React.FC<GameSettingsMenuProps> = ({
               <span className="mr-2">🎮</span>
               游戏设置
             </h3>
-            
+
             <div className="space-y-4">
               {/* 自动保存 */}
               <div className="flex items-center justify-between">

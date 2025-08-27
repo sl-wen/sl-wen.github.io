@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import GameSettingsMenu from '../../components/game/GameSettingsMenu';
 
 // 强制动态渲染以防止SSR问题 - 游戏需要在客户端环境运行
@@ -26,7 +26,7 @@ const GamePage: React.FC = () => {
   const [screenOrientation, setScreenOrientation] = useState<'portrait' | 'landscape'>('landscape');
   // 视口尺寸
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
-  
+
   // 增强版功能状态
   const [gameStats, setGameStats] = useState({
     level: 1,
@@ -42,10 +42,10 @@ const GamePage: React.FC = () => {
   // 游戏时间管理
   const [gameStartTime, setGameStartTime] = useState<number>(0);
   const [currentGameTime, setCurrentGameTime] = useState<string>('06:00');
-  
+
   // 设置菜单状态
   const [showSettings, setShowSettings] = useState(false);
-  
+
   // 游戏设置
   const [gameSettings, setGameSettings] = useState({
     soundEnabled: true,
@@ -81,11 +81,11 @@ const GamePage: React.FC = () => {
       const gameMinutes = Math.floor(elapsed / 60000) * 60; // 每分钟现实时间等于60分钟游戏时间
       const startMinutes = 6 * 60; // 06:00 开始
       const totalMinutes = (startMinutes + gameMinutes) % (24 * 60); // 24小时循环
-      
+
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
       const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-      
+
       setCurrentGameTime(timeString);
       setGameStats(prev => ({ ...prev, gameTime: timeString }));
     };
@@ -344,18 +344,18 @@ const GamePage: React.FC = () => {
 
       setRpgGameInstance(game);        // 保存完整的RPGGame实例
       setGameInstance(game.game);      // 保存Phaser游戏实例
-      
+
       // 动态导入游戏管理器并设置事件监听器
       const { GameManager } = await import('@/components/game/systems/GameManager');
       const gameManager = GameManager.getInstance();
       setupGameEventListeners(gameManager);
-      
+
       setIsLoading(false); // 游戏加载完成
       console.log('Enhanced game started successfully');
-      
+
       // 设置游戏开始时间用于时间计算
       setGameStartTime(Date.now());
-      
+
       // 自动进入全屏模式
       setTimeout(() => {
         enterFullscreen();
@@ -388,13 +388,13 @@ const GamePage: React.FC = () => {
     setIsLoading(false);
     setIsFullscreen(false);
     setError(null);
-    
+
     // 同步更新游戏设置状态
     setGameSettings(prev => ({
       ...prev,
       fullscreen: false
     }));
-    
+
     // 重置游戏统计
     setGameStats({
       level: 1,
@@ -406,7 +406,7 @@ const GamePage: React.FC = () => {
       currentWeather: 'sunny',
       gameTime: '06:00'
     });
-    
+
     // 重置时间相关状态
     setGameStartTime(0);
     setCurrentGameTime('06:00');
@@ -505,28 +505,28 @@ const GamePage: React.FC = () => {
           ...prev,
           fullscreen: true
         }));
-        
+
         // 隐藏地址栏（iOS Safari特殊处理）
         if (platformInfo.isIOS) {
           // 滚动到顶部以隐藏地址栏
           window.scrollTo(0, 1);
           setTimeout(() => window.scrollTo(0, 0), 100);
-          
+
           // 设置viewport meta标签以防止缩放
           let viewportMeta = document.querySelector('meta[name="viewport"]');
           if (viewportMeta) {
-            viewportMeta.setAttribute('content', 
+            viewportMeta.setAttribute('content',
               'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
             );
           }
         }
-        
+
         // 添加模拟全屏样式
         document.body.classList.add('fullscreen-active');
         if (gameRef.current) {
           gameRef.current.classList.add('fullscreen-simulated');
         }
-        
+
         console.log('Mobile fullscreen simulation activated');
         return;
       }
@@ -585,23 +585,23 @@ const GamePage: React.FC = () => {
           ...prev,
           fullscreen: false
         }));
-        
+
         // 恢复页面样式
         document.body.classList.remove('fullscreen-active');
         if (gameRef.current) {
           gameRef.current.classList.remove('fullscreen-simulated');
         }
-        
+
         // 恢复viewport设置（iOS）
         if (platformInfo.isIOS) {
           let viewportMeta = document.querySelector('meta[name="viewport"]');
           if (viewportMeta) {
-            viewportMeta.setAttribute('content', 
+            viewportMeta.setAttribute('content',
               'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes'
             );
           }
         }
-        
+
         console.log('Mobile fullscreen simulation deactivated');
         return;
       }
@@ -710,7 +710,7 @@ const GamePage: React.FC = () => {
       {!isFullscreen && (
         <div className="bg-slate-800 border-b border-slate-700 p-4">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-white mb-2">🐱 小猫农场 - 增强版</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">🐱 小猫农场</h1>
             <p className="text-white/80 text-sm">
               集成了现代农场系统、天气系统和增强UI的治愈系农场游戏
             </p>
@@ -817,9 +817,8 @@ const GamePage: React.FC = () => {
           {gameStarted && !isLoading && (
             <>
               {/* 游戏状态栏 */}
-              <div className={`absolute z-50 bg-black/20 backdrop-blur-md rounded-lg text-white max-w-xs ${
-                screenOrientation === 'portrait' ? 'top-2 left-2 p-3' : 'top-4 left-4 p-4'
-              }`}>
+              <div className={`absolute z-50 bg-black/20 backdrop-blur-md rounded-lg text-white max-w-xs ${screenOrientation === 'portrait' ? 'top-2 left-2 p-3' : 'top-4 left-4 p-4'
+                }`}>
                 <div className={`grid grid-cols-2 gap-4 ${screenOrientation === 'portrait' ? 'text-xs' : 'text-sm'}`}>
                   <div>
                     <div>等级: {gameStats.level}</div>
@@ -835,18 +834,14 @@ const GamePage: React.FC = () => {
               </div>
 
               {/* 游戏控制面板 - 设置按钮（右上角） */}
-              <div className={`absolute z-50 bg-black/20 backdrop-blur-md rounded-lg p-3 ${
-                screenOrientation === 'portrait' ? 'top-2 right-2' : 'top-4 right-4'
-              }`}>
+              <div className={`absolute z-50 bg-black/20 backdrop-blur-md`}>
                 <button
                   onClick={() => setShowSettings(true)}
-                  className={`bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors flex items-center ${
-                    screenOrientation === 'portrait' ? 'px-2 py-1' : 'px-3 py-1'
-                  }`}
+                  className={`bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors flex items-center`}
                   disabled={!gameStarted}
                 >
                   <span className="mr-1">⚙️</span>
-                  {screenOrientation === 'portrait' ? '' : '设置'}
+                  {/* {screenOrientation === 'portrait' ? '' : '设置'} */}
                 </button>
               </div>
 

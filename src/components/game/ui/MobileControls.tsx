@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 interface MobileControlsProps {
   onMove: (direction: 'up' | 'down' | 'left' | 'right') => void;
@@ -32,33 +32,33 @@ const MobileControls: React.FC<MobileControlsProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isActionPressed, setIsActionPressed] = useState(false);
   const [selectedToolIndex, setSelectedToolIndex] = useState(0);
-  
+
   const joystickRef = useRef<HTMLDivElement>(null);
   const actionButtonRef = useRef<HTMLButtonElement>(null);
   const moveIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   const JOYSTICK_RADIUS = 40;
   const DEAD_ZONE = 0.2;
 
   // 虚拟摇杆处理
   const handleJoystickStart = useCallback((clientX: number, clientY: number) => {
     if (!joystickRef.current) return;
-    
+
     setIsDragging(true);
     const rect = joystickRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    
+
     updateJoystickPosition(clientX, clientY, centerX, centerY);
   }, []);
 
   const handleJoystickMove = useCallback((clientX: number, clientY: number) => {
     if (!isDragging || !joystickRef.current) return;
-    
+
     const rect = joystickRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    
+
     updateJoystickPosition(clientX, clientY, centerX, centerY);
   }, [isDragging]);
 
@@ -66,18 +66,18 @@ const MobileControls: React.FC<MobileControlsProps> = ({
     const deltaX = clientX - centerX;
     const deltaY = clientY - centerY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    
+
     let x = deltaX;
     let y = deltaY;
-    
+
     // 限制在圆形区域内
     if (distance > JOYSTICK_RADIUS) {
       x = (deltaX / distance) * JOYSTICK_RADIUS;
       y = (deltaY / distance) * JOYSTICK_RADIUS;
     }
-    
+
     setJoystickPosition({ x, y });
-    
+
     // 计算移动方向
     const normalizedDistance = distance / JOYSTICK_RADIUS;
     if (normalizedDistance > DEAD_ZONE) {
@@ -213,7 +213,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
               }}
             />
           </div>
-          
+
           {/* 摇杆标签 */}
           <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
             <span className="text-white text-xs bg-black bg-opacity-50 px-2 py-1 rounded">
@@ -228,11 +228,10 @@ const MobileControls: React.FC<MobileControlsProps> = ({
         <div className="relative">
           <button
             ref={actionButtonRef}
-            className={`w-16 h-16 rounded-full border-2 border-white border-opacity-50 text-white text-2xl font-bold transition-all ${
-              isActionPressed 
-                ? 'bg-green-600 bg-opacity-80 scale-95' 
+            className={`w-16 h-16 rounded-full border-2 border-white border-opacity-50 text-white text-2xl font-bold transition-all ${isActionPressed
+                ? 'bg-green-600 bg-opacity-80 scale-95'
                 : 'bg-green-500 bg-opacity-60 hover:bg-opacity-80'
-            }`}
+              }`}
             onMouseDown={(e) => handleMouseDown(e, handleActionStart)}
             onMouseUp={(e) => handleMouseUp(e, handleActionEnd)}
             onTouchStart={(e) => handleTouchStart(e, handleActionStart)}
@@ -240,13 +239,13 @@ const MobileControls: React.FC<MobileControlsProps> = ({
           >
             ⚡
           </button>
-          
+
           {/* 动作按钮标签 */}
-          <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
+          {/* <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
             <span className="text-white text-xs bg-black bg-opacity-50 px-2 py-1 rounded whitespace-nowrap">
               使用工具
             </span>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -257,23 +256,22 @@ const MobileControls: React.FC<MobileControlsProps> = ({
             <button
               key={tool.id}
               onClick={() => handleToolSelect(index)}
-              className={`w-12 h-12 rounded-lg border-2 transition-all flex items-center justify-center text-xl ${
-                selectedToolIndex === index
+              className={`w-12 h-12 rounded-lg border-2 transition-all flex items-center justify-center text-xl ${selectedToolIndex === index
                   ? 'border-yellow-400 bg-yellow-500 bg-opacity-30'
                   : 'border-white border-opacity-30 bg-white bg-opacity-10 hover:bg-opacity-20'
-              }`}
+                }`}
             >
               {tool.icon}
             </button>
           ))}
         </div>
-        
+
         {/* 当前工具显示 */}
-        <div className="text-center mt-2">
+        {/* <div className="text-center mt-2">
           <span className="text-white text-xs bg-black bg-opacity-50 px-2 py-1 rounded">
             {tools[selectedToolIndex]?.name || '无工具'}
           </span>
-        </div>
+        </div> */}
       </div>
 
       {/* 菜单按钮 */}
@@ -306,7 +304,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
             ↑
           </button>
           <div></div>
-          
+
           <button
             className="bg-gray-700 bg-opacity-60 hover:bg-opacity-80 text-white rounded p-2 border border-white border-opacity-30 transition-all"
             onMouseDown={() => onMove('left')}
@@ -326,7 +324,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
           >
             →
           </button>
-          
+
           <div></div>
           <button
             className="bg-gray-700 bg-opacity-60 hover:bg-opacity-80 text-white rounded p-2 border border-white border-opacity-30 transition-all"
@@ -342,11 +340,11 @@ const MobileControls: React.FC<MobileControlsProps> = ({
       </div>
 
       {/* 游戏信息显示 */}
-      <div className="absolute top-6 left-6 pointer-events-none">
+      {/* <div className="absolute top-6 left-6 pointer-events-none">
         <div className="bg-black bg-opacity-50 text-white p-2 rounded-lg text-sm">
           <div>当前工具: {tools[selectedToolIndex]?.name || '无'}</div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

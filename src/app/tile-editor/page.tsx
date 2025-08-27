@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { FlexibleMapData } from '../../components/game/FlexibleTileManager';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import SimpleTileEditor from '../../components/game/SimpleTileEditor';
 
 // 动态导入组件以避免SSR问题
 const MapLayoutDesigner = dynamic(
@@ -26,6 +27,7 @@ const MapLayoutDesigner = dynamic(
  */
 export default function TileEditorPage() {
   const [notification, setNotification] = useState<string>('');
+  const [useSimpleEditor, setUseSimpleEditor] = useState(false);
 
   const handleMapSave = (mapData: FlexibleMapData) => {
     setNotification(`地图 "${mapData.metadata.name}" 已保存成功！`);
@@ -49,7 +51,17 @@ export default function TileEditorPage() {
                 Beta
               </span>
             </div>
-            <nav className="flex space-x-4">
+            <nav className="flex items-center space-x-4">
+              <button
+                onClick={() => setUseSimpleEditor(!useSimpleEditor)}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  useSimpleEditor 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-blue-100 text-blue-800'
+                }`}
+              >
+                {useSimpleEditor ? '🔧 简单模式' : '🎨 高级模式'}
+              </button>
               <a
                 href="/sprout-lands"
                 className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
@@ -78,12 +90,25 @@ export default function TileEditorPage() {
       )}
 
       {/* 主要内容 */}
-      <main className="flex-1">
+      <main className="flex-1 p-4">
         <ErrorBoundary>
-          <MapLayoutDesigner
-            onMapSave={handleMapSave}
-            onMapLoad={handleMapLoad}
-          />
+          {useSimpleEditor ? (
+            <div className="max-w-6xl mx-auto">
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold mb-2">简单瓦片编辑器</h2>
+                <p className="text-gray-600">
+                  这是一个简化版本的瓦片编辑器，用于测试和快速编辑。
+                  点击上方按钮切换到高级模式。
+                </p>
+              </div>
+              <SimpleTileEditor width={1000} height={600} />
+            </div>
+          ) : (
+            <MapLayoutDesigner
+              onMapSave={handleMapSave}
+              onMapLoad={handleMapLoad}
+            />
+          )}
         </ErrorBoundary>
       </main>
 

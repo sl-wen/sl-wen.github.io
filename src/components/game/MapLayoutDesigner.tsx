@@ -292,25 +292,45 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
   }, [saveMap]);
 
   if (showEditor && currentMapData) {
-    // 转换数据格式给TileEditor使用
-    const editorMapData = {
-      width: currentMapData.config.width,
-      height: currentMapData.config.height,
-      tiles: currentMapData.config.layers[0].tiles,
-      metadata: currentMapData.metadata
-    };
+    try {
+      // 转换数据格式给TileEditor使用
+      const editorMapData = {
+        width: currentMapData.config.width,
+        height: currentMapData.config.height,
+        tiles: currentMapData.config.layers[0]?.tiles || [],
+        metadata: currentMapData.metadata
+      };
 
-    return (
-      <div className={`h-screen ${className}`}>
-        <TileEditor
-          config={{
-            mapWidth: currentMapData.config.width,
-            mapHeight: currentMapData.config.height,
-            tileSize: 32, // 编辑器中使用较大的瓦片显示
-            canvasWidth: 800,
-            canvasHeight: 600
-          }}
-          initialMapData={editorMapData}
+      // 验证数据有效性
+      if (!editorMapData.tiles || editorMapData.tiles.length === 0) {
+        console.error('Invalid map data: no tiles found');
+        return (
+          <div className={`h-screen flex items-center justify-center ${className}`}>
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-red-600 mb-2">地图数据错误</h3>
+              <p className="text-gray-600 mb-4">无法加载地图数据，请重新创建或选择其他地图。</p>
+              <button 
+                onClick={() => setShowEditor(false)}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                返回
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className={`h-screen ${className}`}>
+          <TileEditor
+            config={{
+              mapWidth: currentMapData.config.width,
+              mapHeight: currentMapData.config.height,
+              tileSize: 24, // 适中的瓦片大小
+              canvasWidth: Math.min(1200, window.innerWidth - 100),
+              canvasHeight: Math.min(800, window.innerHeight - 200)
+            }}
+            initialMapData={editorMapData}
           onMapChange={(mapData) => {
             // 转换回FlexibleMapData格式
             const flexibleMapData: FlexibleMapData = {
@@ -351,6 +371,23 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
         </button>
       </div>
     );
+    } catch (error) {
+      console.error('Error rendering map editor:', error);
+      return (
+        <div className={`h-screen flex items-center justify-center ${className}`}>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-red-600 mb-2">加载错误</h3>
+            <p className="text-gray-600 mb-4">地图编辑器加载失败，请刷新页面重试。</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              刷新页面
+            </button>
+          </div>
+        </div>
+      );
+    }
   }
 
   return (

@@ -83,7 +83,7 @@ export default function TileEditorPage() {
                 {useSimpleEditor ? '🔧 简单模式' : '🎨 高级模式'}
               </button>
               <a
-                href="/sprout-lands"
+                href="/game"
                 className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >
                 🎮 返回游戏

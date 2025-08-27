@@ -104,13 +104,13 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                 </a>
                 
-                {/* Sprout Lands 游戏按钮 - 新特色功能 */}
+                {/* game 游戏按钮 - 特色功能 */}
                 <a
-                  href="/sprout-lands"
+                  href="/game"
                   className="group inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   <span className="flex items-center gap-2">
-                    🌱 Sprout Lands
+                    🌱 game
                     <svg
                       className="w-5 h-5 transform group-hover:rotate-12 transition-transform duration-200"
                       fill="none"

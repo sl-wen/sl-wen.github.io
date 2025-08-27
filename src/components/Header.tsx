@@ -76,7 +76,6 @@ const Header: React.FC = () => {
     { href: '/', label: '首页', icon: '🏠' },
     { href: '/category', label: '分类', icon: '📁' },
     { href: '/search', label: '搜索', icon: '🔍' },
-    { href: '/sprout-lands', label: '萌芽', icon: '🌱' },
     { href: '/about', label: '关于', icon: 'ℹ️' },
     { href: '/tools', label: '工具', icon: '🛠️' },
     { href: '/game', label: '小猫农场', icon: '🐱' }

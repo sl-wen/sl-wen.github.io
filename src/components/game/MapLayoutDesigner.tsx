@@ -327,8 +327,8 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
               mapWidth: currentMapData.config.width,
               mapHeight: currentMapData.config.height,
               tileSize: 24, // 适中的瓦片大小
-              canvasWidth: Math.min(1200, window.innerWidth - 100),
-              canvasHeight: Math.min(800, window.innerHeight - 200)
+              canvasWidth: Math.min(1200, typeof window !== 'undefined' ? window.innerWidth - 100 : 1200),
+              canvasHeight: Math.min(800, typeof window !== 'undefined' ? window.innerHeight - 200 : 800)
             }}
             initialMapData={editorMapData}
           onMapChange={(mapData) => {

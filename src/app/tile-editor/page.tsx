@@ -2,11 +2,8 @@
 
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { FlexibleMapData } from '../../components/game/FlexibleTileManager';
-import ErrorBoundary from '../../components/ErrorBoundary';
-import SimpleTileEditor from '../../components/game/SimpleTileEditor';
 
-// 动态导入组件以避免SSR问题
+// 动态导入所有可能有SSR问题的组件
 const MapLayoutDesigner = dynamic(
   () => import('../../components/game/MapLayoutDesigner'),
   { 
@@ -22,6 +19,29 @@ const MapLayoutDesigner = dynamic(
   }
 );
 
+const SimpleTileEditor = dynamic(
+  () => import('../../components/game/SimpleTileEditor'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+);
+
+const ErrorBoundary = dynamic(
+  () => import('../../components/ErrorBoundary'),
+  { 
+    ssr: false,
+    loading: () => <div>Loading...</div>
+  }
+);
+
+// 动态导入类型
+import type { FlexibleMapData } from '../../components/game/FlexibleTileManager';
+
 /**
  * 瓦片编辑器页面
  */
@@ -29,7 +49,7 @@ export default function TileEditorPage() {
   const [notification, setNotification] = useState<string>('');
   const [useSimpleEditor, setUseSimpleEditor] = useState(false);
 
-  const handleMapSave = (mapData: FlexibleMapData) => {
+  const handleMapSave = (mapData: any) => {
     setNotification(`地图 "${mapData.metadata.name}" 已保存成功！`);
     setTimeout(() => setNotification(''), 3000);
   };

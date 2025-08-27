@@ -354,18 +354,18 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
   }
 
   return (
-    <div className={`p-6 bg-gray-50 min-h-screen ${className}`}>
+    <div className={`p-3 lg:p-6 bg-gray-50 min-h-screen ${className}`}>
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">地图布局设计器</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-4 lg:mb-8">地图布局设计器</h1>
         
         {/* 创建新地图区域 */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">创建新地图</h2>
+        <div className="bg-white rounded-lg shadow-md p-4 lg:p-6 mb-4 lg:mb-8">
+          <h2 className="text-lg lg:text-xl font-semibold mb-4">创建新地图</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* 地图尺寸设置 */}
             <div>
-              <h3 className="text-lg font-medium mb-3">地图尺寸</h3>
+              <h3 className="text-base lg:text-lg font-medium mb-3">地图尺寸</h3>
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -377,7 +377,7 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
                     max="100"
                     value={mapWidth}
                     onChange={(e) => setMapWidth(parseInt(e.target.value) || 32)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -390,7 +390,7 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
                     max="100"
                     value={mapHeight}
                     onChange={(e) => setMapHeight(parseInt(e.target.value) || 24)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="text-sm text-gray-600">
@@ -401,21 +401,21 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
 
             {/* 模板选择 */}
             <div>
-              <h3 className="text-lg font-medium mb-3">地图模板</h3>
-              <div className="space-y-2">
+              <h3 className="text-base lg:text-lg font-medium mb-3">地图模板</h3>
+              <div className="space-y-3">
                 {Object.entries(MAP_TEMPLATES).map(([key, template]) => (
-                  <label key={key} className="flex items-center space-x-2">
+                  <label key={key} className="flex items-start space-x-3 cursor-pointer">
                     <input
                       type="radio"
                       name="template"
                       value={key}
                       checked={selectedTemplate === key}
                       onChange={(e) => setSelectedTemplate(e.target.value)}
-                      className="text-blue-600"
+                      className="text-blue-600 mt-1 w-4 h-4"
                     />
-                    <div>
-                      <div className="font-medium">{template.name}</div>
-                      <div className="text-sm text-gray-600">{template.description}</div>
+                    <div className="flex-1">
+                      <div className="font-medium text-base">{template.name}</div>
+                      <div className="text-sm text-gray-600 leading-relaxed">{template.description}</div>
                     </div>
                   </label>
                 ))}
@@ -424,18 +424,18 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
 
             {/* 瓦片预览 */}
             <div>
-              <h3 className="text-lg font-medium mb-3">可用瓦片类型</h3>
+              <h3 className="text-base lg:text-lg font-medium mb-3">可用瓦片类型</h3>
               <div className="grid grid-cols-2 gap-2">
                 {FLEXIBLE_TILE_DEFINITIONS.slice(0, 8).map((tile) => (
                   <div
                     key={tile.id}
-                    className="p-2 border rounded text-center text-xs"
+                    className="p-3 border rounded-lg text-center text-xs"
                     style={{ 
                       backgroundColor: `#${getTileColor(tile.type as string).toString(16).padStart(6, '0')}40` 
                     }}
                   >
-                    <div className="font-medium">{tile.name}</div>
-                    <div className="text-gray-600">{tile.description}</div>
+                    <div className="font-medium mb-1">{tile.name}</div>
+                    <div className="text-gray-600 leading-tight">{tile.description}</div>
                   </div>
                 ))}
               </div>
@@ -444,17 +444,17 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
 
           <button
             onClick={createNewMap}
-            className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            className="mt-6 w-full lg:w-auto bg-blue-600 text-white px-6 py-4 lg:py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-base"
           >
             🎨 创建并编辑地图
           </button>
         </div>
 
         {/* 已保存的地图 */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">已保存的地图</h2>
-            <label className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 cursor-pointer">
+        <div className="bg-white rounded-lg shadow-md p-4 lg:p-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
+            <h2 className="text-lg lg:text-xl font-semibold">已保存的地图</h2>
+            <label className="bg-green-600 text-white px-4 py-3 lg:py-2 rounded-lg hover:bg-green-700 cursor-pointer text-center font-medium">
               📁 导入地图
               <input
                 type="file"
@@ -468,41 +468,44 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
           {savedMaps.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
               <div className="text-4xl mb-2">🗺️</div>
-              <div>还没有保存的地图</div>
+              <div className="text-lg mb-1">还没有保存的地图</div>
               <div className="text-sm">创建您的第一个地图开始吧！</div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {savedMaps.map((mapData, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <h3 className="font-semibold text-lg mb-2">{mapData.metadata.name}</h3>
-                  <p className="text-gray-600 text-sm mb-3">{mapData.metadata.description}</p>
+                  <h3 className="font-semibold text-base lg:text-lg mb-2">{mapData.metadata.name}</h3>
+                  <p className="text-gray-600 text-sm mb-3 leading-relaxed">{mapData.metadata.description}</p>
                   
-                  <div className="text-xs text-gray-500 mb-3">
+                  <div className="text-xs text-gray-500 mb-3 space-y-1">
                     <div>尺寸: {mapData.config.width} × {mapData.config.height}</div>
                     <div>修改: {new Date(mapData.metadata.modifiedAt).toLocaleString()}</div>
                   </div>
 
-                  <div className="flex space-x-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <button
                       onClick={() => loadMap(mapData)}
-                      className="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600"
+                      className="flex-1 bg-blue-500 text-white px-3 py-3 lg:py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
                     >
                       ✏️ 编辑
                     </button>
-                    <button
-                      onClick={() => exportMap(mapData)}
-                      className="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600"
-                    >
-                      💾
-                    </button>
-                    <button
-                      onClick={() => deleteMap(mapData.metadata.name)}
-                      className="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600"
-                      title="删除地图"
-                    >
-                      🗑️
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => exportMap(mapData)}
+                        className="bg-green-500 text-white px-4 py-3 lg:py-2 rounded-lg text-sm hover:bg-green-600 transition-colors"
+                        title="导出地图"
+                      >
+                        💾
+                      </button>
+                      <button
+                        onClick={() => deleteMap(mapData.metadata.name)}
+                        className="bg-red-500 text-white px-4 py-3 lg:py-2 rounded-lg text-sm hover:bg-red-600 transition-colors"
+                        title="删除地图"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

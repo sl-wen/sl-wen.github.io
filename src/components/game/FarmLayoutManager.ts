@@ -205,9 +205,9 @@ export class FarmLayoutManager {
 
         // 添加池塘边的石头（使用分割出的石头精灵）
         const stonePositions = [
-            { x: area.x + area.width * 0.3, y: area.y + area.height * 0.4 },
-            { x: area.x + area.width * 0.7, y: area.y + area.height * 0.6 },
-            { x: area.x + area.width * 0.2, y: area.y + area.height * 0.7 }
+            { x: area.x + area.width * 0.3, y: area.y + area.height * 0.2 },
+            { x: area.x + area.width * 0.7, y: area.y + area.height * 0.3 },
+            { x: area.x + area.width * 0.2, y: area.y + area.height * 0.4 }
         ];
 
         const stoneTypes = ['rock_small', 'rock_large', 'rock_small'];

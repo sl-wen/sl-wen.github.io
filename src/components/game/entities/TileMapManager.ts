@@ -491,32 +491,32 @@ export class TileMapManager {
         const isPortrait = screenHeight > screenWidth;
         
         // 计算需要的瓦片数量，确保完全覆盖屏幕
-        // 添加额外的缓冲区以确保在所有设备上都有足够的覆盖
-        const bufferMultiplier = isMobile ? 1.5 : 1.3;
+        // 增加更大的缓冲区以确保草地完全覆盖屏幕
+        const bufferMultiplier = isMobile ? 2.5 : 2.0;
         
         let tilesWidth = Math.ceil((screenWidth * bufferMultiplier) / this.TILE_WIDTH);
         let tilesHeight = Math.ceil((screenHeight * bufferMultiplier) / this.TILE_HEIGHT);
         
-        // 为移动设备设置最小尺寸，确保有足够的游戏空间
+        // 为移动设备设置更大的最小尺寸，确保草地完全覆盖
         if (isMobile) {
             if (isPortrait) {
-                // 竖屏模式：确保有足够的垂直空间
-                tilesWidth = Math.max(tilesWidth, 50);
-                tilesHeight = Math.max(tilesHeight, 70);
-            } else {
-                // 横屏模式：确保有足够的水平空间
+                // 竖屏模式：增加更多瓦片确保完全覆盖
                 tilesWidth = Math.max(tilesWidth, 80);
-                tilesHeight = Math.max(tilesHeight, 45);
+                tilesHeight = Math.max(tilesHeight, 120);
+            } else {
+                // 横屏模式：增加更多瓦片确保完全覆盖
+                tilesWidth = Math.max(tilesWidth, 120);
+                tilesHeight = Math.max(tilesHeight, 80);
             }
         } else {
-            // 桌面端：使用默认的较大尺寸
-            tilesWidth = Math.max(tilesWidth, 60);
-            tilesHeight = Math.max(tilesHeight, 40);
+            // 桌面端：使用更大的尺寸确保完全覆盖
+            tilesWidth = Math.max(tilesWidth, 100);
+            tilesHeight = Math.max(tilesHeight, 80);
         }
         
-        // 设置合理的最大值以避免性能问题
-        tilesWidth = Math.min(tilesWidth, 120);
-        tilesHeight = Math.min(tilesHeight, 80);
+        // 设置更大的最大值以确保完全覆盖，同时避免严重的性能问题
+        tilesWidth = Math.min(tilesWidth, 200);
+        tilesHeight = Math.min(tilesHeight, 150);
         
         console.log(`Screen: ${screenWidth}x${screenHeight}, Mobile: ${isMobile}, Portrait: ${isPortrait}`);
         console.log(`Calculated optimal map size: ${tilesWidth}x${tilesHeight} tiles`);

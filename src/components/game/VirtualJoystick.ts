@@ -394,13 +394,13 @@ export class VirtualJoystick {
 
     if (isMobile) {
       if (isPortrait) {
-        // 竖屏：左下角，但避开底部导航
+        // 竖屏：左下角，但避开底部导航，向上移动更多空间
         newX = Math.max(this.config.radius + 30, screenWidth * 0.15);  // 确保不贴边
-        newY = screenHeight - this.config.radius - 80;                  // 避开底部导航栏
+        newY = screenHeight - this.config.radius - 120;                 // 增加底部边距，避开手势区域
       } else {
-        // 横屏：左下角，标准位置
+        // 横屏：左下角，标准位置，也向上移动一些
         newX = this.config.radius + 40;  // 标准左边距
-        newY = screenHeight - this.config.radius - 50;  // 标准下边距
+        newY = screenHeight - this.config.radius - 80;  // 增加下边距
       }
     } else {
       // 桌面端：固定位置
@@ -634,13 +634,13 @@ export class VirtualJoystick {
     
     if (isMobile) {
       if (isLandscape) {
-        // 移动设备横屏：左下角，考虑更大的边距
+        // 移动设备横屏：左下角，考虑更大的边距，向上移动
         joystickX = Math.max(safeAreaLeft + this.config.radius + 20, viewportWidth * 0.08);
-        joystickY = viewportHeight - Math.max(safeAreaBottom + this.config.radius + 20, viewportHeight * 0.12);
+        joystickY = viewportHeight - Math.max(safeAreaBottom + this.config.radius + 40, viewportHeight * 0.16);
       } else {
         // 移动设备竖屏：左下角，但需要更多底部空间避开手势区域
         joystickX = Math.max(safeAreaLeft + this.config.radius + 15, viewportWidth * 0.12);
-        joystickY = viewportHeight - Math.max(safeAreaBottom + this.config.radius + 40, viewportHeight * 0.15);
+        joystickY = viewportHeight - Math.max(safeAreaBottom + this.config.radius + 60, viewportHeight * 0.18);
       }
     } else {
       // 桌面设备：标准位置

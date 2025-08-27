@@ -307,30 +307,50 @@ export class UILayoutManager {
     }
   }
 
-  // 获取推荐的摇杆位置
+  // 获取推荐的摇杆位置 - 改进的移动端响应式算法
   public getJoystickPosition(radius: number): { x: number; y: number } {
-    const margin = 20;
+    const baseMargin = this.isMobile ? 15 : 20;
     let x: number, y: number;
 
     if (this.isMobile) {
       if (this.isPortrait) {
         // 竖屏：左下角，避开底部手势区域
-        x = Math.max(radius + margin, this.screenWidth * 0.15);
-        y = this.screenHeight - this.safeArea.bottom - radius - margin;
+        // 使用相对位置确保在不同屏幕尺寸上都有合适的位置
+        x = Math.max(
+          radius + baseMargin, 
+          Math.min(this.screenWidth * 0.15, this.screenWidth * 0.25)
+        );
+        y = this.screenHeight - Math.max(
+          this.safeArea.bottom + radius + baseMargin * 2,
+          this.screenHeight * 0.15
+        );
       } else {
-        // 横屏：左下角，标准位置
-        x = this.safeArea.left + radius + margin;
-        y = this.screenHeight - this.safeArea.bottom - radius - margin;
+        // 横屏：左下角，考虑更小的边距以节省空间
+        x = Math.max(
+          this.safeArea.left + radius + baseMargin,
+          this.screenWidth * 0.08
+        );
+        y = this.screenHeight - Math.max(
+          this.safeArea.bottom + radius + baseMargin,
+          this.screenHeight * 0.12
+        );
       }
     } else {
       // 桌面端：左下角固定位置
-      x = this.safeArea.left + radius + margin * 2;
-      y = this.screenHeight - this.safeArea.bottom - radius - margin * 2;
+      x = this.safeArea.left + radius + baseMargin * 1.5;
+      y = this.screenHeight - this.safeArea.bottom - radius - baseMargin * 1.5;
     }
 
-    // 边界检查
-    x = Math.max(radius + margin, Math.min(x, this.screenWidth - radius - margin));
-    y = Math.max(radius + margin, Math.min(y, this.screenHeight - radius - margin));
+    // 更严格的边界检查，确保摇杆完全可见
+    const minX = radius + baseMargin;
+    const maxX = this.screenWidth - radius - baseMargin;
+    const minY = radius + baseMargin;
+    const maxY = this.screenHeight - radius - baseMargin;
+
+    x = Math.max(minX, Math.min(x, maxX));
+    y = Math.max(minY, Math.min(y, maxY));
+
+    console.log(`UILayoutManager calculated joystick position: ${x}, ${y} (screen: ${this.screenWidth}x${this.screenHeight}, mobile: ${this.isMobile}, portrait: ${this.isPortrait})`);
 
     return { x, y };
   }

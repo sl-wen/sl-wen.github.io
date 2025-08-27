@@ -957,7 +957,13 @@ export class GameScene extends Phaser.Scene {
     const handleOrientationChange = () => {
       // 延迟300ms等待浏览器完成方向变化
       this.time.delayedCall(300, () => {
-        console.log('Orientation changed, updating UI layout');
+        console.log('Orientation changed, updating UI layout and grass map');
+        
+        // 刷新草地图以适应新的屏幕尺寸
+        if (this.tileMapManager) {
+          this.tileMapManager.refreshGrassMapForNewScreenSize();
+        }
+        
         this.updateResponsiveUI();  // 更新响应式UI
 
         // 更新摄像机边界和缩放

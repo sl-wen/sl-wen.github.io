@@ -613,6 +613,7 @@ export class VirtualJoystick {
 
   /**
    * 调整摇杆以适应全屏模式
+   * 改进的移动端响应式定位算法
    */
   private adjustForFullscreen() {
     // 在全屏模式下，使用实际的视口尺寸而不是游戏尺寸
@@ -620,24 +621,31 @@ export class VirtualJoystick {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     
-    // 检查是否为横屏模式
+    // 检查是否为横屏模式和移动设备
     const isLandscape = viewportWidth > viewportHeight;
+    const isMobile = viewportWidth < 768;
     
     // 调整摇杆位置到屏幕左下角，考虑安全区域
     const safeAreaBottom = this.getSafeAreaInset('bottom');
     const safeAreaLeft = this.getSafeAreaInset('left');
     
-    // 根据屏幕方向调整位置 - 使用视口坐标系
+    // 根据设备类型和屏幕方向调整位置 - 使用视口坐标系
     let joystickX, joystickY;
     
-    if (isLandscape) {
-      // 横屏：左下角，考虑更大的边距
+    if (isMobile) {
+      if (isLandscape) {
+        // 移动设备横屏：左下角，考虑更大的边距
+        joystickX = Math.max(safeAreaLeft + this.config.radius + 20, viewportWidth * 0.08);
+        joystickY = viewportHeight - Math.max(safeAreaBottom + this.config.radius + 20, viewportHeight * 0.12);
+      } else {
+        // 移动设备竖屏：左下角，但需要更多底部空间避开手势区域
+        joystickX = Math.max(safeAreaLeft + this.config.radius + 15, viewportWidth * 0.12);
+        joystickY = viewportHeight - Math.max(safeAreaBottom + this.config.radius + 40, viewportHeight * 0.15);
+      }
+    } else {
+      // 桌面设备：标准位置
       joystickX = safeAreaLeft + this.config.radius + 30;
       joystickY = viewportHeight - safeAreaBottom - this.config.radius - 30;
-    } else {
-      // 竖屏：左下角，但需要更多底部空间
-      joystickX = safeAreaLeft + this.config.radius + 25;
-      joystickY = viewportHeight - safeAreaBottom - this.config.radius - 50;
     }
     
     // 全屏模式下，需要将视口坐标转换为游戏坐标
@@ -647,7 +655,7 @@ export class VirtualJoystick {
       const gameWidth = this.scene.scale.gameSize.width;
       const gameHeight = this.scene.scale.gameSize.height;
       
-      // 计算缩放比例
+      // 计算缩放比例 - 改进的计算方法
       const scaleX = gameWidth / canvasRect.width;
       const scaleY = gameHeight / canvasRect.height;
       
@@ -656,11 +664,13 @@ export class VirtualJoystick {
       joystickY = joystickY * scaleY;
     }
     
-    // 确保摇杆不会超出游戏边界
+    // 确保摇杆不会超出游戏边界 - 更严格的边界检查
     const gameWidth = this.scene.scale.gameSize.width;
     const gameHeight = this.scene.scale.gameSize.height;
-    joystickX = Math.max(this.config.radius + 10, Math.min(joystickX, gameWidth - this.config.radius - 10));
-    joystickY = Math.max(this.config.radius + 10, Math.min(joystickY, gameHeight - this.config.radius - 10));
+    const margin = this.config.radius + (isMobile ? 15 : 10);
+    
+    joystickX = Math.max(margin, Math.min(joystickX, gameWidth - margin));
+    joystickY = Math.max(margin, Math.min(joystickY, gameHeight - margin));
     
     this.container.setPosition(joystickX, joystickY);
     
@@ -676,7 +686,7 @@ export class VirtualJoystick {
     this.config.x = joystickX;
     this.config.y = joystickY;
     
-    console.log(`Fullscreen joystick positioned at: ${joystickX}, ${joystickY} (landscape: ${isLandscape}, scale: ${scaleFactor})`);
+    console.log(`Fullscreen joystick positioned at: ${joystickX}, ${joystickY} (landscape: ${isLandscape}, mobile: ${isMobile}, scale: ${scaleFactor})`);
   }
 
   /**

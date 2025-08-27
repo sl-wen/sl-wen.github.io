@@ -456,7 +456,7 @@ const GamePage: React.FC = () => {
 
           {/* 游戏启动界面 */}
           {!gameStarted && (
-            <div className={`flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl border-slate-600/50 ${screenOrientation === 'portrait' ? 'min-h-[70vh]' : 'min-h-[700px]'
+            <div className={`flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 border-slate-600/50 ${screenOrientation === 'portrait' ? 'min-h-[50vh]' : 'min-h-[700px]'
               }`}>
               <div className="text-center p-8 max-w-md mx-auto">
                 <div className="text-6xl mb-6">🐱</div>
@@ -526,7 +526,7 @@ const GamePage: React.FC = () => {
             <>
               {/* 游戏加载遮罩层 */}
               {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg z-10">
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 z-10">
                   <div className="text-center">
                     <div className="relative mb-6">
                       <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-400/30 border-t-blue-400 mx-auto"></div>

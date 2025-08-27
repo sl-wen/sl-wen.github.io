@@ -740,29 +740,13 @@ const GamePage: React.FC = () => {
 
               {/* 游戏控制面板 */}
               <div className="absolute bottom-4 left-4 z-50 bg-black/20 backdrop-blur-md rounded-lg p-3">
-                <div className="flex gap-2">
-                  <button
-                    onClick={saveGame}
-                    className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors"
-                    disabled={!gameStarted}
-                  >
-                    💾 保存
-                  </button>
-                  <button
-                    onClick={pauseGame}
-                    className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded text-sm transition-colors"
-                    disabled={!gameStarted}
-                  >
-                    ⏸️ 暂停
-                  </button>
-                  <button
-                    onClick={resetGame}
-                    className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors"
-                    disabled={!gameStarted}
-                  >
-                    🔄 重置
-                  </button>
-                </div>
+                <button
+                  onClick={saveGame}
+                  className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors"
+                  disabled={!gameStarted}
+                >
+                  💾 保存
+                </button>
               </div>
 
               {/* 设置面板 */}

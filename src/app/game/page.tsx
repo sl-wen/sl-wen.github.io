@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import GameSettingsMenu from '../../components/game/GameSettingsMenu';
 
 // 强制动态渲染以防止SSR问题 - 游戏需要在客户端环境运行
 export const dynamic = 'force-dynamic';
@@ -37,6 +38,13 @@ const GamePage: React.FC = () => {
     currentWeather: 'sunny',
     gameTime: '06:00'
   });
+
+  // 游戏时间管理
+  const [gameStartTime, setGameStartTime] = useState<number>(0);
+  const [currentGameTime, setCurrentGameTime] = useState<string>('06:00');
+  
+  // 设置菜单状态
+  const [showSettings, setShowSettings] = useState(false);
   
   // 游戏设置
   const [gameSettings, setGameSettings] = useState({
@@ -62,6 +70,31 @@ const GamePage: React.FC = () => {
       console.error('Error initializing viewport size:', error);
     }
   }, []);
+
+  // 游戏时间更新系统
+  useEffect(() => {
+    if (!gameStarted || !gameStartTime) return;
+
+    const updateGameTime = () => {
+      const elapsed = Date.now() - gameStartTime;
+      // 游戏时间加速：1分钟现实时间 = 1小时游戏时间
+      const gameMinutes = Math.floor(elapsed / 60000) * 60; // 每分钟现实时间等于60分钟游戏时间
+      const startMinutes = 6 * 60; // 06:00 开始
+      const totalMinutes = (startMinutes + gameMinutes) % (24 * 60); // 24小时循环
+      
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      
+      setCurrentGameTime(timeString);
+      setGameStats(prev => ({ ...prev, gameTime: timeString }));
+    };
+
+    updateGameTime(); // 立即更新一次
+    const interval = setInterval(updateGameTime, 1000); // 每秒更新
+
+    return () => clearInterval(interval);
+  }, [gameStarted, gameStartTime]);
 
   // 检测平台类型
   const getPlatformInfo = () => {
@@ -313,6 +346,14 @@ const GamePage: React.FC = () => {
       
       setIsLoading(false); // 游戏加载完成
       console.log('Enhanced game started successfully');
+      
+      // 设置游戏开始时间用于时间计算
+      setGameStartTime(Date.now());
+      
+      // 自动进入全屏模式
+      setTimeout(() => {
+        enterFullscreen();
+      }, 500); // 延迟500ms确保游戏完全加载
     } catch (error) {
       console.error('Failed to initialize game:', error);
       setError(`游戏启动失败: ${error instanceof Error ? error.message : String(error)}`);
@@ -353,6 +394,10 @@ const GamePage: React.FC = () => {
       currentWeather: 'sunny',
       gameTime: '06:00'
     });
+    
+    // 重置时间相关状态
+    setGameStartTime(0);
+    setCurrentGameTime('06:00');
 
     console.log('Game reset completed');
   };
@@ -381,6 +426,16 @@ const GamePage: React.FC = () => {
       gameManager.saveGame();
     }
   }, [gameInstance]);
+
+  // 退出游戏
+  const exitGame = () => {
+    if (confirm('确定要退出游戏吗？未保存的进度将会丢失。')) {
+      resetGame();
+      if (isFullscreen) {
+        exitFullscreen();
+      }
+    }
+  };
 
   // 设置变更处理
   const handleSettingChange = useCallback(async (setting: string, value: any) => {
@@ -738,14 +793,15 @@ const GamePage: React.FC = () => {
                 </div>
               </div>
 
-              {/* 游戏控制面板 */}
+              {/* 游戏控制面板 - 设置按钮 */}
               <div className="absolute bottom-4 left-4 z-50 bg-black/20 backdrop-blur-md rounded-lg p-3">
                 <button
-                  onClick={saveGame}
-                  className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors"
+                  onClick={() => setShowSettings(true)}
+                  className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors flex items-center"
                   disabled={!gameStarted}
                 >
-                  💾 保存
+                  <span className="mr-1">⚙️</span>
+                  设置
                 </button>
               </div>
 
@@ -802,43 +858,7 @@ const GamePage: React.FC = () => {
                 </div>
               )}
 
-              {/* 游戏控制按钮 - 改进的定位 */}
-              {!isLoading && (
-                <div className={`absolute z-20 flex ${isFullscreen
-                  ? 'top-4 right-4 space-x-2'
-                  : screenOrientation === 'portrait'
-                    ? 'top-2 right-2 space-x-1'
-                    : 'top-4 right-4 space-x-2'
-                  }`}>
-                  <button
-                    onClick={resetGame}
-                    className={`bg-red-500/70 hover:bg-red-600/70 text-white rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40 ${screenOrientation === 'portrait' ? 'p-2' : 'p-3'
-                      }`}
-                    title="重置游戏"
-                  >
-                    <svg className={`${screenOrientation === 'portrait' ? 'w-4 h-4' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                  </button>
 
-                  <button
-                    onClick={isFullscreen ? exitFullscreen : enterFullscreen}
-                    className={`bg-black/50 hover:bg-black/70 text-white rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20 hover:border-white/40 ${screenOrientation === 'portrait' ? 'p-2' : 'p-3'
-                      }`}
-                    title={isFullscreen ? "退出全屏" : (platformInfo.isIOS ? "进入沉浸模式" : "进入全屏")}
-                  >
-                    {isFullscreen ? (
-                      <svg className={`${screenOrientation === 'portrait' ? 'w-4 h-4' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    ) : (
-                      <svg className={`${screenOrientation === 'portrait' ? 'w-4 h-4' : 'w-5 h-5'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              )}
             </>
           )}
         </div>
@@ -997,6 +1017,17 @@ const GamePage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* 设置菜单 */}
+      <GameSettingsMenu
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        onSave={saveGame}
+        onExitGame={exitGame}
+        gameSettings={gameSettings}
+        onSettingsChange={setGameSettings}
+        isFullscreen={isFullscreen}
+      />
     </div>
   );
 };

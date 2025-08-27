@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { TileEditor, TILE_DEFINITIONS } from './TileEditor';
 import { FlexibleTileManager, FlexibleMapData, FLEXIBLE_TILE_DEFINITIONS } from './FlexibleTileManager';
@@ -173,36 +175,45 @@ export const MapLayoutDesigner: React.FC<MapLayoutDesignerProps> = ({
    * 创建新地图
    */
   const createNewMap = useCallback(() => {
-    const template = MAP_TEMPLATES[selectedTemplate as keyof typeof MAP_TEMPLATES];
-    const tiles = template.generator(mapWidth, mapHeight);
-
-    const mapData: FlexibleMapData = {
-      config: {
-        width: mapWidth,
-        height: mapHeight,
-        tileWidth: 16,
-        tileHeight: 16,
-        layers: [
-          {
-            name: 'terrain',
-            tiles: tiles,
-            depth: 1,
-            visible: true,
-            opacity: 1.0
-          }
-        ]
-      },
-      metadata: {
-        name: `${template.name} (${mapWidth}x${mapHeight})`,
-        description: template.description,
-        version: '1.0.0',
-        createdAt: new Date().toISOString(),
-        modifiedAt: new Date().toISOString()
+    try {
+      const template = MAP_TEMPLATES[selectedTemplate as keyof typeof MAP_TEMPLATES];
+      if (!template) {
+        console.error('Invalid template selected:', selectedTemplate);
+        return;
       }
-    };
 
-    setCurrentMapData(mapData);
-    setShowEditor(true);
+      const tiles = template.generator(mapWidth, mapHeight);
+
+      const mapData: FlexibleMapData = {
+        config: {
+          width: mapWidth,
+          height: mapHeight,
+          tileWidth: 16,
+          tileHeight: 16,
+          layers: [
+            {
+              name: 'terrain',
+              tiles: tiles,
+              depth: 1,
+              visible: true,
+              opacity: 1.0
+            }
+          ]
+        },
+        metadata: {
+          name: `${template.name} (${mapWidth}x${mapHeight})`,
+          description: template.description,
+          version: '1.0.0',
+          createdAt: new Date().toISOString(),
+          modifiedAt: new Date().toISOString()
+        }
+      };
+
+      setCurrentMapData(mapData);
+      setShowEditor(true);
+    } catch (error) {
+      console.error('Error creating new map:', error);
+    }
   }, [mapWidth, mapHeight, selectedTemplate]);
 
   /**

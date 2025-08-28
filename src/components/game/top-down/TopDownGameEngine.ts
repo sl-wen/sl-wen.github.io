@@ -30,6 +30,8 @@ export class TopDownGameEngine {
   private scene: TopDownGameScene;
 
   constructor(container: HTMLElement, config: GameConfig) {
+    console.log('TopDownGameEngine: 开始创建游戏实例');
+    
     // 创建Phaser游戏配置
     const gameConfig: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
@@ -82,6 +84,24 @@ export class TopDownGameEngine {
       canvas.style.webkitTouchCallout = 'none';
       canvas.style.webkitUserSelect = 'none';
       canvas.style.userSelect = 'none';
+    }
+    
+    // 监听场景启动事件
+    this.game.events.on('start', (scene: Phaser.Scene) => {
+      console.log('TopDownGameEngine: 场景启动:', scene.scene.key);
+    });
+    
+    // 监听场景创建事件
+    this.game.events.on('create', (scene: Phaser.Scene) => {
+      console.log('TopDownGameEngine: 场景创建:', scene.scene.key);
+    });
+    
+    // 确保BootScene启动
+    if (this.game.scene.isActive('BootScene')) {
+      console.log('TopDownGameEngine: BootScene已激活');
+    } else {
+      console.log('TopDownGameEngine: 启动BootScene');
+      this.game.scene.start('BootScene');
     }
     
     // 不再使用占位 TopDownGameScene，这里由 BootScene 启动

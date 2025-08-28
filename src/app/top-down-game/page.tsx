@@ -57,7 +57,7 @@ export default function TopDownGamePage() {
                     {isMobile && (
                         <div className="mt-4 p-3 bg-blue-900/50 border border-blue-500 rounded-lg">
                             <p className="text-blue-200 text-sm">
-                                📱 移动端优化：点击"start"按钮开始游戏
+                                📱 移动端优化：点击"START"按钮开始游戏
                             </p>
                         </div>
                     )}
@@ -76,17 +76,29 @@ export default function TopDownGamePage() {
                             <ul className="text-sm space-y-1">
                                 {isMobile ? (
                                     <>
-                                        <li>• 点击"start"按钮开始游戏</li>
+                                        <li>• 点击"START"按钮开始游戏</li>
                                         <li>• 触摸屏幕进行交互</li>
                                         <li>• 支持触摸操作和手势</li>
                                     </>
                                 ) : (
                                     <>
+                                        <li>• 点击"START"按钮开始游戏</li>
                                         <li>• 使用 WASD 或方向键移动角色</li>
                                         <li>• 空格键与NPC对话</li>
                                         <li>• ESC键打开菜单</li>
                                     </>
                                 )}
+                            </ul>
+                        </div>
+
+                        {/* 游戏状态信息 */}
+                        <div className="mt-4 p-4 bg-gray-800 rounded-lg text-white">
+                            <h3 className="text-lg font-semibold mb-2">游戏状态：</h3>
+                            <ul className="text-sm space-y-1">
+                                <li>• 游戏引擎：Phaser 3</li>
+                                <li>• 地图系统：GridEngine</li>
+                                <li>• 设备类型：{isMobile ? '移动端' : '桌面端'}</li>
+                                <li>• 渲染模式：像素艺术风格</li>
                             </ul>
                         </div>
                     </div>

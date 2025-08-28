@@ -380,7 +380,7 @@ export class PerformanceOptimizer {
    */
   private optimizeAnimations(frameRate: number): void {
     // 调整动画帧率
-    Object.keys(this.scene.anims.anims.entries).forEach(key => {
+    Object.keys((this.scene.anims as any).anims.entries || {}).forEach(key => {
       const anim = this.scene.anims.get(key);
       if (anim) {
         anim.frameRate = Math.min(anim.frameRate, frameRate);
@@ -403,7 +403,9 @@ export class PerformanceOptimizer {
     // WebGL特定优化
     if (renderer instanceof Phaser.Renderer.WebGL.WebGLRenderer) {
       // 批处理优化
-      renderer.config.batchSize = this.currentLevel === PerformanceLevel.HIGH ? 4096 : 2048;
+      if ('config' in renderer && renderer.config) {
+        (renderer.config as any).batchSize = this.currentLevel === PerformanceLevel.HIGH ? 4096 : 2048;
+      }
       
       // 纹理过滤
       if (settings.textureFiltering === 'nearest') {
@@ -448,13 +450,13 @@ export class PerformanceOptimizer {
           // 远距离：降低细节
           child.setScale(Math.max(0.5, child.scaleX * 0.8));
           if (child.anims && child.anims.isPlaying) {
-            child.anims.setTimeScale(0.5); // 减慢动画
+            child.anims.timeScale = 0.5; // 减慢动画
           }
         } else {
           // 近距离：正常细节
           child.setScale(1.0);
           if (child.anims && child.anims.isPlaying) {
-            child.anims.setTimeScale(1.0);
+            child.anims.timeScale = 1.0;
           }
         }
       }
@@ -478,7 +480,9 @@ export class PerformanceOptimizer {
     if (this.mobileOptimizations.enableBatching) {
       const renderer = this.scene.game.renderer;
       if (renderer instanceof Phaser.Renderer.WebGL.WebGLRenderer) {
-        renderer.config.batchSize = 2048; // 增加批处理大小
+        if ('config' in renderer && renderer.config) {
+          (renderer.config as any).batchSize = 2048; // 增加批处理大小
+        }
       }
     }
     
@@ -490,11 +494,13 @@ export class PerformanceOptimizer {
    */
   private optimizeMemoryUsage(): void {
     // 清理未使用的纹理
-    this.scene.textures.list.forEach((texture, key) => {
-      if (key.startsWith('temp_') || key.startsWith('cache_')) {
-        this.scene.textures.remove(key);
-      }
-    });
+    if ('list' in this.scene.textures && this.scene.textures.list && typeof (this.scene.textures.list as any).forEach === 'function') {
+      (this.scene.textures.list as any).forEach((texture: any, key: any) => {
+        if (key.startsWith('temp_') || key.startsWith('cache_')) {
+          this.scene.textures.remove(key);
+        }
+      });
+    }
     
     // 清理音频缓存
     Object.keys(this.scene.cache.audio.entries).forEach(key => {

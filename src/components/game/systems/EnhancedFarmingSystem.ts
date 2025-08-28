@@ -692,12 +692,12 @@ export class EnhancedFarmingSystem {
    */
   public getToolStatus(): Map<ToolType, { durability: number; efficiency: number }> {
     const status = new Map();
-    for (const [tool, durability] of this.toolDurability) {
+    this.toolDurability.forEach((durability, tool) => {
       status.set(tool, {
         durability,
         efficiency: this.toolEfficiency.get(tool) || 1.0
       });
-    }
+    });
     return status;
   }
 

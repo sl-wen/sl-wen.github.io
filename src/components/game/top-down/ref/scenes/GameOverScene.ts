@@ -36,7 +36,6 @@ export default class GameOverScene extends Scene {
             {
                 fontFamily: '"Press Start 2P"',
                 fontSize: `${fontSize}px`,
-                fill: '#ffffff',
                 color: '#ffffff',
             }
         ).setDepth(10).setOrigin(0.5, 0.5);
@@ -60,8 +59,8 @@ export default class GameOverScene extends Scene {
 
         // 监听菜单项选择事件
         const gameMenuSelectedEventListener = (event: Event) => {
-            const { detail } = (event as CustomEvent).detail as MenuItemSelectedDetail;
-            switch (detail.selectedItem) {
+            const { selectedItem } = (event as CustomEvent).detail as MenuItemSelectedDetail;
+            switch (selectedItem) {
                 case 'game.game_over.retry': {
                     // 重试游戏，返回主菜单
                     this.scene.start('MainMenuScene');

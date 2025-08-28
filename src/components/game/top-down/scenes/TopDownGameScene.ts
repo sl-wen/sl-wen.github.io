@@ -137,7 +137,9 @@ export class TopDownGameScene extends Phaser.Scene {
     
     // 设置玩家与NPC的碰撞
     this.npcs.forEach(npc => {
-      this.physics.add.collider(this.player, npc, this.handlePlayerNPCCollision, undefined, this);
+      this.physics.add.collider(this.player, npc, (obj1: any, obj2: any) => {
+        this.handlePlayerNPCCollision(obj1 as Player, obj2 as NPC);
+      }, undefined, this);
     });
   }
 
@@ -173,7 +175,7 @@ export class TopDownGameScene extends Phaser.Scene {
     console.log('玩家与NPC碰撞');
     
     // 可以在这里触发对话或其他交互
-    if (this.input.keyboard!.justPressed(Phaser.Input.Keyboard.KeyCodes.SPACE)) {
+    if (this.input.keyboard && (this.input.keyboard as any).justPressed(Phaser.Input.Keyboard.KeyCodes.SPACE)) {
       npc.startDialogue();
     }
   }

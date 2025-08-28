@@ -50,7 +50,12 @@ export class WorldMap {
     });
 
     // 添加瓦片集
-    this.tileset = this.tilemap.addTilesetImage('tile_0');
+    const tileset = this.tilemap.addTilesetImage('tile_0');
+    if (tileset) {
+      this.tileset = tileset;
+    } else {
+      throw new Error('Failed to create tileset');
+    }
   }
 
   private generateMapData(): number[][] {
@@ -85,10 +90,20 @@ export class WorldMap {
 
   private createLayers(): void {
     // 创建地面图层
-    this.groundLayer = this.tilemap.createLayer(0, this.tileset, 0, 0);
+    const groundLayer = this.tilemap.createLayer(0, this.tileset, 0, 0);
+    if (groundLayer) {
+      this.groundLayer = groundLayer;
+    } else {
+      throw new Error('Failed to create ground layer');
+    }
     
     // 创建碰撞图层（与地面图层相同，但用于碰撞检测）
-    this.collisionLayer = this.tilemap.createLayer(0, this.tileset, 0, 0);
+    const collisionLayer = this.tilemap.createLayer(0, this.tileset, 0, 0);
+    if (collisionLayer) {
+      this.collisionLayer = collisionLayer;
+    } else {
+      throw new Error('Failed to create collision layer');
+    }
     
     // 设置边界瓦片为碰撞体
     this.collisionLayer.setCollisionBetween(1, 1); // 墙

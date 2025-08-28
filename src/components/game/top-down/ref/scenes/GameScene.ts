@@ -534,15 +534,17 @@ export default class GameScene extends Scene {
         camera.fadeIn(SCENE_FADE_TIME);
 
         // 设置输入控制
-        this.enterKey = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.ENTER)!;
-        this.spaceKey = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.SPACE)!;
-        this.cursors = this.input.keyboard.createCursorKeys();
-        this.wasd = this.input.keyboard.addKeys({
+        if (this.input.keyboard) {
+          this.enterKey = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.ENTER);
+          this.spaceKey = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.SPACE);
+          this.cursors = this.input.keyboard.createCursorKeys();
+          this.wasd = this.input.keyboard.addKeys({
             up: Input.Keyboard.KeyCodes.W,
             down: Input.Keyboard.KeyCodes.S,
             left: Input.Keyboard.KeyCodes.A,
             right: Input.Keyboard.KeyCodes.D,
         }) as Input.Keyboard.Key[];
+        }
 
         // 创建地图
         this.map = this.make.tilemap({ key: mapKey });

@@ -40,7 +40,6 @@ export default class BootScene extends Scene {
             {
                 fontFamily: '"Press Start 2P"',
                 fontSize: `${fontSize}px`,
-                fill: '#ffffff',
                 color: '#ffffff',
             }
         );
@@ -56,7 +55,6 @@ export default class BootScene extends Scene {
             {
                 fontFamily: '"Press Start 2P"',
                 fontSize: `${fontSize}px`,
-                fill: '#ffffff',
                 color: '#ffffff',
             }
         );
@@ -72,7 +70,6 @@ export default class BootScene extends Scene {
             {
                 fontFamily: '"Press Start 2P"',
                 fontSize: `${fontSize / 2}px`,
-                fill: '#ffffff',
                 color: '#ffffff',
             }
         );

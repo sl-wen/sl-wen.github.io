@@ -13,11 +13,6 @@ interface MobileControlsProps {
   isVisible: boolean;
 }
 
-interface JoystickPosition {
-  x: number;
-  y: number;
-}
-
 const MobileControls: React.FC<MobileControlsProps> = ({
   onMove,
   onStopMove,
@@ -28,80 +23,12 @@ const MobileControls: React.FC<MobileControlsProps> = ({
   tools,
   isVisible
 }) => {
-  const [joystickPosition, setJoystickPosition] = useState<JoystickPosition>({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
   const [isActionPressed, setIsActionPressed] = useState(false);
   const [selectedToolIndex, setSelectedToolIndex] = useState(0);
 
-  const joystickRef = useRef<HTMLDivElement>(null);
   const actionButtonRef = useRef<HTMLButtonElement>(null);
-  const moveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const JOYSTICK_RADIUS = 40;
-  const DEAD_ZONE = 0.2;
-
-  // 虚拟摇杆处理
-  const handleJoystickStart = useCallback((clientX: number, clientY: number) => {
-    if (!joystickRef.current) return;
-
-    setIsDragging(true);
-    const rect = joystickRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    updateJoystickPosition(clientX, clientY, centerX, centerY);
-  }, []);
-
-  const handleJoystickMove = useCallback((clientX: number, clientY: number) => {
-    if (!isDragging || !joystickRef.current) return;
-
-    const rect = joystickRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    updateJoystickPosition(clientX, clientY, centerX, centerY);
-  }, [isDragging]);
-
-  const updateJoystickPosition = useCallback((clientX: number, clientY: number, centerX: number, centerY: number) => {
-    const deltaX = clientX - centerX;
-    const deltaY = clientY - centerY;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-    let x = deltaX;
-    let y = deltaY;
-
-    // 限制在圆形区域内
-    if (distance > JOYSTICK_RADIUS) {
-      x = (deltaX / distance) * JOYSTICK_RADIUS;
-      y = (deltaY / distance) * JOYSTICK_RADIUS;
-    }
-
-    setJoystickPosition({ x, y });
-
-    // 计算移动方向
-    const normalizedDistance = distance / JOYSTICK_RADIUS;
-    if (normalizedDistance > DEAD_ZONE) {
-      const angle = Math.atan2(y, x);
-      const direction = getDirectionFromAngle(angle);
-      onMove(direction);
-    } else {
-      onStopMove();
-    }
-  }, [onMove, onStopMove]);
-
-  const handleJoystickEnd = useCallback(() => {
-    setIsDragging(false);
-    setJoystickPosition({ x: 0, y: 0 });
-    onStopMove();
-  }, [onStopMove]);
-
-  const getDirectionFromAngle = (angle: number): 'up' | 'down' | 'left' | 'right' => {
-    const degrees = (angle * 180 / Math.PI + 360) % 360;
-    if (degrees >= 315 || degrees < 45) return 'right';
-    if (degrees >= 45 && degrees < 135) return 'down';
-    if (degrees >= 135 && degrees < 225) return 'left';
-    return 'up';
-  };
+  // 移除虚拟摇杆处理逻辑 - 现在由VirtualJoystick.ts统一处理
 
   // 触摸事件处理
   const handleTouchStart = useCallback((e: React.TouchEvent, action: () => void) => {
@@ -141,87 +68,13 @@ const MobileControls: React.FC<MobileControlsProps> = ({
     onToolSelect(index);
   }, [onToolSelect]);
 
-  // 摇杆鼠标事件
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      handleJoystickMove(e.clientX, e.clientY);
-    };
-
-    const handleMouseUp = () => {
-      handleJoystickEnd();
-    };
-
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, handleJoystickMove, handleJoystickEnd]);
-
-  // 摇杆触摸事件
-  useEffect(() => {
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length > 0) {
-        const touch = e.touches[0];
-        handleJoystickMove(touch.clientX, touch.clientY);
-      }
-    };
-
-    const handleTouchEnd = () => {
-      handleJoystickEnd();
-    };
-
-    if (isDragging) {
-      document.addEventListener('touchmove', handleTouchMove, { passive: false });
-      document.addEventListener('touchend', handleTouchEnd);
-    }
-
-    return () => {
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [isDragging, handleJoystickMove, handleJoystickEnd]);
+  // 摇杆事件处理已移除 - 由VirtualJoystick.ts统一处理
 
   if (!isVisible) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-40">
-      {/* 虚拟摇杆 - 向上移动到更合适的位置 */}
-      <div className="absolute bottom-24 left-6 pointer-events-auto">
-        <div className="relative">
-          {/* 摇杆外圈 */}
-          <div
-            ref={joystickRef}
-            className="w-24 h-24 bg-black bg-opacity-30 rounded-full border-2 border-white border-opacity-50 flex items-center justify-center"
-            onMouseDown={(e) => handleJoystickStart(e.clientX, e.clientY)}
-            onTouchStart={(e) => {
-              if (e.touches.length > 0) {
-                const touch = e.touches[0];
-                handleJoystickStart(touch.clientX, touch.clientY);
-              }
-            }}
-          >
-            {/* 摇杆内圈 */}
-            <div
-              className="w-8 h-8 bg-white bg-opacity-80 rounded-full shadow-lg transition-transform"
-              style={{
-                transform: `translate(${joystickPosition.x}px, ${joystickPosition.y}px)`,
-              }}
-            />
-          </div>
-
-          {/* 摇杆标签 */}
-          <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
-            <span className="text-white text-xs bg-black bg-opacity-50 px-2 py-1 rounded">
-              移动
-            </span>
-          </div>
-        </div>
-      </div>
+      {/* 虚拟摇杆已移除 - 现在由VirtualJoystick.ts统一处理 */}
 
       {/* 动作按钮 */}
       <div className="absolute bottom-8 right-6 pointer-events-auto">

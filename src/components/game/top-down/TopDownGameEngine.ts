@@ -61,11 +61,29 @@ export class TopDownGameEngine {
       render: {
         pixelArt: true,
         antialias: false
+      },
+      input: {
+        touch: {
+          capture: false // 不捕获所有触摸事件，允许事件冒泡到UI层
+        },
+        keyboard: true,
+        mouse: true,
+        gamepad: false
       }
     };
 
     // 创建游戏实例
     this.game = new Phaser.Game(gameConfig);
+    
+    // 设置画布样式，确保触摸事件能够正确传播
+    const canvas = this.game.canvas;
+    if (canvas) {
+      canvas.style.touchAction = 'manipulation';
+      canvas.style.webkitTouchCallout = 'none';
+      canvas.style.webkitUserSelect = 'none';
+      canvas.style.userSelect = 'none';
+    }
+    
     // 不再使用占位 TopDownGameScene，这里由 BootScene 启动
     // 保留引用为兼容接口
     this.scene = (null as unknown) as TopDownGameScene;

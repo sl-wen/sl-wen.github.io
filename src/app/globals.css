@@ -670,3 +670,61 @@
   @apply inline-flex items-center justify-center px-2 py-1 text-xs font-mono bg-slate-700 text-slate-200 border border-slate-600 rounded shadow-sm min-w-[2rem];
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
 }
+
+/* 移动端游戏优化样式 */
+@media (max-width: 768px) {
+  /* 游戏容器移动端优化 */
+  .game-container {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* 游戏按钮移动端优化 */
+  .game-button {
+    min-height: 44px;
+    min-width: 44px;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    touch-action: manipulation;
+  }
+
+  /* 游戏菜单项移动端优化 */
+  .game-menu-item {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* 防止iOS缩放 */
+  input[type="text"], 
+  input[type="number"], 
+  input[type="email"], 
+  input[type="password"] {
+    font-size: 16px;
+  }
+}
+
+/* 游戏画布优化 */
+canvas {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* 游戏UI层优化 */
+.game-ui-layer {
+  pointer-events: auto;
+  z-index: 1000;
+}
+
+/* 移动端触摸反馈 */
+@media (hover: none) and (pointer: coarse) {
+  .touch-feedback:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
+}

@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { TopDownGameEngine } from './TopDownGameEngine';
+import { mobileTestHelper } from './MobileTestHelper';
 
 interface TopDownGameProps {
   width?: number;
@@ -23,6 +24,24 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
   const [messageEnded, setMessageEnded] = useState(false);
   const [heroHealthStates, setHeroHealthStates] = useState<string[]>([]);
   const [heroCoins, setHeroCoins] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // 检测移动设备
+  useEffect(() => {
+    const checkMobile = () => {
+      const deviceInfo = mobileTestHelper.detectDevice();
+      setIsMobile(deviceInfo.isMobile || deviceInfo.touchSupport);
+      
+      // 在开发模式下显示设备信息
+      if (process.env.NODE_ENV === 'development') {
+        mobileTestHelper.showDeviceInfo();
+      }
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (!gameContainerRef.current) return;
@@ -146,11 +165,24 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     setMenuItems([]);
   }, [menuItems]);
 
+  // 移动端触摸事件处理
+  const handleTouchStart = useCallback((e: React.TouchEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedMenuIndex(index);
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleSelectMenu(index);
+  }, [handleSelectMenu]);
+
   return (
     <div className="relative">
       <div 
         ref={gameContainerRef}
-        className="border-2 border-gray-600 rounded-lg overflow-hidden"
+        className="border-2 border-gray-600 rounded-lg overflow-hidden game-container"
         style={{ width, height }}
       />
       {/* HUD: Health and Coins */}
@@ -171,15 +203,23 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
       {/* Menu Overlay */}
       {menuItems.length > 0 && (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center z-50 game-ui-layer">
           <div className="min-w-[200px] bg-neutral-800/90 border border-neutral-700 rounded p-3">
             <ul className="text-white text-sm">
               {menuItems.map((item, idx) => (
                 <li
                   key={idx}
-                  className={`px-3 py-2 cursor-pointer rounded ${idx === selectedMenuIndex ? 'bg-blue-600' : 'hover:bg-neutral-700'}`}
-                  onMouseEnter={() => setSelectedMenuIndex(idx)}
-                  onClick={() => handleSelectMenu(idx)}
+                  className={`px-3 py-2 cursor-pointer rounded transition-colors game-menu-item touch-feedback ${
+                    idx === selectedMenuIndex ? 'bg-blue-600' : 'hover:bg-neutral-700'
+                  }`}
+                  onMouseEnter={() => !isMobile && setSelectedMenuIndex(idx)}
+                  onClick={() => !isMobile && handleSelectMenu(idx)}
+                  onTouchStart={(e) => isMobile && handleTouchStart(e, idx)}
+                  onTouchEnd={(e) => isMobile && handleTouchEnd(e, idx)}
+                  style={{
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation'
+                  }}
                 >
                   {item}
                 </li>
@@ -191,7 +231,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
       {/* Dialog Overlay */}
       {messages.length > 0 && (
-        <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: 16 }}>
+        <div className="absolute left-1/2 -translate-x-1/2 z-50 game-ui-layer" style={{ bottom: 16 }}>
           <div className="w-[80%] max-w-[720px] bg-amber-200 text-black border-2 border-amber-400 rounded p-3 shadow">
             <div className="text-xs font-bold uppercase mb-2">{characterName}</div>
             <div className="text-sm min-h-[48px]">
@@ -199,7 +239,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
             </div>
             <div className="text-right text-xs mt-2">
               <button
-                className="px-2 py-1 bg-neutral-900 text-white rounded"
+                className="px-2 py-1 bg-neutral-900 text-white rounded game-button touch-feedback"
                 onClick={() => {
                   if (messageEnded) {
                     if (currentMessageIndex < messages.length - 1) {
@@ -216,6 +256,11 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
                   } else {
                     setMessageEnded(true);
                   }
+                }}
+                style={{
+                  minHeight: isMobile ? '44px' : 'auto',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
                 }}
               >
                 {currentMessageIndex === messages.length - 1 && messageEnded ? 'Ok' : 'Next'}

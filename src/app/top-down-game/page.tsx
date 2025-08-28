@@ -18,10 +18,24 @@ const TopDownGameWrapper = dynamic(
 
 export default function TopDownGamePage() {
     const [isGameReady, setIsGameReady] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
+        // 检测移动设备
+        const checkMobile = () => {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            setIsMobile(isMobileDevice || isTouchDevice);
+        };
+        
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        
         // 确保在客户端渲染
         setIsGameReady(true);
+        
+        return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
     if (!isGameReady) {
@@ -40,19 +54,39 @@ export default function TopDownGamePage() {
                     <p className="text-gray-300 text-lg">
                         基于Phaser 3 + React的俯视角游戏演示
                     </p>
+                    {isMobile && (
+                        <div className="mt-4 p-3 bg-blue-900/50 border border-blue-500 rounded-lg">
+                            <p className="text-blue-200 text-sm">
+                                📱 移动端优化：点击"start"按钮开始游戏
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex justify-center">
                     <div className="relative">
-                        <TopDownGameWrapper />
+                        <TopDownGameWrapper 
+                            width={isMobile ? 350 : 800} 
+                            height={isMobile ? 500 : 600} 
+                        />
 
                         {/* 游戏控制说明 */}
                         <div className="mt-4 p-4 bg-gray-800 rounded-lg text-white">
                             <h3 className="text-lg font-semibold mb-2">游戏控制：</h3>
                             <ul className="text-sm space-y-1">
-                                <li>• 使用 WASD 或方向键移动角色</li>
-                                <li>• 空格键与NPC对话</li>
-                                <li>• ESC键打开菜单</li>
+                                {isMobile ? (
+                                    <>
+                                        <li>• 点击"start"按钮开始游戏</li>
+                                        <li>• 触摸屏幕进行交互</li>
+                                        <li>• 支持触摸操作和手势</li>
+                                    </>
+                                ) : (
+                                    <>
+                                        <li>• 使用 WASD 或方向键移动角色</li>
+                                        <li>• 空格键与NPC对话</li>
+                                        <li>• ESC键打开菜单</li>
+                                    </>
+                                )}
                             </ul>
                         </div>
                     </div>

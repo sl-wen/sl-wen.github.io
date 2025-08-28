@@ -356,10 +356,12 @@ const GamePage: React.FC = () => {
       // 设置游戏开始时间用于时间计算
       setGameStartTime(Date.now());
 
-      // 自动进入全屏模式
-      setTimeout(() => {
-        enterFullscreen();
-      }, 500); // 延迟500ms确保游戏完全加载
+      // 移动端自动进入全屏；PC端不自动全屏
+      if (platformInfo.isMobile) {
+        setTimeout(() => {
+          enterFullscreen();
+        }, 500);
+      }
     } catch (error) {
       console.error('Failed to initialize game:', error);
       setError(`游戏启动失败: ${error instanceof Error ? error.message : String(error)}`);

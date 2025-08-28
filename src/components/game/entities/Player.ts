@@ -299,8 +299,8 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
     const nextX = this.x + x * adjustedSpeed * 0.016; // 假设60FPS
     const nextY = this.y + y * adjustedSpeed * 0.016;
 
-    // 移除瓦片碰撞检测 - 由于使用直接草地渲染，不再需要瓦片碰撞检测
     // 物理世界边界已经通过 setCollideWorldBounds(true) 和 physics.world.setBounds 设置
+    // 让Phaser的物理系统自然处理边界碰撞
 
     // 添加微小的随机抖动，增加自然感
     const jitterX = (Math.random() - 0.5) * 0.02 * inputStrength;
@@ -311,20 +311,6 @@ export class Cat extends Phaser.Physics.Arcade.Sprite {
       (x + jitterX) * adjustedSpeed,
       (y + jitterY) * adjustedSpeed
     );
-
-    // 调试：记录位置和边界信息
-    if (inputStrength > 0.5) {
-      const worldBounds = this.scene.physics.world.bounds;
-      console.log('Cat movement debug:', {
-        position: { x: this.x, y: this.y },
-        velocity: { x: this.body!.velocity.x, y: this.body!.velocity.y },
-        worldBounds: { x: worldBounds.x, y: worldBounds.y, width: worldBounds.width, height: worldBounds.height },
-        canMoveRight: this.x < worldBounds.width,
-        canMoveDown: this.y < worldBounds.height,
-        canMoveLeft: this.x > worldBounds.x,
-        canMoveUp: this.y > worldBounds.y
-      });
-    }
 
     // 更新朝向和动画
     this.updateDirectionAndAnimation(x, y, inputStrength);

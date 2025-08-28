@@ -5,12 +5,12 @@ import { InventoryManager } from '../entities/InventoryManager';
 import { Cat } from '../entities/Player';
 import { TileMapManager } from '../entities/TileMapManager';
 import { FarmLayoutManager } from '../FarmLayoutManager';
-import { SeasonType, WeatherSystem } from '../systems/WeatherSystem';
+import { AnimationManager } from '../systems/AnimationManager';
+import { AudioManager } from '../systems/AudioManager';
 import { GameManager } from '../systems/GameManager';
 import { InputManager } from '../systems/InputManager';
-import { AudioManager } from '../systems/AudioManager';
-import { AnimationManager } from '../systems/AnimationManager';
 import { SaveSystem } from '../systems/SaveSystem';
+import { SeasonType, WeatherSystem } from '../systems/WeatherSystem';
 import { CropType, ToolType } from '../types/GameTypes';
 import { UILayoutManager } from '../UILayoutManager';
 import { ResourceLoader } from '../utils/ResourceLoader';
@@ -82,7 +82,7 @@ export class GameScene extends Phaser.Scene {
       console.log('Initializing core systems...');
       this.gameManager = GameManager.getInstance();
       this.gameManager.initialize({ gameScene: this });
-      
+
       this.inputManager = new InputManager(this);
       this.audioManager = new AudioManager(this);
       this.animationManager = new AnimationManager(this);
@@ -113,22 +113,31 @@ export class GameScene extends Phaser.Scene {
       // 使用全草地地图填充地面
       this.tileMapManager.createAllGrassMap();
 
-      // 根据实际地图尺寸设置世界边界
-      const mapSize = this.tileMapManager.getPixelSize();
-      // 使用完整地图尺寸作为世界边界，让猫能到达地图边缘
-      this.physics.world.setBounds(0, 0, mapSize.width, mapSize.height);
-      this.cameras.main.setBounds(0, 0, mapSize.width, mapSize.height);
+      // 暴露调试引用，便于控制台检查
+      try {
+        (window as any).__GAME_SCENE__ = this;
+        (window as any).__TM__ = this.tileMapManager;
+      } catch (_) { }
 
-      console.log('Map size:', mapSize);
+      // 根据地图像素边界设置世界边界（参考项目方案）
+      const mapBounds = this.tileMapManager.getMapBoundsPixels();
+
+      // 设置物理世界边界 - 直接使用地图边界
+      this.physics.world.setBounds(mapBounds.x, mapBounds.y, mapBounds.width, mapBounds.height);
+
+      // 设置相机边界 - 与物理世界边界保持一致
+      this.cameras.main.setBounds(mapBounds.x, mapBounds.y, mapBounds.width, mapBounds.height);
+
+      console.log('Map bounds:', mapBounds);
       console.log('World bounds set to full map size');
+      console.log('Physics world bounds:', this.physics.world.bounds);
 
       console.log('Tile map manager initialized with bounds:', {
-        original: mapSize,
-        worldBounds: { width: mapSize.width, height: mapSize.height }
+        worldBounds: { x: mapBounds.x, y: mapBounds.y, width: mapBounds.width, height: mapBounds.height }
       });
 
-      // 添加调试可视化 - 显示世界边界
-      this.addWorldBoundsDebug(mapSize.width, mapSize.height, mapSize.width, mapSize.height);
+      // 添加调试可视化 - 显示世界边界（包含偏移）
+      this.addWorldBoundsDebug(mapBounds.x, mapBounds.y, mapBounds.width, mapBounds.height);
 
       // 初始化农场布局管理器
       console.log('Initializing farm layout manager...');
@@ -141,9 +150,44 @@ export class GameScene extends Phaser.Scene {
       // this.setupWeatherEventHandlers();
       // console.log('Weather system initialized');
 
-      // 创建玩家角色（小猫）
+      // 创建玩家角色（小猫），初始放在草地中心
       console.log('Creating cat player...');
-      this.cat = new Cat(this, 200, 200);
+      const center = this.tileMapManager.getMapCenter();
+      this.cat = new Cat(this, center.x, center.y);
+
+      // 确保小猫的物理体正确设置边界碰撞（参考项目方案）
+      if (this.cat.body) {
+        const catBody = this.cat.body as Phaser.Physics.Arcade.Body;
+        catBody.setCollideWorldBounds(true);
+        catBody.reset(center.x, center.y);
+
+        // 调试：检查小猫的物理体状态
+        console.log('Cat physics body:', {
+          collideWorldBounds: catBody.collideWorldBounds,
+          worldBounds: this.physics.world.bounds,
+          catPosition: { x: this.cat.x, y: this.cat.y }
+        });
+      } else {
+        this.cat.setPosition(center.x, center.y);
+      }
+      // 将相机立即对准草地中心，并开始跟随
+      const cam = this.cameras.main;
+      cam.setZoom(cam.zoom || 1);
+      // 立即滚动到地图中心（按缩放换算世界视口尺寸）
+      const zoom = cam.zoom || 1;
+      cam.setScroll(center.x - cam.width / (2 * zoom), center.y - cam.height / (2 * zoom));
+      // 以瞬时插值开始跟随，确保第一帧即对齐
+      cam.startFollow(this.cat, true, 1, 1);
+
+      // 再次异步校正一次位置（确保在物理系统与相机完全就绪后仍居中）
+      this.time.delayedCall(0, () => {
+        if (this.cat && this.cat.body && (this.cat.body as Phaser.Physics.Arcade.Body).reset) {
+          (this.cat.body as Phaser.Physics.Arcade.Body).reset(center.x, center.y);
+        } else if (this.cat) {
+          this.cat.setPosition(center.x, center.y);
+        }
+        this.cameras.main.centerOn(center.x, center.y);
+      });
       console.log('Cat player created successfully');
 
       // // 创建农田地块组
@@ -463,13 +507,13 @@ export class GameScene extends Phaser.Scene {
     });
 
     console.log('Virtual joystick initialized at position:', position);
-    
+
     // 移动设备：更高的灵敏度和轻微平滑
     this.virtualJoystick.setSensitivity(1.2);
     this.virtualJoystick.setSmoothing(0.1);
-    
+
     // 关闭调试坐标测试，防止调试视觉（红点等）
-    
+
     // 输出摇杆配置信息
     console.log('🎮 Joystick configuration:', this.virtualJoystick.getJoystickConfig());
   }
@@ -490,7 +534,9 @@ export class GameScene extends Phaser.Scene {
       { id: 'cooking', icon: '🍳', action: () => this.openCookingInterface() }
     ];
 
-    const positions = this.uiLayoutManager.getActionButtonsPosition(buttonSize, buttons.length);
+    const positions = (this.uiLayoutManager as any).getActionButtonsPosition
+      ? (this.uiLayoutManager as any).getActionButtonsPosition(buttonSize, buttons.length)
+      : buttons.map((_b, i) => ({ x: screenInfo.width - (i + 1) * (buttonSize + 16), y: screenInfo.height - buttonSize - 16 }));
 
     this.actionButtons = buttons.map((button, index) => {
       const position = positions[index];
@@ -891,7 +937,9 @@ export class GameScene extends Phaser.Scene {
     // 更新动作按钮位置（仅移动端）
     if (this.actionButtons.length > 0 && screenInfo.isMobile) {
       const buttonSize = screenInfo.isPortrait ? 50 : 60;  // 根据屏幕方向调整按钮大小
-      const positions = this.uiLayoutManager.getActionButtonsPosition(buttonSize, this.actionButtons.length);  // 获取按钮位置
+      const positions = (this.uiLayoutManager as any).getActionButtonsPosition
+        ? (this.uiLayoutManager as any).getActionButtonsPosition(buttonSize, this.actionButtons.length)
+        : this.actionButtons.map((_b, i) => ({ x: screenInfo.width - (i + 1) * (buttonSize + 16), y: screenInfo.height - buttonSize - 16 }));
 
       this.actionButtons.forEach((button, index) => {
         if (positions[index]) {
@@ -941,35 +989,21 @@ export class GameScene extends Phaser.Scene {
    * 配置响应式摄像机跟随和缩放，考虑开发者工具遮挡
    */
   private setupCamera() {
-    // 改进的摄像机设置，具有响应式行为
-    const screenWidth = this.cameras.main.width;   // 屏幕宽度
-    const screenHeight = this.cameras.main.height; // 屏幕高度
+    // 参考项目方案的相机设置
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
 
-    // 检测是否在开发环境中（可能打开开发者工具）
-    const isDevelopment = typeof window !== 'undefined' && (
-      window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      window.location.port !== ''
-    );
+    // 计算最优缩放
+    const baseZoom = Math.min(screenWidth / 800, screenHeight / 600);
+    const optimalZoom = Math.max(0.8, Math.min(2.0, baseZoom * 1.2));
 
-    // 根据屏幕尺寸动态调整缩放
-    const baseZoom = Math.min(screenWidth / 800, screenHeight / 600);  // 基础缩放比例
-    const optimalZoom = Math.max(0.8, Math.min(2.0, baseZoom * 1.2));  // 最优缩放比例（0.8-2.0之间）
-
-    this.cameras.main.startFollow(this.cat, true);      // 开始跟随小猫，启用舍入以稳定画面
-    this.cameras.main.setZoom(optimalZoom);       // 设置缩放比例
-
-    // 摄像机边界现在由 TileMapManager 设置，这里只设置跟随和缩放
-    // 平滑摄像机跟随
-    this.cameras.main.setLerp(0.2, 0.2);        // 略微更紧的跟随
-    // 移除死区，使小猫始终保持在屏幕正中（由后续位置夹取保证边界行为）
-    this.cameras.main.setDeadzone(0, 0);
-
-    // 注意：摇杆位置更新现在在摇杆重置时自动处理
+    // 设置缩放和跟随
+    this.cameras.main.setZoom(optimalZoom);
+    this.cameras.main.startFollow(this.cat, true, 0.1, 0.1);
   }
 
   /**
-   * 将小猫位置限制在“可居中区域”
+   * 将小猫位置限制在"可居中区域"
    * 确保相机始终可以把小猫放在屏幕中心，同时不越过世界边界。
    * 可居中区域 = 世界边界去掉当前视口一半（考虑缩放）的安全边距。
    */
@@ -1010,16 +1044,34 @@ export class GameScene extends Phaser.Scene {
       // 延迟300ms等待浏览器完成方向变化
       this.time.delayedCall(300, () => {
         console.log('Orientation changed, updating UI layout and grass map');
-        
+
         // 刷新草地图以适应新的屏幕尺寸
         if (this.tileMapManager) {
           this.tileMapManager.refreshGrassMapForNewScreenSize();
         }
-        
+
         this.updateResponsiveUI();  // 更新响应式UI
 
         // 更新摄像机边界和缩放
         this.setupCamera();  // 重新设置摄像机
+        try {
+          const mapBounds = this.tileMapManager.getMapBoundsPixels();
+          // 重新设置物理世界和相机边界（参考项目方案）
+          this.physics.world.setBounds(mapBounds.x, mapBounds.y, mapBounds.width, mapBounds.height);
+          this.cameras.main.setBounds(mapBounds.x, mapBounds.y, mapBounds.width, mapBounds.height);
+
+          // 确保小猫的物理体边界碰撞重新设置
+          if (this.cat && this.cat.body) {
+            const catBody = this.cat.body as Phaser.Physics.Arcade.Body;
+            catBody.setCollideWorldBounds(true);
+          }
+
+          // 重新设置相机跟随
+          const center = this.tileMapManager.getMapCenter();
+          this.cameras.main.startFollow(this.cat, true, 0.1, 0.1);
+        } catch (e) {
+          console.warn('camera re-center after resize failed:', e);
+        }
 
         // 通知虚拟摇杆处理视口变化
         if (this.virtualJoystick) {
@@ -1440,8 +1492,8 @@ export class GameScene extends Phaser.Scene {
         this.cat.update();
       }
 
-      // 夹取小猫到可居中区域，保证靠近边界时仍保持在屏幕中间且不越界
-      this.clampCatToCenteredBounds();
+      // 允许小猫在世界边界内自由到达四角；由物理世界边界与相机边界限制
+      // 不再将小猫夹取到"可居中区域"，避免靠近左下角等边缘时显示异常
     }
 
     // // 更新瓦片地图系统
@@ -1514,7 +1566,9 @@ export class GameScene extends Phaser.Scene {
         const screenInfo = this.uiLayoutManager.getScreenInfo();
         if (screenInfo && screenInfo.isMobile) {
           const buttonSize = screenInfo.isPortrait ? 50 : 60;
-          const positions = this.uiLayoutManager.getActionButtonsPosition(buttonSize, this.actionButtons.length);
+          const positions = (this.uiLayoutManager as any).getActionButtonsPosition
+            ? (this.uiLayoutManager as any).getActionButtonsPosition(buttonSize, this.actionButtons.length)
+            : this.actionButtons.map((_b, i) => ({ x: screenInfo.width - (i + 1) * (buttonSize + 16), y: screenInfo.height - buttonSize - 16 }));
 
           this.actionButtons.forEach((button, index) => {
             if (positions[index]) {
@@ -1824,22 +1878,18 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  // 添加调试可视化 - 显示世界边界
-  private addWorldBoundsDebug(adjustedWidth: number, adjustedHeight: number, mapWidth: number, mapHeight: number): void {
-    // 创建物理世界边界可视化
+  // 添加调试可视化 - 显示世界边界（参考项目方案）
+  private addWorldBoundsDebug(x: number, y: number, width: number, height: number): void {
+    // 物理世界边界（红色）
     const graphics = this.add.graphics();
     graphics.lineStyle(2, 0xff0000, 1);
-    graphics.strokeRect(0, 0, adjustedWidth, adjustedHeight);
+    graphics.strokeRect(x, y, width, height);
     graphics.setDepth(999);
 
-    // 创建相机边界可视化
-    const cameraGraphics = this.add.graphics();
-    cameraGraphics.lineStyle(2, 0x00ff00, 1);
-    cameraGraphics.strokeRect(0, 0, mapWidth, mapHeight);
-    cameraGraphics.setDepth(998);
-
-    console.log('Debug visualization added:');
-    console.log('- Red rectangle: Physics world bounds (0, 0,', adjustedWidth, ',', adjustedHeight, ')');
-    console.log('- Green rectangle: Camera bounds (0, 0,', mapWidth, ',', mapHeight, ')');
+    console.log('Debug visualization added:', {
+      worldBounds: { x, y, width, height }
+    });
   }
+
+
 }

@@ -194,6 +194,10 @@ export class RPGGame {
       });
 
       this.game = new Phaser.Game(config);  // 创建Phaser游戏实例
+      // 暴露全局调试引用，方便控制台定位
+      try {
+        (window as any).PHASER_GAME = this.game;
+      } catch (_) { }
       console.log('Phaser game instance created successfully:', this.game);
       console.log('Game canvas created:', this.game.canvas);
       console.log('Game config applied:', this.game.config);

@@ -78,8 +78,8 @@ export class VirtualJoystick {
     // 添加到容器
     this.container.add([this.outerRing, this.base, this.knob]);
 
-    // 设置交互区域 - 大幅扩大触摸范围提高响应性
-    const interactiveArea = this.scene.add.circle(0, 0, this.config.radius + 40, 0x000000, 0);
+    // 设置交互区域 - 大幅扩大触摸范围提高响应性，为更大摇杆增加更大缓冲区
+    const interactiveArea = this.scene.add.circle(0, 0, this.config.radius + 60, 0x000000, 0);
     interactiveArea.setInteractive();
     this.container.add(interactiveArea);
 
@@ -160,8 +160,8 @@ export class VirtualJoystick {
         this.container.y      // 摇杆中心Y坐标
       );
 
-      // 在全屏模式下大幅增加触摸范围，提高触摸检测灵敏度
-      const touchRange = this.config.radius + (this.isFullscreen ? 60 : 45);
+      // 在全屏模式下大幅增加触摸范围，提高触摸检测灵敏度，为更大摇杆增加更大范围
+      const touchRange = this.config.radius + (this.isFullscreen ? 80 : 65);
 
       if (distance <= touchRange) {  // 在有效触摸范围内
         this.isActive = true;                    // 激活摇杆

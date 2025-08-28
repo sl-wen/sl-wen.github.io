@@ -310,7 +310,7 @@ export class UILayoutManager {
   // 获取推荐的摇杆位置 - 改进的移动端响应式算法
   public getJoystickPosition(radius: number): { x: number; y: number } {
     const baseMargin = this.isMobile ? 15 : 20;
-    const upwardOffset = 80; // 向上偏移80像素
+    const upwardOffset = 120; // 向上偏移120像素，为更大的摇杆提供更多触摸空间
     let x: number, y: number;
 
     if (this.isMobile) {
@@ -342,11 +342,12 @@ export class UILayoutManager {
       y = this.screenHeight - this.safeArea.bottom - radius - baseMargin * 1.5 - upwardOffset;
     }
 
-    // 更严格的边界检查，确保摇杆完全可见
-    const minX = radius + baseMargin;
-    const maxX = this.screenWidth - radius - baseMargin;
-    const minY = radius + baseMargin;
-    const maxY = this.screenHeight - radius - baseMargin;
+    // 更严格的边界检查，确保摇杆完全可见，为更大摇杆增加更大边距
+    const extraMargin = radius > 100 ? 20 : 0; // 大摇杆需要额外边距
+    const minX = radius + baseMargin + extraMargin;
+    const maxX = this.screenWidth - radius - baseMargin - extraMargin;
+    const minY = radius + baseMargin + extraMargin;
+    const maxY = this.screenHeight - radius - baseMargin - extraMargin;
 
     x = Math.max(minX, Math.min(x, maxX));
     y = Math.max(minY, Math.min(y, maxY));

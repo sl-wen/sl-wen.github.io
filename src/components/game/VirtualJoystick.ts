@@ -404,58 +404,45 @@ export class VirtualJoystick {
     // 清理调试元素
     this.clearDebugElements();
 
-    // 检查并更新摇杆位置（防止相机移动后位置不对）
-    const currentScreenPos = this.getJoystickScreenPosition();
-    
-    // 动画回到中心
-    this.scene.tweens.add({
-      targets: this.knob,                     // 动画目标：手柄
-      x: 0,                                   // 回到中心X坐标
-      y: 0,                                   // 回到中心Y坐标
-      scaleX: 1,                              // 恢复原始X缩放
-      scaleY: 1,                              // 恢复原始Y缩放
-      duration: 200,                          // 动画持续时间200ms
-      ease: 'Back.easeOut'                    // 弹性缓动效果
-    });
-
-    // 停止所有动画效果
+    // 先停止所有现有动画，避免新旧动画相互干扰造成闪烁
     this.scene.tweens.killTweensOf([this.knob, this.base, this.outerRing]);
-    
-    // 平滑恢复视觉状态
+
+    // 平滑动画回到中心与还原视觉状态（无振动、无闪烁）
     this.scene.tweens.add({
       targets: this.knob,
-      fillColor: 0x74b9ff,  // 恢复原始颜色
-      duration: 200,
-      ease: 'Power2.easeOut'
-    });
-    
-    this.scene.tweens.add({
-      targets: this.base,
-      strokeColor: 0x4a90e2,  // 恢复底座边框颜色
-      duration: 200,
-      ease: 'Power2.easeOut'
-    });
-    
-    this.scene.tweens.add({
-      targets: this.outerRing,
-      alpha: 0.15,  // 恢复原始透明度
-      scaleX: 1.0,
-      scaleY: 1.0,
-      duration: 200,
+      x: 0,
+      y: 0,
+      scaleX: 1,
+      scaleY: 1,
+      fillColor: 0x74b9ff,
+      duration: 180,
       ease: 'Power2.easeOut'
     });
 
-    // 添加释放时的触觉反馈 - 结束触摸时更轻的振动
-    this.triggerHapticFeedback([15], 'light');
+    this.scene.tweens.add({
+      targets: this.base,
+      strokeColor: 0x4a90e2,
+      duration: 180,
+      ease: 'Power2.easeOut'
+    });
+
+    this.scene.tweens.add({
+      targets: this.outerRing,
+      alpha: 0.15,
+      scaleX: 1.0,
+      scaleY: 1.0,
+      duration: 180,
+      ease: 'Power2.easeOut'
+    });
 
     // 触发结束回调
     if (this.onEnd) {
-      this.onEnd();  // 调用结束回调函数
+      this.onEnd();
     }
 
-    // 最终确保移动回调被调用
+    // 确保移动回调归零
     if (this.onMove) {
-      this.onMove({ x: 0, y: 0 });  // 发送零向量，表示停止移动
+      this.onMove({ x: 0, y: 0 });
     }
   }
 

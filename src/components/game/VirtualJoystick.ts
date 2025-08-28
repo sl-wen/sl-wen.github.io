@@ -1365,18 +1365,10 @@ export class VirtualJoystick {
    * @returns 屏幕坐标
    */
   private getPhaserScreenCoordinates(pointer: Phaser.Input.Pointer, camera: Phaser.Cameras.Scene2D.Camera): { x: number; y: number } {
-    // 标准的世界坐标到屏幕坐标转换
-    let screenX = pointer.x - camera.scrollX;
-    let screenY = pointer.y - camera.scrollY;
-    
-    // 考虑相机缩放
-    if (camera.zoom !== 1) {
-      screenX = screenX / camera.zoom;
-      screenY = screenY / camera.zoom;
-    }
-    
-    console.debug(`Phaser touch: world(${pointer.x.toFixed(1)}, ${pointer.y.toFixed(1)}) -> screen(${screenX.toFixed(1)}, ${screenY.toFixed(1)})`);
-    
+    // 对于固定在屏幕上的UI，直接使用指针的屏幕坐标
+    const screenX = pointer.x;
+    const screenY = pointer.y;
+    console.debug(`Phaser touch (screen): (${screenX.toFixed(1)}, ${screenY.toFixed(1)})`);
     return { x: screenX, y: screenY };
   }
 }

@@ -312,8 +312,7 @@ export class UILayoutManager {
     const baseMargin = 15;
     const upwardOffset = 120; // 向上偏移120像素，为更大的摇杆提供更多触摸空间
     let x: number, y: number;
-    alert("safeArea:"+this.safeArea+"baseMargin:"+baseMargin+"screenHeight:"+this.screenHeight);
-    x = radius + baseMargin;
+    x = this.safeArea.left + radius + baseMargin;
     y = this.screenHeight - ( this.safeArea.bottom + radius + baseMargin + upwardOffset);
     return { x, y };
   }

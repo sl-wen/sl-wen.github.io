@@ -109,27 +109,28 @@ export class VirtualJoystick {
       this.handleTouchMove(pointer);
     });
 
-    // 全局释放监听
+    // 全局释放监听 - 只在真正的触摸结束时重置
     this.scene.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
       this.handleTouchEnd(pointer);
     });
 
-    // 额外的安全释放监听
-    this.scene.input.on('pointerupoutside', (pointer: Phaser.Input.Pointer) => {
-      this.handleTouchEnd(pointer);
-    });
+    // 只保留真正必要的事件监听器
+    // 移除pointerupoutside和pointercancel，因为它们可能在用户仍在触摸时误触发
+    // this.scene.input.on('pointerupoutside', (pointer: Phaser.Input.Pointer) => {
+    //   this.handleTouchEnd(pointer);
+    // });
 
-    // 取消事件监听
-    this.scene.input.on('pointercancel', (pointer: Phaser.Input.Pointer) => {
-      this.handleTouchEnd(pointer);
-    });
+    // this.scene.input.on('pointercancel', (pointer: Phaser.Input.Pointer) => {
+    //   this.handleTouchEnd(pointer);
+    // });
 
-    // 添加离开事件监听，确保摇杆能正确重置
-    this.scene.input.on('pointerout', (pointer: Phaser.Input.Pointer) => {
-      if (this.isActive && this.activePointerId === pointer.id) {
-        this.handleTouchEnd(pointer);
-      }
-    });
+    // 添加离开事件监听，但只在真正离开游戏区域时才重置
+    // 移除过于敏感的pointerout事件，防止向下移动时误触发重置
+    // this.scene.input.on('pointerout', (pointer: Phaser.Input.Pointer) => {
+    //   if (this.isActive && this.activePointerId === pointer.id) {
+    //     this.handleTouchEnd(pointer);
+    //   }
+    // });
   }
 
   /**
@@ -160,8 +161,8 @@ export class VirtualJoystick {
         this.container.y      // 摇杆中心Y坐标
       );
 
-      // 在全屏模式下大幅增加触摸范围，提高触摸检测灵敏度，为更大摇杆增加更大范围
-      const touchRange = this.config.radius + (this.isFullscreen ? 80 : 65);
+      // 设置触摸范围 - 现在可以更宽松，因为我们不会在移动过程中重置
+      const touchRange = this.config.radius + (this.isFullscreen ? 120 : 100);
 
       if (distance <= touchRange) {  // 在有效触摸范围内
         this.isActive = true;                    // 激活摇杆
@@ -226,6 +227,10 @@ export class VirtualJoystick {
       }
       
       this.lastUpdateTime = currentTime;  // 更新最后更新时间
+      
+      // 移除距离检测重置逻辑 - 只有停止触摸时才重置
+      // 无论摇杆移动到多远都继续跟踪，直到用户停止触摸
+      
       this.updateKnobPosition(pointer);   // 更新手柄位置
     } catch (error) {
       console.error('Error in handleTouchMove:', error);
@@ -239,10 +244,12 @@ export class VirtualJoystick {
    * @param pointer 触摸指针对象
    */
   private handleTouchEnd(pointer: Phaser.Input.Pointer) {
+    // 严格检查：只有当前激活的指针才能触发重置
     if (!this.isActive || this.activePointerId !== pointer.id) {
       return;  // 如果摇杆未激活或不是同一个指针，则忽略
     }
 
+    console.debug(`🎮 Joystick touch ended for pointer ${pointer.id}, resetting joystick`);
     this.resetJoystick();  // 重置摇杆状态
   }
 
@@ -273,11 +280,12 @@ export class VirtualJoystick {
       return;
     }
 
-    // 限制在摇杆范围内
+    // 手柄位置跟随触摸点，但仍限制在合理范围内以保持视觉效果
     const maxDistance = this.config.radius - this.config.knobRadius;  // 最大移动距离
     let knobX = deltaX;  // 手柄X位置
     let knobY = deltaY;  // 手柄Y位置
 
+    // 保持手柄在摇杆底座范围内，但允许更大的输入检测范围
     if (distance > maxDistance) {
       const ratio = maxDistance / distance;  // 计算缩放比例
       knobX *= ratio;  // 限制X位置
@@ -288,17 +296,17 @@ export class VirtualJoystick {
     this.knob.x = knobX;  // 设置手柄X坐标
     this.knob.y = knobY;  // 设置手柄Y坐标
 
-    // 计算标准化向量 - 优化灵敏度
-    const normalizedDistance = Math.min(distance / maxDistance, 1);  // 标准化距离（0-1）
+    // 计算标准化向量 - 基于实际触摸距离而不是手柄位置
+    const normalizedDistance = Math.min(distance / maxDistance, 2);  // 允许超出范围的输入，最大2倍
 
     // 降低死区阈值，提高小幅度移动的响应性
-    const adjustedDeadZone = this.config.deadZone * 0.5; // 将死区减少一半
+    const adjustedDeadZone = this.config.deadZone * 0.3; // 将死区大幅减少
     
-    if (normalizedDistance > adjustedDeadZone) {
-      // 应用非线性响应曲线，提高小幅度移动的灵敏度
-      const responseFactor = this.calculateResponseFactor(normalizedDistance, adjustedDeadZone);
-      this.vector.x = (knobX / maxDistance) * responseFactor;
-      this.vector.y = (knobY / maxDistance) * responseFactor;
+    if (distance > adjustedDeadZone * maxDistance) {
+      // 基于实际触摸位置计算输入向量，而不是限制后的手柄位置
+      const inputStrength = Math.min(normalizedDistance, 1.5); // 最大1.5倍强度
+      this.vector.x = (deltaX / distance) * inputStrength;
+      this.vector.y = (deltaY / distance) * inputStrength;
     } else {
       this.vector.x = 0;  // 在死区内，输入值为0
       this.vector.y = 0;  // 在死区内，输入值为0
@@ -842,8 +850,10 @@ export class VirtualJoystick {
     interactiveArea.removeAllListeners();
     this.scene.input.off('pointermove');
     this.scene.input.off('pointerup');
-    this.scene.input.off('pointerupoutside');
-    this.scene.input.off('pointercancel');
+    // 不移除pointerupoutside和pointercancel，因为我们已经不再使用它们
+    // this.scene.input.off('pointerupoutside');
+    // this.scene.input.off('pointercancel');
+    // 不重新添加pointerout监听器，因为我们已经移除了它
 
     // 重新设置事件处理器
     this.setupEventHandlers();
@@ -862,6 +872,9 @@ export class VirtualJoystick {
     const adjustedDistance = (normalizedDistance - deadZone) / (1 - deadZone);
     return Math.sqrt(adjustedDistance) * 1.2; // 1.2倍增强响应性
   }
+
+  // 移除距离检测方法 - 不再需要在移动过程中检查距离
+  // 现在只有在真正停止触摸时才重置摇杆
 
   /**
    * 获取正确的触摸坐标

@@ -1,18 +1,10 @@
 import * as Phaser from 'phaser';
 import { TopDownGameScene } from './scenes/TopDownGameScene';
-// Reference scenes integration
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import BootScene from './ref/scenes/BootScene.js';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import MainMenuScene from './ref/scenes/MainMenuScene.js';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import GameOverScene from './ref/scenes/GameOverScene.js';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import GameScene from './ref/scenes/GameScene.js';
+// 引用场景集成
+import BootScene from './ref/scenes/BootScene';
+import MainMenuScene from './ref/scenes/MainMenuScene';
+import GameOverScene from './ref/scenes/GameOverScene';
+import GameScene from './ref/scenes/GameScene';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import GridEngine from 'grid-engine';

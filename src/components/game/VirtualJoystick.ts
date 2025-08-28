@@ -376,29 +376,20 @@ export class VirtualJoystick {
 
   /**
    * 更新摇杆位置以适应屏幕变化
-   * 根据屏幕尺寸和方向调整摇杆位置
+   * 委托给UILayoutManager进行统一的位置管理
    * @param screenWidth 屏幕宽度
    * @param screenHeight 屏幕高度
    */
   public updateLayout(screenWidth: number, screenHeight: number) {
-    // 如果处于全屏模式，使用全屏定位逻辑
+    // 委托给场景中的UILayoutManager进行位置计算
+    // 这样避免了重复的位置计算逻辑
     if (this.isFullscreen) {
       this.adjustForFullscreen();
-      return;
+    } else {
+      this.adjustForNormalMode();
     }
 
-    // 调整摇杆位置：左下角但向上移动一些距离
-    const upwardOffset = 80; // 向上偏移80像素
-    let newX = this.config.radius + 10; // 距离左边界稍远一些
-    let newY = screenHeight - this.config.radius - upwardOffset; // 向上移动
-
-    // 边界保护：确保摇杆不会超出屏幕边界
-    newX = Math.max(this.config.radius, Math.min(newX, screenWidth - this.config.radius));
-    newY = Math.max(this.config.radius, Math.min(newY, screenHeight - this.config.radius));
-
-    this.setPosition(newX, newY);
-
-    console.log(`Joystick layout updated (moved up): ${newX}, ${newY} (fullscreen: ${this.isFullscreen})`);
+    console.log(`Joystick layout updated: fullscreen=${this.isFullscreen}`);
   }
 
   /**
@@ -597,75 +588,53 @@ export class VirtualJoystick {
 
   /**
    * 调整摇杆以适应全屏模式
-   * 改进的移动端响应式定位算法
+   * 使用UILayoutManager的统一定位逻辑
    */
   private adjustForFullscreen() {
-    // 在全屏模式下，使用实际的视口尺寸并调整左下角位置
     if (typeof window === 'undefined') return;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    // 全屏模式下也向上移动摇杆位置
-    const upwardOffset = 350; // 全屏模式下向上偏移更多一些，继续往上移动
-    let joystickX = this.config.radius + 15; // 距离左边界稍远一些
-    let joystickY = viewportHeight - this.config.radius - upwardOffset; // 向上移动
-
-    // 将视口坐标转换为游戏坐标
-    const canvas = this.scene.game.canvas;
-    if (canvas) {
-      const canvasRect = canvas.getBoundingClientRect();
-      const gameWidth = this.scene.scale.gameSize.width;
-      const gameHeight = this.scene.scale.gameSize.height;
-      const scaleX = gameWidth / canvasRect.width;
-      const scaleY = gameHeight / canvasRect.height;
-      joystickX = joystickX * scaleX;
-      joystickY = joystickY * scaleY;
+    
+    // 获取UILayoutManager的推荐位置
+    const uiLayoutManager = (this.scene as any).uiLayoutManager;
+    if (uiLayoutManager) {
+      const position = uiLayoutManager.getJoystickPosition(this.config.radius);
+      this.container.setPosition(position.x, position.y);
+      this.config.x = position.x;
+      this.config.y = position.y;
     }
 
-    // 边界保护（增加一些边距确保摇杆完全可见）
-    const gameWidth = this.scene.scale.gameSize.width;
-    const gameHeight = this.scene.scale.gameSize.height;
-    const margin = this.config.radius + 10; // 增加10像素的边距
-    joystickX = Math.max(margin, Math.min(joystickX, gameWidth - margin));
-    joystickY = Math.max(margin, Math.min(joystickY, gameHeight - margin));
-
-    this.container.setPosition(joystickX, joystickY);
-
-    // 保持其他视觉属性
+    // 设置全屏模式的视觉属性
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
     const isLandscape = viewportWidth > viewportHeight;
     const scaleFactor = this.calculateOptimalScale(isLandscape);
+    
     this.container.setScale(scaleFactor);
     this.container.setAlpha(0.9);
     this.container.setDepth(10000);
 
-    this.config.x = joystickX;
-    this.config.y = joystickY;
-
-    console.log(`Fullscreen joystick positioned (moved up): ${joystickX}, ${joystickY}`);
+    console.log(`Fullscreen joystick positioned using UILayoutManager`);
   }
 
   /**
    * 调整摇杆以适应正常模式
+   * 使用UILayoutManager的统一定位逻辑
    */
   private adjustForNormalMode() {
-    // 正常模式：左下角但向上移动一些距离
-    const gameWidth = this.scene.scale.gameSize.width;
-    const gameHeight = this.scene.scale.gameSize.height;
-    const margin = this.config.radius + 20; // 增加20像素边距
-    const upwardOffset = 80; // 向上偏移80像素
+    // 获取UILayoutManager的推荐位置
+    const uiLayoutManager = (this.scene as any).uiLayoutManager;
+    if (uiLayoutManager) {
+      const position = uiLayoutManager.getJoystickPosition(this.config.radius);
+      this.container.setPosition(position.x, position.y);
+      this.config.x = position.x;
+      this.config.y = position.y;
+    }
 
-    const normalX = margin;
-    const normalY = gameHeight - margin - upwardOffset; // 向上移动
-
-    this.container.setPosition(normalX, normalY);
+    // 设置正常模式的视觉属性
     this.container.setScale(1.0);
     this.container.setAlpha(0.8);
     this.container.setDepth(1000);
 
-    this.config.x = normalX;
-    this.config.y = normalY;
-
-    console.log(`Normal mode joystick positioned (moved up): ${normalX}, ${normalY}`);
+    console.log(`Normal mode joystick positioned using UILayoutManager`);
   }
 
   /**

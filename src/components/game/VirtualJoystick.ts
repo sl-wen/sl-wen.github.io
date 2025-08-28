@@ -124,12 +124,13 @@ export class VirtualJoystick {
       this.handleTouchEnd(pointer);
     });
 
-    // 添加离开事件监听，确保摇杆能正确重置
-    this.scene.input.on('pointerout', (pointer: Phaser.Input.Pointer) => {
-      if (this.isActive && this.activePointerId === pointer.id) {
-        this.handleTouchEnd(pointer);
-      }
-    });
+    // 添加离开事件监听，但只在真正离开游戏区域时才重置
+    // 移除过于敏感的pointerout事件，防止向下移动时误触发重置
+    // this.scene.input.on('pointerout', (pointer: Phaser.Input.Pointer) => {
+    //   if (this.isActive && this.activePointerId === pointer.id) {
+    //     this.handleTouchEnd(pointer);
+    //   }
+    // });
   }
 
   /**
@@ -161,7 +162,18 @@ export class VirtualJoystick {
       );
 
       // 在全屏模式下大幅增加触摸范围，提高触摸检测灵敏度，为更大摇杆增加更大范围
-      const touchRange = this.config.radius + (this.isFullscreen ? 80 : 65);
+      // 对向下方向给予更多容忍度，防止向下移动时误判为超出范围
+      let touchRange = this.config.radius + (this.isFullscreen ? 80 : 65);
+      
+      // 计算触摸点相对于摇杆中心的方向
+      const deltaX = touchCoords.x - this.container.x;
+      const deltaY = touchCoords.y - this.container.y;
+      
+      // 如果是向下方向的触摸，给予额外的容忍范围
+      if (deltaY > 0) { // 向下方向
+        const downwardBonus = Math.min(deltaY * 0.3, this.config.radius * 0.5); // 最多增加半个摇杆半径的范围
+        touchRange += downwardBonus;
+      }
 
       if (distance <= touchRange) {  // 在有效触摸范围内
         this.isActive = true;                    // 激活摇杆
@@ -226,6 +238,14 @@ export class VirtualJoystick {
       }
       
       this.lastUpdateTime = currentTime;  // 更新最后更新时间
+      
+      // 检查是否真的离开了合理的操作范围
+      if (this.isPointerTooFarFromJoystick(pointer)) {
+        console.debug('Pointer moved too far from joystick, resetting');
+        this.handleTouchEnd(pointer);
+        return;
+      }
+      
       this.updateKnobPosition(pointer);   // 更新手柄位置
     } catch (error) {
       console.error('Error in handleTouchMove:', error);
@@ -844,6 +864,7 @@ export class VirtualJoystick {
     this.scene.input.off('pointerup');
     this.scene.input.off('pointerupoutside');
     this.scene.input.off('pointercancel');
+    // 不重新添加pointerout监听器，因为我们已经移除了它
 
     // 重新设置事件处理器
     this.setupEventHandlers();
@@ -861,6 +882,54 @@ export class VirtualJoystick {
     // 使用平方根函数提高小幅度移动的响应性
     const adjustedDistance = (normalizedDistance - deadZone) / (1 - deadZone);
     return Math.sqrt(adjustedDistance) * 1.2; // 1.2倍增强响应性
+  }
+
+  /**
+   * 检查指针是否离摇杆太远，需要重置
+   * @param pointer 触摸指针对象
+   * @returns 是否需要重置摇杆
+   */
+  private isPointerTooFarFromJoystick(pointer: Phaser.Input.Pointer): boolean {
+    try {
+      const touchCoords = this.getTouchCoordinates(pointer);
+      
+      // 验证坐标有效性
+      if (!isFinite(touchCoords.x) || !isFinite(touchCoords.y)) {
+        return true; // 无效坐标，需要重置
+      }
+      
+      // 计算距离摇杆中心的距离
+      const distance = Phaser.Math.Distance.Between(
+        touchCoords.x,
+        touchCoords.y,
+        this.container.x,
+        this.container.y
+      );
+      
+      // 设置一个比较大的容忍范围，只有真正离开很远才重置
+      // 在全屏模式下使用更大的容忍范围
+      let maxAllowedDistance = this.config.radius * (this.isFullscreen ? 6 : 4);
+      
+      // 计算触摸点相对于摇杆中心的方向
+      const deltaX = touchCoords.x - this.container.x;
+      const deltaY = touchCoords.y - this.container.y;
+      
+      // 如果是向下方向的移动，给予更大的容忍范围
+      if (deltaY > 0) { // 向下方向
+        maxAllowedDistance *= 1.5; // 向下方向增加50%的容忍范围
+      }
+      
+      const isTooFar = distance > maxAllowedDistance;
+      
+      if (isTooFar) {
+        console.debug(`Pointer too far from joystick: ${distance.toFixed(2)} > ${maxAllowedDistance} (fullscreen: ${this.isFullscreen})`);
+      }
+      
+      return isTooFar;
+    } catch (error) {
+      console.error('Error checking pointer distance:', error);
+      return true; // 出错时重置
+    }
   }
 
   /**

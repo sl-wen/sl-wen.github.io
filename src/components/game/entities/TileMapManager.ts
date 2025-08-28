@@ -806,4 +806,55 @@ export class TileMapManager {
             layer
         };
     }
+
+    /**
+     * 更新背景草地以适应全屏模式
+     * 在全屏模式下扩展草地背景以覆盖整个屏幕
+     * @param isFullscreen 是否处于全屏模式
+     */
+    updateBackgroundForFullscreen(isFullscreen: boolean): void {
+        if (!this.grassContainer) return;
+
+        try {
+            if (isFullscreen) {
+                // 获取当前屏幕尺寸
+                const screenWidth = this.scene.scale.width;
+                const screenHeight = this.scene.scale.height;
+                
+                // 计算需要多少瓦片来覆盖整个屏幕
+                const tilesNeededX = Math.ceil(screenWidth / this.TILE_WIDTH) + 2; // 多2个瓦片确保覆盖
+                const tilesNeededY = Math.ceil(screenHeight / this.TILE_HEIGHT) + 2; // 多2个瓦片确保覆盖
+                
+                // 清除现有的草地背景
+                this.grassContainer.removeAll(true);
+                
+                // 重新渲染扩展的草地背景
+                for (let y = -1; y < tilesNeededY; y++) { // 从-1开始确保完全覆盖
+                    for (let x = -1; x < tilesNeededX; x++) { // 从-1开始确保完全覆盖
+                        const key = this.chooseGrassAtlasKey(x, y, tilesNeededX, tilesNeededY);
+                        
+                        // 检查纹理是否存在
+                        if (!this.scene.textures.exists(key)) continue;
+                        
+                        const img = this.scene.add.image(
+                            x * this.TILE_WIDTH + this.TILE_WIDTH / 2,
+                            y * this.TILE_HEIGHT + this.TILE_HEIGHT / 2,
+                            key
+                        );
+                        img.setOrigin(0.5, 0.5);
+                        img.setDisplaySize(this.TILE_WIDTH, this.TILE_HEIGHT);
+                        this.grassContainer.add(img);
+                    }
+                }
+                
+                console.log(`Background grass extended for fullscreen: ${tilesNeededX}x${tilesNeededY} tiles`);
+            } else {
+                // 非全屏模式下恢复原始大小的背景
+                // 这里可以重新加载原始的地图数据，或者保持当前大小
+                console.log('Background grass restored to normal size');
+            }
+        } catch (error) {
+            console.error('Error updating background for fullscreen:', error);
+        }
+    }
 }

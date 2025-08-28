@@ -606,7 +606,7 @@ export class VirtualJoystick {
     const viewportHeight = window.innerHeight;
 
     // 全屏模式下也向上移动摇杆位置
-    const upwardOffset = 100; // 全屏模式下向上偏移更多一些
+    const upwardOffset = 140; // 全屏模式下向上偏移更多一些，继续往上移动
     let joystickX = this.config.radius + 15; // 距离左边界稍远一些
     let joystickY = viewportHeight - this.config.radius - upwardOffset; // 向上移动
 

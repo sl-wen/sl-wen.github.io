@@ -1475,6 +1475,11 @@ export class GameScene extends Phaser.Scene {
         }
       }
 
+      // 更新背景草地覆盖范围以适应全屏模式
+      if (this.tileMapManager) {
+        this.tileMapManager.updateBackgroundForFullscreen(isFullscreen);
+      }
+
       console.log(`GameScene fullscreen mode: ${isFullscreen ? 'enabled' : 'disabled'}`);
     } catch (error) {
       console.error('Error setting fullscreen mode in GameScene:', error);

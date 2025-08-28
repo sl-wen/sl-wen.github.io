@@ -9,6 +9,7 @@ import NetworkStatus from '@/components/NetworkStatus';
 import ResourcePreloader from '@/components/ResourcePreloader';
 import InstallPrompt from '@/components/InstallPrompt';
 import PWAStatus from '@/components/PWAStatus';
+import ConditionalFooter from '@/components/ConditionalFooter';
 
 // 优化字体加载 - 配置Inter字体，提升加载性能
 const inter = Inter({
@@ -26,10 +27,7 @@ const Header = dynamic(() => import('@/components/Header'), {
   loading: () => <div className="h-16 bg-white dark:bg-gray-800 animate-pulse" /> // 加载时显示的占位符
 });
 
-const Footer = dynamic(() => import('@/components/Footer'), {
-  ssr: true, // 启用服务端渲染
-  loading: () => <div className="h-32 bg-gray-100 dark:bg-gray-900 animate-pulse" /> // 加载时显示的占位符
-});
+// Footer现在通过ConditionalFooter组件按需加载
 
 const StatusMessages = dynamic(() => import('@/components/StatusMessages'), {
   ssr: false, // 禁用服务端渲染，因为状态消息是客户端功能
@@ -153,8 +151,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {children}
             </main>
 
-            {/* 页面底部 */}
-            <Footer />
+            {/* 页面底部 - 全屏模式下隐藏 */}
+            <ConditionalFooter />
 
             {/* 状态消息组件 - 显示全局状态和通知 */}
             <StatusMessages />

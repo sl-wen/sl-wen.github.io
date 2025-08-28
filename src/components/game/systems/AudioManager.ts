@@ -223,8 +223,12 @@ export class AudioManager {
     if (pool) {
       const availableSound = pool.find(sound => !sound.isPlaying);
       if (availableSound) {
-        availableSound.setVolume((config?.volume || 1) * this.audioSettings.sfxVolume * this.audioSettings.masterVolume);
-        availableSound.setRate(config?.rate || 1);
+        if ('setVolume' in availableSound) {
+          (availableSound as any).setVolume((config?.volume || 1) * this.audioSettings.sfxVolume * this.audioSettings.masterVolume);
+        }
+        if ('setRate' in availableSound) {
+          (availableSound as any).setRate(config?.rate || 1);
+        }
         availableSound.play();
         return;
       }
@@ -295,8 +299,8 @@ export class AudioManager {
    */
   public setMusicVolume(volume: number): void {
     this.audioSettings.musicVolume = Phaser.Math.Clamp(volume, 0, 1);
-    if (this.backgroundMusic) {
-      this.backgroundMusic.setVolume(this.audioSettings.musicVolume * this.audioSettings.masterVolume);
+    if (this.backgroundMusic && 'setVolume' in this.backgroundMusic) {
+      (this.backgroundMusic as any).setVolume(this.audioSettings.musicVolume * this.audioSettings.masterVolume);
     }
     this.saveAudioSettings();
   }
@@ -315,7 +319,9 @@ export class AudioManager {
   public setAmbientVolume(volume: number): void {
     this.audioSettings.ambientVolume = Phaser.Math.Clamp(volume, 0, 1);
     this.ambientSounds.forEach(ambient => {
-      ambient.setVolume(this.audioSettings.ambientVolume * this.audioSettings.masterVolume);
+      if ('setVolume' in ambient) {
+        (ambient as any).setVolume(this.audioSettings.ambientVolume * this.audioSettings.masterVolume);
+      }
     });
     this.saveAudioSettings();
   }
@@ -337,12 +343,14 @@ export class AudioManager {
    * 更新所有音量
    */
   private updateAllVolumes(): void {
-    if (this.backgroundMusic) {
-      this.backgroundMusic.setVolume(this.audioSettings.musicVolume * this.audioSettings.masterVolume);
+    if (this.backgroundMusic && 'setVolume' in this.backgroundMusic) {
+      (this.backgroundMusic as any).setVolume(this.audioSettings.musicVolume * this.audioSettings.masterVolume);
     }
 
     this.ambientSounds.forEach(ambient => {
-      ambient.setVolume(this.audioSettings.ambientVolume * this.audioSettings.masterVolume);
+      if ('setVolume' in ambient) {
+        (ambient as any).setVolume(this.audioSettings.ambientVolume * this.audioSettings.masterVolume);
+      }
     });
   }
 

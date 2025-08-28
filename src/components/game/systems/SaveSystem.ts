@@ -348,7 +348,8 @@ export class SaveSystem {
         throw new Error('Invalid save data structure');
       }
 
-      return this.saveGame(slotIndex, saveData);
+      this.saveGame(slotIndex, saveData);
+      return true;
     } catch (error) {
       console.error('Failed to import save:', error);
       return false;

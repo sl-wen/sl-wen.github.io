@@ -29,7 +29,11 @@ export class NPC extends Phaser.Physics.Arcade.Sprite {
     this.play('npc_idle');
 
     // 设置NPC为静态物体
-    this.body!.setImmovable(true);
+    if (this.body && 'setImmovable' in this.body) {
+      (this.body as any).setImmovable(true);
+    } else if (this.body) {
+      (this.body as any).immovable = true;
+    }
   }
 
   private createAnimations(): void {

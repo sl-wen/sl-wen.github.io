@@ -24,7 +24,7 @@ export class UIScene extends Phaser.Scene {
   private levelText!: Phaser.GameObjects.Text;             // 等级文本
   private inventoryContainer!: Phaser.GameObjects.Container;  // 背包容器
   private cookingContainer!: Phaser.GameObjects.Container;    // 烹饪界面容器
-  // private currentToolText!: Phaser.GameObjects.Text;          // 当前工具文本
+  private currentToolText!: Phaser.GameObjects.Text;          // 当前工具文本
   private isInventoryOpen: boolean = false;                   // 背包是否打开
   private isCookingOpen: boolean = false;                     // 烹饪界面是否打开
   private interactionIndicators!: Phaser.GameObjects.Container;  // 交互指示器容器
@@ -48,7 +48,7 @@ export class UIScene extends Phaser.Scene {
 
     // 创建响应式设计的UI元素
     this.createDialogueBox();              // 创建对话框
-    // this.createToolIndicator();            // 创建工具指示器
+    this.createToolIndicator();            // 创建工具指示器
     this.createInventoryInterface();       // 创建背包界面
     this.createCookingInterface();         // 创建烹饪界面
     this.createInteractionIndicators();    // 创建交互指示器
@@ -59,7 +59,7 @@ export class UIScene extends Phaser.Scene {
     this.events.on('cat-stats-changed', this.onCatStatsChanged, this);  // 小猫状态变化
     this.events.on('toggle-inventory', this.toggleInventory, this);     // 切换背包
     this.events.on('open-cooking', this.openCookingInterface, this);    // 打开烹饪界面
-    // this.events.on('tool-selected', this.onToolSelected, this);         // 工具选择
+    this.events.on('tool-selected', this.onToolSelected, this);         // 工具选择
     this.events.on('show-interaction-hint', this.showInteractionHint, this);  // 显示交互提示
     this.events.on('highlight-interactable', this.highlightInteractable, this); // 高亮可交互对象
   }

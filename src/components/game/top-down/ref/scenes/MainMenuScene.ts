@@ -70,8 +70,8 @@ export default class MainMenuScene extends Scene {
 
         // 监听菜单项选择事件
         const gameMenuSelectedEventListener = (event: Event) => {
-            const { detail } = (event as CustomEvent).detail as MenuItemSelectedDetail;
-            switch (detail.selectedItem) {
+            const { selectedItem } = (event as CustomEvent).detail as MenuItemSelectedDetail;
+            switch (selectedItem) {
                 case 'start': {
                     // 启动游戏场景，设置初始英雄状态
                     const initialHeroStatus: HeroStatus = {

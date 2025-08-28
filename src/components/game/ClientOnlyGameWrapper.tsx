@@ -5,7 +5,7 @@ import React from 'react';
 
 // 动态导入游戏页面，确保只在客户端渲染
 const GamePageComponent = dynamic(
-  () => import('../../app/game/enhanced/page').then(mod => ({ default: mod.default })),
+  () => import('../../app/game/page').then(mod => ({ default: mod.default })),
   {
     ssr: false,
     loading: () => (

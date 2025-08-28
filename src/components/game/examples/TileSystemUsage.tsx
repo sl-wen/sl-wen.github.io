@@ -196,7 +196,7 @@ class TileSystemExampleScene extends Phaser.Scene {
     this.cursors = this.input.keyboard!.createCursorKeys();
 
     // 添加WASD控制
-    const wasd = this.input.keyboard!.addKeys('W,S,A,D');
+    const wasd = this.input.keyboard!.addKeys('W,S,A,D') as any;
     (this.cursors as any).w = wasd.W;
     (this.cursors as any).s = wasd.S;
     (this.cursors as any).a = wasd.A;
@@ -303,7 +303,7 @@ class TileSystemExampleScene extends Phaser.Scene {
     if (this.tileManager) {
       this.tileManager.destroy();
     }
-    super.destroy();
+    // Remove super.destroy() call as it doesn't exist on Scene
   }
 }
 
@@ -330,7 +330,7 @@ export const TileSystemUsage: React.FC<TileSystemUsageProps> = ({ className = ''
       physics: {
         default: 'arcade',
         arcade: {
-          gravity: { y: 0 },
+          gravity: { x: 0, y: 0 },
           debug: false
         }
       },

@@ -345,7 +345,7 @@ export class AnimationManager {
    */
   public setAnimationSpeed(gameObject: Phaser.GameObjects.GameObject, speed: number): void {
     if (gameObject instanceof Phaser.GameObjects.Sprite && gameObject.anims.currentAnim) {
-      gameObject.anims.setTimeScale(speed);
+      gameObject.anims.timeScale = speed;
     }
   }
 
@@ -388,7 +388,9 @@ export class AnimationManager {
    * 创建淡入效果
    */
   public fadeIn(gameObject: Phaser.GameObjects.GameObject, duration: number = 500, delay: number = 0): Phaser.Tweens.Tween {
-    gameObject.setAlpha(0);
+    if ('setAlpha' in gameObject) {
+      (gameObject as any).setAlpha(0);
+    }
     return this.createTween({
       targets: gameObject,
       alpha: 1,
@@ -428,7 +430,7 @@ export class AnimationManager {
    * 创建弹跳效果
    */
   public bounceEffect(gameObject: Phaser.GameObjects.GameObject, intensity: number = 0.2, duration: number = 600): Phaser.Tweens.Tween {
-    const originalScale = gameObject.scaleX;
+    const originalScale = (gameObject as any).scaleX || 1;
     return this.createTween({
       targets: gameObject,
       scaleX: originalScale + intensity,
@@ -444,7 +446,7 @@ export class AnimationManager {
    * 创建摇摆效果
    */
   public shakeEffect(gameObject: Phaser.GameObjects.GameObject, intensity: number = 5, duration: number = 300): Phaser.Tweens.Tween {
-    const originalX = gameObject.x;
+    const originalX = (gameObject as any).x || 0;
     return this.createTween({
       targets: gameObject,
       x: originalX + intensity,
@@ -453,7 +455,9 @@ export class AnimationManager {
       yoyo: true,
       repeat: 7,
       onComplete: () => {
-        gameObject.setX(originalX);
+        if ('setX' in gameObject) {
+          (gameObject as any).setX(originalX);
+        }
       }
     });
   }
@@ -462,7 +466,7 @@ export class AnimationManager {
    * 创建浮动效果
    */
   public floatEffect(gameObject: Phaser.GameObjects.GameObject, amplitude: number = 5, duration: number = 2000): Phaser.Tweens.Tween {
-    const originalY = gameObject.y;
+    const originalY = (gameObject as any).y || 0;
     return this.createTween({
       targets: gameObject,
       y: originalY - amplitude,

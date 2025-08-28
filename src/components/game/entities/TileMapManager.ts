@@ -244,19 +244,36 @@ export class TileMapManager {
                 const index = y * mapData.width + x;
                 const tileId = layerData.data[index] ?? 0;
                 if (tileId <= 0) continue;
+                const isEdge = (x === 0 || y === 0 || x === mapData.width - 1 || y === mapData.height - 1);
+                if (isEdge && this.scene.textures.exists('water_tiles')) {
+                    // 边界处使用水面动画，缩放到 16x16
+                    this.ensureWaterAnimation();
+                    const spr = this.scene.add.sprite(
+                        x * this.TILE_WIDTH + this.TILE_WIDTH / 2,
+                        y * this.TILE_HEIGHT + this.TILE_HEIGHT / 2,
+                        'water_tiles',
+                        0
+                    );
+                    spr.setOrigin(0.5, 0.5);
+                    spr.setDisplaySize(this.TILE_WIDTH, this.TILE_HEIGHT);
+                    if (this.scene.anims.exists('water_animation')) {
+                        spr.play('water_animation');
+                    }
+                    this.grassContainer.add(spr);
+                } else {
+                    const key = this.chooseGrassAtlasKey(x, y, mapData.width, mapData.height);
+                    // 若纹理不存在则跳过
+                    if (!this.scene.textures.exists(key)) continue;
 
-                const key = this.chooseGrassAtlasKey(x, y, mapData.width, mapData.height);
-                // 若纹理不存在则跳过
-                if (!this.scene.textures.exists(key)) continue;
-
-                const img = this.scene.add.image(
-                    x * this.TILE_WIDTH + this.TILE_WIDTH / 2,
-                    y * this.TILE_HEIGHT + this.TILE_HEIGHT / 2,
-                    key
-                );
-                img.setOrigin(0.5, 0.5);
-                img.setDisplaySize(this.TILE_WIDTH, this.TILE_HEIGHT);
-                this.grassContainer.add(img);
+                    const img = this.scene.add.image(
+                        x * this.TILE_WIDTH + this.TILE_WIDTH / 2,
+                        y * this.TILE_HEIGHT + this.TILE_HEIGHT / 2,
+                        key
+                    );
+                    img.setOrigin(0.5, 0.5);
+                    img.setDisplaySize(this.TILE_WIDTH, this.TILE_HEIGHT);
+                    this.grassContainer.add(img);
+                }
             }
         }
     }
@@ -419,6 +436,21 @@ export class TileMapManager {
     private createAnimatedTiles(): void {
         // 创建水瓦片动画
         if (this.scene.textures.exists('water_tiles')) {
+            this.scene.anims.create({
+                key: 'water_animation',
+                frames: this.scene.anims.generateFrameNumbers('water_tiles', { start: 0, end: 3 }),
+                frameRate: 4,
+                repeat: -1
+            });
+        }
+    }
+
+    /**
+     * 确保水面动画已创建（在渲染边界水之前调用，避免顺序问题）
+     */
+    private ensureWaterAnimation(): void {
+        if (!this.scene.textures.exists('water_tiles')) return;
+        if (!this.scene.anims.exists('water_animation')) {
             this.scene.anims.create({
                 key: 'water_animation',
                 frames: this.scene.anims.generateFrameNumbers('water_tiles', { start: 0, end: 3 }),

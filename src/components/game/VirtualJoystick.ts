@@ -387,17 +387,18 @@ export class VirtualJoystick {
       return;
     }
 
-    // 不计算任何边距与安全区域，直接贴近左下角，距离边界等于半径
-    let newX = this.config.radius;
-    let newY = screenHeight - this.config.radius;
+    // 调整摇杆位置：左下角但向上移动一些距离
+    const upwardOffset = 80; // 向上偏移80像素
+    let newX = this.config.radius + 10; // 距离左边界稍远一些
+    let newY = screenHeight - this.config.radius - upwardOffset; // 向上移动
 
-    // 边界保护：仅保证不超出屏幕，可达边界处刚好为半径
+    // 边界保护：确保摇杆不会超出屏幕边界
     newX = Math.max(this.config.radius, Math.min(newX, screenWidth - this.config.radius));
     newY = Math.max(this.config.radius, Math.min(newY, screenHeight - this.config.radius));
 
     this.setPosition(newX, newY);
 
-    console.log(`Joystick layout updated (no margins): ${newX}, ${newY} (fullscreen: ${this.isFullscreen})`);
+    console.log(`Joystick layout updated (moved up): ${newX}, ${newY} (fullscreen: ${this.isFullscreen})`);
   }
 
   /**
@@ -599,14 +600,15 @@ export class VirtualJoystick {
    * 改进的移动端响应式定位算法
    */
   private adjustForFullscreen() {
-    // 在全屏模式下，使用实际的视口尺寸并贴左下角（无任何边距/安全区）
+    // 在全屏模式下，使用实际的视口尺寸并调整左下角位置
     if (typeof window === 'undefined') return;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    // 视口坐标中，位置为左下角，距离边缘等于半径
-    let joystickX = this.config.radius;
-    let joystickY = viewportHeight - this.config.radius;
+    // 全屏模式下也向上移动摇杆位置
+    const upwardOffset = 100; // 全屏模式下向上偏移更多一些
+    let joystickX = this.config.radius + 15; // 距离左边界稍远一些
+    let joystickY = viewportHeight - this.config.radius - upwardOffset; // 向上移动
 
     // 将视口坐标转换为游戏坐标
     const canvas = this.scene.game.canvas;
@@ -639,20 +641,21 @@ export class VirtualJoystick {
     this.config.x = joystickX;
     this.config.y = joystickY;
 
-    console.log(`Fullscreen joystick positioned (no margins): ${joystickX}, ${joystickY}`);
+    console.log(`Fullscreen joystick positioned (moved up): ${joystickX}, ${joystickY}`);
   }
 
   /**
    * 调整摇杆以适应正常模式
    */
   private adjustForNormalMode() {
-    // 正常模式：贴左下角（增加适当边距确保完全可见）
+    // 正常模式：左下角但向上移动一些距离
     const gameWidth = this.scene.scale.gameSize.width;
     const gameHeight = this.scene.scale.gameSize.height;
     const margin = this.config.radius + 20; // 增加20像素边距
+    const upwardOffset = 80; // 向上偏移80像素
 
     const normalX = margin;
-    const normalY = gameHeight - margin;
+    const normalY = gameHeight - margin - upwardOffset; // 向上移动
 
     this.container.setPosition(normalX, normalY);
     this.container.setScale(1.0);
@@ -662,7 +665,7 @@ export class VirtualJoystick {
     this.config.x = normalX;
     this.config.y = normalY;
 
-    console.log(`Normal mode joystick positioned (no margins): ${normalX}, ${normalY}`);
+    console.log(`Normal mode joystick positioned (moved up): ${normalX}, ${normalY}`);
   }
 
   /**

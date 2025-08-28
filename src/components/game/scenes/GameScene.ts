@@ -959,6 +959,8 @@ export class GameScene extends Phaser.Scene {
     // 平滑摄像机跟随
     this.cameras.main.setLerp(0.1, 0.1);        // 设置线性插值（平滑跟随）
     this.cameras.main.setDeadzone(100, 100);     // 设置死区（避免微小移动）
+
+    // 注意：摇杆位置更新现在在摇杆重置时自动处理
   }
 
   /**

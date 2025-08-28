@@ -164,12 +164,18 @@ export class VirtualJoystick {
         return;
       }
 
+      // 获取摇杆在屏幕坐标系中的实际位置
+      // 由于摇杆使用setScrollFactor(0)，其显示位置不受相机影响
+      // 但container.x和container.y可能仍然是相对于世界坐标的
+      const joystickScreenX = this.getJoystickScreenPosition().x;
+      const joystickScreenY = this.getJoystickScreenPosition().y;
+      
       // 计算距离，确保在有效范围内
       const distance = Phaser.Math.Distance.Between(
         touchCoords.x,        // 触摸点X坐标（屏幕坐标系）
         touchCoords.y,        // 触摸点Y坐标（屏幕坐标系）
-        this.container.x,     // 摇杆中心X坐标（屏幕坐标系）
-        this.container.y      // 摇杆中心Y坐标（屏幕坐标系）
+        joystickScreenX,      // 摇杆中心X坐标（屏幕坐标系）
+        joystickScreenY       // 摇杆中心Y坐标（屏幕坐标系）
       );
 
       // 调试信息：显示坐标转换过程
@@ -177,7 +183,8 @@ export class VirtualJoystick {
         - Pointer world: (${pointer.x.toFixed(2)}, ${pointer.y.toFixed(2)})
         - Touch screen: (${touchCoords.x.toFixed(2)}, ${touchCoords.y.toFixed(2)})
         - Camera scroll: (${camera.scrollX.toFixed(2)}, ${camera.scrollY.toFixed(2)})
-        - Joystick center: (${this.container.x.toFixed(2)}, ${this.container.y.toFixed(2)})
+        - Joystick center: (${joystickScreenX.toFixed(2)}, ${joystickScreenY.toFixed(2)})
+        - Container position: (${this.container.x.toFixed(2)}, ${this.container.y.toFixed(2)})
         - Distance to center: ${distance.toFixed(2)}
         - Fullscreen: ${this.isFullscreen}`);
 
@@ -294,8 +301,10 @@ export class VirtualJoystick {
       return;
     }
 
-    const deltaX = touchCoords.x - this.container.x;  // 计算X方向偏移
-    const deltaY = touchCoords.y - this.container.y;  // 计算Y方向偏移
+    // 获取摇杆的实际屏幕位置
+    const joystickScreenPos = this.getJoystickScreenPosition();
+    const deltaX = touchCoords.x - joystickScreenPos.x;  // 计算X方向偏移
+    const deltaY = touchCoords.y - joystickScreenPos.y;  // 计算Y方向偏移
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);  // 计算触摸点到中心的距离
 
     // 验证距离有效性
@@ -362,6 +371,9 @@ export class VirtualJoystick {
     // 清理调试元素
     this.clearDebugElements();
 
+    // 检查并更新摇杆位置（防止相机移动后位置不对）
+    const currentScreenPos = this.getJoystickScreenPosition();
+    
     // 动画回到中心
     this.scene.tweens.add({
       targets: this.knob,                     // 动画目标：手柄
@@ -405,6 +417,19 @@ export class VirtualJoystick {
     this.container.setPosition(x, y);  // 设置容器位置
     this.config.x = x;                 // 更新配置中的X坐标
     this.config.y = y;                 // 更新配置中的Y坐标
+  }
+
+  /**
+   * 强制更新摇杆位置
+   * 在相机移动后调用，确保摇杆位置正确
+   */
+  public forceUpdatePosition() {
+    const uiLayoutManager = (this.scene as any).uiLayoutManager;
+    if (uiLayoutManager) {
+      const newPosition = uiLayoutManager.getJoystickPosition(this.config.radius);
+      this.setPosition(newPosition.x, newPosition.y);
+      console.log(`🔄 Joystick position force updated to: (${newPosition.x.toFixed(2)}, ${newPosition.y.toFixed(2)})`);
+    }
   }
 
   /**
@@ -467,6 +492,44 @@ export class VirtualJoystick {
   }
 
   /**
+   * 获取摇杆在屏幕坐标系中的实际位置
+   * 考虑scrollFactor(0)的影响，返回真实的屏幕坐标
+   */
+  private getJoystickScreenPosition(): { x: number; y: number } {
+    // 由于摇杆使用了setScrollFactor(0)，它在屏幕上的位置应该是固定的
+    // 但是container.x和container.y可能受到初始设置时相机位置的影响
+    
+    const camera = this.scene.cameras.main;
+    
+    // 方法1：直接使用容器坐标（如果摇杆是在相机滚动为0时创建的）
+    let screenX = this.container.x;
+    let screenY = this.container.y;
+    
+    // 方法2：如果摇杆位置包含了初始相机偏移，需要校正
+    // 检查是否需要校正：如果摇杆位置看起来不合理，尝试校正
+    if (screenX < 0 || screenX > this.scene.scale.gameSize.width || 
+        screenY < 0 || screenY > this.scene.scale.gameSize.height) {
+      console.warn('Joystick position seems incorrect, attempting correction');
+      // 使用UILayoutManager重新计算位置
+      const uiLayoutManager = (this.scene as any).uiLayoutManager;
+      if (uiLayoutManager) {
+        const correctedPosition = uiLayoutManager.getJoystickPosition(this.config.radius);
+        screenX = correctedPosition.x;
+        screenY = correctedPosition.y;
+        
+        // 更新容器位置
+        this.container.setPosition(screenX, screenY);
+        this.config.x = screenX;
+        this.config.y = screenY;
+        
+        console.log(`Corrected joystick position to: (${screenX.toFixed(2)}, ${screenY.toFixed(2)})`);
+      }
+    }
+    
+    return { x: screenX, y: screenY };
+  }
+
+  /**
    * 测试坐标转换准确性
    * 在摇杆中心创建一个测试点，验证触摸检测是否准确
    */
@@ -475,8 +538,11 @@ export class VirtualJoystick {
     
     console.log('🧪 Testing coordinate accuracy...');
     
+    // 获取摇杆的实际屏幕位置
+    const screenPos = this.getJoystickScreenPosition();
+    
     // 创建一个测试指示器在摇杆中心
-    const testIndicator = this.scene.add.circle(this.container.x, this.container.y, 5, 0x00ff00, 1.0);
+    const testIndicator = this.scene.add.circle(screenPos.x, screenPos.y, 5, 0x00ff00, 1.0);
     testIndicator.setStrokeStyle(2, 0x000000, 1.0);
     testIndicator.setDepth(10002);
     testIndicator.setScrollFactor(0);
@@ -484,7 +550,8 @@ export class VirtualJoystick {
     // 记录详细的位置信息
     this.logJoystickPositionDebug();
     
-    console.log(`🎯 Green test indicator placed at joystick center: (${this.container.x.toFixed(2)}, ${this.container.y.toFixed(2)})`);
+    console.log(`🎯 Green test indicator placed at joystick screen position: (${screenPos.x.toFixed(2)}, ${screenPos.y.toFixed(2)})`);
+    console.log(`📍 Container position: (${this.container.x.toFixed(2)}, ${this.container.y.toFixed(2)})`);
     console.log('👆 Touch the green dot and compare with the red touch indicator position');
     
     // 5秒后自动清理

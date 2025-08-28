@@ -13,6 +13,8 @@ export default class BootScene extends Scene {
      * 预加载阶段 - 加载所有游戏资源
      */
     preload(): void {
+        console.log('BootScene: 开始预加载资源');
+        
         const fontSize = 16;
 
         // 设置加载进度条
@@ -93,10 +95,12 @@ export default class BootScene extends Scene {
         // 监听文件加载事件
         this.load.on('fileprogress', (file: Loader.File) => {
             assetText.setText(`loading: ${file.key}`);
+            console.log('BootScene: 加载文件:', file.key);
         });
 
         // 监听加载完成事件
         this.load.on('complete', () => {
+            console.log('BootScene: 所有资源加载完成');
             progressBar.destroy();
             progressBox.destroy();
             percentText.destroy();
@@ -137,6 +141,7 @@ export default class BootScene extends Scene {
      * 创建阶段 - 启动主菜单场景
      */
     create(): void {
+        console.log('BootScene: 创建阶段完成，启动MainMenuScene');
         this.scene.start('MainMenuScene');
     }
 }

@@ -25,6 +25,9 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
   const [heroHealthStates, setHeroHealthStates] = useState<string[]>([]);
   const [heroCoins, setHeroCoins] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string>('游戏初始化中...');
+  const [showMenu, setShowMenu] = useState(true); // 始终显示菜单
 
   // 检测移动设备
   useEffect(() => {
@@ -46,6 +49,8 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
   useEffect(() => {
     if (!gameContainerRef.current) return;
 
+    setDebugInfo('创建游戏引擎...');
+
     // 创建游戏引擎实例（使用移植的 Boot/Main/Game/GameOver 场景）
     gameEngineRef.current = new TopDownGameEngine(gameContainerRef.current, {
       width,
@@ -63,6 +68,8 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
       scene: null
     });
 
+    setDebugInfo('游戏引擎创建完成，等待场景启动...');
+
     // 清理函数
     return () => {
       if (gameEngineRef.current) {
@@ -76,9 +83,12 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
   useEffect(() => {
     const onMenuItems = (e: Event) => {
       const detail = (e as CustomEvent).detail as { menuItems: string[]; menuPosition?: 'center' | 'left' };
+      console.log('收到菜单项事件:', detail);
       setMenuItems(detail.menuItems || []);
       setMenuPosition((detail.menuPosition as any) || 'center');
       setSelectedMenuIndex(0);
+      setDebugInfo('主菜单已加载');
+      setShowMenu(true);
     };
 
     const onDialog = (e: Event) => {
@@ -130,6 +140,8 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
           const customEvent = new CustomEvent('menu-item-selected', { detail: { selectedItem } });
           window.dispatchEvent(customEvent);
           setMenuItems([]);
+          setGameStarted(true);
+          setShowMenu(false);
         }
       } else if (messages.length > 0) {
         if (['Enter', 'Space', 'Escape'].includes(e.code)) {
@@ -163,6 +175,8 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     const customEvent = new CustomEvent('menu-item-selected', { detail: { selectedItem } });
     window.dispatchEvent(customEvent);
     setMenuItems([]);
+    setGameStarted(true);
+    setShowMenu(false);
   }, [menuItems]);
 
   // 移动端触摸事件处理
@@ -178,6 +192,23 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     handleSelectMenu(index);
   }, [handleSelectMenu]);
 
+  // 手动启动游戏的备用函数
+  const handleManualStart = useCallback(() => {
+    console.log('手动启动游戏');
+    const customEvent = new CustomEvent('menu-item-selected', { detail: { selectedItem: 'start' } });
+    window.dispatchEvent(customEvent);
+    setGameStarted(true);
+    setShowMenu(false);
+    setDebugInfo('游戏已启动');
+  }, []);
+
+  // 手动退出游戏的函数
+  const handleManualExit = useCallback(() => {
+    console.log('手动退出游戏');
+    const customEvent = new CustomEvent('menu-item-selected', { detail: { selectedItem: 'exit' } });
+    window.dispatchEvent(customEvent);
+  }, []);
+
   return (
     <div className="relative">
       <div 
@@ -185,6 +216,17 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
         className="border-2 border-gray-600 rounded-lg overflow-hidden game-container"
         style={{ width, height }}
       />
+      
+      {/* 调试信息 */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="absolute top-2 right-2 bg-black/80 text-white text-xs p-2 rounded max-w-48">
+          <div>状态: {debugInfo}</div>
+          <div>菜单项: {menuItems.length}</div>
+          <div>游戏状态: {gameStarted ? '已启动' : '未启动'}</div>
+          <div>显示菜单: {showMenu ? '是' : '否'}</div>
+        </div>
+      )}
+
       {/* HUD: Health and Coins */}
       {(heroHealthStates.length > 0 || heroCoins !== null) && (
         <div className="absolute top-2 left-2 text-white space-y-1">
@@ -201,7 +243,43 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
         </div>
       )}
 
-      {/* Menu Overlay */}
+      {/* 主菜单覆盖层 - 始终显示，除非游戏已启动 */}
+      {showMenu && !gameStarted && (
+        <div className="absolute inset-0 flex items-center justify-center z-50">
+          <div className="bg-black/80 p-6 rounded-lg text-center">
+            <div className="text-white text-lg mb-4">GAME LOGO</div>
+            <div className="space-y-3">
+              <button
+                onClick={handleManualStart}
+                className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold text-lg transition-colors"
+                style={{
+                  minHeight: isMobile ? '44px' : 'auto',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
+              >
+                START
+              </button>
+              <button
+                onClick={handleManualExit}
+                className="block w-full bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-bold text-lg transition-colors"
+                style={{
+                  minHeight: isMobile ? '44px' : 'auto',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
+              >
+                EXIT
+              </button>
+            </div>
+            <div className="text-white text-sm mt-2">
+              点击开始游戏
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Menu Overlay - 来自游戏场景的菜单 */}
       {menuItems.length > 0 && (
         <div className="absolute inset-0 flex items-center justify-center z-50 game-ui-layer">
           <div className="min-w-[200px] bg-neutral-800/90 border border-neutral-700 rounded p-3">

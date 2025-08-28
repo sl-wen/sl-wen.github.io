@@ -37,6 +37,7 @@ export default class MainMenuScene extends Scene {
      * 预加载阶段 - 此场景无需额外加载资源
      */
     preload(): void {
+        console.log('MainMenuScene: 预加载阶段');
         // 无需额外加载
     }
 
@@ -44,6 +45,8 @@ export default class MainMenuScene extends Scene {
      * 创建阶段 - 设置主菜单界面和事件监听
      */
     create(): void {
+        console.log('MainMenuScene: 创建阶段开始');
+        
         const { width: gameWidth, height: gameHeight } = this.cameras.main;
 
         // 添加游戏 Logo
@@ -58,6 +61,8 @@ export default class MainMenuScene extends Scene {
             .setDepth(0)
             .setOrigin(0, 0);
 
+        console.log('MainMenuScene: 发送菜单项事件到UI层');
+        
         // 发送菜单项事件到 UI 层
         const customEvent = new CustomEvent('menu-items', {
             detail: {
@@ -67,12 +72,16 @@ export default class MainMenuScene extends Scene {
         });
 
         window.dispatchEvent(customEvent);
+        console.log('MainMenuScene: 菜单项事件已发送');
 
         // 监听菜单项选择事件
         const gameMenuSelectedEventListener = (event: Event) => {
             const { selectedItem } = (event as CustomEvent).detail as MenuItemSelectedDetail;
+            console.log('MainMenuScene: 收到菜单选择:', selectedItem);
+            
             switch (selectedItem) {
                 case 'start': {
+                    console.log('MainMenuScene: 启动游戏场景');
                     // 启动游戏场景，设置初始英雄状态
                     const initialHeroStatus: HeroStatus = {
                         position: { x: 4, y: 3 },
@@ -96,6 +105,7 @@ export default class MainMenuScene extends Scene {
                 }
 
                 case 'exit': {
+                    console.log('MainMenuScene: 退出游戏');
                     // 退出游戏，重新加载页面
                     window.location.reload();
                     break;
@@ -124,5 +134,7 @@ export default class MainMenuScene extends Scene {
             'menu-item-selected',
             gameMenuSelectedEventListener as EventListener
         );
+        
+        console.log('MainMenuScene: 创建阶段完成');
     }
 }

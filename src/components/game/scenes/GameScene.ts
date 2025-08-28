@@ -475,9 +475,9 @@ export class GameScene extends Phaser.Scene {
       this.virtualJoystick.setSmoothing(0.2);
     }
     
-    // 启动坐标准确性测试（调试模式）
+    // 启动全面的坐标测试（调试模式）
     this.time.delayedCall(1000, () => {
-      this.virtualJoystick.testCoordinateAccuracy();
+      this.virtualJoystick.comprehensiveCoordinateTest();
     });
     
     // 输出摇杆配置信息

@@ -454,6 +454,14 @@ export class GameScene extends Phaser.Scene {
       console.log('Virtual joystick deactivated');
     });
 
+    // 设置移动回调，用于调试触摸位置
+    this.virtualJoystick.onMoveCallback((vector) => {
+      // 只在向量变化较大时记录，避免日志过多
+      if (Math.abs(vector.x) > 0.1 || Math.abs(vector.y) > 0.1) {
+        console.debug(`Joystick vector: (${vector.x.toFixed(2)}, ${vector.y.toFixed(2)})`);
+      }
+    });
+
     console.log('Virtual joystick initialized at position:', position);
   }
 

@@ -468,10 +468,7 @@ export class GameScene extends Phaser.Scene {
     this.virtualJoystick.setSensitivity(1.2);
     this.virtualJoystick.setSmoothing(0.1);
     
-    // 启动全面的坐标测试（调试模式）
-    this.time.delayedCall(1000, () => {
-      this.virtualJoystick.comprehensiveCoordinateTest();
-    });
+    // 关闭调试坐标测试，防止调试视觉（红点等）
     
     // 输出摇杆配置信息
     console.log('🎮 Joystick configuration:', this.virtualJoystick.getJoystickConfig());
@@ -959,13 +956,16 @@ export class GameScene extends Phaser.Scene {
     const baseZoom = Math.min(screenWidth / 800, screenHeight / 600);  // 基础缩放比例
     const optimalZoom = Math.max(0.8, Math.min(2.0, baseZoom * 1.2));  // 最优缩放比例（0.8-2.0之间）
 
-    this.cameras.main.startFollow(this.cat);      // 开始跟随小猫
+    this.cameras.main.startFollow(this.cat, true);      // 开始跟随小猫，启用舍入以稳定画面
     this.cameras.main.setZoom(optimalZoom);       // 设置缩放比例
 
     // 摄像机边界现在由 TileMapManager 设置，这里只设置跟随和缩放
     // 平滑摄像机跟随
-    this.cameras.main.setLerp(0.1, 0.1);        // 设置线性插值（平滑跟随）
-    this.cameras.main.setDeadzone(100, 100);     // 设置死区（避免微小移动）
+    this.cameras.main.setLerp(0.2, 0.2);        // 略微更紧的跟随
+    // 将死区缩小并居中，使小猫保持在屏幕的中间区域
+    const dzWidth = Math.max(40, screenWidth * 0.15);
+    const dzHeight = Math.max(40, screenHeight * 0.15);
+    this.cameras.main.setDeadzone(dzWidth, dzHeight);
 
     // 注意：摇杆位置更新现在在摇杆重置时自动处理
   }

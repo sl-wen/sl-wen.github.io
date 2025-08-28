@@ -309,104 +309,13 @@ export class UILayoutManager {
 
   // 获取推荐的摇杆位置 - 改进的移动端响应式算法
   public getJoystickPosition(radius: number): { x: number; y: number } {
-    const baseMargin = this.isMobile ? 15 : 20;
+    const baseMargin = 15;
     const upwardOffset = 120; // 向上偏移120像素，为更大的摇杆提供更多触摸空间
     let x: number, y: number;
-
-    if (this.isMobile) {
-      if (this.isPortrait) {
-        // 竖屏：左下角但向上移动，避开底部手势区域
-        // 使用相对位置确保在不同屏幕尺寸上都有合适的位置
-        x = Math.max(
-          radius + baseMargin, 
-          Math.min(this.screenWidth * 0.15, this.screenWidth * 0.25)
-        );
-        y = this.screenHeight - Math.max(
-          this.safeArea.bottom + radius + baseMargin + upwardOffset,
-          this.screenHeight * 0.08 + upwardOffset
-        );
-      } else {
-        // 横屏：左下角但向上移动，考虑更小的边距以节省空间
-        x = Math.max(
-          this.safeArea.left + radius + baseMargin,
-          this.screenWidth * 0.08
-        );
-        y = this.screenHeight - Math.max(
-          this.safeArea.bottom + radius + baseMargin + upwardOffset,
-          this.screenHeight * 0.08 + upwardOffset
-        );
-      }
-    } else {
-      // 桌面端：左下角但向上移动
-      x = this.safeArea.left + radius + baseMargin * 1.5;
-      y = this.screenHeight - this.safeArea.bottom - radius - baseMargin * 1.5 - upwardOffset;
-    }
-
-    // 更严格的边界检查，确保摇杆完全可见，为更大摇杆增加更大边距
-    const extraMargin = radius > 100 ? 20 : 0; // 大摇杆需要额外边距
-    const minX = radius + baseMargin + extraMargin;
-    const maxX = this.screenWidth - radius - baseMargin - extraMargin;
-    const minY = radius + baseMargin + extraMargin;
-    const maxY = this.screenHeight - radius - baseMargin - extraMargin;
-
-    x = Math.max(minX, Math.min(x, maxX));
-    y = Math.max(minY, Math.min(y, maxY));
-
-    console.log(`UILayoutManager calculated joystick position (moved up): ${x}, ${y} (screen: ${this.screenWidth}x${this.screenHeight}, mobile: ${this.isMobile}, portrait: ${this.isPortrait})`);
-
+    alert("safeArea:"+this.safeArea+"baseMargin:"+baseMargin+"screenHeight:"+this.screenHeight);
+    x = radius + baseMargin;
+    y = this.screenHeight - ( this.safeArea.bottom + radius + baseMargin + upwardOffset);
     return { x, y };
-  }
-
-  /**
-   * 获取推荐的动作按钮位置
-   * 根据屏幕尺寸和方向计算动作按钮的最佳位置
-   * @param buttonSize 按钮大小
-   * @param count 按钮数量
-   * @returns 按钮位置数组
-   */
-  public getActionButtonsPosition(buttonSize: number, count: number): { x: number; y: number }[] {
-    const margin = 15;  // 边距
-    const spacing = buttonSize + 10;  // 按钮间距
-    const positions: { x: number; y: number }[] = [];  // 位置数组
-
-    if (this.isMobile) {
-      if (this.isPortrait) {
-        // 竖屏：右下角垂直排列
-        const startX = this.screenWidth - this.safeArea.right - buttonSize - margin;  // 起始X坐标
-        const startY = this.screenHeight - this.safeArea.bottom - (count * spacing) + spacing - margin;  // 起始Y坐标
-
-        for (let i = 0; i < count; i++) {
-          positions.push({
-            x: startX,  // 所有按钮X坐标相同
-            y: startY + (i * spacing)  // Y坐标递增
-          });
-        }
-      } else {
-        // 横屏：右下角水平排列
-        const startX = this.screenWidth - this.safeArea.right - (count * spacing) + spacing - margin;  // 起始X坐标
-        const startY = this.screenHeight - this.safeArea.bottom - buttonSize - margin;  // 起始Y坐标
-
-        for (let i = 0; i < count; i++) {
-          positions.push({
-            x: startX + (i * spacing),  // X坐标递增
-            y: startY  // 所有按钮Y坐标相同
-          });
-        }
-      }
-    } else {
-      // 桌面端：右下角水平排列
-      const startX = this.screenWidth - this.safeArea.right - (count * spacing) + spacing - margin * 2;  // 起始X坐标
-      const startY = this.screenHeight - this.safeArea.bottom - buttonSize - margin * 2;  // 起始Y坐标
-
-      for (let i = 0; i < count; i++) {
-        positions.push({
-          x: startX + (i * spacing),  // X坐标递增
-          y: startY  // 所有按钮Y坐标相同
-        });
-      }
-    }
-
-    return positions;  // 返回位置数组
   }
 
   /**

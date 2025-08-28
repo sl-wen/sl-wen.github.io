@@ -463,6 +463,11 @@ export class GameScene extends Phaser.Scene {
     });
 
     console.log('Virtual joystick initialized at position:', position);
+    
+    // 启动坐标准确性测试（调试模式）
+    this.time.delayedCall(1000, () => {
+      this.virtualJoystick.testCoordinateAccuracy();
+    });
   }
 
   // 设置动作按钮

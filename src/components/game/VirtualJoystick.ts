@@ -467,6 +467,34 @@ export class VirtualJoystick {
   }
 
   /**
+   * 测试坐标转换准确性
+   * 在摇杆中心创建一个测试点，验证触摸检测是否准确
+   */
+  public testCoordinateAccuracy() {
+    if (!this.debugMode) return;
+    
+    console.log('🧪 Testing coordinate accuracy...');
+    
+    // 创建一个测试指示器在摇杆中心
+    const testIndicator = this.scene.add.circle(this.container.x, this.container.y, 5, 0x00ff00, 1.0);
+    testIndicator.setStrokeStyle(2, 0x000000, 1.0);
+    testIndicator.setDepth(10002);
+    testIndicator.setScrollFactor(0);
+    
+    // 记录详细的位置信息
+    this.logJoystickPositionDebug();
+    
+    console.log(`🎯 Green test indicator placed at joystick center: (${this.container.x.toFixed(2)}, ${this.container.y.toFixed(2)})`);
+    console.log('👆 Touch the green dot and compare with the red touch indicator position');
+    
+    // 5秒后自动清理
+    this.scene.time.delayedCall(5000, () => {
+      testIndicator.destroy();
+      console.log('🧪 Coordinate accuracy test completed');
+    });
+  }
+
+  /**
    * 更新摇杆位置以适应屏幕变化
    * 委托给UILayoutManager进行统一的位置管理
    * @param screenWidth 屏幕宽度
@@ -520,7 +548,28 @@ export class VirtualJoystick {
       }
     });
 
+    // 同时显示摇杆中心位置的调试信息
+    this.logJoystickPositionDebug();
+
     console.debug(`🔴 Debug touch indicator created at (${x.toFixed(2)}, ${y.toFixed(2)})`);
+  }
+
+  /**
+   * 记录摇杆位置调试信息
+   */
+  private logJoystickPositionDebug() {
+    const camera = this.scene.cameras.main;
+    const canvas = this.scene.game.canvas;
+    
+    console.debug(`🎮 Joystick Position Debug:
+      - Container position: (${this.container.x.toFixed(2)}, ${this.container.y.toFixed(2)})
+      - Container world position: (${(this.container.x + camera.scrollX).toFixed(2)}, ${(this.container.y + camera.scrollY).toFixed(2)})
+      - Container scroll factor: (${this.container.scrollFactorX}, ${this.container.scrollFactorY})
+      - Camera scroll: (${camera.scrollX.toFixed(2)}, ${camera.scrollY.toFixed(2)})
+      - Camera zoom: ${camera.zoom}
+      - Game size: ${this.scene.scale.gameSize.width}x${this.scene.scale.gameSize.height}
+      - Canvas size: ${canvas ? `${canvas.width}x${canvas.height}` : 'N/A'}
+      - Canvas client size: ${canvas ? `${canvas.clientWidth}x${canvas.clientHeight}` : 'N/A'}`);
   }
 
   /**
@@ -969,71 +1018,79 @@ export class VirtualJoystick {
 
   /**
    * 获取正确的触摸坐标
-   * 处理相机滚动和全屏模式下的坐标转换
+   * 重新实现更准确的坐标转换逻辑
    * @param pointer 触摸指针对象
    * @returns 转换后的坐标（屏幕坐标系）
    */
   private getTouchCoordinates(pointer: Phaser.Input.Pointer): { x: number; y: number } {
-    // 虚拟摇杆使用了setScrollFactor(0)，固定在屏幕上
-    // 因此需要将触摸坐标转换为屏幕坐标系，而不是世界坐标系
+    // 关键理解：
+    // - 摇杆容器使用setScrollFactor(0)，坐标系是相对于相机视口的
+    // - pointer.x和pointer.y是世界坐标（会随相机移动而变化）
+    // - 我们需要将触摸坐标转换为相机视口坐标系
     
-    // 获取相机信息
     const camera = this.scene.cameras.main;
+    const canvas = this.scene.game.canvas;
     
-    // 简化坐标转换逻辑：始终使用屏幕坐标
-    // Phaser的pointer.x和pointer.y实际上是世界坐标
-    // 对于固定在屏幕上的UI元素，我们需要屏幕坐标
-    
+    // 方法1：使用Phaser内置的坐标转换
+    // pointer.x, pointer.y 是世界坐标
+    // 要转换为屏幕坐标，我们需要考虑相机的变换
     let screenX: number, screenY: number;
     
-    if (this.isFullscreen) {
-      // 全屏模式下，尝试获取更准确的屏幕坐标
-      const canvas = this.scene.game.canvas;
+    // 使用手动坐标转换（更可靠）
+    // pointer.x和pointer.y是世界坐标，减去相机滚动得到屏幕坐标
+    screenX = pointer.x - camera.scrollX;
+    screenY = pointer.y - camera.scrollY;
+    
+    // 考虑相机缩放
+    if (camera.zoom !== 1) {
+      screenX = screenX / camera.zoom;
+      screenY = screenY / camera.zoom;
+    }
+    
+    console.debug(`Coordinate conversion: world(${pointer.x.toFixed(2)}, ${pointer.y.toFixed(2)}) - camera(${camera.scrollX.toFixed(2)}, ${camera.scrollY.toFixed(2)}) / zoom(${camera.zoom}) = screen(${screenX.toFixed(2)}, ${screenY.toFixed(2)})`);
+    
+    
+    // 在全屏模式下，可能需要额外的DOM坐标校正
+    if (this.isFullscreen && canvas && pointer.event) {
+      const canvasRect = canvas.getBoundingClientRect();
+      let clientX: number, clientY: number;
       
-      if (canvas && pointer.event) {
-        const canvasRect = canvas.getBoundingClientRect();
-        let clientX: number, clientY: number;
-        
-        // 获取DOM事件的客户端坐标
-        if ('clientX' in pointer.event && 'clientY' in pointer.event) {
-          clientX = pointer.event.clientX;
-          clientY = pointer.event.clientY;
-        } else if ('touches' in pointer.event && pointer.event.touches.length > 0) {
-          const touch = pointer.event.touches[0];
-          clientX = touch.clientX;
-          clientY = touch.clientY;
-        } else {
-          // 回退到Phaser提供的屏幕坐标
-          screenX = pointer.x - camera.scrollX;
-          screenY = pointer.y - camera.scrollY;
-          return { x: screenX, y: screenY };
-        }
-        
-        // 将DOM坐标转换为画布坐标
-        const canvasX = clientX - canvasRect.left;
-        const canvasY = clientY - canvasRect.top;
-        
-        // 将画布坐标转换为游戏坐标
-        const gameWidth = this.scene.scale.gameSize.width;
-        const gameHeight = this.scene.scale.gameSize.height;
-        
-        // 计算缩放比例
-        const scaleX = gameWidth / canvasRect.width;
-        const scaleY = gameHeight / canvasRect.height;
-        
-        screenX = canvasX * scaleX;
-        screenY = canvasY * scaleY;
-        
-        console.debug(`Fullscreen touch: client(${clientX}, ${clientY}) -> canvas(${canvasX}, ${canvasY}) -> screen(${screenX}, ${screenY})`);
+      // 获取原始DOM坐标
+      if ('clientX' in pointer.event && 'clientY' in pointer.event) {
+        clientX = pointer.event.clientX;
+        clientY = pointer.event.clientY;
+      } else if ('touches' in pointer.event && pointer.event.touches.length > 0) {
+        const touch = pointer.event.touches[0];
+        clientX = touch.clientX;
+        clientY = touch.clientY;
       } else {
-        // 回退到标准转换
-        screenX = pointer.x - camera.scrollX;
-        screenY = pointer.y - camera.scrollY;
+        // 无法获取DOM坐标，使用Phaser计算的结果
+        return { x: screenX, y: screenY };
       }
-    } else {
-      // 正常模式：标准的世界坐标到屏幕坐标转换
-      screenX = pointer.x - camera.scrollX;
-      screenY = pointer.y - camera.scrollY;
+      
+      // 将DOM坐标转换为画布相对坐标
+      const canvasX = clientX - canvasRect.left;
+      const canvasY = clientY - canvasRect.top;
+      
+      // 计算画布到游戏坐标的缩放
+      const gameWidth = this.scene.scale.gameSize.width;
+      const gameHeight = this.scene.scale.gameSize.height;
+      const scaleX = gameWidth / canvasRect.width;
+      const scaleY = gameHeight / canvasRect.height;
+      
+      // 使用DOM坐标计算的屏幕坐标
+      const domScreenX = canvasX * scaleX;
+      const domScreenY = canvasY * scaleY;
+      
+      console.debug(`DOM conversion: client(${clientX.toFixed(2)}, ${clientY.toFixed(2)}) -> canvas(${canvasX.toFixed(2)}, ${canvasY.toFixed(2)}) -> screen(${domScreenX.toFixed(2)}, ${domScreenY.toFixed(2)})`);
+      
+      // 比较两种方法的结果，选择更准确的
+      const phaserDiff = Math.abs(screenX - domScreenX) + Math.abs(screenY - domScreenY);
+      if (phaserDiff > 10) {
+        console.warn(`Large coordinate difference detected: Phaser(${screenX.toFixed(2)}, ${screenY.toFixed(2)}) vs DOM(${domScreenX.toFixed(2)}, ${domScreenY.toFixed(2)}), using DOM coordinates`);
+        screenX = domScreenX;
+        screenY = domScreenY;
+      }
     }
     
     return { x: screenX, y: screenY };

@@ -48,7 +48,7 @@ export class VirtualJoystick {
   private lastUpdateTime: number = 0;
   private isFullscreen: boolean = false;
   private touchCount: number = 0; // 触摸计数器，用于调试
-  private debugMode: boolean = true; // 调试模式开关
+  private debugMode: boolean = false; // 调试模式开关（默认关闭以避免红点等调试视觉）
   private sensitivity: number = 1.0; // 灵敏度设置
   private smoothing: number = 0.2; // 平滑度设置
   private lastVector: JoystickVector = { x: 0, y: 0 }; // 上一帧的向量，用于平滑
@@ -204,42 +204,9 @@ export class VirtualJoystick {
         this.activePointerId = pointer.id;       // 记录指针ID
         this.lastUpdateTime = this.scene.time.now;  // 记录最后更新时间
 
-        // 增强视觉反馈 - 流畅的颜色和大小变化
-        this.scene.tweens.add({
-          targets: this.knob,
-          fillColor: 0x00ff88,  // 变为亮绿色
-          scaleX: 1.3,
-          scaleY: 1.3,
-          duration: 150,
-          ease: 'Back.easeOut'
-        });
-        
-        this.scene.tweens.add({
-          targets: this.base,
-          strokeColor: 0x00ff88,  // 底座边框变绿
-          duration: 150,
-          ease: 'Power2.easeOut'
-        });
-        
-        // 添加更流畅的脉冲效果
-        this.scene.tweens.add({
-          targets: this.outerRing,
-          alpha: 0.4,
-          scaleX: 1.1,
-          scaleY: 1.1,
-          duration: 300,
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut'
-        });
-
-        // 添加触觉反馈 - 开始触摸时轻微振动
+        // 触觉反馈（无视觉变化）
         this.triggerHapticFeedback([25], 'light');
 
-        // 创建调试触摸指示器（如果启用调试模式）
-        if (this.debugMode) {
-          this.createDebugTouchIndicator(touchCoords.x, touchCoords.y);
-        }
 
         // 触发开始回调
         if (this.onStart) {
@@ -404,36 +371,22 @@ export class VirtualJoystick {
     // 清理调试元素
     this.clearDebugElements();
 
-    // 先停止所有现有动画，避免新旧动画相互干扰造成闪烁
+    // 停止所有现有动画，避免闪烁
     this.scene.tweens.killTweensOf([this.knob, this.base, this.outerRing]);
 
-    // 平滑动画回到中心与还原视觉状态（无振动、无闪烁）
-    this.scene.tweens.add({
-      targets: this.knob,
-      x: 0,
-      y: 0,
-      scaleX: 1,
-      scaleY: 1,
-      fillColor: 0x74b9ff,
-      duration: 180,
-      ease: 'Power2.easeOut'
-    });
-
-    this.scene.tweens.add({
-      targets: this.base,
-      strokeColor: 0x4a90e2,
-      duration: 180,
-      ease: 'Power2.easeOut'
-    });
-
-    this.scene.tweens.add({
-      targets: this.outerRing,
-      alpha: 0.15,
-      scaleX: 1.0,
-      scaleY: 1.0,
-      duration: 180,
-      ease: 'Power2.easeOut'
-    });
+    // 立即还原到静态视觉状态（无任何颜色变化或闪烁）
+    if (this.knob) {
+      this.knob.setPosition(0, 0);
+      this.knob.setScale(1);
+      this.knob.setFillStyle(0x74b9ff, 1.0);
+    }
+    if (this.base) {
+      this.base.setStrokeStyle(3, 0x4a90e2, 0.7);
+    }
+    if (this.outerRing) {
+      this.outerRing.setAlpha(0.15);
+      this.outerRing.setScale(1.0);
+    }
 
     // 触发结束回调
     if (this.onEnd) {
@@ -739,40 +692,8 @@ export class VirtualJoystick {
    * @param y 触摸Y坐标
    */
   private createDebugTouchIndicator(x: number, y: number) {
-    // 清理之前的指示器
-    if (this.debugTouchIndicator) {
-      this.returnToPool(this.debugTouchIndicator);
-    }
-
-    // 从对象池获取或创建新的指示器
-    this.debugTouchIndicator = this.getFromPool();
-    this.debugTouchIndicator.setPosition(x, y);
-    this.debugTouchIndicator.setVisible(true);
-    this.debugTouchIndicator.setAlpha(0.8);
-    this.debugTouchIndicator.setScale(1.0);
-
-    // 添加脉冲动画
-    this.scene.tweens.add({
-      targets: this.debugTouchIndicator,
-      scaleX: 1.5,
-      scaleY: 1.5,
-      alpha: 0.3,
-      duration: 300,
-      yoyo: true,
-      repeat: 2,
-      onComplete: () => {
-        // 动画完成后回收到对象池
-        if (this.debugTouchIndicator) {
-          this.returnToPool(this.debugTouchIndicator);
-          this.debugTouchIndicator = undefined;
-        }
-      }
-    });
-
-    // 同时显示摇杆中心位置的调试信息
-    this.logJoystickPositionDebug();
-
-    console.debug(`🔴 Debug touch indicator created at (${x.toFixed(2)}, ${y.toFixed(2)})`);
+    // 调试红点禁用：保持空实现以避免创建任何可视元素
+    return;
   }
 
   /**

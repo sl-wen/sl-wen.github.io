@@ -430,8 +430,8 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    // 根据屏幕方向调整摇杆大小
-    const joystickRadius = screenInfo.isPortrait ? 60 : 70;
+    // 根据屏幕方向调整摇杆大小 - 增加2倍半径
+    const joystickRadius = screenInfo.isPortrait ? 120 : 140;
     const knobRadius = joystickRadius * 0.4;
     const position = this.uiLayoutManager.getJoystickPosition(joystickRadius);
 

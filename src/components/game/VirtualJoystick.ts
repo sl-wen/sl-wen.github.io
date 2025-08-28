@@ -39,6 +39,7 @@ export class VirtualJoystick {
   
   // 调试元素
   private debugTouchIndicator?: Phaser.GameObjects.Arc;
+  private debugElementPool: Phaser.GameObjects.Arc[] = []; // 调试元素对象池
 
   // 状态管理
   private isActive: boolean = false;
@@ -48,6 +49,9 @@ export class VirtualJoystick {
   private isFullscreen: boolean = false;
   private touchCount: number = 0; // 触摸计数器，用于调试
   private debugMode: boolean = true; // 调试模式开关
+  private sensitivity: number = 1.0; // 灵敏度设置
+  private smoothing: number = 0.2; // 平滑度设置
+  private lastVector: JoystickVector = { x: 0, y: 0 }; // 上一帧的向量，用于平滑
 
   // 事件回调
   private onMove: ((vector: JoystickVector) => void) | null = null;
@@ -196,23 +200,37 @@ export class VirtualJoystick {
         this.activePointerId = pointer.id;       // 记录指针ID
         this.lastUpdateTime = this.scene.time.now;  // 记录最后更新时间
 
-        // 增强视觉反馈 - 改变手柄颜色和大小，提供更明显的触摸响应
-        this.knob.setFillStyle(0x00ff88, 1);     // 设置手柄填充颜色为亮绿色，表示激活
-        this.knob.setScale(1.25);                // 手柄放大1.25倍，更加明显
-        this.base.setStrokeStyle(5, 0x00ff88, 1.0);  // 底座边框变绿并加粗
-        this.outerRing.setStrokeStyle(4, 0x00ff88, 0.8); // 外圈变绿并加粗
+        // 增强视觉反馈 - 流畅的颜色和大小变化
+        this.scene.tweens.add({
+          targets: this.knob,
+          fillColor: 0x00ff88,  // 变为亮绿色
+          scaleX: 1.3,
+          scaleY: 1.3,
+          duration: 150,
+          ease: 'Back.easeOut'
+        });
         
-        // 添加脉冲效果，增强视觉反馈
+        this.scene.tweens.add({
+          targets: this.base,
+          strokeColor: 0x00ff88,  // 底座边框变绿
+          duration: 150,
+          ease: 'Power2.easeOut'
+        });
+        
+        // 添加更流畅的脉冲效果
         this.scene.tweens.add({
           targets: this.outerRing,
-          alpha: 0.3,
-          duration: 200,
+          alpha: 0.4,
+          scaleX: 1.1,
+          scaleY: 1.1,
+          duration: 300,
           yoyo: true,
-          repeat: -1
+          repeat: -1,
+          ease: 'Sine.easeInOut'
         });
 
-        // 添加触觉反馈
-        this.triggerHapticFeedback([30]);
+        // 添加触觉反馈 - 开始触摸时轻微振动
+        this.triggerHapticFeedback([25], 'light');
 
         // 创建调试触摸指示器（如果启用调试模式）
         if (this.debugMode) {
@@ -253,8 +271,9 @@ export class VirtualJoystick {
     try {
       const currentTime = this.scene.time.now;
       
-      // 限制更新频率，避免过度计算（60FPS对应约16.67ms间隔）
-      if (currentTime - this.lastUpdateTime < 8) { // 约120FPS更新频率，提高响应性
+      // 动态调整更新频率：移动时更高频率，静止时降低频率
+      const minUpdateInterval = this.isActive && (Math.abs(this.vector.x) > 0.1 || Math.abs(this.vector.y) > 0.1) ? 8 : 16;
+      if (currentTime - this.lastUpdateTime < minUpdateInterval) {
         return;
       }
       
@@ -336,22 +355,32 @@ export class VirtualJoystick {
     // 降低死区阈值，提高小幅度移动的响应性
     const adjustedDeadZone = this.config.deadZone * 0.3; // 将死区大幅减少
     
+    let newVector = { x: 0, y: 0 };
+    
     if (distance > adjustedDeadZone * maxDistance) {
-      // 基于实际触摸位置计算输入向量，而不是限制后的手柄位置
-      const inputStrength = Math.min(normalizedDistance, 1.5); // 最大1.5倍强度
-      this.vector.x = (deltaX / distance) * inputStrength;
-      this.vector.y = (deltaY / distance) * inputStrength;
-    } else {
-      this.vector.x = 0;  // 在死区内，输入值为0
-      this.vector.y = 0;  // 在死区内，输入值为0
+      // 基于实际触摸位置计算输入向量，应用灵敏度
+      const inputStrength = Math.min(normalizedDistance * this.sensitivity, 1.8); // 最大1.8倍强度，支持灵敏度调节
+      newVector.x = (deltaX / distance) * inputStrength;
+      newVector.y = (deltaY / distance) * inputStrength;
     }
 
     // 验证向量有效性
-    if (!isFinite(this.vector.x) || !isFinite(this.vector.y)) {
+    if (!isFinite(newVector.x) || !isFinite(newVector.y)) {
       console.warn('Invalid vector calculated, using zero vector');
-      this.vector.x = 0;
-      this.vector.y = 0;
+      newVector = { x: 0, y: 0 };
     }
+
+    // 应用平滑处理
+    if (this.smoothing > 0) {
+      this.vector.x = this.lerp(this.lastVector.x, newVector.x, 1 - this.smoothing);
+      this.vector.y = this.lerp(this.lastVector.y, newVector.y, 1 - this.smoothing);
+    } else {
+      this.vector.x = newVector.x;
+      this.vector.y = newVector.y;
+    }
+
+    // 保存当前向量用于下次平滑
+    this.lastVector = { ...this.vector };
 
     // 触发移动回调
     if (this.onMove) {
@@ -385,17 +414,35 @@ export class VirtualJoystick {
       ease: 'Back.easeOut'                    // 弹性缓动效果
     });
 
-    // 重置视觉状态
-    this.knob.setFillStyle(0x74b9ff, 1.0);   // 恢复手柄颜色
-    this.base.setStrokeStyle(3, 0x4a90e2, 0.7);  // 恢复底座边框
-    this.outerRing.setStrokeStyle(2, 0x4a90e2, 0.4); // 恢复外圈
+    // 停止所有动画效果
+    this.scene.tweens.killTweensOf([this.knob, this.base, this.outerRing]);
     
-    // 停止所有与外圈相关的动画效果
-    this.scene.tweens.killTweensOf(this.outerRing);
-    this.outerRing.setAlpha(0.15); // 恢复原始透明度
+    // 平滑恢复视觉状态
+    this.scene.tweens.add({
+      targets: this.knob,
+      fillColor: 0x74b9ff,  // 恢复原始颜色
+      duration: 200,
+      ease: 'Power2.easeOut'
+    });
+    
+    this.scene.tweens.add({
+      targets: this.base,
+      strokeColor: 0x4a90e2,  // 恢复底座边框颜色
+      duration: 200,
+      ease: 'Power2.easeOut'
+    });
+    
+    this.scene.tweens.add({
+      targets: this.outerRing,
+      alpha: 0.15,  // 恢复原始透明度
+      scaleX: 1.0,
+      scaleY: 1.0,
+      duration: 200,
+      ease: 'Power2.easeOut'
+    });
 
-    // 添加释放时的触觉反馈
-    this.triggerHapticFeedback([20]);
+    // 添加释放时的触觉反馈 - 结束触摸时更轻的振动
+    this.triggerHapticFeedback([15], 'light');
 
     // 触发结束回调
     if (this.onEnd) {
@@ -492,6 +539,40 @@ export class VirtualJoystick {
   }
 
   /**
+   * 设置摇杆灵敏度
+   * @param sensitivity 灵敏度 (0.1 - 2.0)
+   */
+  public setSensitivity(sensitivity: number) {
+    this.sensitivity = Math.max(0.1, Math.min(2.0, sensitivity));
+    console.log(`🎮 Joystick sensitivity set to: ${this.sensitivity}`);
+  }
+
+  /**
+   * 设置摇杆平滑度
+   * @param smoothing 平滑度 (0 - 0.8)
+   */
+  public setSmoothing(smoothing: number) {
+    this.smoothing = Math.max(0, Math.min(0.8, smoothing));
+    console.log(`🎮 Joystick smoothing set to: ${this.smoothing}`);
+  }
+
+  /**
+   * 获取摇杆配置
+   */
+  public getJoystickConfig() {
+    return {
+      sensitivity: this.sensitivity,
+      smoothing: this.smoothing,
+      debugMode: this.debugMode,
+      radius: this.config.radius,
+      knobRadius: this.config.knobRadius,
+      deadZone: this.config.deadZone,
+      isActive: this.isActive,
+      touchCount: this.touchCount
+    };
+  }
+
+  /**
    * 获取摇杆在屏幕坐标系中的实际位置
    * 考虑scrollFactor(0)的影响，返回真实的屏幕坐标
    */
@@ -580,7 +661,7 @@ export class VirtualJoystick {
   }
 
   /**
-   * 创建调试触摸指示器
+   * 创建调试触摸指示器（使用对象池优化性能）
    * 显示实际的触摸位置，用于调试坐标转换问题
    * @param x 触摸X坐标
    * @param y 触摸Y坐标
@@ -588,14 +669,15 @@ export class VirtualJoystick {
   private createDebugTouchIndicator(x: number, y: number) {
     // 清理之前的指示器
     if (this.debugTouchIndicator) {
-      this.debugTouchIndicator.destroy();
+      this.returnToPool(this.debugTouchIndicator);
     }
 
-    // 创建红色圆点指示器
-    this.debugTouchIndicator = this.scene.add.circle(x, y, 10, 0xff0000, 0.8);
-    this.debugTouchIndicator.setStrokeStyle(2, 0xffffff, 1.0);
-    this.debugTouchIndicator.setDepth(10001); // 确保在最上层
-    this.debugTouchIndicator.setScrollFactor(0); // 固定在屏幕上
+    // 从对象池获取或创建新的指示器
+    this.debugTouchIndicator = this.getFromPool();
+    this.debugTouchIndicator.setPosition(x, y);
+    this.debugTouchIndicator.setVisible(true);
+    this.debugTouchIndicator.setAlpha(0.8);
+    this.debugTouchIndicator.setScale(1.0);
 
     // 添加脉冲动画
     this.scene.tweens.add({
@@ -607,9 +689,9 @@ export class VirtualJoystick {
       yoyo: true,
       repeat: 2,
       onComplete: () => {
-        // 动画完成后销毁指示器
+        // 动画完成后回收到对象池
         if (this.debugTouchIndicator) {
-          this.debugTouchIndicator.destroy();
+          this.returnToPool(this.debugTouchIndicator);
           this.debugTouchIndicator = undefined;
         }
       }
@@ -619,6 +701,35 @@ export class VirtualJoystick {
     this.logJoystickPositionDebug();
 
     console.debug(`🔴 Debug touch indicator created at (${x.toFixed(2)}, ${y.toFixed(2)})`);
+  }
+
+  /**
+   * 从对象池获取调试元素
+   */
+  private getFromPool(): Phaser.GameObjects.Arc {
+    if (this.debugElementPool.length > 0) {
+      return this.debugElementPool.pop()!;
+    } else {
+      // 创建新的调试元素
+      const indicator = this.scene.add.circle(0, 0, 10, 0xff0000, 0.8);
+      indicator.setStrokeStyle(2, 0xffffff, 1.0);
+      indicator.setDepth(10001);
+      indicator.setScrollFactor(0);
+      return indicator;
+    }
+  }
+
+  /**
+   * 将调试元素回收到对象池
+   */
+  private returnToPool(indicator: Phaser.GameObjects.Arc) {
+    indicator.setVisible(false);
+    this.scene.tweens.killTweensOf(indicator);
+    if (this.debugElementPool.length < 3) { // 限制池大小
+      this.debugElementPool.push(indicator);
+    } else {
+      indicator.destroy();
+    }
   }
 
   /**
@@ -644,9 +755,13 @@ export class VirtualJoystick {
    */
   private clearDebugElements() {
     if (this.debugTouchIndicator) {
-      this.debugTouchIndicator.destroy();
+      this.returnToPool(this.debugTouchIndicator);
       this.debugTouchIndicator = undefined;
     }
+    
+    // 清理对象池
+    this.debugElementPool.forEach(element => element.destroy());
+    this.debugElementPool = [];
   }
 
   /**
@@ -987,12 +1102,26 @@ export class VirtualJoystick {
   /**
    * 触发触觉反馈（振动）
    * @param pattern 振动模式数组
+   * @param intensity 强度级别 ('light' | 'medium' | 'heavy')
    */
-  private triggerHapticFeedback(pattern: number[]) {
+  private triggerHapticFeedback(pattern: number[], intensity: 'light' | 'medium' | 'heavy' = 'medium') {
     try {
       // 检查设备是否支持振动
       if ('vibrate' in navigator && navigator.vibrate) {
-        navigator.vibrate(pattern);
+        // 根据强度调整振动模式
+        const adjustedPattern = pattern.map(duration => {
+          switch (intensity) {
+            case 'light': return Math.max(5, duration * 0.5);
+            case 'heavy': return duration * 1.5;
+            default: return duration;
+          }
+        });
+        navigator.vibrate(adjustedPattern);
+      }
+
+      // 尝试使用Web Vibration API的新特性
+      if ('vibrate' in navigator && typeof (navigator as any).vibrate === 'function') {
+        (navigator as any).vibrate(pattern);
       }
     } catch (error) {
       // 静默处理振动错误，避免影响游戏体验
@@ -1066,6 +1195,17 @@ export class VirtualJoystick {
     this.setupEventHandlers();
 
     console.log('Virtual joystick event handlers refreshed');
+  }
+
+  /**
+   * 线性插值函数
+   * @param a 起始值
+   * @param b 目标值
+   * @param t 插值因子 (0-1)
+   * @returns 插值结果
+   */
+  private lerp(a: number, b: number, t: number): number {
+    return a + (b - a) * Math.max(0, Math.min(1, t));
   }
 
   /**

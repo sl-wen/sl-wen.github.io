@@ -464,10 +464,24 @@ export class GameScene extends Phaser.Scene {
 
     console.log('Virtual joystick initialized at position:', position);
     
+    // 根据设备类型调整摇杆配置
+    if (screenInfo.isMobile) {
+      // 移动设备：更高的灵敏度和轻微平滑
+      this.virtualJoystick.setSensitivity(1.2);
+      this.virtualJoystick.setSmoothing(0.1);
+    } else {
+      // 桌面设备：标准配置
+      this.virtualJoystick.setSensitivity(1.0);
+      this.virtualJoystick.setSmoothing(0.2);
+    }
+    
     // 启动坐标准确性测试（调试模式）
     this.time.delayedCall(1000, () => {
       this.virtualJoystick.testCoordinateAccuracy();
     });
+    
+    // 输出摇杆配置信息
+    console.log('🎮 Joystick configuration:', this.virtualJoystick.getJoystickConfig());
   }
 
   // 设置动作按钮

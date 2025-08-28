@@ -962,12 +962,42 @@ export class GameScene extends Phaser.Scene {
     // 摄像机边界现在由 TileMapManager 设置，这里只设置跟随和缩放
     // 平滑摄像机跟随
     this.cameras.main.setLerp(0.2, 0.2);        // 略微更紧的跟随
-    // 将死区缩小并居中，使小猫保持在屏幕的中间区域
-    const dzWidth = Math.max(40, screenWidth * 0.15);
-    const dzHeight = Math.max(40, screenHeight * 0.15);
-    this.cameras.main.setDeadzone(dzWidth, dzHeight);
+    // 移除死区，使小猫始终保持在屏幕正中（由后续位置夹取保证边界行为）
+    this.cameras.main.setDeadzone(0, 0);
 
     // 注意：摇杆位置更新现在在摇杆重置时自动处理
+  }
+
+  /**
+   * 将小猫位置限制在“可居中区域”
+   * 确保相机始终可以把小猫放在屏幕中心，同时不越过世界边界。
+   * 可居中区域 = 世界边界去掉当前视口一半（考虑缩放）的安全边距。
+   */
+  private clampCatToCenteredBounds() {
+    if (!this.cat || !this.physics || !this.cameras) return;
+
+    const worldBounds = this.physics.world.bounds;
+    const camera = this.cameras.main;
+    const zoom = camera.zoom || 1;
+
+    // 以世界坐标计算视口一半尺寸（考虑缩放）
+    const halfViewportWidth = camera.width / (2 * zoom);
+    const halfViewportHeight = camera.height / (2 * zoom);
+
+    // 当地图比视口还小时，直接跳过以避免无效夹取
+    if (worldBounds.width <= 0 || worldBounds.height <= 0) return;
+
+    const minX = worldBounds.x + halfViewportWidth;
+    const minY = worldBounds.y + halfViewportHeight;
+    const maxX = worldBounds.x + worldBounds.width - halfViewportWidth;
+    const maxY = worldBounds.y + worldBounds.height - halfViewportHeight;
+
+    // 若地图尺寸小于视口，min 可能大于 max，此时以中心位置作为降级策略
+    const safeX = (minX <= maxX) ? Phaser.Math.Clamp(this.cat.x, minX, maxX) : (worldBounds.centerX);
+    const safeY = (minY <= maxY) ? Phaser.Math.Clamp(this.cat.y, minY, maxY) : (worldBounds.centerY);
+
+    // 直接设置世界坐标，Arcade 物理会在下一帧对齐
+    this.cat.setPosition(safeX, safeY);
   }
 
   /**
@@ -1409,6 +1439,9 @@ export class GameScene extends Phaser.Scene {
       if (typeof this.cat.update === 'function') {
         this.cat.update();
       }
+
+      // 夹取小猫到可居中区域，保证靠近边界时仍保持在屏幕中间且不越界
+      this.clampCatToCenteredBounds();
     }
 
     // // 更新瓦片地图系统

@@ -43,6 +43,7 @@ export class VirtualJoystick {
   private vector: JoystickVector = { x: 0, y: 0 };
   private lastUpdateTime: number = 0;
   private isFullscreen: boolean = false;
+  private touchCount: number = 0; // 触摸计数器，用于调试
 
   // 事件回调
   private onMove: ((vector: JoystickVector) => void) | null = null;
@@ -77,8 +78,8 @@ export class VirtualJoystick {
     // 添加到容器
     this.container.add([this.outerRing, this.base, this.knob]);
 
-    // 设置交互区域 - 扩大触摸范围
-    const interactiveArea = this.scene.add.circle(0, 0, this.config.radius + 20, 0x000000, 0);
+    // 设置交互区域 - 大幅扩大触摸范围提高响应性
+    const interactiveArea = this.scene.add.circle(0, 0, this.config.radius + 40, 0x000000, 0);
     interactiveArea.setInteractive();
     this.container.add(interactiveArea);
 
@@ -89,12 +90,21 @@ export class VirtualJoystick {
   private setupEventHandlers() {
     const interactiveArea = (this as unknown as { interactiveArea: Phaser.GameObjects.Arc }).interactiveArea;
 
-    // 简化的触摸开始处理
+    // 优化的触摸开始处理 - 提高响应性
     interactiveArea.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      // 立即处理，不延迟
       this.handleTouchStart(pointer);
     });
 
-    // 全局移动监听
+    // 添加更积极的触摸检测 - 监听整个摇杆容器区域
+    this.container.setInteractive();
+    this.container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (!this.isActive) {
+        this.handleTouchStart(pointer);
+      }
+    });
+
+    // 全局移动监听 - 提高更新频率
     this.scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       this.handleTouchMove(pointer);
     });
@@ -112,6 +122,13 @@ export class VirtualJoystick {
     // 取消事件监听
     this.scene.input.on('pointercancel', (pointer: Phaser.Input.Pointer) => {
       this.handleTouchEnd(pointer);
+    });
+
+    // 添加离开事件监听，确保摇杆能正确重置
+    this.scene.input.on('pointerout', (pointer: Phaser.Input.Pointer) => {
+      if (this.isActive && this.activePointerId === pointer.id) {
+        this.handleTouchEnd(pointer);
+      }
     });
   }
 
@@ -143,19 +160,28 @@ export class VirtualJoystick {
         this.container.y      // 摇杆中心Y坐标
       );
 
-      // 在全屏模式下增加触摸范围
-      const touchRange = this.config.radius + (this.isFullscreen ? 35 : 25);
+      // 在全屏模式下大幅增加触摸范围，提高触摸检测灵敏度
+      const touchRange = this.config.radius + (this.isFullscreen ? 60 : 45);
 
       if (distance <= touchRange) {  // 在有效触摸范围内
         this.isActive = true;                    // 激活摇杆
         this.activePointerId = pointer.id;       // 记录指针ID
         this.lastUpdateTime = this.scene.time.now;  // 记录最后更新时间
 
-        // 增强视觉反馈 - 改变手柄颜色和大小
-        this.knob.setFillStyle(0xa29bfe, 1);     // 设置手柄填充颜色为紫色
-        this.knob.setScale(1.15);                // 手柄放大1.15倍，更明显
-        this.base.setStrokeStyle(4, 0x74b9ff, 0.9);  // 底座边框加粗并变亮
-        this.outerRing.setStrokeStyle(3, 0x74b9ff, 0.6); // 外圈也变亮
+        // 增强视觉反馈 - 改变手柄颜色和大小，提供更明显的触摸响应
+        this.knob.setFillStyle(0x00ff88, 1);     // 设置手柄填充颜色为亮绿色，表示激活
+        this.knob.setScale(1.25);                // 手柄放大1.25倍，更加明显
+        this.base.setStrokeStyle(5, 0x00ff88, 1.0);  // 底座边框变绿并加粗
+        this.outerRing.setStrokeStyle(4, 0x00ff88, 0.8); // 外圈变绿并加粗
+        
+        // 添加脉冲效果，增强视觉反馈
+        this.scene.tweens.add({
+          targets: this.outerRing,
+          alpha: 0.3,
+          duration: 200,
+          yoyo: true,
+          repeat: -1
+        });
 
         // 添加触觉反馈
         this.triggerHapticFeedback([30]);
@@ -168,9 +194,12 @@ export class VirtualJoystick {
         // 立即更新位置
         this.updateKnobPosition(pointer);  // 更新手柄位置
 
-        console.debug(`Joystick activated at distance ${distance.toFixed(2)} (range: ${touchRange}, fullscreen: ${this.isFullscreen})`);
+        // 增加触摸计数
+        this.touchCount++;
+        
+        console.debug(`🎮 Joystick activated! Touch #${this.touchCount}, distance: ${distance.toFixed(2)}, range: ${touchRange}, fullscreen: ${this.isFullscreen}`);
       } else {
-        console.debug(`Touch outside joystick range: ${distance.toFixed(2)} > ${touchRange}`);
+        console.debug(`❌ Touch outside joystick range: ${distance.toFixed(2)} > ${touchRange} (fullscreen: ${this.isFullscreen})`);
       }
     } catch (error) {
       console.error('Error in handleTouchStart:', error);
@@ -180,7 +209,7 @@ export class VirtualJoystick {
   }
 
   /**
-   * 处理触摸移动事件
+   * 处理触摸移动事件 - 优化版本
    * @param pointer 触摸指针对象
    */
   private handleTouchMove(pointer: Phaser.Input.Pointer) {
@@ -189,8 +218,15 @@ export class VirtualJoystick {
     }
 
     try {
-      this.lastUpdateTime = this.scene.time.now;  // 更新最后更新时间
-      this.updateKnobPosition(pointer);          // 更新手柄位置
+      const currentTime = this.scene.time.now;
+      
+      // 限制更新频率，避免过度计算（60FPS对应约16.67ms间隔）
+      if (currentTime - this.lastUpdateTime < 8) { // 约120FPS更新频率，提高响应性
+        return;
+      }
+      
+      this.lastUpdateTime = currentTime;  // 更新最后更新时间
+      this.updateKnobPosition(pointer);   // 更新手柄位置
     } catch (error) {
       console.error('Error in handleTouchMove:', error);
       // 发生错误时执行紧急重置
@@ -252,12 +288,17 @@ export class VirtualJoystick {
     this.knob.x = knobX;  // 设置手柄X坐标
     this.knob.y = knobY;  // 设置手柄Y坐标
 
-    // 计算标准化向量
+    // 计算标准化向量 - 优化灵敏度
     const normalizedDistance = Math.min(distance / maxDistance, 1);  // 标准化距离（0-1）
 
-    if (normalizedDistance > this.config.deadZone) {
-      this.vector.x = (knobX / maxDistance);  // 计算X方向输入值（-1到1）
-      this.vector.y = (knobY / maxDistance);  // 计算Y方向输入值（-1到1）
+    // 降低死区阈值，提高小幅度移动的响应性
+    const adjustedDeadZone = this.config.deadZone * 0.5; // 将死区减少一半
+    
+    if (normalizedDistance > adjustedDeadZone) {
+      // 应用非线性响应曲线，提高小幅度移动的灵敏度
+      const responseFactor = this.calculateResponseFactor(normalizedDistance, adjustedDeadZone);
+      this.vector.x = (knobX / maxDistance) * responseFactor;
+      this.vector.y = (knobY / maxDistance) * responseFactor;
     } else {
       this.vector.x = 0;  // 在死区内，输入值为0
       this.vector.y = 0;  // 在死区内，输入值为0
@@ -300,6 +341,10 @@ export class VirtualJoystick {
     this.knob.setFillStyle(0x74b9ff, 1.0);   // 恢复手柄颜色
     this.base.setStrokeStyle(3, 0x4a90e2, 0.7);  // 恢复底座边框
     this.outerRing.setStrokeStyle(2, 0x4a90e2, 0.4); // 恢复外圈
+    
+    // 停止所有与外圈相关的动画效果
+    this.scene.tweens.killTweensOf(this.outerRing);
+    this.outerRing.setAlpha(0.15); // 恢复原始透明度
 
     // 添加释放时的触觉反馈
     this.triggerHapticFeedback([20]);
@@ -489,6 +534,10 @@ export class VirtualJoystick {
       lastUpdateTime: this.lastUpdateTime,                       // 最后更新时间
       timeSinceLastUpdate: this.scene.time.now - this.lastUpdateTime,  // 距离上次更新的时间
       isFullscreen: this.isFullscreen,                           // 全屏状态
+      touchCount: this.touchCount,                               // 触摸计数
+      deadZone: this.config.deadZone,                           // 死区大小
+      radius: this.config.radius,                               // 摇杆半径
+      knobRadius: this.config.knobRadius,                       // 手柄半径
       gameSize: {                                                 // 游戏尺寸
         width: this.scene.scale.gameSize.width,
         height: this.scene.scale.gameSize.height
@@ -506,7 +555,24 @@ export class VirtualJoystick {
       scale: {                                                   // 缩放信息
         x: this.container.scaleX,
         y: this.container.scaleY
+      },
+      performance: {                                             // 性能信息
+        updateFrequency: this.lastUpdateTime > 0 ? 1000 / (this.scene.time.now - this.lastUpdateTime) : 0
       }
+    };
+  }
+
+  /**
+   * 获取性能统计信息
+   * @returns 性能统计
+   */
+  public getPerformanceStats() {
+    return {
+      touchCount: this.touchCount,
+      isResponsive: this.scene.time.now - this.lastUpdateTime < 100,
+      averageUpdateInterval: this.lastUpdateTime > 0 ? this.scene.time.now - this.lastUpdateTime : 0,
+      isActive: this.isActive,
+      hasValidVector: isFinite(this.vector.x) && isFinite(this.vector.y)
     };
   }
 
@@ -783,6 +849,18 @@ export class VirtualJoystick {
     this.setupEventHandlers();
 
     console.log('Virtual joystick event handlers refreshed');
+  }
+
+  /**
+   * 计算响应因子 - 提高小幅度移动的灵敏度
+   * @param normalizedDistance 标准化距离
+   * @param deadZone 死区大小
+   * @returns 响应因子
+   */
+  private calculateResponseFactor(normalizedDistance: number, deadZone: number): number {
+    // 使用平方根函数提高小幅度移动的响应性
+    const adjustedDistance = (normalizedDistance - deadZone) / (1 - deadZone);
+    return Math.sqrt(adjustedDistance) * 1.2; // 1.2倍增强响应性
   }
 
   /**

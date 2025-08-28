@@ -23,6 +23,7 @@
     "critters": "^0.0.25",
     "dompurify": "^3.2.6",
     "gray-matter": "^4.0.3",
+    "grid-engine": "^2.34.0",
     "lodash": "^4.17.21",
     "marked": "^15.0.7",
     "next": "^14.0.4",

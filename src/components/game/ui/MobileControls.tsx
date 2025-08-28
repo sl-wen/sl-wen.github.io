@@ -190,8 +190,8 @@ const MobileControls: React.FC<MobileControlsProps> = ({
 
   return (
     <div className="fixed inset-0 pointer-events-none z-40">
-      {/* 虚拟摇杆 */}
-      <div className="absolute bottom-8 left-6 pointer-events-auto">
+      {/* 虚拟摇杆 - 向上移动到更合适的位置 */}
+      <div className="absolute bottom-24 left-6 pointer-events-auto">
         <div className="relative">
           {/* 摇杆外圈 */}
           <div

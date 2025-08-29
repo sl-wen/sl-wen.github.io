@@ -98,8 +98,9 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
     // 创建游戏引擎实例
     gameEngineRef.current = new TopDownGameEngine(gameContainerRef.current, {
-      width: gameSize.width,
-      height: gameSize.height,
+      // 使用容器的实际渲染尺寸，避免画布内部分辨率过小
+      width: gameSize.width * gameSize.multiplier,
+      height: gameSize.height * gameSize.multiplier,
       parent: gameContainerRef.current,
       backgroundColor: '#2c3e50',
       physics: {

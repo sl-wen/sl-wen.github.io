@@ -1024,7 +1024,7 @@ export class EnhancedGameStatsSystem {
     };
 
     this.goals.push(goal);
-    this.addEvent('goal_created', { goal });
+    this.addEvent('custom', { goal });
     
     return goal;
   }
@@ -1155,14 +1155,14 @@ export class EnhancedGameStatsSystem {
     this.dataPoints = this.dataPoints.filter(dp => dp.timestamp > cutoffTime);
     
     // 清理聚合数据
-    for (const [key, aggregation] of this.aggregations.entries()) {
+    for (const [key, aggregation] of Array.from(this.aggregations.entries())) {
       if (aggregation.endTime < cutoffTime) {
         this.aggregations.delete(key);
       }
     }
     
     // 清理会话
-    for (const [key, session] of this.sessions.entries()) {
+    for (const [key, session] of Array.from(this.sessions.entries())) {
       if (session.endTime && session.endTime < cutoffTime) {
         this.sessions.delete(key);
       }

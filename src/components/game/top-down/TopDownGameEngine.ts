@@ -24,7 +24,7 @@ interface GameConfig {
 }
 
 export class TopDownGameEngine {
-  private game: Phaser.Game;
+  private game: Phaser.Game | null;
   private scene: any;
 
   constructor(container: HTMLElement, config: GameConfig) {

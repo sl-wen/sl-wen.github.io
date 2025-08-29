@@ -1575,8 +1575,8 @@ export class CompleteGameScene extends Phaser.Scene {
 
         // 检查当前位置是否有传送点
         const teleportLayer = this.map.getLayer('teleports');
-        if (teleportLayer) {
-            const tile = teleportLayer.getTileAt(position.x, position.y);
+        if (teleportLayer && (teleportLayer as any).tilemapLayer?.getTileAt) {
+            const tile = (teleportLayer as any).tilemapLayer.getTileAt(position.x, position.y);
             if (tile && tile.properties?.teleportData) {
                 this.handleTeleport(tile.properties.teleportData);
             }
@@ -1588,8 +1588,8 @@ export class CompleteGameScene extends Phaser.Scene {
 
         // 检查交互点
         const interactionLayer = this.map.getLayer('interactions');
-        if (interactionLayer) {
-            const tile = interactionLayer.getTileAt(position.x, position.y);
+        if (interactionLayer && (interactionLayer as any).tilemapLayer?.getTileAt) {
+            const tile = (interactionLayer as any).tilemapLayer.getTileAt(position.x, position.y);
             if (tile && tile.properties?.interactionType) {
                 this.handleInteraction(tile.properties.interactionType, tile.properties.interactionData);
             }

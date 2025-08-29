@@ -341,7 +341,7 @@ export class EnemyAISystem {
     
     // 按优先级排序状态转换
     const transitions = config.stateTransitions
-      .filter(t => t.from === currentState.state)
+      .filter((t: any) => t.from === currentState.state)
       .sort((a: any, b: any) => b.priority - a.priority);
     
     for (const transition of transitions) {

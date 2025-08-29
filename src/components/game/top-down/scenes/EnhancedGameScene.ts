@@ -59,8 +59,8 @@ export class EnhancedGameScene extends Phaser.Scene {
   // 输入控制
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: Phaser.Input.Keyboard.Key[];
-  private spaceKey!: Phaser.Input.Keyboard.Key;
-  private enterKey!: Phaser.Input.Keyboard.Key;
+  private spaceKey!: Phaser.Input.Keyboard.Key | null;
+  private enterKey!: Phaser.Input.Keyboard.Key | null;
 
   constructor() {
     super('EnhancedGameScene');

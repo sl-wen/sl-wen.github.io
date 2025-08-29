@@ -695,7 +695,7 @@ export class TestSystem {
    */
   public addTestCase(testCase: TestCase): void {
     this.testCases.set(testCase.id, testCase);
-    this.addEvent('test_added', { testCase });
+    this.addEvent('custom', { testCase });
   }
 
   /**
@@ -1060,8 +1060,8 @@ export class TestSystem {
   }
 
   private getMemoryUsage(): number {
-    if (performance && performance.memory) {
-      return Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+    if (performance && (performance as any).memory) {
+      return Math.round((performance as any).memory.usedJSHeapSize / 1024 / 1024);
     }
     return 0;
   }

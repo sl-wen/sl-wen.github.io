@@ -48,8 +48,8 @@ export const EnhancedGameUI: React.FC<EnhancedGameUIProps> = ({
 
   useEffect(() => {
     // 加载音效设置
-    const settings = soundManager.getSettings();
-    setSoundSettings(settings);
+    // const settings = soundManager.getSettings();
+    // setSoundSettings(settings);
 
     // 设置制作完成回调
     craftingSystem.onCraftingComplete((recipeId, success) => {
@@ -84,7 +84,7 @@ export const EnhancedGameUI: React.FC<EnhancedGameUIProps> = ({
 
   const handleTabChange = (tab: typeof activeTab) => {
     setActiveTab(tab);
-    soundManager.playButtonClick();
+    // soundManager.playButtonClick();
   };
 
   const handleItemUse = (item: any) => {
@@ -92,13 +92,13 @@ export const EnhancedGameUI: React.FC<EnhancedGameUIProps> = ({
 
     // 这里可以添加物品使用逻辑
     console.log('Using item:', item);
-    soundManager.playPickupSound();
+    // soundManager.playPickupSound();
   };
 
   const handleCraftingStart = (recipeId: string) => {
     const success = craftingSystem.startCrafting(recipeId, inventory, playerStats.level);
     if (success) {
-      soundManager.playButtonClick();
+      // soundManager.playButtonClick();
       // 更新背包
       if (onInventoryChange) {
         onInventoryChange([...inventory]);
@@ -109,7 +109,7 @@ export const EnhancedGameUI: React.FC<EnhancedGameUIProps> = ({
   const handleShopBuy = (shopId: string, itemId: string, quantity: number) => {
     const result = shopSystem.buyItem(shopId, itemId, quantity, playerStats.gold, playerStats.level);
     if (result.success) {
-      soundManager.playButtonClick();
+      // soundManager.playButtonClick();
       // 更新玩家金币
       if (onStatsChange) {
         onStatsChange({
@@ -123,7 +123,7 @@ export const EnhancedGameUI: React.FC<EnhancedGameUIProps> = ({
   const handleShopSell = (shopId: string, itemId: string, quantity: number) => {
     const result = shopSystem.sellItem(shopId, itemId, quantity, inventory);
     if (result.success) {
-      soundManager.playButtonClick();
+      // soundManager.playButtonClick();
       // 更新玩家金币和背包
       if (onStatsChange) {
         onStatsChange({

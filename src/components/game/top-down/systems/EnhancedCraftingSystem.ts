@@ -454,7 +454,7 @@ export class EnhancedCraftingSystem {
           level: 2,
           cost: { 'iron_ingot': 10, 'gold': 100 },
           effects: [
-            { type: 'efficiency_bonus', value: 0.2, target: 'all', condition: '' }
+            { type: 'efficiency_bonus' as any, value: 0.2, target: 'all', condition: '' }
           ],
           requirements: [
             { type: 'skill_level', target: 'blacksmithing', value: 3 }
@@ -557,7 +557,7 @@ export class EnhancedCraftingSystem {
    */
   public addRecipe(recipe: CraftingRecipe): void {
     this.recipes.set(recipe.id, recipe);
-    this.addEvent('recipe_added', { recipeId: recipe.id, recipe });
+    this.addEvent('custom', { recipeId: recipe.id, recipe });
   }
 
   /**
@@ -734,7 +734,7 @@ export class EnhancedCraftingSystem {
    * 获取可用制作台
    */
   private getAvailableStation(stationType: string): CraftingStation | null {
-    for (const station of this.stations.values()) {
+    for (const station of Array.from(this.stations.values())) {
       if (station.type === stationType && station.isAvailable) {
         return station;
       }
@@ -749,7 +749,7 @@ export class EnhancedCraftingSystem {
     const availableTools: CraftingTool[] = [];
     
     for (const toolType of toolTypes) {
-      for (const tool of this.tools.values()) {
+      for (const tool of Array.from(this.tools.values())) {
         if (tool.type === toolType && !tool.isBroken && !availableTools.some(t => t.type === toolType)) {
           availableTools.push(tool);
           break;
@@ -829,7 +829,7 @@ export class EnhancedCraftingSystem {
   private updateCraftingProgress(): void {
     const now = Date.now();
     
-    for (const [craftId, craft] of this.activeCrafts.entries()) {
+    for (const [craftId, craft] of Array.from(this.activeCrafts.entries())) {
       if (craft.status === 'crafting') {
         const elapsed = now - craft.startTime;
         craft.currentTime = elapsed;

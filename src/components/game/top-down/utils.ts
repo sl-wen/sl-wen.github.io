@@ -32,8 +32,10 @@ export const createInteractiveGameObject = (
   }
 
   scene.physics.add.existing(customCollider);
-  customCollider.body.setAllowGravity(false);
-  customCollider.body.setImmovable(true);
+  if (customCollider.body) {
+    (customCollider.body as any).setAllowGravity(false);
+    (customCollider.body as any).setImmovable(true);
+  }
 
   return customCollider;
 };
@@ -266,7 +268,7 @@ export const mergeObjects = <T extends Record<string, any>>(
     if (source) {
       Object.keys(source).forEach(key => {
         if (source[key] !== undefined) {
-          result[key] = source[key];
+          (result as any)[key] = source[key];
         }
       });
     }

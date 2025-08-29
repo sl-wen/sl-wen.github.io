@@ -299,6 +299,7 @@ export class EnhancedAchievementSystem {
         id: 'title_reward',
         type: 'title',
         title: '战斗大师',
+        value: '战斗大师',
         isClaimed: false,
         metadata: {}
       }],
@@ -381,6 +382,7 @@ export class EnhancedAchievementSystem {
         id: 'item_reward',
         type: 'item',
         itemId: 'collector_bag',
+        value: 'collector_bag',
         isClaimed: false,
         metadata: {}
       }],
@@ -422,6 +424,7 @@ export class EnhancedAchievementSystem {
         id: 'skill_reward',
         type: 'skill',
         skillId: 'crafting_mastery',
+        value: 'crafting_mastery',
         isClaimed: false,
         metadata: {}
       }],
@@ -463,6 +466,7 @@ export class EnhancedAchievementSystem {
         id: 'cosmetic_reward',
         type: 'cosmetic',
         cosmeticId: 'social_badge',
+        value: 'social_badge',
         isClaimed: false,
         metadata: {}
       }],
@@ -504,6 +508,7 @@ export class EnhancedAchievementSystem {
         id: 'ability_reward',
         type: 'ability',
         abilityId: 'level_boost',
+        value: 'level_boost',
         isClaimed: false,
         metadata: {}
       }],

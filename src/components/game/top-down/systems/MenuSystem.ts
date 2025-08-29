@@ -248,7 +248,7 @@ export class MenuSystem {
   private loadConfig(): void {
     const savedConfig = storage.get('menu_config', null);
     if (savedConfig) {
-      this.config = { ...this.config, ...savedConfig };
+      this.config = { ...this.config, ...(savedConfig as any) };
     }
   }
 
@@ -265,7 +265,7 @@ export class MenuSystem {
   private loadState(): void {
     const savedState = storage.get('menu_state', null);
     if (savedState) {
-      this.menuState = { ...this.menuState, ...savedState };
+      this.menuState = { ...this.menuState, ...(savedState as any) };
     }
   }
 
@@ -571,37 +571,37 @@ export class MenuSystem {
     
     // 键盘输入
     if (this.config.interaction.enableKeyboard) {
-      this.scene.input.keyboard.on('keydown-ESC', () => {
+      this.scene.input.keyboard?.on('keydown-ESC', () => {
         if (this.isActive) {
           this.closeMenu();
         }
       });
       
-      this.scene.input.keyboard.on('keydown-ENTER', () => {
+      this.scene.input.keyboard?.on('keydown-ENTER', () => {
         if (this.isActive) {
           this.selectCurrentItem();
         }
       });
       
-      this.scene.input.keyboard.on('keydown-ARROW_UP', () => {
+      this.scene.input.keyboard?.on('keydown-ARROW_UP', () => {
         if (this.isActive) {
           this.navigateUp();
         }
       });
       
-      this.scene.input.keyboard.on('keydown-ARROW_DOWN', () => {
+      this.scene.input.keyboard?.on('keydown-ARROW_DOWN', () => {
         if (this.isActive) {
           this.navigateDown();
         }
       });
       
-      this.scene.input.keyboard.on('keydown-ARROW_LEFT', () => {
+      this.scene.input.keyboard?.on('keydown-ARROW_LEFT', () => {
         if (this.isActive) {
           this.navigateLeft();
         }
       });
       
-      this.scene.input.keyboard.on('keydown-ARROW_RIGHT', () => {
+      this.scene.input.keyboard?.on('keydown-ARROW_RIGHT', () => {
         if (this.isActive) {
           this.navigateRight();
         }

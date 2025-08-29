@@ -237,7 +237,7 @@ export class DialogSystem {
   private loadConfig(): void {
     const savedConfig = storage.get('dialog_config', null);
     if (savedConfig) {
-      this.config = { ...this.config, ...savedConfig };
+      this.config = { ...this.config, ...(savedConfig as any) };
     }
   }
 
@@ -282,21 +282,21 @@ export class DialogSystem {
     if (!this.scene) return;
     
     // 空格键继续对话
-    this.scene.input.keyboard.on('keydown-SPACE', () => {
+    this.scene.input.keyboard?.on('keydown-SPACE', () => {
       if (this.isActive) {
         this.nextDialog();
       }
     });
     
     // 回车键继续对话
-    this.scene.input.keyboard.on('keydown-ENTER', () => {
+    this.scene.input.keyboard?.on('keydown-ENTER', () => {
       if (this.isActive) {
         this.nextDialog();
       }
     });
     
     // ESC键跳过对话
-    this.scene.input.keyboard.on('keydown-ESC', () => {
+    this.scene.input.keyboard?.on('keydown-ESC', () => {
       if (this.isActive && this.config.interaction.skipEnabled) {
         this.skipDialog();
       }

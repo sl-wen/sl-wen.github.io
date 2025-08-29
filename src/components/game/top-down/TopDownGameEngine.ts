@@ -87,7 +87,7 @@ export class TopDownGameEngine {
       canvas.style.touchAction = 'none';
       canvas.style.userSelect = 'none';
       canvas.style.webkitUserSelect = 'none';
-      canvas.style.webkitTouchCallout = 'none';
+      (canvas.style as any).webkitTouchCallout = 'none';
     }
 
     // 监听游戏事件
@@ -117,7 +117,7 @@ export class TopDownGameEngine {
   }
 
   getGame(): Phaser.Game | null {
-    return this.game;
+    return this.game as Phaser.Game | null;
   }
 
   getScene(): any {
@@ -126,13 +126,13 @@ export class TopDownGameEngine {
 
   pause(): void {
     if (this.game) {
-      this.game.scene.pause();
+      this.game.scene.pause('BootScene');
     }
   }
 
   resume(): void {
     if (this.game) {
-      this.game.scene.resume();
+      this.game.scene.resume('BootScene');
     }
   }
 
@@ -163,7 +163,7 @@ export class TopDownGameEngine {
 
   // 游戏状态方法
   isRunning(): boolean {
-    return this.game !== null && !this.game.isDestroyed;
+    return this.game !== null && !(this.game as any).isDestroyed;
   }
 
   getGameSize(): { width: number; height: number } {
@@ -178,14 +178,14 @@ export class TopDownGameEngine {
 
   // 调试方法
   enableDebug(): void {
-    if (this.game && this.game.physics) {
-      this.game.physics.config.debug = true;
+    if (this.game && (this.game as any).physics) {
+      (this.game as any).physics.config.debug = true;
     }
   }
 
   disableDebug(): void {
-    if (this.game && this.game.physics) {
-      this.game.physics.config.debug = false;
+    if (this.game && (this.game as any).physics) {
+      (this.game as any).physics.config.debug = false;
     }
   }
 }

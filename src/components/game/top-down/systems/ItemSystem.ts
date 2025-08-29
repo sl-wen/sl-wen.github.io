@@ -198,7 +198,7 @@ export interface ItemTrade {
 }
 
 // 物品统计
-export interface ItemStats {
+export interface ItemStatistics {
   totalItems: number;
   totalValue: number;
   mostUsedItems: string[];
@@ -244,7 +244,7 @@ export class ItemSystem {
   };
   
   // 统计信息
-  private stats: ItemStats = {
+  private stats: ItemStatistics = {
     totalItems: 0,
     totalValue: 0,
     mostUsedItems: [],
@@ -977,7 +977,7 @@ export class ItemSystem {
       level: 1,
       icon: 'iron_sword',
       slot: 'weapon',
-      stats: { attack: 10 },
+      stats: { attack: 10 } as ItemStats,
       value: 100,
       tradeable: true,
       buyPrice: 120,
@@ -997,7 +997,7 @@ export class ItemSystem {
       level: 1,
       icon: 'leather_armor',
       slot: 'armor',
-      stats: { defense: 5 },
+      stats: { defense: 5 } as ItemStats,
       value: 80,
       tradeable: true,
       buyPrice: 100,
@@ -1112,7 +1112,7 @@ export class ItemSystem {
         successRate: 0.9,
         cost: 100,
         materials: [{ itemId: 'enhancement_stone', quantity: 1, optional: false }],
-        stats: { attack: 2 },
+        stats: { attack: 2 } as ItemStats,
         failurePenalty: 'none'
       },
       {
@@ -1120,7 +1120,7 @@ export class ItemSystem {
         successRate: 0.8,
         cost: 200,
         materials: [{ itemId: 'enhancement_stone', quantity: 2, optional: false }],
-        stats: { attack: 4 },
+        stats: { attack: 4 } as ItemStats,
         failurePenalty: 'downgrade'
       },
       {
@@ -1128,7 +1128,7 @@ export class ItemSystem {
         successRate: 0.7,
         cost: 400,
         materials: [{ itemId: 'enhancement_stone', quantity: 3, optional: false }],
-        stats: { attack: 6 },
+        stats: { attack: 6 } as ItemStats,
         failurePenalty: 'downgrade'
       }
     ]);
@@ -1140,7 +1140,7 @@ export class ItemSystem {
         successRate: 0.9,
         cost: 80,
         materials: [{ itemId: 'enhancement_stone', quantity: 1, optional: false }],
-        stats: { defense: 1 },
+        stats: { defense: 1 } as ItemStats,
         failurePenalty: 'none'
       },
       {
@@ -1148,7 +1148,7 @@ export class ItemSystem {
         successRate: 0.8,
         cost: 160,
         materials: [{ itemId: 'enhancement_stone', quantity: 2, optional: false }],
-        stats: { defense: 2 },
+        stats: { defense: 2 } as ItemStats,
         failurePenalty: 'downgrade'
       }
     ]);

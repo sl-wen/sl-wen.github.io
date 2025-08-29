@@ -852,14 +852,14 @@ export class EnhancedInventorySystem {
 
     let totalValue = 0;
     let totalWeight = 0;
-    let mostValuableItem = null;
-    let heaviestItem = null;
-    let rarestItem = null;
+    let mostValuableItem: any = null;
+    let heaviestItem: any = null;
+    let rarestItem: any = null;
 
     items.forEach(item => {
       // 统计分类
       const category = item.category || 'all';
-      categories[category] = (categories[category] || 0) + item.quantity;
+      (categories as any)[category] = ((categories as any)[category] || 0) + item.quantity;
 
       // 统计稀有度
       const rarity = item.rarity || 'common';

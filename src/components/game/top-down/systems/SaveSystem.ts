@@ -387,7 +387,7 @@ export class SaveSystem {
   private loadSaveConfig(): void {
     const savedConfig = storage.get('save_config', null);
     if (savedConfig) {
-      this.config = { ...this.config, ...savedConfig };
+      this.config = { ...this.config, ...(savedConfig as any) };
     }
   }
 

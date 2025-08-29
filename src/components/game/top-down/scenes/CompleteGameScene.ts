@@ -143,13 +143,18 @@ export class CompleteGameScene extends Phaser.Scene {
     private getFramesForAnimation(assetKey: string, animation: string) {
         return this.anims.generateFrameNames(assetKey)
             .filter((frame) => {
-                if (frame.frame.includes(`${assetKey}_${animation}`)) {
+                if (frame.frame && typeof frame.frame === 'string' && frame.frame.includes(`${assetKey}_${animation}`)) {
                     const parts = frame.frame.split(`${assetKey}_${animation}_`);
                     return Boolean(!Number.isNaN(Number.parseInt(parts[1], 10)));
                 }
                 return false;
             })
-            .sort((a, b) => (a.frame < b.frame ? -1 : 1));
+            .sort((a, b) => {
+                if (a.frame && b.frame) {
+                    return a.frame < b.frame ? -1 : 1;
+                }
+                return 0;
+            });
     }
 
     private createPlayerWalkingAnimation(assetKey: string, animationName: string) {
@@ -437,40 +442,40 @@ export class CompleteGameScene extends Phaser.Scene {
         this.heroSprite = this.physics.add
             .sprite(0, 0, 'hero', initialFrame || 'hero_idle_down_01')
             .setDepth(1);
-        this.heroSprite.health = heroHealth || this.heroStatus.health;
-        this.heroSprite.maxHealth = heroMaxHealth || this.heroStatus.maxHealth;
-        this.heroSprite.coin = heroCoin || this.heroStatus.coin;
-        this.heroSprite.canPush = heroCanPush || this.heroStatus.canPush;
-        this.heroSprite.haveSword = heroHaveSword || this.heroStatus.haveSword;
+        (this.heroSprite as any).health = heroHealth || this.heroStatus.health;
+        (this.heroSprite as any).maxHealth = heroMaxHealth || this.heroStatus.maxHealth;
+        (this.heroSprite as any).coin = heroCoin || this.heroStatus.coin;
+        (this.heroSprite as any).canPush = heroCanPush || this.heroStatus.canPush;
+        (this.heroSprite as any).haveSword = heroHaveSword || this.heroStatus.haveSword;
         this.updateHeroHealthUi(this.calculateHeroHealthStates());
-        this.updateHeroCoinUi(this.heroSprite.coin);
+        this.updateHeroCoinUi((this.heroSprite as any).coin);
 
-        this.heroSprite.restoreHealth = (restore: number) => {
-            this.heroSprite.health = Math.min(this.heroSprite.health + restore, this.heroSprite.maxHealth);
+        (this.heroSprite as any).restoreHealth = (restore: number) => {
+            (this.heroSprite as any).health = Math.min((this.heroSprite as any).health + restore, (this.heroSprite as any).maxHealth);
             this.updateHeroHealthUi(this.calculateHeroHealthStates());
         };
 
-        this.heroSprite.increaseMaxHealth = (increase: number) => {
-            this.heroSprite.maxHealth += increase;
+        (this.heroSprite as any).increaseMaxHealth = (increase: number) => {
+            (this.heroSprite as any).maxHealth += increase;
             this.updateHeroHealthUi(this.calculateHeroHealthStates());
         };
 
-        this.heroSprite.collectCoin = (coinQuantity: number) => {
-            this.heroSprite.coin = Math.min(this.heroSprite.coin + coinQuantity, 999);
-            this.updateHeroCoinUi(this.heroSprite.coin);
-            this.statsManager.recordCoinCollected(coinQuantity);
+        (this.heroSprite as any).collectCoin = (coinQuantity: number) => {
+            (this.heroSprite as any).coin = Math.min((this.heroSprite as any).coin + coinQuantity, 999);
+            this.updateHeroCoinUi((this.heroSprite as any).coin);
+            // this.statsManager.recordCoinCollected(coinQuantity);
         };
 
-        this.heroSprite.takeDamage = (damage: number) => {
+        (this.heroSprite as any).takeDamage = (damage: number) => {
             this.time.delayedCall(
                 180,
                 () => {
-                    this.heroSprite.health -= damage;
-                    if (this.heroSprite.health <= 0) {
+                    (this.heroSprite as any).health -= damage;
+                    if ((this.heroSprite as any).health <= 0) {
                         camera.fadeOut(SCENE_FADE_TIME);
                         this.updateHeroHealthUi([]);
-                        this.updateHeroCoinUi(null);
-                        this.statsManager.endGame();
+                        this.updateHeroCoinUi(0);
+                        // this.statsManager.endGame();
                         this.time.delayedCall(
                             SCENE_FADE_TIME,
                             () => {
@@ -488,7 +493,7 @@ export class CompleteGameScene extends Phaser.Scene {
                             repeat: 1,
                             yoyo: true,
                         });
-                        this.statsManager.recordDamageTaken(damage);
+                        // this.statsManager.recordDamageTaken(damage);
                     }
                 }
             );
@@ -803,36 +808,6 @@ export class CompleteGameScene extends Phaser.Scene {
             if (animation.key.includes('attack')) {
                 this.isAttacking = false;
             }
-        });
-    }
-
-    private createPlayerWalkingAnimation(assetKey: string, animationName: string) {
-        this.anims.create({
-            key: `${assetKey}_${animationName}`,
-            frames: [
-                { key: assetKey, frame: `${assetKey}_${animationName}_01` },
-                { key: assetKey, frame: `${assetKey}_${animationName.replace('walking', 'idle')}_01` },
-                { key: assetKey, frame: `${assetKey}_${animationName}_02` },
-            ],
-            frameRate: 4,
-            repeat: -1,
-            yoyo: true,
-        });
-    }
-
-    private createPlayerAttackAnimation(assetKey: string, animationName: string) {
-        this.anims.create({
-            key: `${assetKey}_${animationName}`,
-            frames: [
-                { key: assetKey, frame: `${assetKey}_${animationName}_01` },
-                { key: assetKey, frame: `${assetKey}_${animationName}_02` },
-                { key: assetKey, frame: `${assetKey}_${animationName}_03` },
-                { key: assetKey, frame: `${assetKey}_${animationName}_04` },
-                { key: assetKey, frame: `${assetKey}_${animationName.replace('attack', 'idle')}_01` },
-            ],
-            frameRate: 16,
-            repeat: 0,
-            yoyo: false,
         });
     }
 

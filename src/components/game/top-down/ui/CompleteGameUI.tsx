@@ -237,7 +237,7 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
       {heroHealthStates.length > 0 && (
         <HeroHealth
           gameSize={gameSize}
-          healthStates={heroHealthStates}
+          healthStates={heroHealthStates as HealthState[]}
         />
       )}
       

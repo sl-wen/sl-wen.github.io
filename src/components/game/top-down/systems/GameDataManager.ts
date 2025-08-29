@@ -52,7 +52,7 @@ export class GameDataManager {
         quantity: 1,
         value: 50,
         rarity: 'common',
-        slot: 'weapon',
+        slot: 'weapon' as const,
         stats: {
           attack: 5
         }
@@ -68,7 +68,7 @@ export class GameDataManager {
         quantity: 1,
         value: 150,
         rarity: 'uncommon',
-        slot: 'weapon',
+        slot: 'weapon' as const,
         stats: {
           attack: 12
         }
@@ -84,7 +84,7 @@ export class GameDataManager {
         quantity: 1,
         value: 300,
         rarity: 'rare',
-        slot: 'weapon',
+        slot: 'weapon' as const,
         stats: {
           attack: 20
         }
@@ -104,7 +104,7 @@ export class GameDataManager {
         quantity: 1,
         value: 80,
         rarity: 'common',
-        slot: 'armor',
+        slot: 'armor' as const,
         stats: {
           defense: 3,
           health: 10
@@ -121,7 +121,7 @@ export class GameDataManager {
         quantity: 1,
         value: 200,
         rarity: 'uncommon',
-        slot: 'armor',
+        slot: 'armor' as const,
         stats: {
           defense: 8,
           health: 25

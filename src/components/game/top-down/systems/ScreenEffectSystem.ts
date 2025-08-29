@@ -62,6 +62,7 @@ export interface ScreenEffectConfig {
     type: ShakeType;
     frequency: number;
     decay: number;
+    intensity?: number;
   };
   
   glitch?: {
@@ -88,7 +89,7 @@ export interface ScreenEffect {
   id: string;
   config: ScreenEffectConfig;
   graphics: Phaser.GameObjects.Graphics | null;
-  tween: Phaser.Tweens.Tween | null;
+  tween: Phaser.Tweens.Tween | null | undefined;
   scene: Phaser.Scene;
   isActive: boolean;
   startTime: number;
@@ -391,7 +392,9 @@ export class ScreenEffectSystem {
       config.duration,
       shakeConfig.intensity || 0.01,
       true,
-      shakeConfig.decay || 0.95
+      () => {
+        // 震动完成回调
+      }
     );
 
     // 设置完成回调

@@ -602,7 +602,7 @@ export class EnhancedShopSystem {
       id: 'fire_scroll',
       name: '火球术卷轴',
       description: '释放火球术的魔法卷轴',
-      type: 'magic',
+      type: 'magic' as any,
       rarity: 'uncommon',
       quality: 'normal',
       basePrice: 150,
@@ -672,7 +672,7 @@ export class EnhancedShopSystem {
    */
   public addShop(shop: ShopConfig): void {
     this.shops.set(shop.id, shop);
-    this.addEvent('shop_added', { shopId: shop.id, shop });
+    this.addEvent('custom', { shopId: shop.id, shop });
   }
 
   /**
@@ -694,7 +694,7 @@ export class EnhancedShopSystem {
    */
   public addItem(item: ShopItem): void {
     this.items.set(item.id, item);
-    this.addEvent('item_added', { itemId: item.id, item });
+    this.addEvent('custom', { itemId: item.id, item });
   }
 
   /**
@@ -1049,7 +1049,7 @@ export class EnhancedShopSystem {
    * 更新价格
    */
   private updatePrices(): void {
-    for (const item of this.items.values()) {
+    for (const item of Array.from(this.items.values())) {
       const oldPrice = item.currentPrice;
       
       // 基于供需调整价格
@@ -1089,7 +1089,7 @@ export class EnhancedShopSystem {
   private checkRestock(): void {
     const now = Date.now();
     
-    for (const item of this.items.values()) {
+    for (const item of Array.from(this.items.values())) {
       if (item.stock < item.maxStock) {
         const timeSinceRestock = now - item.lastRestock;
         const restockTime = item.restockRate * 60 * 60 * 1000; // 转换为毫秒

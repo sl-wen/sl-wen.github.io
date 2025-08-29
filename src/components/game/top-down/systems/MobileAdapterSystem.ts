@@ -441,7 +441,7 @@ export class MobileAdapterSystem {
     if (!this.scene) return;
 
     // 设置游戏配置
-    this.scene.game.config = {
+    (this.scene.game as any).config = {
       ...this.scene.game.config,
       type: Phaser.AUTO,
       scale: {
@@ -534,7 +534,7 @@ export class MobileAdapterSystem {
 
     // 设置渲染质量
     if (performanceConfig.textureQuality === 'low') {
-      this.scene.game.renderer.setTextureQuality('low');
+      (this.scene.game.renderer as any).setTextureQuality('low');
     }
 
     // 设置音频质量
@@ -670,14 +670,14 @@ export class MobileAdapterSystem {
   private onFullscreenChange(): void {
     this.isFullscreen = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
     
-    this.addEvent('fullscreen_change', { isFullscreen: this.isFullscreen });
+    this.addEvent('custom', { isFullscreen: this.isFullscreen });
     
     // 重新应用配置
     this.applyMobileConfig();
   }
 
   private onBatteryChange(): void {
-    this.addEvent('battery_change', { level: this.batteryLevel });
+    this.addEvent('custom', { level: this.batteryLevel });
     
     if (this.batteryLevel < 20) {
       this.addEvent('battery_low', { level: this.batteryLevel });

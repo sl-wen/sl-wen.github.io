@@ -615,7 +615,7 @@ export class EnhancedGameStatsSystem {
     };
     
     this.sessions.set(this.currentSession.id, this.currentSession);
-    this.addEvent('session_started', { sessionId: this.currentSession.id });
+    this.addEvent('custom', { sessionId: this.currentSession.id });
   }
 
   /**
@@ -626,7 +626,7 @@ export class EnhancedGameStatsSystem {
       this.currentSession.endTime = Date.now();
       this.currentSession.duration = this.currentSession.endTime - this.currentSession.startTime;
       
-      this.addEvent('session_ended', { 
+      this.addEvent('custom', { 
         sessionId: this.currentSession.id, 
         duration: this.currentSession.duration 
       });
@@ -640,7 +640,7 @@ export class EnhancedGameStatsSystem {
    */
   public addMetric(metric: StatMetric): void {
     this.metrics.set(metric.id, metric);
-    this.addEvent('metric_added', { metricId: metric.id, metric });
+    this.addEvent('custom', { metricId: metric.id, metric });
   }
 
   /**
@@ -706,7 +706,7 @@ export class EnhancedGameStatsSystem {
     const startTime = this.getPeriodStartTime(period, now);
     const endTime = now;
 
-    for (const metric of this.metrics.values()) {
+    for (const metric of Array.from(this.metrics.values())) {
       const dataPoints = this.getDataPoints(metric.id, period);
       
       if (dataPoints.length > 0) {
@@ -802,7 +802,7 @@ export class EnhancedGameStatsSystem {
    * 生成洞察
    */
   private generateInsights(): void {
-    for (const metric of this.metrics.values()) {
+    for (const metric of Array.from(this.metrics.values())) {
       const recentData = this.getDataPoints(metric.id, 'daily', 7);
       if (recentData.length < 3) continue;
 

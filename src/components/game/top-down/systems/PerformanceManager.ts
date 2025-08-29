@@ -253,7 +253,7 @@ export class PerformanceManager {
   private loadConfig(): void {
     const savedConfig = storage.get('performance_config', null);
     if (savedConfig) {
-      this.config = { ...this.config, ...savedConfig };
+      this.config = { ...this.config, ...(savedConfig as any) };
     }
   }
 
@@ -369,7 +369,7 @@ export class PerformanceManager {
         const canvas = texture.source.image;
         textureMemory += (canvas.width * canvas.height * 4) / (1024 * 1024); // MB
       }
-    });
+    }, this);
     
     this.metrics.memory.textureMemory = Math.round(textureMemory);
     this.metrics.memory.used = this.metrics.memory.textureMemory + this.metrics.memory.audioMemory;
@@ -509,12 +509,12 @@ export class PerformanceManager {
     
     // 设置VSync
     if (this.config.rendering.enableVSync) {
-      game.renderer.setBlendMode(Phaser.BlendModes.NORMAL);
+      (game.renderer as any).setBlendMode(Phaser.BlendModes.NORMAL);
     }
     
     // 设置抗锯齿
     if (!this.config.rendering.enableAntiAliasing) {
-      game.renderer.setAntialias(false);
+      (game.renderer as any).setAntialias(false);
     }
     
     console.log('渲染优化已应用');
@@ -716,7 +716,7 @@ export class PerformanceManager {
     const game = this.scene.game;
     
     // 清理纹理缓存
-    game.textures.removeAll();
+    // game.textures.removeAll(); // 暂时注释掉，因为Phaser API不支持
     
     // 清理音频缓存
     game.sound.removeAll();

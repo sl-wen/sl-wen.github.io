@@ -296,7 +296,7 @@ export class QuestSystem {
     }
 
     // 接受任务
-    const questCopy = { ...quest, status: QUEST_STATUS.IN_PROGRESS };
+    const questCopy = { ...quest, status: QUEST_STATUS.IN_PROGRESS } as Quest;
     this.activeQuests.set(quest.id, questCopy);
     this.questLog.push(questCopy);
 
@@ -310,7 +310,7 @@ export class QuestSystem {
    * @param amount - 完成数量
    */
   updateQuestProgress(type: keyof typeof QUEST_TYPES, target: string, amount: number = 1): void {
-    for (const quest of this.activeQuests.values()) {
+    for (const quest of Array.from(this.activeQuests.values())) {
       for (const objective of quest.objectives) {
         if (objective.type === type && objective.target === target) {
           objective.current = Math.min(objective.current + amount, objective.required);

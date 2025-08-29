@@ -6,6 +6,8 @@ import GameMenu from './GameMenu';
 import { EnhancedGameUI } from './EnhancedGameUI';
 import { AchievementUI } from './AchievementUI';
 import { SettingsUI } from './SettingsUI';
+import { TutorialUI } from './TutorialUI';
+import { HelpUI } from './HelpUI';
 
 interface CompleteGameUIProps {
   width: number;
@@ -41,6 +43,8 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
   const [showEnhancedUI, setShowEnhancedUI] = useState(false);
   const [showAchievementUI, setShowAchievementUI] = useState(false);
   const [showSettingsUI, setShowSettingsUI] = useState(false);
+  const [showTutorialUI, setShowTutorialUI] = useState(false);
+  const [showHelpUI, setShowHelpUI] = useState(false);
   const [menuItems, setMenuItems] = useState<string[]>([]);
   const [menuPosition, setMenuPosition] = useState<'center' | 'left'>('center');
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(0);
@@ -96,9 +100,13 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
           setShowAchievementUI(false);
         } else if (showSettingsUI) {
           setShowSettingsUI(false);
+        } else if (showTutorialUI) {
+          setShowTutorialUI(false);
+        } else if (showHelpUI) {
+          setShowHelpUI(false);
         } else {
           // 显示主菜单
-          setMenuItems(['继续游戏', '设置', '成就', '退出']);
+          setMenuItems(['继续游戏', '设置', '成就', '教程', '帮助', '退出']);
           setMenuPosition('center');
           setSelectedMenuIndex(0);
           setShowMenu(true);
@@ -109,6 +117,12 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
       } else if (e.code === 'KeyA' && !showMenu && !showDialog) {
         // 打开成就
         setShowAchievementUI(true);
+      } else if (e.code === 'KeyT' && !showMenu && !showDialog) {
+        // 打开教程
+        setShowTutorialUI(true);
+      } else if (e.code === 'KeyH' && !showMenu && !showDialog) {
+        // 打开帮助
+        setShowHelpUI(true);
       }
     };
 
@@ -138,6 +152,12 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
         setShowMenu(false);
       } else if (selectedItem === '成就') {
         setShowAchievementUI(true);
+        setShowMenu(false);
+      } else if (selectedItem === '教程') {
+        setShowTutorialUI(true);
+        setShowMenu(false);
+      } else if (selectedItem === '帮助') {
+        setShowHelpUI(true);
         setShowMenu(false);
       } else if (selectedItem === '退出') {
         // 处理退出逻辑
@@ -216,8 +236,10 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
           <div>WASD/方向键: 移动</div>
           <div>空格: 攻击</div>
           <div>回车: 交互</div>
-          <div>I: 背包</div>
-          <div>A: 成就</div>
+                  <div>I: 背包</div>
+        <div>A: 成就</div>
+        <div>T: 教程</div>
+        <div>H: 帮助</div>
           <div>ESC: 菜单</div>
         </div>
       </div>
@@ -275,6 +297,18 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
       <SettingsUI
         isVisible={showSettingsUI}
         onClose={() => setShowSettingsUI(false)}
+      />
+
+      {/* 教程UI */}
+      <TutorialUI
+        isVisible={showTutorialUI}
+        onClose={() => setShowTutorialUI(false)}
+      />
+
+      {/* 帮助UI */}
+      <HelpUI
+        isVisible={showHelpUI}
+        onClose={() => setShowHelpUI(false)}
       />
 
       {/* 闪烁动画样式 */}

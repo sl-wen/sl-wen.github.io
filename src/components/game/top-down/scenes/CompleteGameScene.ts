@@ -7,6 +7,7 @@ import { QuestSystem } from '../systems/QuestSystem';
 import { CombatSystem } from '../systems/CombatSystem';
 import { GameDataManager } from '../systems/GameDataManager';
 import { GameStatsManager } from '../systems/GameStatsManager';
+import { PerformanceManager } from '../systems/PerformanceManager';
 import { 
     SCENE_FADE_TIME, 
     ATTACK_DELAY_TIME, 
@@ -35,6 +36,7 @@ export class CompleteGameScene extends Phaser.Scene {
     private combatSystem!: CombatSystem;
     private gameDataManager!: GameDataManager;
     private statsManager!: GameStatsManager;
+    private performanceManager!: PerformanceManager;
 
     // 游戏状态
     private isShowingDialog = false;
@@ -580,11 +582,13 @@ export class CompleteGameScene extends Phaser.Scene {
         this.combatSystem = CombatSystem.getInstance();
         this.gameDataManager = GameDataManager.getInstance();
         this.statsManager = GameStatsManager.getInstance();
+        this.performanceManager = PerformanceManager.getInstance();
 
         // 初始化系统
         this.soundManager.initialize(this);
         this.mapManager.initialize(this);
         this.mapInteractionManager.initialize(this);
+        this.performanceManager.initialize(this);
         
         // 设置地图交互回调
         this.mapInteractionManager.setOnInteractionCallback((interaction) => {

@@ -47,7 +47,7 @@ const GameMenu: React.FC<GameMenuProps> = ({
     borderImage: `url("/assets/topdown/images/dialog_borderbox.png") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px stretch`,
     padding: `${8 * multiplier}px`,
     minWidth: `${120 * multiplier}px`,
-    zIndex: 1000,
+    zIndex: 1000
   };
 
   const menuItemStyle = (isSelected: boolean) => ({
@@ -60,8 +60,8 @@ const GameMenu: React.FC<GameMenuProps> = ({
     margin: `${2 * multiplier}px 0`,
     cursor: 'pointer',
     textAlign: 'center' as const,
-    border: isSelected ? '2px solid #741B47' : '2px solid transparent',
-  };
+    border: isSelected ? '2px solid #741B47' : '2px solid transparent'
+  });
 
   return (
     <div style={menuStyle}>

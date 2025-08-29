@@ -6,49 +6,23 @@ import { QuestSystem } from '../systems/QuestSystem';
 import { CombatSystem } from '../systems/CombatSystem';
 import { GameDataManager } from '../systems/GameDataManager';
 import { GameStatsManager } from '../systems/GameStatsManager';
+import { 
+    SCENE_FADE_TIME, 
+    ATTACK_DELAY_TIME, 
+    BUSH_INDEX, 
+    BOX_INDEX, 
+    COIN_INDEX, 
+    HEART_CONTAINER_INDEX,
+    NPC_MOVEMENT_RANDOM,
+    NPC_MOVEMENT_STILL,
+    ENEMY_AI_TYPE,
+    GAME_CONFIG,
+    ANIMATION_CONFIG,
+    GAME_BALANCE
+} from '../constants';
+import { createInteractiveGameObject, calculateDistance, randomInt } from '../utils';
 
-// 游戏常量
-const SCENE_FADE_TIME = 300;
-const ATTACK_DELAY_TIME = 50;
-const BUSH_INDEX = 428;
-const BOX_INDEX = 427;
-const COIN_INDEX = 192;
-const HEART_CONTAINER_INDEX = 233;
-const NPC_MOVEMENT_RANDOM = 'random';
-const NPC_MOVEMENT_STILL = 'still';
-const ENEMY_AI_TYPE = 'follow';
 
-// 创建交互式游戏对象的工具函数
-const createInteractiveGameObject = (
-    scene: Phaser.Scene,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    name: string,
-    isDebug = false,
-    origin = { x: 0, y: 1 }
-) => {
-    const customCollider = new Phaser.GameObjects.Rectangle(
-        scene,
-        x,
-        y,
-        width,
-        height
-    ).setOrigin(origin.x, origin.y);
-    customCollider.name = name;
-    (customCollider as any).isCustomCollider = true;
-
-    if (isDebug) {
-        customCollider.setFillStyle(0x741B47);
-    }
-
-    scene.physics.add.existing(customCollider);
-    (customCollider.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
-    (customCollider.body as Phaser.Physics.Arcade.Body).setImmovable(true);
-
-    return customCollider;
-};
 
 export class CompleteGameScene extends Phaser.Scene {
     // 游戏系统
@@ -99,6 +73,297 @@ export class CompleteGameScene extends Phaser.Scene {
         super('CompleteGameScene');
     }
 
+    // 工具方法 - 移植自原项目
+    private calculatePreviousTeleportPosition() {
+        const currentPosition = this.gridEngine.getPosition('hero');
+        const facingDirection = this.gridEngine.getFacingDirection('hero');
+
+        switch (facingDirection) {
+            case 'up': {
+                return {
+                    x: currentPosition.x,
+                    y: currentPosition.y + 1,
+                };
+            }
+            case 'right': {
+                return {
+                    x: currentPosition.x - 1,
+                    y: currentPosition.y,
+                };
+            }
+            case 'down': {
+                return {
+                    x: currentPosition.x,
+                    y: currentPosition.y - 1,
+                };
+            }
+            case 'left': {
+                return {
+                    x: currentPosition.x + 1,
+                    y: currentPosition.y,
+                };
+            }
+            default: {
+                return {
+                    x: currentPosition.x,
+                    y: currentPosition.y,
+                };
+            }
+        }
+    }
+
+    private getFramesForAnimation(assetKey: string, animation: string) {
+        return this.anims.generateFrameNames(assetKey)
+            .filter((frame) => {
+                if (frame.frame.includes(`${assetKey}_${animation}`)) {
+                    const parts = frame.frame.split(`${assetKey}_${animation}_`);
+                    return Boolean(!Number.isNaN(Number.parseInt(parts[1], 10)));
+                }
+                return false;
+            })
+            .sort((a, b) => (a.frame < b.frame ? -1 : 1));
+    }
+
+    private createPlayerWalkingAnimation(assetKey: string, animationName: string) {
+        this.anims.create({
+            key: `${assetKey}_${animationName}`,
+            frames: [
+                { key: assetKey, frame: `${assetKey}_${animationName}_01` },
+                { key: assetKey, frame: `${assetKey}_${animationName.replace('walking', 'idle')}_01` },
+                { key: assetKey, frame: `${assetKey}_${animationName}_02` },
+            ],
+            frameRate: 4,
+            repeat: -1,
+            yoyo: true,
+        });
+    }
+
+    private createPlayerAttackAnimation(assetKey: string, animationName: string) {
+        this.anims.create({
+            key: `${assetKey}_${animationName}`,
+            frames: [
+                { key: assetKey, frame: `${assetKey}_${animationName}_01` },
+                { key: assetKey, frame: `${assetKey}_${animationName}_02` },
+                { key: assetKey, frame: `${assetKey}_${animationName}_03` },
+                { key: assetKey, frame: `${assetKey}_${animationName}_04` },
+                { key: assetKey, frame: `${assetKey}_${animationName.replace('attack', 'idle')}_01` },
+            ],
+            frameRate: 16,
+            repeat: 0,
+            yoyo: false,
+        });
+    }
+
+    private getStopFrame(direction: string, spriteKey: string) {
+        switch (direction) {
+            case 'up':
+                return `${spriteKey}_idle_up_01`;
+            case 'right':
+                return `${spriteKey}_idle_right_01`;
+            case 'down':
+                return `${spriteKey}_idle_down_01`;
+            case 'left':
+                return `${spriteKey}_idle_left_01`;
+            default:
+                return null;
+        }
+    }
+
+    private getOppositeDirection(direction: string) {
+        switch (direction) {
+            case 'up':
+                return 'down';
+            case 'right':
+                return 'left';
+            case 'down':
+                return 'up';
+            case 'left':
+                return 'right';
+            default:
+                return null;
+        }
+    }
+
+    private getBackPosition(facingDirection: string, position: { x: number; y: number }) {
+        switch (facingDirection) {
+            case 'up':
+                return {
+                    ...position,
+                    y: position.y + 1,
+                };
+            case 'right':
+                return {
+                    ...position,
+                    x: position.x - 1,
+                };
+            case 'down':
+                return {
+                    ...position,
+                    y: position.y - 1,
+                };
+            case 'left':
+                return {
+                    ...position,
+                    x: position.x + 1,
+                };
+            default:
+                return position;
+        }
+    }
+
+    private extractTeleportDataFromTiled(data: string) {
+        const [mapKey, position] = data.trim().split(':');
+        const [x, y] = position.split(',');
+
+        return {
+            mapKey,
+            x: Number.parseInt(x, 10),
+            y: Number.parseInt(y, 10),
+        };
+    }
+
+    private extractNpcDataFromTiled(data: string) {
+        const [npcKey, config] = data.trim().split(':');
+        const [movementType, delay, area, direction] = config.split(';');
+
+        return {
+            npcKey,
+            movementType,
+            facingDirection: direction,
+            delay: Number.parseInt(delay, 10),
+            area: Number.parseInt(area, 10),
+        };
+    }
+
+    private calculateHeroHealthState(health: number) {
+        if (health > 10) {
+            return 'full';
+        }
+        if (health > 0) {
+            return 'half';
+        }
+        return 'empty';
+    }
+
+    private calculateHeroHealthStates() {
+        return Array.from({ length: this.heroSprite.maxHealth / 20 })
+            .fill(null).map(
+                (v, index) => this.calculateHeroHealthState(
+                    Math.max(this.heroSprite.health - (20 * index), 0)
+                )
+            );
+    }
+
+    private updateHeroHealthUi(healthStates: string[]) {
+        const customEvent = new CustomEvent('hero-health', {
+            detail: {
+                healthStates,
+            },
+        });
+        window.dispatchEvent(customEvent);
+    }
+
+    private updateHeroCoinUi(heroCoins: number) {
+        const customEvent = new CustomEvent('hero-coin', {
+            detail: {
+                heroCoins,
+            },
+        });
+        window.dispatchEvent(customEvent);
+    }
+
+    private getEnemySpecies(enemyType: string) {
+        if (enemyType.includes('slime')) {
+            return 'slime';
+        }
+        return 'slime';
+    }
+
+    private getEnemyColor(enemyType: string) {
+        if (enemyType.includes('red')) {
+            return 0xF1374B;
+        }
+        if (enemyType.includes('green')) {
+            return 0x2BBD6E;
+        }
+        if (enemyType.includes('yellow')) {
+            return 0xFFFF4F;
+        }
+        return 0x00A0DC;
+    }
+
+    private getEnemyAttackSpeed(enemyType: string) {
+        if (enemyType.includes('red')) {
+            return 2000;
+        }
+        if (enemyType.includes('green')) {
+            return 3000;
+        }
+        if (enemyType.includes('yellow')) {
+            return 4000;
+        }
+        return 5000;
+    }
+
+    private spawnItem(position: { x: number; y: number }) {
+        const isDebugMode = this.physics.config.debug;
+        const itemChance = randomInt(1, isDebugMode ? 2 : 5);
+        if (itemChance === 1) {
+            const itemType = randomInt(1, 2);
+
+            if (itemType === 1) {
+                const item = this.physics.add
+                    .sprite(position.x, position.y, 'heart')
+                    .setDepth(1)
+                    .setOrigin(0, 0);
+                (item as any).itemType = 'heart';
+                this.itemsSprites.add(item);
+                item.anims.play('heart_idle');
+            } else if (itemType === 2) {
+                const item = this.physics.add
+                    .sprite(position.x, position.y, 'coin')
+                    .setDepth(1)
+                    .setOrigin(0, 0);
+                (item as any).itemType = 'coin';
+                this.itemsSprites.add(item);
+                item.anims.play('coin_idle');
+            }
+        }
+    }
+
+    private calculatePushTilePosition() {
+        const facingDirection = this.gridEngine.getFacingDirection('hero');
+        const position = this.gridEngine.getPosition('hero');
+
+        switch (facingDirection) {
+            case 'up':
+                return {
+                    x: position.x * 16,
+                    y: (position.y - 2) * 16,
+                };
+            case 'right':
+                return {
+                    x: (position.x + 2) * 16,
+                    y: position.y * 16,
+                };
+            case 'down':
+                return {
+                    x: position.x * 16,
+                    y: (position.y + 2) * 16,
+                };
+            case 'left':
+                return {
+                    x: (position.x - 2) * 16,
+                    y: position.y * 16,
+                };
+            default:
+                return {
+                    x: position.x * 16,
+                    y: position.y * 16,
+                };
+        }
+    }
+
     init(data: any) {
         this.initData = data;
         this.heroStatus = { ...this.heroStatus, ...data.heroStatus };
@@ -106,6 +371,24 @@ export class CompleteGameScene extends Phaser.Scene {
 
     create() {
         console.log('CompleteGameScene: 创建场景');
+        
+        const camera = this.cameras.main;
+        const { game } = this.sys;
+        const isDebugMode = this.physics.config.debug;
+        const { heroStatus, mapKey } = this.initData;
+        const {
+            position: initialPosition,
+            frame: initialFrame,
+            facingDirection: initialFacingDirection,
+            previousPosition,
+            health: heroHealth,
+            maxHealth: heroMaxHealth,
+            coin: heroCoin,
+            canPush: heroCanPush,
+            haveSword: heroHaveSword,
+        } = heroStatus || {};
+
+        camera.fadeIn(SCENE_FADE_TIME);
 
         // 初始化游戏系统
         this.initializeGameSystems();
@@ -113,29 +396,162 @@ export class CompleteGameScene extends Phaser.Scene {
         // 设置输入控制
         this.setupInput();
 
-        // 创建地图
-        this.createMap();
+        // Map
+        const map = this.make.tilemap({ key: mapKey || 'map_main' });
+        map.addTilesetImage('tileset', 'tileset');
 
-        // 创建英雄
-        this.createHero();
+        if (isDebugMode) {
+            (window as any).phaserGame = game;
+            this.map = map;
+        }
 
-        // 创建物品
-        this.createItems();
+        // Hero
+        this.heroSprite = this.physics.add
+            .sprite(0, 0, 'hero', initialFrame || 'hero_idle_down_01')
+            .setDepth(1);
+        this.heroSprite.health = heroHealth || this.heroStatus.health;
+        this.heroSprite.maxHealth = heroMaxHealth || this.heroStatus.maxHealth;
+        this.heroSprite.coin = heroCoin || this.heroStatus.coin;
+        this.heroSprite.canPush = heroCanPush || this.heroStatus.canPush;
+        this.heroSprite.haveSword = heroHaveSword || this.heroStatus.haveSword;
+        this.updateHeroHealthUi(this.calculateHeroHealthStates());
+        this.updateHeroCoinUi(this.heroSprite.coin);
 
-        // 创建敌人
-        this.createEnemies();
+        this.heroSprite.restoreHealth = (restore: number) => {
+            this.heroSprite.health = Math.min(this.heroSprite.health + restore, this.heroSprite.maxHealth);
+            this.updateHeroHealthUi(this.calculateHeroHealthStates());
+        };
 
-        // 创建NPC
-        this.createNPCs();
+        this.heroSprite.increaseMaxHealth = (increase: number) => {
+            this.heroSprite.maxHealth += increase;
+            this.updateHeroHealthUi(this.calculateHeroHealthStates());
+        };
 
-        // 设置碰撞检测
-        this.setupCollisions();
+        this.heroSprite.collectCoin = (coinQuantity: number) => {
+            this.heroSprite.coin = Math.min(this.heroSprite.coin + coinQuantity, 999);
+            this.updateHeroCoinUi(this.heroSprite.coin);
+            this.statsManager.recordCoinCollected(coinQuantity);
+        };
 
-        // 设置相机
-        this.setupCamera();
+        this.heroSprite.takeDamage = (damage: number) => {
+            this.time.delayedCall(
+                180,
+                () => {
+                    this.heroSprite.health -= damage;
+                    if (this.heroSprite.health <= 0) {
+                        camera.fadeOut(SCENE_FADE_TIME);
+                        this.updateHeroHealthUi([]);
+                        this.updateHeroCoinUi(null);
+                        this.statsManager.endGame();
+                        this.time.delayedCall(
+                            SCENE_FADE_TIME,
+                            () => {
+                                this.isTeleporting = false;
+                                this.scene.start('GameOverScene');
+                            }
+                        );
+                    } else {
+                        this.updateHeroHealthUi(this.calculateHeroHealthStates());
+                        this.tweens.add({
+                            targets: this.heroSprite,
+                            alpha: 0,
+                            ease: Phaser.Math.Easing.Elastic.InOut,
+                            duration: 70,
+                            repeat: 1,
+                            yoyo: true,
+                        });
+                        this.statsManager.recordDamageTaken(damage);
+                    }
+                }
+            );
+        };
+
+        (this.heroSprite.body as Phaser.Physics.Arcade.Body).setSize(14, 14);
+        (this.heroSprite.body as Phaser.Physics.Arcade.Body).setOffset(9, 13);
+
+        this.heroActionCollider = createInteractiveGameObject(
+            this,
+            this.heroSprite.x + 9,
+            this.heroSprite.y + 36,
+            14,
+            8,
+            'attack',
+            isDebugMode
+        );
+
+        this.heroPresenceCollider = createInteractiveGameObject(
+            this,
+            this.heroSprite.x + 16,
+            this.heroSprite.y + 20,
+            320,
+            320,
+            'presence',
+            isDebugMode,
+            { x: 0.5, y: 0.5 }
+        );
+
+        this.heroObjectCollider = createInteractiveGameObject(
+            this,
+            this.heroSprite.x + 16,
+            this.heroSprite.y + 20,
+            24,
+            24,
+            'object',
+            isDebugMode,
+            { x: 0.5, y: 0.5 }
+        );
+
+        // Items
+        this.itemsSprites = this.add.group();
+        if (!this.anims.exists('heart_idle')) {
+            this.anims.create({
+                key: 'heart_idle',
+                frames: this.getFramesForAnimation('heart', 'idle'),
+                frameRate: 4,
+                repeat: -1,
+                yoyo: false,
+            });
+        }
+
+        if (!this.anims.exists('coin_idle')) {
+            this.anims.create({
+                key: 'coin_idle',
+                frames: this.getFramesForAnimation('coin', 'idle'),
+                frameRate: 4,
+                repeat: -1,
+                yoyo: false,
+            });
+        }
+
+        // 创建地图图层和元素
+        const enemiesData: any[] = [];
+        const elementsLayers = this.add.group();
+        
+        for (let i = 0; i < map.layers.length; i++) {
+            const layer = map.createLayer(i, 'tileset', 0, 0);
+            layer.layer.properties.forEach((property: any) => {
+                const { value, name } = property;
+
+                if (name === 'type' && value === 'elements') {
+                    elementsLayers.add(layer);
+                }
+            });
+
+            this.physics.add.collider(this.heroSprite, layer);
+        }
 
         // 设置GridEngine
         this.setupGridEngine();
+
+        // 创建敌人和NPC
+        this.createEnemies();
+        this.createNPCs();
+
+        // 设置碰撞检测
+        this.setupCollisions(elementsLayers);
+
+        // 设置相机
+        this.setupCamera();
 
         // 播放背景音乐
         this.soundManager.playBackgroundMusic('village');
@@ -523,7 +939,7 @@ export class CompleteGameScene extends Phaser.Scene {
         this.createPlayerWalkingAnimation(npcSpawn.npcType, 'walking_left');
     }
 
-    private setupCollisions() {
+    private setupCollisions(elementsLayers?: Phaser.GameObjects.Group) {
         // 英雄与物品碰撞
         this.physics.add.overlap(this.heroSprite, this.itemsSprites, (objA, objB) => {
             const item = [objA, objB].find((obj) => obj !== this.heroSprite);
@@ -606,6 +1022,82 @@ export class CompleteGameScene extends Phaser.Scene {
                 this.gridEngine.stopMovement(npc.texture.key);
             }
         });
+
+        // 英雄与地图元素碰撞 - 移植自原项目
+        if (elementsLayers) {
+            this.physics.add.overlap(this.heroActionCollider, elementsLayers, (objA, objB) => {
+                const tile = [objA, objB].find((obj) => obj !== this.heroActionCollider);
+
+                // 处理攻击
+                if (tile?.index > 0 && !(tile as any).wasHandled) {
+                    switch (tile.index) {
+                        case BUSH_INDEX: {
+                            if (this.isAttacking) {
+                                (tile as any).wasHandled = true;
+
+                                this.time.delayedCall(
+                                    ATTACK_DELAY_TIME,
+                                    () => {
+                                        tile.setVisible(false);
+                                        this.spawnItem({
+                                            x: (tile as any).pixelX,
+                                            y: (tile as any).pixelY,
+                                        });
+                                        tile.destroy();
+                                    }
+                                );
+                            }
+                            break;
+                        }
+
+                        case BOX_INDEX: {
+                            if (this.heroSprite.canPush && this.isAttacking) {
+                                const newPosition = this.calculatePushTilePosition();
+                                const canBePushed = this.map.layers.every((layer: any) => {
+                                    const t = layer.tilemapLayer.getTileAtWorldXY(
+                                        newPosition.x,
+                                        newPosition.y
+                                    );
+
+                                    return !t?.properties?.ge_collide;
+                                });
+
+                                if (canBePushed && !(tile as any).isMoved) {
+                                    (tile as any).isMoved = true;
+                                    this.tweens.add({
+                                        targets: tile,
+                                        pixelX: newPosition.x,
+                                        pixelY: newPosition.y,
+                                        ease: 'Power2',
+                                        duration: 700,
+                                        onComplete: () => {
+                                            tile.setVisible(false);
+                                            const newTile = (tile as any).layer.tilemapLayer.putTileAt(
+                                                BOX_INDEX,
+                                                newPosition.x / 16,
+                                                newPosition.y / 16,
+                                                true
+                                            );
+
+                                            newTile.properties = {
+                                                ...(tile as any).properties,
+                                            };
+                                            (newTile as any).isMoved = true;
+                                            tile.destroy();
+                                        },
+                                    });
+                                }
+                            }
+                            break;
+                        }
+
+                        default: {
+                            break;
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private setupCamera() {
@@ -937,18 +1429,36 @@ export class CompleteGameScene extends Phaser.Scene {
         // 更新游戏统计
         this.statsManager.updatePlayTime();
 
-        if (this.isTeleporting || this.isAttacking || this.isShowingDialog) {
+        if (
+            this.isTeleporting
+            || this.isAttacking
+            || this.isShowingDialog
+        ) {
             return;
         }
 
         // 攻击逻辑
-        if (!this.gridEngine.isMoving('hero') && this.isSpaceJustDown && (this.heroSprite as any).haveSword) {
+        if (
+            !this.gridEngine.isMoving('hero')
+            && this.isSpaceJustDown
+            && (this.heroSprite as any).haveSword
+        ) {
             const facingDirection = this.gridEngine.getFacingDirection('hero');
             this.heroSprite.anims.play(`hero_attack_${facingDirection}`);
             this.isAttacking = true;
             this.soundManager.playSoundEffect('attack');
             return;
         }
+
+        // 更新敌人AI - 移植自原项目
+        this.enemiesSprites.getChildren().forEach((enemy: any) => {
+            enemy.canSeeHero = enemy.body.embedded;
+            if (!enemy.canSeeHero && enemy.isFollowingHero) {
+                enemy.isFollowingHero = false;
+                this.gridEngine.setSpeed(enemy.name, enemy.speed);
+                this.gridEngine.moveRandomly(enemy.name, 1000, 4);
+            }
+        });
 
         // 更新碰撞器位置
         this.updateColliders();

@@ -105,13 +105,13 @@ export default class BootScene extends Phaser.Scene {
 
   private loadTilemaps() {
     // 地图文件
-    this.load.tilemapTiledJSON('home_page_city', '/assets/topdown/maps/cities/home_page_city.json');
-    this.load.tilemapTiledJSON('home_page_city_house_01', '/assets/topdown/maps/houses/home_page_city_house_01.json');
-    this.load.tilemapTiledJSON('home_page_city_house_02', '/assets/topdown/maps/houses/home_page_city_house_02.json');
-    this.load.tilemapTiledJSON('home_page_city_house_03', '/assets/topdown/maps/houses/home_page_city_house_03.json');
+    this.load.tilemapTiledJSON('home_page_city', '/assets/topdown/sprites/maps/cities/home_page_city.json');
+    this.load.tilemapTiledJSON('home_page_city_house_01', '/assets/topdown/sprites/maps/houses/home_page_city_house_01.json');
+    this.load.tilemapTiledJSON('home_page_city_house_02', '/assets/topdown/sprites/maps/houses/home_page_city_house_02.json');
+    this.load.tilemapTiledJSON('home_page_city_house_03', '/assets/topdown/sprites/maps/houses/home_page_city_house_03.json');
     
     // 瓦片集
-    this.load.image('tileset', '/assets/topdown/maps/tilesets/tileset.png');
+    this.load.image('tileset', '/assets/topdown/sprites/maps/tilesets/tileset.png');
   }
 
   private loadCharacters() {

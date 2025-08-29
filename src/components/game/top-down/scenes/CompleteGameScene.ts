@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import { SoundManager } from '../systems/SoundManager';
 import { MapManager } from '../systems/MapManager';
+import { MapInteractionManager } from '../systems/MapInteractionManager';
 import { InventorySystem } from '../systems/InventorySystem';
 import { QuestSystem } from '../systems/QuestSystem';
 import { CombatSystem } from '../systems/CombatSystem';
@@ -28,6 +29,7 @@ export class CompleteGameScene extends Phaser.Scene {
     // 游戏系统
     private soundManager!: SoundManager;
     private mapManager!: MapManager;
+    private mapInteractionManager!: MapInteractionManager;
     private inventorySystem!: InventorySystem;
     private questSystem!: QuestSystem;
     private combatSystem!: CombatSystem;
@@ -553,6 +555,9 @@ export class CompleteGameScene extends Phaser.Scene {
         // 设置相机
         this.setupCamera();
 
+        // 加载地图交互数据
+        this.mapInteractionManager.loadMapInteractions(mapKey || 'map_main');
+
         // 优化GridEngine性能
         this.optimizeGridEngine();
 
@@ -569,6 +574,7 @@ export class CompleteGameScene extends Phaser.Scene {
     private initializeGameSystems() {
         this.soundManager = SoundManager.getInstance();
         this.mapManager = MapManager.getInstance();
+        this.mapInteractionManager = MapInteractionManager.getInstance();
         this.inventorySystem = InventorySystem.getInstance();
         this.questSystem = QuestSystem.getInstance();
         this.combatSystem = CombatSystem.getInstance();
@@ -578,6 +584,16 @@ export class CompleteGameScene extends Phaser.Scene {
         // 初始化系统
         this.soundManager.initialize(this);
         this.mapManager.initialize(this);
+        this.mapInteractionManager.initialize(this);
+        
+        // 设置地图交互回调
+        this.mapInteractionManager.setOnInteractionCallback((interaction) => {
+            this.onMapInteraction(interaction);
+        });
+        
+        this.mapInteractionManager.setOnEventTriggeredCallback((event) => {
+            this.onMapEventTriggered(event);
+        });
         
         // 开始游戏统计
         this.statsManager.startGame();
@@ -1613,6 +1629,86 @@ export class CompleteGameScene extends Phaser.Scene {
             // 继续巡逻
             this.startEnemyPatrol(enemy);
         }
+    }
+
+    // 地图交互回调方法
+    private onMapInteraction(interaction: any): void {
+        // 记录交互统计
+        this.statsManager.recordInteraction(interaction.type);
+        
+        // 播放交互音效
+        if (interaction.properties?.soundEffect) {
+            this.soundManager.playSoundEffect(interaction.properties.soundEffect);
+        }
+        
+        // 显示交互反馈
+        this.showInteractionFeedback(interaction);
+    }
+
+    private onMapEventTriggered(event: any): void {
+        // 记录事件触发统计
+        this.statsManager.recordEventTriggered(event.name);
+        
+        // 处理事件触发
+        this.handleMapEventTriggered(event);
+    }
+
+    private showInteractionFeedback(interaction: any): void {
+        // 显示交互反馈效果
+        if (interaction.properties?.particleEffect) {
+            // 创建粒子效果
+            this.createInteractionParticleEffect(interaction);
+        }
+        
+        // 显示交互消息
+        if (interaction.properties?.message) {
+            this.showMessage(interaction.properties.message);
+        }
+    }
+
+    private handleMapEventTriggered(event: any): void {
+        // 处理地图事件触发
+        switch (event.type) {
+            case 'trigger':
+                this.handleTriggerEvent(event);
+                break;
+            case 'condition':
+                this.handleConditionEvent(event);
+                break;
+            case 'sequence':
+                this.handleSequenceEvent(event);
+                break;
+        }
+    }
+
+    private handleTriggerEvent(event: any): void {
+        // 处理触发事件
+        console.log(`触发事件: ${event.name}`);
+    }
+
+    private handleConditionEvent(event: any): void {
+        // 处理条件事件
+        console.log(`条件事件: ${event.name}`);
+    }
+
+    private handleSequenceEvent(event: any): void {
+        // 处理序列事件
+        console.log(`序列事件: ${event.name}`);
+    }
+
+    private createInteractionParticleEffect(interaction: any): void {
+        // 创建交互粒子效果
+        if (!this.scene) return;
+        
+        // 这里可以添加粒子效果创建逻辑
+    }
+
+    private showMessage(message: string): void {
+        // 显示消息
+        const customEvent = new CustomEvent('show-message', {
+            detail: { message },
+        });
+        window.dispatchEvent(customEvent);
     }
 
     // GridEngine辅助方法

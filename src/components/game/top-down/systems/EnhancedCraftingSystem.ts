@@ -1097,7 +1097,7 @@ export class EnhancedCraftingSystem {
    */
   public addTool(tool: CraftingTool): void {
     this.tools.set(tool.id, tool);
-    this.addEvent('custom', { toolId: tool.id, tool });
+    this.addEvent('tool_broken', { toolId: tool.id, tool });
   }
 
   /**

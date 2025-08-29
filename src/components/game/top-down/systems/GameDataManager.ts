@@ -1,5 +1,6 @@
 import { GameItem, Equipment } from './InventorySystem';
 import { Quest } from './QuestSystem';
+import { QUEST_STATUS } from '../ref/constants';
 import { ITEM_TYPES, QUEST_TYPES } from '../ref/constants';
 
 /**
@@ -45,14 +46,14 @@ export class GameDataManager {
         id: 'wooden_sword',
         name: '木剑',
         description: '一把简单的木制剑，适合初学者使用。',
-        type: ITEM_TYPES.WEAPON,
+        type: 'WEAPON' as keyof typeof ITEM_TYPES,
         icon: '⚔️',
         stackable: false,
         maxStack: 1,
         quantity: 1,
         value: 50,
         rarity: 'common',
-        slot: 'weapon',
+        slot: 'weapon' as const,
         stats: {
           attack: 5
         }
@@ -61,14 +62,14 @@ export class GameDataManager {
         id: 'iron_sword',
         name: '铁剑',
         description: '一把锋利的铁剑，比木剑更加强大。',
-        type: ITEM_TYPES.WEAPON,
+        type: 'WEAPON' as keyof typeof ITEM_TYPES,
         icon: '🗡️',
         stackable: false,
         maxStack: 1,
         quantity: 1,
         value: 150,
         rarity: 'uncommon',
-        slot: 'weapon',
+        slot: 'weapon' as const,
         stats: {
           attack: 12
         }
@@ -77,14 +78,14 @@ export class GameDataManager {
         id: 'steel_sword',
         name: '钢剑',
         description: '一把精工打造的钢剑，威力强大。',
-        type: ITEM_TYPES.WEAPON,
+        type: 'WEAPON' as keyof typeof ITEM_TYPES,
         icon: '⚔️',
         stackable: false,
         maxStack: 1,
         quantity: 1,
         value: 300,
         rarity: 'rare',
-        slot: 'weapon',
+        slot: 'weapon' as const,
         stats: {
           attack: 20
         }
@@ -97,14 +98,14 @@ export class GameDataManager {
         id: 'leather_armor',
         name: '皮甲',
         description: '用皮革制成的轻便护甲。',
-        type: ITEM_TYPES.ARMOR,
+        type: 'ARMOR' as keyof typeof ITEM_TYPES,
         icon: '🛡️',
         stackable: false,
         maxStack: 1,
         quantity: 1,
         value: 80,
         rarity: 'common',
-        slot: 'armor',
+        slot: 'armor' as const,
         stats: {
           defense: 3,
           health: 10
@@ -114,14 +115,14 @@ export class GameDataManager {
         id: 'iron_armor',
         name: '铁甲',
         description: '坚固的铁制护甲，提供良好的防护。',
-        type: ITEM_TYPES.ARMOR,
+        type: 'ARMOR' as keyof typeof ITEM_TYPES,
         icon: '🛡️',
         stackable: false,
         maxStack: 1,
         quantity: 1,
         value: 200,
         rarity: 'uncommon',
-        slot: 'armor',
+        slot: 'armor' as const,
         stats: {
           defense: 8,
           health: 25
@@ -135,7 +136,7 @@ export class GameDataManager {
         id: 'health_potion',
         name: '生命药水',
         description: '恢复50点生命值。',
-        type: ITEM_TYPES.CONSUMABLE,
+        type: 'CONSUMABLE' as keyof typeof ITEM_TYPES,
         icon: '❤️',
         stackable: true,
         maxStack: 10,
@@ -153,7 +154,7 @@ export class GameDataManager {
         id: 'mana_potion',
         name: '魔法药水',
         description: '恢复30点魔法值。',
-        type: ITEM_TYPES.CONSUMABLE,
+        type: 'CONSUMABLE' as keyof typeof ITEM_TYPES,
         icon: '🔮',
         stackable: true,
         maxStack: 10,
@@ -171,7 +172,7 @@ export class GameDataManager {
         id: 'strength_potion',
         name: '力量药水',
         description: '临时增加攻击力，持续5分钟。',
-        type: ITEM_TYPES.CONSUMABLE,
+        type: 'CONSUMABLE' as keyof typeof ITEM_TYPES,
         icon: '💪',
         stackable: true,
         maxStack: 5,
@@ -194,7 +195,7 @@ export class GameDataManager {
         id: 'herb',
         name: '草药',
         description: '常见的草药，可用于制作药水。',
-        type: ITEM_TYPES.MATERIAL,
+        type: 'MATERIAL' as keyof typeof ITEM_TYPES,
         icon: '🌿',
         stackable: true,
         maxStack: 20,
@@ -206,7 +207,7 @@ export class GameDataManager {
         id: 'iron_ore',
         name: '铁矿',
         description: '铁矿石，可用于锻造武器和护甲。',
-        type: ITEM_TYPES.MATERIAL,
+        type: 'MATERIAL' as keyof typeof ITEM_TYPES,
         icon: '⛏️',
         stackable: true,
         maxStack: 15,
@@ -218,7 +219,7 @@ export class GameDataManager {
         id: 'gold_ore',
         name: '金矿',
         description: '珍贵的金矿石。',
-        type: ITEM_TYPES.MATERIAL,
+        type: 'MATERIAL' as keyof typeof ITEM_TYPES,
         icon: '💰',
         stackable: true,
         maxStack: 10,
@@ -234,7 +235,7 @@ export class GameDataManager {
         id: 'ancient_key',
         name: '古老钥匙',
         description: '一把神秘的古老钥匙，似乎能打开某个重要的门。',
-        type: ITEM_TYPES.QUEST,
+        type: 'QUEST' as keyof typeof ITEM_TYPES,
         icon: '🗝️',
         stackable: false,
         maxStack: 1,
@@ -246,7 +247,7 @@ export class GameDataManager {
         id: 'crystal_shard',
         name: '水晶碎片',
         description: '一块发光的水晶碎片，蕴含着神秘的力量。',
-        type: ITEM_TYPES.QUEST,
+        type: 'QUEST' as keyof typeof ITEM_TYPES,
         icon: '💎',
         stackable: true,
         maxStack: 5,
@@ -274,7 +275,7 @@ export class GameDataManager {
         objectives: [
           {
             id: 'talk_to_mayor',
-            type: QUEST_TYPES.TALK,
+            type: 'TALK' as keyof typeof QUEST_TYPES,
             target: 'mayor',
             required: 1,
             current: 0,
@@ -288,9 +289,11 @@ export class GameDataManager {
             { id: 'wooden_sword', quantity: 1 }
           ]
         },
-        status: 'not_started',
+        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
         level: 1,
         category: 'main',
+        difficulty: 'easy',
+        tags: ['intro'],
         repeatable: false,
         giver: 'mayor',
         turnIn: 'mayor'
@@ -302,7 +305,7 @@ export class GameDataManager {
         objectives: [
           {
             id: 'collect_herbs',
-            type: QUEST_TYPES.COLLECT,
+            type: 'COLLECT' as keyof typeof QUEST_TYPES,
             target: 'herb',
             required: 10,
             current: 0,
@@ -316,9 +319,11 @@ export class GameDataManager {
             { id: 'health_potion', quantity: 3 }
           ]
         },
-        status: 'not_started',
+        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
         level: 2,
         category: 'side',
+        difficulty: 'easy',
+        tags: ['gather'],
         repeatable: true,
         giver: 'herbalist',
         turnIn: 'herbalist'
@@ -330,7 +335,7 @@ export class GameDataManager {
         objectives: [
           {
             id: 'kill_slimes',
-            type: QUEST_TYPES.KILL,
+            type: 'KILL' as keyof typeof QUEST_TYPES,
             target: 'slime',
             required: 5,
             current: 0,
@@ -344,9 +349,11 @@ export class GameDataManager {
             { id: 'leather_armor', quantity: 1 }
           ]
         },
-        status: 'not_started',
+        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
         level: 3,
         category: 'side',
+        difficulty: 'easy',
+        tags: ['combat'],
         repeatable: true,
         giver: 'guard',
         turnIn: 'guard'
@@ -358,7 +365,7 @@ export class GameDataManager {
         objectives: [
           {
             id: 'explore_ruins',
-            type: QUEST_TYPES.EXPLORE,
+            type: 'EXPLORE' as keyof typeof QUEST_TYPES,
             target: 'ancient_ruins',
             required: 1,
             current: 0,
@@ -366,7 +373,7 @@ export class GameDataManager {
           },
           {
             id: 'find_crystal',
-            type: QUEST_TYPES.COLLECT,
+            type: 'COLLECT' as keyof typeof QUEST_TYPES,
             target: 'crystal_shard',
             required: 3,
             current: 0,
@@ -381,9 +388,11 @@ export class GameDataManager {
             { id: 'ancient_key', quantity: 1 }
           ]
         },
-        status: 'not_started',
+        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
         level: 5,
         category: 'main',
+        difficulty: 'medium',
+        tags: ['exploration'],
         repeatable: false,
         prerequisites: ['first_steps'],
         giver: 'scholar',

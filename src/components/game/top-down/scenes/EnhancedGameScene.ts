@@ -58,9 +58,9 @@ export class EnhancedGameScene extends Phaser.Scene {
 
   // 输入控制
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private wasd!: Phaser.Types.Input.Keyboard.Key[];
-  private spaceKey!: Phaser.Types.Input.Keyboard.Key;
-  private enterKey!: Phaser.Types.Input.Keyboard.Key;
+  private wasd!: Phaser.Input.Keyboard.Key[];
+  private spaceKey!: Phaser.Input.Keyboard.Key | null;
+  private enterKey!: Phaser.Input.Keyboard.Key | null;
 
   constructor() {
     super('EnhancedGameScene');
@@ -134,9 +134,9 @@ export class EnhancedGameScene extends Phaser.Scene {
    * 初始化游戏系统
    */
   private initializeGameSystems(): void {
-    this.inventorySystem = new InventorySystem();
-    this.questSystem = new QuestSystem();
-    this.combatSystem = new CombatSystem();
+    this.inventorySystem = InventorySystem.getInstance();
+    this.questSystem = QuestSystem.getInstance();
+    this.combatSystem = CombatSystem.getInstance();
     this.gameDataManager = GameDataManager.getInstance();
 
     // 加载存档数据
@@ -152,11 +152,13 @@ export class EnhancedGameScene extends Phaser.Scene {
     const tileset = this.map.addTilesetImage('tileset', 'tileset');
     
     // 创建图层
-    const groundLayer = this.map.createLayer('ground', tileset);
-    const objectsLayer = this.map.createLayer('objects', tileset);
+    const groundLayer = this.map.createLayer('ground', tileset || 'tileset');
+    const objectsLayer = this.map.createLayer('objects', tileset || 'tileset');
     
     // 设置碰撞
-    objectsLayer.setCollisionByProperty({ collides: true });
+    if (objectsLayer) {
+        objectsLayer.setCollisionByProperty({ collides: true });
+    }
 
     // 初始化GridEngine
     this.gridEngine = this.plugins.get('gridEngine');
@@ -305,10 +307,10 @@ export class EnhancedGameScene extends Phaser.Scene {
    * 设置输入控制
    */
   private setupInput(): void {
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.wasd = this.input.keyboard.addKeys('W,S,A,D') as Phaser.Types.Input.Keyboard.Key[];
-    this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+    this.cursors = (this.input.keyboard?.createCursorKeys() || null) as Phaser.Types.Input.Keyboard.CursorKeys;
+    this.wasd = (this.input.keyboard?.addKeys('W,S,A,D') || []) as Phaser.Input.Keyboard.Key[];
+    this.spaceKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE) || null;
+    this.enterKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER) || null;
   }
 
   /**
@@ -383,12 +385,12 @@ export class EnhancedGameScene extends Phaser.Scene {
    */
   private handlePlayerActions(): void {
     // 空格键交互
-    if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+    if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
       this.handleInteraction();
     }
 
     // 回车键攻击
-    if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
+    if (this.enterKey && Phaser.Input.Keyboard.JustDown(this.enterKey)) {
       this.handleAttack();
     }
   }
@@ -474,7 +476,7 @@ export class EnhancedGameScene extends Phaser.Scene {
           this.showMessage(`获得 ${gameItem.name}`);
           
           // 更新任务进度
-          this.questSystem.updateQuestProgress(QUEST_TYPES.COLLECT, itemId, 1);
+          this.questSystem.updateQuestProgress('COLLECT' as keyof typeof QUEST_TYPES, itemId, 1);
         } else {
           this.showMessage('背包已满');
         }
@@ -548,7 +550,7 @@ export class EnhancedGameScene extends Phaser.Scene {
       this.gameState.playerStats.gold += gold;
       
       // 更新任务进度
-      this.questSystem.updateQuestProgress(QUEST_TYPES.KILL, enemyType, 1);
+      this.questSystem.updateQuestProgress('KILL' as keyof typeof QUEST_TYPES, enemyType, 1);
       
       // 生成战利品
       this.generateLoot(enemy.x, enemy.y, enemyLevel);

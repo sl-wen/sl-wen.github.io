@@ -44,6 +44,7 @@ export interface InventorySlot {
  * 管理玩家的背包、装备和物品使用
  */
 export class InventorySystem {
+  private static instance: InventorySystem;
   private slots: InventorySlot[];
   private equipped: {
     weapon: Equipment | null;
@@ -52,7 +53,7 @@ export class InventorySystem {
   };
   private gold: number;
 
-  constructor() {
+  private constructor() {
     this.slots = Array(MAX_INVENTORY_SLOTS).fill(null).map(() => ({
       item: null,
       quantity: 0
@@ -63,6 +64,13 @@ export class InventorySystem {
       accessory: null
     };
     this.gold = 0;
+  }
+
+  public static getInstance(): InventorySystem {
+    if (!InventorySystem.instance) {
+      InventorySystem.instance = new InventorySystem();
+    }
+    return InventorySystem.instance;
   }
 
   /**
@@ -139,8 +147,8 @@ export class InventorySystem {
    */
   equipItem(slotIndex: number): boolean {
     const slot = this.slots[slotIndex];
-    if (!slot.item || slot.item.type !== ITEM_TYPES.WEAPON && 
-        slot.item.type !== ITEM_TYPES.ARMOR) {
+    if (!slot.item || (slot.item.type !== 'WEAPON' && 
+        slot.item.type !== 'ARMOR')) {
       return false;
     }
 
@@ -185,7 +193,7 @@ export class InventorySystem {
    */
   useConsumable(slotIndex: number): ItemEffect[] {
     const slot = this.slots[slotIndex];
-    if (!slot.item || slot.item.type !== ITEM_TYPES.CONSUMABLE) {
+    if (!slot.item || slot.item.type !== 'CONSUMABLE') {
       return [];
     }
 

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import DialogBox from './DialogBox';
 import GameMenu from './GameMenu';
 import { EnhancedGameUI } from './EnhancedGameUI';
+import { AchievementUI } from './AchievementUI';
 
 interface CompleteGameUIProps {
   width: number;
@@ -37,6 +38,7 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
   const [showMenu, setShowMenu] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [showEnhancedUI, setShowEnhancedUI] = useState(false);
+  const [showAchievementUI, setShowAchievementUI] = useState(false);
   const [menuItems, setMenuItems] = useState<string[]>([]);
   const [menuPosition, setMenuPosition] = useState<'center' | 'left'>('center');
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(0);
@@ -88,9 +90,11 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
           setShowDialog(false);
         } else if (showEnhancedUI) {
           setShowEnhancedUI(false);
+        } else if (showAchievementUI) {
+          setShowAchievementUI(false);
         } else {
           // 显示主菜单
-          setMenuItems(['继续游戏', '设置', '退出']);
+          setMenuItems(['继续游戏', '设置', '成就', '退出']);
           setMenuPosition('center');
           setSelectedMenuIndex(0);
           setShowMenu(true);
@@ -98,6 +102,9 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
       } else if (e.code === 'KeyI' && !showMenu && !showDialog) {
         // 打开背包
         setShowEnhancedUI(true);
+      } else if (e.code === 'KeyA' && !showMenu && !showDialog) {
+        // 打开成就
+        setShowAchievementUI(true);
       }
     };
 
@@ -124,6 +131,9 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
         setShowMenu(false);
       } else if (selectedItem === '设置') {
         setShowEnhancedUI(true);
+        setShowMenu(false);
+      } else if (selectedItem === '成就') {
+        setShowAchievementUI(true);
         setShowMenu(false);
       } else if (selectedItem === '退出') {
         // 处理退出逻辑
@@ -203,6 +213,7 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
           <div>空格: 攻击</div>
           <div>回车: 交互</div>
           <div>I: 背包</div>
+          <div>A: 成就</div>
           <div>ESC: 菜单</div>
         </div>
       </div>
@@ -249,6 +260,12 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
           </div>
         </div>
       )}
+
+      {/* 成就UI */}
+      <AchievementUI
+        isVisible={showAchievementUI}
+        onClose={() => setShowAchievementUI(false)}
+      />
 
       {/* 闪烁动画样式 */}
       <style jsx>{`

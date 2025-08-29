@@ -1,15 +1,13 @@
 import * as Phaser from 'phaser';
-import { TopDownGameScene } from './scenes/TopDownGameScene';
-// 引用场景集成
-import BootScene from './ref/scenes/BootScene';
-import MainMenuScene from './ref/scenes/MainMenuScene';
-import GameOverScene from './ref/scenes/GameOverScene';
-import GameScene from './ref/scenes/GameScene';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import GridEngine from 'grid-engine';
 
-export interface GameConfig {
+// 导入所有场景
+import BootScene from './scenes/BootScene';
+import MainMenuScene from './scenes/MainMenuScene';
+import CompleteGameScene from './scenes/CompleteGameScene';
+import GameOverScene from './scenes/GameOverScene';
+
+interface GameConfig {
   width: number;
   height: number;
   parent: HTMLElement;
@@ -22,17 +20,16 @@ export interface GameConfig {
       debug: boolean;
     };
   };
-  scene: any;
+  scene: any[];
 }
 
 export class TopDownGameEngine {
   private game: Phaser.Game;
-  private scene: TopDownGameScene;
+  private scene: any;
 
   constructor(container: HTMLElement, config: GameConfig) {
-    console.log('TopDownGameEngine: 开始创建游戏实例');
-    
-    // 创建Phaser游戏配置
+    console.log('TopDownGameEngine: 初始化游戏引擎');
+
     const gameConfig: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
       width: config.width,
@@ -46,7 +43,12 @@ export class TopDownGameEngine {
           debug: false
         }
       },
-      scene: [BootScene, MainMenuScene, GameScene, GameOverScene],
+      scene: [
+        BootScene,
+        MainMenuScene,
+        CompleteGameScene,
+        GameOverScene
+      ],
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
@@ -56,9 +58,9 @@ export class TopDownGameEngine {
           {
             key: 'gridEngine',
             plugin: GridEngine,
-            mapping: 'gridEngine',
-          },
-        ],
+            mapping: 'gridEngine'
+          }
+        ]
       },
       render: {
         pixelArt: true,
@@ -66,68 +68,124 @@ export class TopDownGameEngine {
       },
       input: {
         touch: {
-          capture: false // 不捕获所有触摸事件，允许事件冒泡到UI层
+          capture: false
         },
         keyboard: true,
         mouse: true,
         gamepad: false
+      },
+      audio: {
+        disableWebAudio: false
       }
     };
 
-    // 创建游戏实例
     this.game = new Phaser.Game(gameConfig);
-    
-    // 设置画布样式，确保触摸事件能够正确传播
+
+    // 设置Canvas样式以支持触摸事件
     const canvas = this.game.canvas;
     if (canvas) {
-      canvas.style.touchAction = 'manipulation';
-      canvas.style.webkitTouchCallout = 'none';
-      canvas.style.webkitUserSelect = 'none';
+      canvas.style.touchAction = 'none';
       canvas.style.userSelect = 'none';
+      canvas.style.webkitUserSelect = 'none';
+      canvas.style.webkitTouchCallout = 'none';
     }
-    
-    // 监听场景启动事件
+
+    // 监听游戏事件
     this.game.events.on('start', (scene: Phaser.Scene) => {
-      console.log('TopDownGameEngine: 场景启动:', scene.scene.key);
+      console.log(`场景启动: ${scene.scene.key}`);
     });
-    
-    // 监听场景创建事件
+
     this.game.events.on('create', (scene: Phaser.Scene) => {
-      console.log('TopDownGameEngine: 场景创建:', scene.scene.key);
+      console.log(`场景创建: ${scene.scene.key}`);
     });
-    
-    // 确保BootScene启动
+
+    // 启动BootScene
     if (this.game.scene.isActive('BootScene')) {
-      console.log('TopDownGameEngine: BootScene已激活');
+      console.log('BootScene已激活');
     } else {
-      console.log('TopDownGameEngine: 启动BootScene');
       this.game.scene.start('BootScene');
     }
-    
-    // 不再使用占位 TopDownGameScene，这里由 BootScene 启动
-    // 保留引用为兼容接口
-    this.scene = (null as unknown) as TopDownGameScene;
+
+    this.scene = null;
   }
 
-  public destroy(): void {
+  destroy(): void {
     if (this.game) {
       this.game.destroy(true);
+      this.game = null;
     }
   }
 
-  public getGame(): Phaser.Game {
+  getGame(): Phaser.Game | null {
     return this.game;
   }
 
-  public getScene(): TopDownGameScene {
+  getScene(): any {
     return this.scene;
   }
 
-  public pause(): void {
-    this.game.scene.pause('TopDownGameScene');
+  pause(): void {
+    if (this.game) {
+      this.game.scene.pause();
+    }
   }
 
-  public resume(): void {
-    this.game.scene.resume('TopDownGameScene');
+  resume(): void {
+    if (this.game) {
+      this.game.scene.resume();
+    }
+  }
+
+  // 场景管理方法
+  startScene(sceneKey: string, data?: any): void {
+    if (this.game) {
+      this.game.scene.start(sceneKey, data);
+    }
+  }
+
+  pauseScene(sceneKey: string): void {
+    if (this.game) {
+      this.game.scene.pause(sceneKey);
+    }
+  }
+
+  resumeScene(sceneKey: string): void {
+    if (this.game) {
+      this.game.scene.resume(sceneKey);
+    }
+  }
+
+  stopScene(sceneKey: string): void {
+    if (this.game) {
+      this.game.scene.stop(sceneKey);
+    }
+  }
+
+  // 游戏状态方法
+  isRunning(): boolean {
+    return this.game !== null && !this.game.isDestroyed;
+  }
+
+  getGameSize(): { width: number; height: number } {
+    if (this.game) {
+      return {
+        width: this.game.scale.width,
+        height: this.game.scale.height
+      };
+    }
+    return { width: 0, height: 0 };
+  }
+
+  // 调试方法
+  enableDebug(): void {
+    if (this.game && this.game.physics) {
+      this.game.physics.config.debug = true;
+    }
+  }
+
+  disableDebug(): void {
+    if (this.game && this.game.physics) {
+      this.game.physics.config.debug = false;
+    }
   }
 }

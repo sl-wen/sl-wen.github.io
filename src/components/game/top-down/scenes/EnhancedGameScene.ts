@@ -385,12 +385,12 @@ export class EnhancedGameScene extends Phaser.Scene {
    */
   private handlePlayerActions(): void {
     // 空格键交互
-    if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+    if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
       this.handleInteraction();
     }
 
     // 回车键攻击
-    if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
+    if (this.enterKey && Phaser.Input.Keyboard.JustDown(this.enterKey)) {
       this.handleAttack();
     }
   }

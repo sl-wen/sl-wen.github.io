@@ -1,5 +1,5 @@
 import { GameItem, Equipment } from './InventorySystem';
-import { Quest } from './QuestSystem';
+import { Quest, QUEST_STATUS } from './QuestSystem';
 import { ITEM_TYPES, QUEST_TYPES } from '../ref/constants';
 
 /**

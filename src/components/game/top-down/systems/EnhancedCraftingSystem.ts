@@ -557,7 +557,7 @@ export class EnhancedCraftingSystem {
    */
   public addRecipe(recipe: CraftingRecipe): void {
     this.recipes.set(recipe.id, recipe);
-    this.addEvent('custom', { recipeId: recipe.id, recipe });
+    this.addEvent('recipe_unlocked', { recipeId: recipe.id, recipe });
   }
 
   /**
@@ -1067,7 +1067,7 @@ export class EnhancedCraftingSystem {
    * 更新技能衰减
    */
   private updateSkillDecay(): void {
-    for (const skill of this.skills.values()) {
+    for (const skill of Array.from(this.skills.values())) {
       // 技能衰减
       if (skill.experience > 0) {
         const decay = Math.round(skill.experience * this.config.skillDecayRate);
@@ -1075,7 +1075,7 @@ export class EnhancedCraftingSystem {
       }
       
       // 专精衰减
-      for (const spec of skill.specializations) {
+      for (const spec of Array.from(skill.specializations)) {
         if (spec.experience > 0) {
           const decay = Math.round(spec.experience * this.config.specializationDecayRate);
           spec.experience = Math.max(0, spec.experience - decay);
@@ -1089,7 +1089,7 @@ export class EnhancedCraftingSystem {
    */
   public addStation(station: CraftingStation): void {
     this.stations.set(station.id, station);
-    this.addEvent('station_added', { stationId: station.id, station });
+    this.addEvent('station_upgraded', { stationId: station.id, station });
   }
 
   /**
@@ -1097,7 +1097,7 @@ export class EnhancedCraftingSystem {
    */
   public addTool(tool: CraftingTool): void {
     this.tools.set(tool.id, tool);
-    this.addEvent('tool_added', { toolId: tool.id, tool });
+    this.addEvent('custom', { toolId: tool.id, tool });
   }
 
   /**
@@ -1112,7 +1112,7 @@ export class EnhancedCraftingSystem {
    */
   public getAllCraftingRecords(): CraftingRecord[] {
     const allRecords: CraftingRecord[] = [];
-    for (const skill of this.skills.values()) {
+    for (const skill of Array.from(this.skills.values())) {
       allRecords.push(...skill.craftingHistory);
     }
     return allRecords.sort((a, b) => b.timestamp - a.timestamp);

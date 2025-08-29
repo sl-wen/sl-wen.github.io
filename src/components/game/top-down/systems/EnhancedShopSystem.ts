@@ -1116,8 +1116,8 @@ export class EnhancedShopSystem {
   private checkEvents(): void {
     const now = Date.now();
     
-    for (const shop of this.shops.values()) {
-      for (const event of shop.specialEvents) {
+    for (const shop of Array.from(this.shops.values())) {
+      for (const event of Array.from(shop.specialEvents)) {
         // 检查事件开始
         if (!event.isActive && now >= event.startTime && now <= event.endTime) {
           event.isActive = true;
@@ -1139,7 +1139,7 @@ export class EnhancedShopSystem {
   private checkAuctions(): void {
     const now = Date.now();
     
-    for (const auction of this.auctions.values()) {
+    for (const auction of Array.from(this.auctions.values())) {
       if (auction.isActive && now >= auction.endTime) {
         this.endAuction(auction.id);
       }
@@ -1199,7 +1199,7 @@ export class EnhancedShopSystem {
     auction.bids.push(bid);
     auction.currentPrice = amount;
 
-    this.addEvent('bid_placed', { auctionId, bid });
+    this.addEvent('custom', { auctionId, bid });
     return true;
   }
 

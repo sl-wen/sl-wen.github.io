@@ -3,6 +3,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { TopDownGameEngine } from './TopDownGameEngine';
 import { mobileTestHelper } from './MobileTestHelper';
+import { GameUI } from './ui/GameUI';
+import { InventorySystem } from './systems/InventorySystem';
+import { QuestSystem } from './systems/QuestSystem';
+import { CombatSystem } from './systems/CombatSystem';
+import { GameDataManager } from './systems/GameDataManager';
 
 interface TopDownGameProps {
   width?: number;
@@ -27,7 +32,25 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>('游戏初始化中...');
-  const [showMenu, setShowMenu] = useState(true); // 始终显示菜单
+  const [showMenu, setShowMenu] = useState(true);
+  const [showUI, setShowUI] = useState(false);
+
+  // 游戏系统状态
+  const [playerStats, setPlayerStats] = useState({
+    health: 100,
+    maxHealth: 100,
+    level: 1,
+    experience: 0,
+    gold: 0
+  });
+
+  // 游戏系统实例
+  const [gameSystems] = useState(() => ({
+    inventory: new InventorySystem(),
+    questSystem: new QuestSystem(),
+    combatSystem: new CombatSystem(),
+    gameDataManager: GameDataManager.getInstance()
+  }));
 
   // 检测移动设备
   useEffect(() => {
@@ -35,7 +58,6 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
       const deviceInfo = mobileTestHelper.detectDevice();
       setIsMobile(deviceInfo.isMobile || deviceInfo.touchSupport);
       
-      // 在开发模式下显示设备信息
       if (process.env.NODE_ENV === 'development') {
         mobileTestHelper.showDeviceInfo();
       }
@@ -51,7 +73,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
     setDebugInfo('创建游戏引擎...');
 
-    // 创建游戏引擎实例（使用移植的 Boot/Main/Game/GameOver 场景）
+    // 创建游戏引擎实例
     gameEngineRef.current = new TopDownGameEngine(gameContainerRef.current, {
       width,
       height,
@@ -70,7 +92,6 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
     setDebugInfo('游戏引擎创建完成，等待场景启动...');
 
-    // 清理函数
     return () => {
       if (gameEngineRef.current) {
         gameEngineRef.current.destroy();
@@ -79,7 +100,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     };
   }, [width, height]);
 
-  // Handle window events from Phaser scenes (menu, dialogs, HUD)
+  // 处理游戏事件
   useEffect(() => {
     const onMenuItems = (e: Event) => {
       const detail = (e as CustomEvent).detail as { menuItems: string[]; menuPosition?: 'center' | 'left' };
@@ -92,11 +113,10 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     };
 
     const onDialog = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { characterName: string };
+      const detail = (e as CustomEvent).detail as { characterName: string; message?: string };
       setCharacterName(detail.characterName);
-      // simple fallback messages when not provided by external store
       setMessages([
-        { message: '...' },
+        { message: detail.message || '...' },
       ]);
       setCurrentMessageIndex(0);
       setMessageEnded(false);
@@ -105,26 +125,69 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     const onHeroHealth = (e: Event) => {
       const detail = (e as CustomEvent).detail as { healthStates: string[] };
       setHeroHealthStates(detail.healthStates || []);
+      
+      // 更新玩家状态
+      if (detail.healthStates && detail.healthStates[0]) {
+        const [current, max] = detail.healthStates[0].split('/').map(Number);
+        setPlayerStats(prev => ({
+          ...prev,
+          health: current,
+          maxHealth: max
+        }));
+      }
     };
 
     const onHeroCoin = (e: Event) => {
       const detail = (e as CustomEvent).detail as { heroCoins: number };
       setHeroCoins(detail.heroCoins);
+      setPlayerStats(prev => ({
+        ...prev,
+        gold: detail.heroCoins
+      }));
+    };
+
+    // 新增：处理背包更新事件
+    const onInventoryChanged = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { inventory: any[] };
+      console.log('背包更新:', detail.inventory);
+    };
+
+    // 新增：处理任务更新事件
+    const onQuestChanged = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { quests: any[] };
+      console.log('任务更新:', detail.quests);
+    };
+
+    // 新增：处理等级更新事件
+    const onLevelUp = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { level: number; experience: number };
+      setPlayerStats(prev => ({
+        ...prev,
+        level: detail.level,
+        experience: detail.experience
+      }));
     };
 
     window.addEventListener('menu-items', onMenuItems as EventListener);
     window.addEventListener('new-dialog', onDialog as EventListener);
     window.addEventListener('hero-health', onHeroHealth as EventListener);
     window.addEventListener('hero-coin', onHeroCoin as EventListener);
+    window.addEventListener('inventory-changed', onInventoryChanged as EventListener);
+    window.addEventListener('quest-changed', onQuestChanged as EventListener);
+    window.addEventListener('level-up', onLevelUp as EventListener);
 
     return () => {
       window.removeEventListener('menu-items', onMenuItems as EventListener);
       window.removeEventListener('new-dialog', onDialog as EventListener);
       window.removeEventListener('hero-health', onHeroHealth as EventListener);
       window.removeEventListener('hero-coin', onHeroCoin as EventListener);
+      window.removeEventListener('inventory-changed', onInventoryChanged as EventListener);
+      window.removeEventListener('quest-changed', onQuestChanged as EventListener);
+      window.removeEventListener('level-up', onLevelUp as EventListener);
     };
   }, []);
 
+  // 处理键盘输入
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (menuItems.length > 0) {
@@ -142,6 +205,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
           setMenuItems([]);
           setGameStarted(true);
           setShowMenu(false);
+          setShowUI(true);
         }
       } else if (messages.length > 0) {
         if (['Enter', 'Space', 'Escape'].includes(e.code)) {
@@ -151,7 +215,6 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
               setCurrentMessageIndex((i) => i + 1);
               setMessageEnded(false);
             } else {
-              // end of dialog
               const finishEvent = new CustomEvent(`${characterName}-dialog-finished`, { detail: {} });
               window.dispatchEvent(finishEvent);
               setMessages([]);
@@ -163,11 +226,24 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
             setMessageEnded(true);
           }
         }
+      } else if (gameStarted) {
+        // 游戏中的快捷键
+        if (e.code === 'KeyI') {
+          e.preventDefault();
+          setShowUI(true);
+        } else if (e.code === 'KeyQ') {
+          e.preventDefault();
+          setShowUI(true);
+        } else if (e.code === 'Escape') {
+          e.preventDefault();
+          setShowUI(false);
+        }
       }
     };
+    
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [menuItems, selectedMenuIndex, messages, currentMessageIndex, messageEnded, characterName]);
+  }, [menuItems, selectedMenuIndex, messages, currentMessageIndex, messageEnded, characterName, gameStarted]);
 
   const handleSelectMenu = useCallback((index: number) => {
     setSelectedMenuIndex(index);
@@ -177,6 +253,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     setMenuItems([]);
     setGameStarted(true);
     setShowMenu(false);
+    setShowUI(true);
   }, [menuItems]);
 
   // 移动端触摸事件处理
@@ -199,6 +276,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     window.dispatchEvent(customEvent);
     setGameStarted(true);
     setShowMenu(false);
+    setShowUI(true);
     setDebugInfo('游戏已启动');
   }, []);
 
@@ -219,35 +297,37 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
       
       {/* 调试信息 */}
       {process.env.NODE_ENV === 'development' && (
-        <div className="absolute top-2 right-2 bg-black/80 text-white text-xs p-2 rounded max-w-48">
+        <div className="absolute top-2 right-2 bg-black/80 text-white text-xs p-2 rounded max-w-48 z-50">
           <div>状态: {debugInfo}</div>
           <div>菜单项: {menuItems.length}</div>
           <div>游戏状态: {gameStarted ? '已启动' : '未启动'}</div>
           <div>显示菜单: {showMenu ? '是' : '否'}</div>
+          <div>显示UI: {showUI ? '是' : '否'}</div>
+          <div>玩家等级: {playerStats.level}</div>
+          <div>玩家经验: {playerStats.experience}</div>
         </div>
       )}
 
-      {/* HUD: Health and Coins */}
-      {(heroHealthStates.length > 0 || heroCoins !== null) && (
-        <div className="absolute top-2 left-2 text-white space-y-1">
-          {heroHealthStates.length > 0 && (
-            <div className="bg-black/60 px-2 py-1 rounded text-xs">
-              HP: {heroHealthStates.join(' | ')}
-            </div>
-          )}
-          {heroCoins !== null && (
-            <div className="bg-black/60 px-2 py-1 rounded text-xs">
-              Coins: {heroCoins}
-            </div>
-          )}
-        </div>
+      {/* 增强版游戏UI */}
+      {gameStarted && showUI && (
+        <GameUI
+          inventory={gameSystems.inventory}
+          questSystem={gameSystems.questSystem}
+          combatSystem={gameSystems.combatSystem}
+          playerHealth={playerStats.health}
+          playerMaxHealth={playerStats.maxHealth}
+          playerLevel={playerStats.level}
+          playerExperience={playerStats.experience}
+          playerGold={playerStats.gold}
+          isMobile={isMobile}
+        />
       )}
 
       {/* 主菜单覆盖层 - 始终显示，除非游戏已启动 */}
       {showMenu && !gameStarted && (
         <div className="absolute inset-0 flex items-center justify-center z-50">
           <div className="bg-black/80 p-6 rounded-lg text-center">
-            <div className="text-white text-lg mb-4">GAME LOGO</div>
+            <div className="text-white text-lg mb-4">🎮 增强版RPG游戏</div>
             <div className="space-y-3">
               <button
                 onClick={handleManualStart}
@@ -258,7 +338,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
                   touchAction: 'manipulation'
                 }}
               >
-                START
+                🚀 开始冒险
               </button>
               <button
                 onClick={handleManualExit}
@@ -269,10 +349,17 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
                   touchAction: 'manipulation'
                 }}
               >
-                EXIT
+                ❌ 退出游戏
               </button>
             </div>
-            <div className="text-white text-sm mt-2">
+            <div className="text-white text-sm mt-4">
+              <div>🎯 新功能：</div>
+              <div>• 物品系统与背包管理</div>
+              <div>• 任务系统与进度跟踪</div>
+              <div>• 战斗系统与敌人AI</div>
+              <div>• 等级系统与技能成长</div>
+            </div>
+            <div className="text-gray-400 text-xs mt-2">
               点击开始游戏
             </div>
           </div>
@@ -341,10 +428,23 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
                   touchAction: 'manipulation'
                 }}
               >
-                {currentMessageIndex === messages.length - 1 && messageEnded ? 'Ok' : 'Next'}
+                {currentMessageIndex === messages.length - 1 && messageEnded ? '确定' : '继续'}
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 游戏控制说明 */}
+      {gameStarted && (
+        <div className="absolute bottom-4 left-4 bg-black/80 text-white p-3 rounded text-xs">
+          <div className="font-bold mb-1">游戏控制：</div>
+          <div>WASD/方向键：移动</div>
+          <div>空格键：交互</div>
+          <div>回车键：攻击</div>
+          <div>I键：背包</div>
+          <div>Q键：任务</div>
+          <div>ESC键：关闭UI</div>
         </div>
       )}
     </div>

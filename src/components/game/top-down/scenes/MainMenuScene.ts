@@ -33,8 +33,8 @@ export default class MainMenuScene extends Phaser.Scene {
     this.soundManager = SoundManager.getInstance();
     this.soundManager.initialize(this);
     
-    // 播放主菜单背景音乐
-    this.soundManager.playBackgroundMusic('menu');
+    // 移动端音频策略：避免自动播放，等用户操作后再播放
+    // 如需播放，可在用户点击开始或设置时触发
 
     // 触发菜单事件
     const customEvent = new CustomEvent('menu-items', {

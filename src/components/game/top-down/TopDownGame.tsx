@@ -101,7 +101,6 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
       width: gameSize.width,
       height: gameSize.height,
       parent: gameContainerRef.current,
-      type: Phaser.AUTO,
       backgroundColor: '#2c3e50',
       physics: {
         default: 'arcade',

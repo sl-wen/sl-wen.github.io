@@ -82,9 +82,9 @@ export class CompleteGameScene extends Phaser.Scene {
 
     // 输入控制
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-    private wasd!: Phaser.Types.Input.Keyboard.Key[];
-    private spaceKey!: Phaser.Types.Input.Keyboard.Key;
-    private enterKey!: Phaser.Types.Input.Keyboard.Key;
+    private wasd!: Phaser.Input.Keyboard.Key[];
+    private spaceKey!: Phaser.Input.Keyboard.Key;
+    private enterKey!: Phaser.Input.Keyboard.Key;
 
     // 英雄状态
     private heroStatus = {
@@ -274,10 +274,10 @@ export class CompleteGameScene extends Phaser.Scene {
     }
 
     private calculateHeroHealthStates() {
-        return Array.from({ length: this.heroSprite.maxHealth / 20 })
+        return Array.from({ length: this.heroStatus.maxHealth / 20 })
             .fill(null).map(
                 (v, index) => this.calculateHeroHealthState(
-                    Math.max(this.heroSprite.health - (20 * index), 0)
+                    Math.max(this.heroStatus.health - (20 * index), 0)
                 )
             );
     }
@@ -1878,175 +1878,11 @@ export class CompleteGameScene extends Phaser.Scene {
         }
     }
 
-    // 工具函数
-    private getFramesForAnimation(assetKey: string, animation: string) {
-        return this.anims.generateFrameNames(assetKey)
-            .filter((frame) => {
-                if (frame.frame.includes(`${assetKey}_${animation}`)) {
-                    const parts = frame.frame.split(`${assetKey}_${animation}_`);
-                    return Boolean(!Number.isNaN(Number.parseInt(parts[1], 10)));
-                }
-                return false;
-            })
-            .sort((a, b) => (a.frame < b.frame ? -1 : 1));
-    }
 
-    private getStopFrame(direction: string, spriteKey: string) {
-        switch (direction) {
-            case 'up':
-                return `${spriteKey}_idle_up_01`;
-            case 'right':
-                return `${spriteKey}_idle_right_01`;
-            case 'down':
-                return `${spriteKey}_idle_down_01`;
-            case 'left':
-                return `${spriteKey}_idle_left_01`;
-            default:
-                return null;
-        }
-    }
-
-    private getOppositeDirection(direction: string) {
-        switch (direction) {
-            case 'up':
-                return 'down';
-            case 'right':
-                return 'left';
-            case 'down':
-                return 'up';
-            case 'left':
-                return 'right';
-            default:
-                return null;
-        }
-    }
-
-    private getBackPosition(facingDirection: string, position: { x: number; y: number }) {
-        switch (facingDirection) {
-            case 'up':
-                return {
-                    ...position,
-                    y: position.y + 1,
-                };
-            case 'right':
-                return {
-                    ...position,
-                    x: position.x - 1,
-                };
-            case 'down':
-                return {
-                    ...position,
-                    y: position.y - 1,
-                };
-            case 'left':
-                return {
-                    ...position,
-                    x: position.x + 1,
-                };
-            default:
-                return position;
-        }
-    }
-
-    private calculatePreviousTeleportPosition() {
-        const currentPosition = this.gridEngine.getPosition('hero');
-        const facingDirection = this.gridEngine.getFacingDirection('hero');
-
-        switch (facingDirection) {
-            case 'up': {
-                return {
-                    x: currentPosition.x,
-                    y: currentPosition.y + 1,
-                };
-            }
-            case 'right': {
-                return {
-                    x: currentPosition.x - 1,
-                    y: currentPosition.y,
-                };
-            }
-            case 'down': {
-                return {
-                    x: currentPosition.x,
-                    y: currentPosition.y - 1,
-                };
-            }
-            case 'left': {
-                return {
-                    x: currentPosition.x + 1,
-                    y: currentPosition.y,
-                };
-            }
-            default: {
-                return {
-                    x: currentPosition.x,
-                    y: currentPosition.y,
-                };
-            }
-        }
-    }
-
-    private extractTeleportDataFromTiled(data: string) {
-        const [mapKey, position] = data.trim().split(':');
-        const [x, y] = position.split(',');
-
-        return {
-            mapKey,
-            x: Number.parseInt(x, 10),
-            y: Number.parseInt(y, 10),
-        };
-    }
-
-    private extractNpcDataFromTiled(data: string) {
-        const [npcKey, config] = data.trim().split(':');
-        const [movementType, delay, area, direction] = config.split(';');
-
-        return {
-            npcKey,
-            movementType,
-            facingDirection: direction,
-            delay: Number.parseInt(delay, 10),
-            area: Number.parseInt(area, 10),
-        };
-    }
-
-    private getEnemyColor(enemyType: string) {
-        if (enemyType.includes('red')) {
-            return 0xF1374B;
-        }
-        if (enemyType.includes('green')) {
-            return 0x2BBD6E;
-        }
-        if (enemyType.includes('yellow')) {
-            return 0xFFFF4F;
-        }
-        return 0x00A0DC;
-    }
-
-    private getEnemyAttackSpeed(enemyType: string) {
-        if (enemyType.includes('red')) {
-            return 2000;
-        }
-        if (enemyType.includes('green')) {
-            return 3000;
-        }
-        if (enemyType.includes('yellow')) {
-            return 4000;
-        }
-        return 5000;
-    }
-
-    private updateHeroHealthUI() {
-        const healthStates = this.calculateHeroHealthStates();
-        const customEvent = new CustomEvent('hero-health', {
-            detail: { healthStates },
-        });
-        window.dispatchEvent(customEvent);
-    }
 
     private updateHeroCoinUI() {
         const customEvent = new CustomEvent('hero-coin', {
-            detail: { heroCoins: this.heroSprite.coin },
+            detail: { heroCoins: this.heroStatus.coin },
         });
         window.dispatchEvent(customEvent);
     }
@@ -2165,3 +2001,5 @@ export class CompleteGameScene extends Phaser.Scene {
         }
     }
 }
+
+export default CompleteGameScene;

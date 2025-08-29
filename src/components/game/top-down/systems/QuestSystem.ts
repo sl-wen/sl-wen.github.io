@@ -1,6 +1,61 @@
 import { QUEST_TYPES, QUEST_STATUS } from '../ref/constants';
 import { storage } from '../utils';
 
+// 任务统计接口
+export interface QuestStatistics {
+  totalQuestsCompleted: number;
+  totalExperienceGained: number;
+  totalGoldEarned: number;
+  totalItemsReceived: number;
+  averageCompletionTime: number;
+  questsByCategory: Record<string, number>;
+  questsByDifficulty: Record<string, number>;
+  completionRate: number;
+  streakDays: number;
+  lastCompletionDate: number;
+}
+
+// 任务通知接口
+export interface QuestNotification {
+  id: string;
+  type: 'quest_available' | 'quest_completed' | 'quest_failed' | 'objective_completed' | 'reward_available';
+  title: string;
+  message: string;
+  questId?: string;
+  timestamp: number;
+  isRead: boolean;
+  priority: 'low' | 'medium' | 'high';
+}
+
+// 任务追踪接口
+export interface QuestTracking {
+  trackedQuestId: string | null;
+  showObjectives: boolean;
+  showProgress: boolean;
+  showRewards: boolean;
+  autoTrack: boolean;
+}
+
+// 任务过滤器接口
+export interface QuestFilters {
+  category: 'all' | 'main' | 'side' | 'daily' | 'weekly' | 'event' | 'seasonal' | 'achievement';
+  difficulty: 'all' | 'easy' | 'normal' | 'hard' | 'expert' | 'legendary';
+  status: 'all' | 'not_started' | 'in_progress' | 'completed' | 'failed';
+  level: 'all' | number;
+  tags: string[];
+  faction: 'all' | string;
+  showHidden: boolean;
+  showSecret: boolean;
+  showCompleted: boolean;
+  showExpired: boolean;
+}
+
+// 任务排序接口
+export interface QuestSorting {
+  field: 'priority' | 'level' | 'category' | 'difficulty' | 'status' | 'time' | 'rewards';
+  direction: 'asc' | 'desc';
+}
+
 // 任务目标接口
 export interface QuestObjective {
   id: string;
@@ -132,6 +187,7 @@ export interface Quest {
  * 管理游戏中的任务、进度跟踪和奖励发放
  */
 export class QuestSystem {
+  private static instance: QuestSystem;
   private activeQuests: Map<string, Quest>;
   private completedQuests: Set<string>;
   private questLog: Quest[];
@@ -146,7 +202,7 @@ export class QuestSystem {
   private questFilters: QuestFilters;
   private questSorting: QuestSorting;
 
-  constructor() {
+  private constructor() {
     this.activeQuests = new Map();
     this.completedQuests = new Set();
     this.questLog = [];
@@ -200,6 +256,13 @@ export class QuestSystem {
       field: 'priority',
       direction: 'desc'
     };
+  }
+
+  public static getInstance(): QuestSystem {
+    if (!QuestSystem.instance) {
+      QuestSystem.instance = new QuestSystem();
+    }
+    return QuestSystem.instance;
   }
 
   /**

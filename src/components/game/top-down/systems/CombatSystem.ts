@@ -186,11 +186,12 @@ export interface CombatEnvironment {
  * 处理游戏中的战斗逻辑、伤害计算和战斗结果
  */
 export class CombatSystem {
+  private static instance: CombatSystem;
   private combatState: CombatState;
   private lastAttackTime: number;
   private combatHistory: CombatResult[];
 
-  constructor() {
+  private constructor() {
     this.combatState = {
       isInCombat: false,
       participants: [],
@@ -216,6 +217,13 @@ export class CombatSystem {
     };
     this.lastAttackTime = 0;
     this.combatHistory = [];
+  }
+
+  public static getInstance(): CombatSystem {
+    if (!CombatSystem.instance) {
+      CombatSystem.instance = new CombatSystem();
+    }
+    return CombatSystem.instance;
   }
 
   /**

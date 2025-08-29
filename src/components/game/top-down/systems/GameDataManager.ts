@@ -288,7 +288,7 @@ export class GameDataManager {
             { id: 'wooden_sword', quantity: 1 }
           ]
         },
-        status: 'not_started',
+        status: QUEST_STATUS.NOT_STARTED,
         level: 1,
         category: 'main',
         repeatable: false,
@@ -316,7 +316,7 @@ export class GameDataManager {
             { id: 'health_potion', quantity: 3 }
           ]
         },
-        status: 'not_started',
+        status: QUEST_STATUS.NOT_STARTED,
         level: 2,
         category: 'side',
         repeatable: true,
@@ -344,7 +344,7 @@ export class GameDataManager {
             { id: 'leather_armor', quantity: 1 }
           ]
         },
-        status: 'not_started',
+        status: QUEST_STATUS.NOT_STARTED,
         level: 3,
         category: 'side',
         repeatable: true,

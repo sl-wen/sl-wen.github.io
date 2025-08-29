@@ -29,8 +29,6 @@ export default class BootScene extends Phaser.Scene {
       {
         fontFamily: '"Press Start 2P"',
         fontSize: `${fontSize}px`,
-        size: `${fontSize}px`,
-        fill: '#ffffff',
         color: '#ffffff',
       }
     );
@@ -45,8 +43,6 @@ export default class BootScene extends Phaser.Scene {
       {
         fontFamily: '"Press Start 2P"',
         fontSize: `${fontSize}px`,
-        size: `${fontSize}px`,
-        fill: '#ffffff',
         color: '#ffffff',
       }
     );
@@ -61,8 +57,6 @@ export default class BootScene extends Phaser.Scene {
       {
         fontFamily: '"Press Start 2P"',
         fontSize: `${fontSize / 2}px`,
-        size: `${fontSize / 2}px`,
-        fill: '#ffffff',
         color: '#ffffff',
       }
     );

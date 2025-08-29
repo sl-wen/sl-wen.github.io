@@ -269,14 +269,6 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     window.dispatchEvent(customEvent);
   };
 
-  if (!isGameReady) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-900">
-        <div className="text-white text-xl">{debugInfo}</div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-900">
       <div className="container mx-auto px-4 py-8">
@@ -306,6 +298,13 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
               }}
             />
 
+            {/* 初始化加载遮罩 */}
+            {!isGameReady && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/70">
+                <div className="text-white text-xl">{debugInfo}</div>
+              </div>
+            )}
+
             {/* 游戏UI覆盖层 */}
             {gameStarted && (
               <CompleteGameUI
@@ -322,7 +321,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
             )}
 
             {/* 开始游戏按钮 */}
-            {!gameStarted && (
+            {!gameStarted && isGameReady && (
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
                 <button
                   onClick={startGame}

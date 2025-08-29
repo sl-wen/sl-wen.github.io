@@ -528,7 +528,9 @@ export class MapInteractionManager {
       }
 
       if (interaction.properties.particleEffect) {
-        this.createParticleEffect(gameObject.x, gameObject.y, interaction.properties.particleEffect);
+        const gx = (gameObject as any)?.x ?? 0;
+        const gy = (gameObject as any)?.y ?? 0;
+        this.createParticleEffect(gx, gy, interaction.properties.particleEffect);
       }
 
       // 生成掉落物品
@@ -537,10 +539,12 @@ export class MapInteractionManager {
       }
 
       // 隐藏物体
-      gameObject.setVisible(false);
+      if ((gameObject as any) && typeof (gameObject as any).setVisible === 'function') {
+        (gameObject as any).setVisible(false);
+      }
     } else {
       // 减少生命值
-      gameObject.setData('health', currentHealth - damage);
+      (gameObject as any).setData('health', currentHealth - damage);
       
       // 播放受伤动画
       if (gameObject instanceof Phaser.GameObjects.Sprite) {
@@ -625,7 +629,9 @@ export class MapInteractionManager {
 
     // 隐藏物品
     interaction.state = InteractionState.COLLECTED;
-    gameObject.setVisible(false);
+    if ((gameObject as any) && typeof (gameObject as any).setVisible === 'function') {
+      (gameObject as any).setVisible(false);
+    }
 
     // 设置重生时间
     if (interaction.properties.respawnTime) {

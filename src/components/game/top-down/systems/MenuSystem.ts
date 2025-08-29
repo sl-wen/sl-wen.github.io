@@ -808,10 +808,19 @@ export class MenuSystem {
   private onMenuItemHover(container: Phaser.GameObjects.Container, isHovering: boolean): void {
     if (isHovering) {
       container.setScale(this.config.animation.hoverScale);
-      container.setTint(parseInt(this.config.animation.hoverColor.replace('#', '0x')));
+      const tintVal = parseInt(this.config.animation.hoverColor.replace('#', '0x'));
+      container.iterate(child => {
+        if ((child as any)?.setTint) {
+          (child as any).setTint(tintVal);
+        }
+      });
     } else {
       container.setScale(1);
-      container.clearTint();
+      container.iterate(child => {
+        if ((child as any)?.clearTint) {
+          (child as any).clearTint();
+        }
+      });
     }
   }
 

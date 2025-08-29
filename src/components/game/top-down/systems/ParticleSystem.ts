@@ -661,7 +661,11 @@ export class ParticleSystem {
     let activeParticles = 0;
     this.effects.forEach(effect => {
       if (effect.isActive && effect.emitter) {
-        activeParticles += effect.emitter.alive.length();
+        const anyEmitter = effect.emitter as any;
+        const count = typeof anyEmitter.getAliveParticleCount === 'function'
+          ? anyEmitter.getAliveParticleCount()
+          : 0;
+        activeParticles += count;
       }
     });
     this.stats.activeParticles = activeParticles;

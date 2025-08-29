@@ -319,7 +319,7 @@ export class GameDataManager {
             { id: 'health_potion', quantity: 3 }
           ]
         },
-        status: QUEST_STATUS.NOT_STARTED,
+        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
         level: 2,
         category: 'side',
         difficulty: 'easy',
@@ -352,6 +352,8 @@ export class GameDataManager {
         status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
         level: 3,
         category: 'side',
+        difficulty: 'easy',
+        tags: ['combat'],
         repeatable: true,
         giver: 'guard',
         turnIn: 'guard'
@@ -389,6 +391,8 @@ export class GameDataManager {
         status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
         level: 5,
         category: 'main',
+        difficulty: 'medium',
+        tags: ['exploration'],
         repeatable: false,
         prerequisites: ['first_steps'],
         giver: 'scholar',

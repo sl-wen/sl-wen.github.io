@@ -270,122 +270,46 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">俯视角RPG游戏</h1>
-          <p className="text-gray-300 text-lg">
-            基于Phaser 3 + React的完整RPG游戏
-          </p>
-          {isMobile && (
-            <div className="mt-4 p-3 bg-blue-900/50 border border-blue-500 rounded-lg">
-              <p className="text-blue-200 text-sm">
-                📱 移动端优化：点击"START"按钮开始游戏
-              </p>
-            </div>
-          )}
+    <div className="relative">
+      <div
+        ref={gameContainerRef}
+        className="border-2 border-gray-600 rounded-lg overflow-hidden"
+        style={{
+          width: gameSize.width * gameSize.multiplier,
+          height: gameSize.height * gameSize.multiplier
+        }}
+      />
+
+      {!isGameReady && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/70">
+          <div className="text-white text-xl">{debugInfo}</div>
         </div>
+      )}
 
-        <div className="flex justify-center">
-          <div className="relative">
-            {/* 游戏容器 */}
-            <div 
-              ref={gameContainerRef}
-              className="border-2 border-gray-600 rounded-lg overflow-hidden"
-              style={{
-                width: gameSize.width * gameSize.multiplier,
-                height: gameSize.height * gameSize.multiplier
-              }}
-            />
+      {gameStarted && (
+        <CompleteGameUI
+          width={gameSize.width}
+          height={gameSize.height}
+          multiplier={gameSize.multiplier}
+          playerStats={playerStats}
+          inventory={inventory}
+          quests={quests}
+          currentMap={currentMap}
+          onInventoryChange={handleInventoryChange}
+          onStatsChange={handleStatsChange}
+        />
+      )}
 
-            {/* 初始化加载遮罩 */}
-            {!isGameReady && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/70">
-                <div className="text-white text-xl">{debugInfo}</div>
-              </div>
-            )}
-
-            {/* 游戏UI覆盖层 */}
-            {gameStarted && (
-              <CompleteGameUI
-                width={gameSize.width}
-                height={gameSize.height}
-                multiplier={gameSize.multiplier}
-                playerStats={playerStats}
-                inventory={inventory}
-                quests={quests}
-                currentMap={currentMap}
-                onInventoryChange={handleInventoryChange}
-                onStatsChange={handleStatsChange}
-              />
-            )}
-
-            {/* 开始游戏按钮 */}
-            {!gameStarted && isGameReady && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                <button
-                  onClick={startGame}
-                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg text-xl font-bold transition-colors"
-                >
-                  START
-                </button>
-              </div>
-            )}
-
-            {/* 游戏控制说明 */}
-            <div className="mt-4 p-4 bg-gray-800 rounded-lg text-white">
-              <h3 className="text-lg font-semibold mb-2">游戏控制：</h3>
-              <ul className="text-sm space-y-1">
-                {isMobile ? (
-                  <>
-                    <li>• 点击"START"按钮开始游戏</li>
-                    <li>• 触摸屏幕进行交互</li>
-                    <li>• 支持触摸操作和手势</li>
-                  </>
-                ) : (
-                  <>
-                    <li>• 点击"START"按钮或按回车键开始游戏</li>
-                    <li>• 使用 WASD 或方向键移动角色</li>
-                    <li>• 空格键攻击敌人</li>
-                    <li>• 回车键与NPC对话</li>
-                    <li>• I键打开背包界面</li>
-                    <li>• ESC键打开菜单</li>
-                  </>
-                )}
-              </ul>
-            </div>
-
-            {/* 游戏状态信息 */}
-            <div className="mt-4 p-4 bg-gray-800 rounded-lg text-white">
-              <h3 className="text-lg font-semibold mb-2">游戏状态：</h3>
-              <ul className="text-sm space-y-1">
-                <li>• 游戏引擎：Phaser 3</li>
-                <li>• 地图系统：GridEngine</li>
-                <li>• 设备类型：{isMobile ? '移动端' : '桌面端'}</li>
-                <li>• 渲染模式：像素艺术风格</li>
-                <li>• 当前状态：{debugInfo}</li>
-              </ul>
-            </div>
-
-            {/* 游戏特性列表 */}
-            <div className="mt-4 p-4 bg-gray-800 rounded-lg text-white">
-              <h3 className="text-lg font-semibold mb-2">游戏特性：</h3>
-              <ul className="text-sm space-y-1">
-                <li>✅ 完整的RPG游戏系统</li>
-                <li>✅ 多地图支持和传送点</li>
-                <li>✅ 物品系统和背包管理</li>
-                <li>✅ 任务系统和进度跟踪</li>
-                <li>✅ 战斗系统和敌人AI</li>
-                <li>✅ 制作系统和配方管理</li>
-                <li>✅ 商店系统和声望</li>
-                <li>✅ 音效系统和背景音乐</li>
-                <li>✅ 存档系统和数据持久化</li>
-                <li>✅ 响应式UI和移动端支持</li>
-              </ul>
-            </div>
-          </div>
+      {!gameStarted && isGameReady && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <button
+            onClick={startGame}
+            className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg text-xl font-bold transition-colors"
+          >
+            START
+          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 };

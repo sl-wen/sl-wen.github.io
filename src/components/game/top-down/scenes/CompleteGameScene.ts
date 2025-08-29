@@ -553,6 +553,15 @@ export class CompleteGameScene extends Phaser.Scene {
         // 设置相机
         this.setupCamera();
 
+        // 优化GridEngine性能
+        this.optimizeGridEngine();
+
+        // 启用调试模式（如果启用）
+        this.enableGridEngineDebug();
+
+        // 同步角色位置
+        this.syncCharacterPositions();
+
         // 播放背景音乐
         this.soundManager.playBackgroundMusic('village');
     }
@@ -1111,83 +1120,571 @@ export class CompleteGameScene extends Phaser.Scene {
         const currentMap = this.mapManager.getCurrentMap();
         if (!currentMap) return;
 
+        // 创建GridEngine配置
         const gridEngineConfig = {
             characters: [
                 {
                     id: 'hero',
                     sprite: this.heroSprite,
-                    startPosition: currentMap.spawnPoint,
+                    startPosition: currentMap.spawnPoint || { x: 10, y: 10 },
                     offsetY: 4,
+                    speed: GAME_BALANCE.HERO.MOVE_SPEED,
+                    walkingAnimationMapping: {
+                        up: 'hero_walking_up',
+                        down: 'hero_walking_down',
+                        left: 'hero_walking_left',
+                        right: 'hero_walking_right',
+                    },
+                    idleFrameMapping: {
+                        up: 'hero_idle_up_01',
+                        down: 'hero_idle_down_01',
+                        left: 'hero_idle_left_01',
+                        right: 'hero_idle_right_01',
+                    },
                 },
             ],
         };
 
         // 添加敌人到GridEngine
         this.enemiesSprites.getChildren().forEach((enemy: any) => {
-            gridEngineConfig.characters.push({
+            const enemyConfig = {
                 id: enemy.name,
                 sprite: enemy,
-                startPosition: { x: enemy.x / 16, y: (enemy.y / 16) - 1 },
-                speed: (enemy as any).speed,
+                startPosition: { x: Math.floor(enemy.x / 16), y: Math.floor(enemy.y / 16) },
+                speed: (enemy as any).speed || GAME_BALANCE.ENEMY.SLIME.MOVE_SPEED,
                 offsetY: -4,
-            });
+                walkingAnimationMapping: {
+                    up: 'slime_walking',
+                    down: 'slime_walking',
+                    left: 'slime_walking',
+                    right: 'slime_walking',
+                },
+                idleFrameMapping: {
+                    up: 'slime_idle',
+                    down: 'slime_idle',
+                    left: 'slime_idle',
+                    right: 'slime_idle',
+                },
+                // 敌人AI配置
+                ai: {
+                    type: ENEMY_AI_TYPE,
+                    followDistance: 5,
+                    attackDistance: 1,
+                    patrolRadius: 3,
+                    idleTime: 2000,
+                },
+            };
+            gridEngineConfig.characters.push(enemyConfig);
         });
 
         // 添加NPC到GridEngine
         this.npcSprites.getChildren().forEach((npc: any) => {
-            gridEngineConfig.characters.push({
+            const npcConfig = {
                 id: npc.texture.key,
                 sprite: npc,
-                startPosition: { x: npc.x / 16, y: (npc.y / 16) - 1 },
-                speed: 1,
+                startPosition: { x: Math.floor(npc.x / 16), y: Math.floor(npc.y / 16) },
+                speed: ANIMATION_CONFIG.NPC_WALK_SPEED,
                 offsetY: 4,
-            });
+                walkingAnimationMapping: {
+                    up: `${npc.texture.key}_walking_up`,
+                    down: `${npc.texture.key}_walking_down`,
+                    left: `${npc.texture.key}_walking_left`,
+                    right: `${npc.texture.key}_walking_right`,
+                },
+                idleFrameMapping: {
+                    up: `${npc.texture.key}_idle_up_01`,
+                    down: `${npc.texture.key}_idle_down_01`,
+                    left: `${npc.texture.key}_idle_left_01`,
+                    right: `${npc.texture.key}_idle_right_01`,
+                },
+                // NPC行为配置
+                behavior: {
+                    movementType: NPC_MOVEMENT_RANDOM,
+                    movementDelay: 3000,
+                    movementArea: 2,
+                    canInteract: true,
+                },
+            };
+            gridEngineConfig.characters.push(npcConfig);
         });
 
+        // 创建GridEngine
         this.gridEngine.create(this.map, gridEngineConfig);
 
         // 设置移动事件
         this.setupGridEngineEvents();
+
+        // 初始化AI系统
+        this.initializeAISystem();
+
+        // 设置路径寻找
+        this.setupPathfinding();
     }
 
     private setupGridEngineEvents() {
         // 移动开始事件
         this.gridEngine.movementStarted().subscribe(({ charId, direction }: any) => {
-            if (charId === 'hero') {
-                this.heroSprite.anims.play(`hero_walking_${direction}`);
-            } else {
-                const npc = this.npcSprites.getChildren().find((npcSprite: any) => npcSprite.texture.key === charId);
-                if (npc) {
-                    npc.anims.play(`${charId}_walking_${direction}`);
-                    return;
-                }
-
-                const enemy = this.enemiesSprites.getChildren().find((enemySprite: any) => enemySprite.name === charId);
-                if (enemy) {
-                    enemy.anims.play(`slime_walking`);
-                }
-            }
+            this.handleMovementStarted(charId, direction);
         });
 
         // 移动停止事件
         this.gridEngine.movementStopped().subscribe(({ charId, direction }: any) => {
-            if (charId === 'hero') {
-                this.heroSprite.anims.stop();
-                this.heroSprite.setFrame(this.getStopFrame(direction, charId));
-            } else {
-                const npc = this.npcSprites.getChildren().find((npcSprite: any) => npcSprite.texture.key === charId);
-                if (npc) {
-                    npc.anims.stop();
-                    npc.setFrame(this.getStopFrame(direction, charId));
-                    return;
+            this.handleMovementStopped(charId, direction);
+        });
+
+        // 方向改变事件
+        this.gridEngine.directionChanged().subscribe(({ charId, direction }: any) => {
+            this.handleDirectionChanged(charId, direction);
+        });
+
+        // 位置改变事件
+        this.gridEngine.positionChanged().subscribe(({ charId, position }: any) => {
+            this.handlePositionChanged(charId, position);
+        });
+
+        // 移动完成事件
+        this.gridEngine.movementFinished().subscribe(({ charId }: any) => {
+            this.handleMovementFinished(charId);
+        });
+    }
+
+    private handleMovementStarted(charId: string, direction: string) {
+        if (charId === 'hero') {
+            this.heroSprite.anims.play(`hero_walking_${direction}`);
+            this.soundManager.playSoundEffect('footstep');
+        } else {
+            const npc = this.npcSprites.getChildren().find((npcSprite: any) => npcSprite.texture.key === charId);
+            if (npc) {
+                npc.anims.play(`${charId}_walking_${direction}`);
+                return;
+            }
+
+            const enemy = this.enemiesSprites.getChildren().find((enemySprite: any) => enemySprite.name === charId);
+            if (enemy) {
+                enemy.anims.play(`slime_walking`);
+            }
+        }
+    }
+
+    private handleMovementStopped(charId: string, direction: string) {
+        if (charId === 'hero') {
+            this.heroSprite.anims.stop();
+            this.heroSprite.setFrame(this.getStopFrame(direction, charId));
+        } else {
+            const npc = this.npcSprites.getChildren().find((npcSprite: any) => npcSprite.texture.key === charId);
+            if (npc) {
+                npc.anims.stop();
+                npc.setFrame(this.getStopFrame(direction, charId));
+                return;
+            }
+
+            const enemy = this.enemiesSprites.getChildren().find((enemySprite: any) => enemySprite.name === charId);
+            if (enemy) {
+                enemy.anims.play(`slime_idle`, true);
+            }
+        }
+    }
+
+    private handleDirectionChanged(charId: string, direction: string) {
+        if (charId === 'hero') {
+            this.heroSprite.setFrame(this.getStopFrame(direction, charId));
+        } else {
+            const npc = this.npcSprites.getChildren().find((npcSprite: any) => npcSprite.texture.key === charId);
+            if (npc) {
+                npc.setFrame(this.getStopFrame(direction, charId));
+                return;
+            }
+
+            const enemy = this.enemiesSprites.getChildren().find((enemySprite: any) => enemySprite.name === charId);
+            if (enemy) {
+                enemy.setFrame(`slime_idle`);
+            }
+        }
+    }
+
+    private handlePositionChanged(charId: string, position: { x: number; y: number }) {
+        // 更新碰撞器位置
+        if (charId === 'hero') {
+            this.updateColliders();
+        }
+
+        // 检查传送点
+        this.checkTeleportPoints(charId, position);
+
+        // 检查交互点
+        this.checkInteractionPoints(charId, position);
+    }
+
+    private handleMovementFinished(charId: string) {
+        // 移动完成后的处理
+        if (charId === 'hero') {
+            // 英雄移动完成后的逻辑
+            this.onHeroMovementFinished();
+        } else {
+            // NPC或敌人移动完成后的逻辑
+            this.onCharacterMovementFinished(charId);
+        }
+    }
+
+    // AI系统
+    private initializeAISystem() {
+        // 初始化敌人AI
+        this.enemiesSprites.getChildren().forEach((enemy: any) => {
+            this.initializeEnemyAI(enemy);
+        });
+
+        // 初始化NPC AI
+        this.npcSprites.getChildren().forEach((npc: any) => {
+            this.initializeNPCAI(npc);
+        });
+
+        // 启动AI更新循环
+        this.time.addEvent({
+            delay: 1000,
+            callback: this.updateAI,
+            callbackScope: this,
+            loop: true,
+        });
+    }
+
+    private initializeEnemyAI(enemy: any) {
+        enemy.aiState = {
+            type: 'patrol',
+            lastActionTime: 0,
+            patrolRadius: 3,
+            followDistance: 5,
+            attackDistance: 1,
+            idleTime: 2000,
+            lastPosition: { x: enemy.x, y: enemy.y },
+        };
+
+        // 开始巡逻
+        this.startEnemyPatrol(enemy);
+    }
+
+    private initializeNPCAI(npc: any) {
+        npc.aiState = {
+            type: 'idle',
+            lastActionTime: 0,
+            movementDelay: 3000,
+            movementArea: 2,
+            canInteract: true,
+            lastPosition: { x: npc.x, y: npc.y },
+        };
+
+        // 开始NPC行为
+        this.startNPCBehavior(npc);
+    }
+
+    private updateAI() {
+        const currentTime = this.time.now;
+
+        // 更新敌人AI
+        this.enemiesSprites.getChildren().forEach((enemy: any) => {
+            this.updateEnemyAI(enemy, currentTime);
+        });
+
+        // 更新NPC AI
+        this.npcSprites.getChildren().forEach((npc: any) => {
+            this.updateNPCAI(npc, currentTime);
+        });
+    }
+
+    private updateEnemyAI(enemy: any, currentTime: number) {
+        const heroPosition = this.gridEngine.getPosition('hero');
+        const enemyPosition = this.gridEngine.getPosition(enemy.name);
+        const distance = calculateDistance(
+            heroPosition.x,
+            heroPosition.y,
+            enemyPosition.x,
+            enemyPosition.y
+        );
+
+        // 检查是否应该跟随英雄
+        if (distance <= enemy.aiState.followDistance && !enemy.aiState.isFollowing) {
+            enemy.aiState.isFollowing = true;
+            enemy.aiState.type = 'follow';
+            this.gridEngine.setSpeed(enemy.name, enemy.aiState.followSpeed || 2);
+        } else if (distance > enemy.aiState.followDistance && enemy.aiState.isFollowing) {
+            enemy.aiState.isFollowing = false;
+            enemy.aiState.type = 'patrol';
+            this.gridEngine.setSpeed(enemy.name, enemy.aiState.patrolSpeed || 1);
+            this.startEnemyPatrol(enemy);
+        }
+
+        // 根据AI状态执行相应行为
+        switch (enemy.aiState.type) {
+            case 'patrol':
+                this.updateEnemyPatrol(enemy, currentTime);
+                break;
+            case 'follow':
+                this.updateEnemyFollow(enemy, heroPosition);
+                break;
+            case 'attack':
+                this.updateEnemyAttack(enemy, currentTime);
+                break;
+        }
+    }
+
+    private updateNPCAI(npc: any, currentTime: number) {
+        if (currentTime - npc.aiState.lastActionTime > npc.aiState.movementDelay) {
+            this.updateNPCBehavior(npc);
+            npc.aiState.lastActionTime = currentTime;
+        }
+    }
+
+    private startEnemyPatrol(enemy: any) {
+        if (enemy.aiState.type === 'patrol') {
+            this.gridEngine.moveRandomly(enemy.name, 2000, enemy.aiState.patrolRadius);
+        }
+    }
+
+    private updateEnemyPatrol(enemy: any, currentTime: number) {
+        if (!this.gridEngine.isMoving(enemy.name) && 
+            currentTime - enemy.aiState.lastActionTime > enemy.aiState.idleTime) {
+            this.startEnemyPatrol(enemy);
+            enemy.aiState.lastActionTime = currentTime;
+        }
+    }
+
+    private updateEnemyFollow(enemy: any, heroPosition: { x: number; y: number }) {
+        if (!this.gridEngine.isMoving(enemy.name)) {
+            const enemyPosition = this.gridEngine.getPosition(enemy.name);
+            const path = this.gridEngine.findShortestPath(enemy.name, heroPosition);
+            
+            if (path && path.length > 0) {
+                this.gridEngine.move(enemy.name, path[0]);
+            }
+        }
+    }
+
+    private updateEnemyAttack(enemy: any, currentTime: number) {
+        // 攻击逻辑
+        if (currentTime - enemy.aiState.lastActionTime > enemy.aiState.attackCooldown) {
+            // 执行攻击
+            enemy.anims.play('slime_attack');
+            enemy.aiState.lastActionTime = currentTime;
+        }
+    }
+
+    private startNPCBehavior(npc: any) {
+        if (npc.aiState.type === 'idle') {
+            this.gridEngine.moveRandomly(npc.texture.key, npc.aiState.movementDelay, npc.aiState.movementArea);
+        }
+    }
+
+    private updateNPCBehavior(npc: any) {
+        if (npc.aiState.type === 'idle' && !this.gridEngine.isMoving(npc.texture.key)) {
+            this.startNPCBehavior(npc);
+        }
+    }
+
+    // 路径寻找系统
+    private setupPathfinding() {
+        // 设置路径寻找配置
+        this.gridEngine.setPathfindingConfig({
+            algorithm: 'A*',
+            diagonalMovement: false,
+            costFunction: (from: any, to: any) => {
+                // 基础移动成本
+                let cost = 1;
+
+                // 检查目标位置是否有障碍物
+                const tile = this.map.getTileAt(to.x, to.y);
+                if (tile && tile.properties?.ge_collide) {
+                    cost = Infinity; // 不可通过
                 }
 
-                const enemy = this.enemiesSprites.getChildren().find((enemySprite: any) => enemySprite.name === charId);
-                if (enemy) {
-                    enemy.anims.play(`slime_idle`, true);
+                // 检查是否有敌人
+                const enemiesAtPosition = this.enemiesSprites.getChildren().filter((enemy: any) => {
+                    const enemyPos = this.gridEngine.getPosition(enemy.name);
+                    return enemyPos.x === to.x && enemyPos.y === to.y;
+                });
+
+                if (enemiesAtPosition.length > 0) {
+                    cost += 10; // 增加通过敌人的成本
                 }
-            }
+
+                return cost;
+            },
         });
+    }
+
+    // 位置检查方法
+    private checkTeleportPoints(charId: string, position: { x: number; y: number }) {
+        if (charId !== 'hero') return;
+
+        // 检查当前位置是否有传送点
+        const teleportLayer = this.map.getLayer('teleports');
+        if (teleportLayer) {
+            const tile = teleportLayer.getTileAt(position.x, position.y);
+            if (tile && tile.properties?.teleportData) {
+                this.handleTeleport(tile.properties.teleportData);
+            }
+        }
+    }
+
+    private checkInteractionPoints(charId: string, position: { x: number; y: number }) {
+        if (charId !== 'hero') return;
+
+        // 检查交互点
+        const interactionLayer = this.map.getLayer('interactions');
+        if (interactionLayer) {
+            const tile = interactionLayer.getTileAt(position.x, position.y);
+            if (tile && tile.properties?.interactionType) {
+                this.handleInteraction(tile.properties.interactionType, tile.properties.interactionData);
+            }
+        }
+    }
+
+    private handleTeleport(teleportData: string) {
+        if (this.isTeleporting) return;
+
+        this.isTeleporting = true;
+        const data = this.extractTeleportDataFromTiled(teleportData);
+
+        // 淡出效果
+        this.cameras.main.fadeOut(SCENE_FADE_TIME);
+        
+        this.time.delayedCall(SCENE_FADE_TIME, () => {
+            // 切换到新地图
+            this.scene.start('CompleteGameScene', {
+                mapKey: data.mapKey,
+                heroStatus: {
+                    position: { x: data.x, y: data.y },
+                    health: this.heroSprite.health,
+                    maxHealth: this.heroSprite.maxHealth,
+                    coin: this.heroSprite.coin,
+                    canPush: this.heroSprite.canPush,
+                    haveSword: this.heroSprite.haveSword,
+                },
+            });
+        });
+    }
+
+    private handleInteraction(interactionType: string, interactionData: any) {
+        switch (interactionType) {
+            case 'dialog':
+                this.showDialog(interactionData.characterName);
+                break;
+            case 'item':
+                this.collectItem(interactionData.itemType);
+                break;
+            case 'trigger':
+                this.triggerEvent(interactionData.eventName);
+                break;
+        }
+    }
+
+    // 移动完成回调
+    private onHeroMovementFinished() {
+        // 英雄移动完成后的逻辑
+        this.statsManager.recordMovement();
+    }
+
+    private onCharacterMovementFinished(charId: string) {
+        // 角色移动完成后的逻辑
+        const npc = this.npcSprites.getChildren().find((npcSprite: any) => npcSprite.texture.key === charId);
+        if (npc) {
+            // NPC移动完成
+            this.onNPCMovementFinished(npc);
+        }
+
+        const enemy = this.enemiesSprites.getChildren().find((enemySprite: any) => enemySprite.name === charId);
+        if (enemy) {
+            // 敌人移动完成
+            this.onEnemyMovementFinished(enemy);
+        }
+    }
+
+    private onNPCMovementFinished(npc: any) {
+        // NPC移动完成后的行为
+        if (npc.aiState.type === 'idle') {
+            // 随机转向
+            const directions = ['up', 'down', 'left', 'right'];
+            const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+            this.gridEngine.setDirection(npc.texture.key, randomDirection);
+        }
+    }
+
+    private onEnemyMovementFinished(enemy: any) {
+        // 敌人移动完成后的行为
+        if (enemy.aiState.type === 'patrol') {
+            // 继续巡逻
+            this.startEnemyPatrol(enemy);
+        }
+    }
+
+    // GridEngine辅助方法
+    private collectItem(itemType: string) {
+        switch (itemType) {
+            case 'heart':
+                (this.heroSprite as any).restoreHealth(20);
+                this.statsManager.itemCollected('heart');
+                break;
+            case 'coin':
+                (this.heroSprite as any).collectCoin(1);
+                break;
+            case 'sword':
+                (this.heroSprite as any).haveSword = true;
+                this.showDialog('sword');
+                break;
+            case 'push':
+                (this.heroSprite as any).canPush = true;
+                this.showDialog('push');
+                break;
+        }
+    }
+
+    private triggerEvent(eventName: string) {
+        // 触发游戏事件
+        const customEvent = new CustomEvent('game-event', {
+            detail: { eventName, data: {} },
+        });
+        window.dispatchEvent(customEvent);
+    }
+
+    // 多角色同步方法
+    private syncCharacterPositions() {
+        // 同步所有角色位置到GridEngine
+        this.enemiesSprites.getChildren().forEach((enemy: any) => {
+            const position = this.gridEngine.getPosition(enemy.name);
+            enemy.setPosition(position.x * 16, position.y * 16);
+        });
+
+        this.npcSprites.getChildren().forEach((npc: any) => {
+            const position = this.gridEngine.getPosition(npc.texture.key);
+            npc.setPosition(position.x * 16, position.y * 16);
+        });
+    }
+
+    // 性能优化方法
+    private optimizeGridEngine() {
+        // 设置GridEngine性能选项
+        this.gridEngine.setPerformanceConfig({
+            maxPathfindingDistance: 20,
+            pathfindingCacheSize: 100,
+            movementBatchSize: 5,
+            updateFrequency: 60,
+        });
+
+        // 启用空间分区
+        this.gridEngine.enableSpatialPartitioning({
+            cellSize: 32,
+            maxObjectsPerCell: 10,
+        });
+    }
+
+    // 调试方法
+    private enableGridEngineDebug() {
+        if (this.physics.config.debug) {
+            this.gridEngine.enableDebugMode({
+                showPaths: true,
+                showCollisions: true,
+                showPositions: true,
+                showDirections: true,
+            });
+        }
     }
 
     private showDialog(characterName: string) {

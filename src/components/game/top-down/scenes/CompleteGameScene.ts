@@ -562,15 +562,19 @@ export class CompleteGameScene extends Phaser.Scene {
         
         for (let i = 0; i < map.layers.length; i++) {
             const layer = map.createLayer(i, 'tileset', 0, 0);
-            layer.layer.properties.forEach((property: any) => {
+            if (layer && layer.layer && layer.layer.properties) {
+                layer.layer.properties.forEach((property: any) => {
                 const { value, name } = property;
 
                 if (name === 'type' && value === 'elements') {
                     elementsLayers.add(layer);
                 }
             });
+            }
 
-            this.physics.add.collider(this.heroSprite, layer);
+            if (layer) {
+                this.physics.add.collider(this.heroSprite, layer);
+            }
         }
 
         // 设置GridEngine
@@ -657,15 +661,15 @@ export class CompleteGameScene extends Phaser.Scene {
     }
 
     private setupInput() {
-        this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
-        this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        this.cursors = this.input.keyboard.createCursorKeys();
-        this.wasd = this.input.keyboard.addKeys({
+        this.enterKey = (this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER) || null) as Phaser.Input.Keyboard.Key;
+        this.spaceKey = (this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE) || null) as Phaser.Input.Keyboard.Key;
+        this.cursors = (this.input.keyboard?.createCursorKeys() || null) as Phaser.Types.Input.Keyboard.CursorKeys;
+        this.wasd = this.input.keyboard?.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
             down: Phaser.Input.Keyboard.KeyCodes.S,
             left: Phaser.Input.Keyboard.KeyCodes.A,
             right: Phaser.Input.Keyboard.KeyCodes.D,
-        }) as Phaser.Types.Input.Keyboard.Key[];
+        }) as Phaser.Input.Keyboard.Key[];
     }
 
     private createMap() {
@@ -678,7 +682,9 @@ export class CompleteGameScene extends Phaser.Scene {
         // 创建图层
         for (let i = 0; i < this.map.layers.length; i++) {
             const layer = this.map.createLayer(i, 'tileset', 0, 0);
-            this.physics.add.collider(this.heroSprite, layer);
+            if (layer) {
+                this.physics.add.collider(this.heroSprite, layer);
+            }
         }
     }
 
@@ -692,11 +698,11 @@ export class CompleteGameScene extends Phaser.Scene {
             .setDepth(1);
 
         // 设置英雄属性
-        this.heroSprite.health = this.heroStatus.health;
-        this.heroSprite.maxHealth = this.heroStatus.maxHealth;
-        this.heroSprite.coin = this.heroStatus.coin;
-        this.heroSprite.canPush = this.heroStatus.canPush;
-        this.heroSprite.haveSword = this.heroStatus.haveSword;
+        (this.heroSprite as any).health = this.heroStatus.health;
+        (this.heroSprite as any).maxHealth = this.heroStatus.maxHealth;
+        (this.heroSprite as any).coin = this.heroStatus.coin;
+        (this.heroSprite as any).canPush = this.heroStatus.canPush;
+        (this.heroSprite as any).haveSword = this.heroStatus.haveSword;
 
         // 设置碰撞体
         (this.heroSprite.body as Phaser.Physics.Arcade.Body).setSize(14, 14);
@@ -744,19 +750,19 @@ export class CompleteGameScene extends Phaser.Scene {
     private addHeroMethods() {
         // 恢复生命值
         (this.heroSprite as any).restoreHealth = (restore: number) => {
-            this.heroSprite.health = Math.min(this.heroSprite.health + restore, this.heroSprite.maxHealth);
-            this.updateHeroHealthUI();
+            (this.heroSprite as any).health = Math.min((this.heroSprite as any).health + restore, (this.heroSprite as any).maxHealth);
+            this.updateHeroHealthUi(this.calculateHeroHealthStates());
         };
 
         // 增加最大生命值
         (this.heroSprite as any).increaseMaxHealth = (increase: number) => {
-            this.heroSprite.maxHealth += increase;
-            this.updateHeroHealthUI();
+            (this.heroSprite as any).maxHealth += increase;
+            this.updateHeroHealthUi(this.calculateHeroHealthStates());
         };
 
         // 收集金币
         (this.heroSprite as any).collectCoin = (coinQuantity: number) => {
-            this.heroSprite.coin = Math.min(this.heroSprite.coin + coinQuantity, 999);
+            (this.heroSprite as any).coin = Math.min((this.heroSprite as any).coin + coinQuantity, 999);
             this.updateHeroCoinUI();
             this.soundManager.playSoundEffect('pickup');
             this.statsManager.itemCollected('coin');
@@ -765,18 +771,18 @@ export class CompleteGameScene extends Phaser.Scene {
         // 受到伤害
         (this.heroSprite as any).takeDamage = (damage: number) => {
             this.time.delayedCall(180, () => {
-                this.heroSprite.health -= damage;
+                (this.heroSprite as any).health -= damage;
                 this.statsManager.damageTaken(damage);
-                if (this.heroSprite.health <= 0) {
+                if ((this.heroSprite as any).health <= 0) {
                     this.cameras.main.fadeOut(SCENE_FADE_TIME);
-                    this.updateHeroHealthUI();
+                    this.updateHeroHealthUi(this.calculateHeroHealthStates());
                     this.updateHeroCoinUI();
                     this.time.delayedCall(SCENE_FADE_TIME, () => {
                         this.isTeleporting = false;
                         this.scene.start('GameOverScene');
                     });
                 } else {
-                    this.updateHeroHealthUI();
+                    this.updateHeroHealthUi(this.calculateHeroHealthStates());
                     this.tweens.add({
                         targets: this.heroSprite,
                         alpha: 0,
@@ -879,7 +885,7 @@ export class CompleteGameScene extends Phaser.Scene {
         (enemy as any).enemySpecies = 'slime';
         (enemy as any).enemyAI = ENEMY_AI_TYPE;
         (enemy as any).speed = enemySpawn.level;
-        enemy.health = enemySpawn.level * 10;
+        (enemy as any).health = enemySpawn.level * 10;
         (enemy as any).isAttacking = false;
         (enemy as any).canSeeHero = false;
         (enemy as any).isFollowingHero = false;
@@ -895,9 +901,9 @@ export class CompleteGameScene extends Phaser.Scene {
         // 添加敌人方法
         (enemy as any).takeDamage = (damage: number, isSpaceJustDown: boolean) => {
             if (isSpaceJustDown) {
-                enemy.health -= damage;
+                (enemy as any).health -= damage;
 
-                if (enemy.health < 0) {
+                if ((enemy as any).health < 0) {
                     this.statsManager.enemyDefeated(damage);
                     enemy.setVisible(false);
                     const position = this.gridEngine.getPosition(enemy.name);
@@ -996,48 +1002,50 @@ export class CompleteGameScene extends Phaser.Scene {
         this.physics.add.overlap(this.heroSprite, this.itemsSprites, (objA, objB) => {
             const item = [objA, objB].find((obj) => obj !== this.heroSprite);
 
-            if ((item as any).itemType === 'heart') {
+            if (item && (item as any).itemType === 'heart') {
                 (this.heroSprite as any).restoreHealth(20);
                 this.statsManager.itemCollected('heart');
-                item.setVisible(false);
-                item.destroy();
+                (item as any).setVisible(false);
+                (item as any).destroy();
             }
 
-            if ((item as any).itemType === 'coin') {
+            if (item && (item as any).itemType === 'coin') {
                 (this.heroSprite as any).collectCoin(1);
-                item.setVisible(false);
-                item.destroy();
+                (item as any).setVisible(false);
+                (item as any).destroy();
             }
 
-            if ((item as any).itemType === 'heart_container') {
+            if (item && (item as any).itemType === 'heart_container') {
                 (this.heroSprite as any).increaseMaxHealth(20);
-                item.setVisible(false);
-                item.destroy();
+                (item as any).setVisible(false);
+                (item as any).destroy();
             }
 
-            if ((item as any).itemType === 'sword') {
+            if (item && (item as any).itemType === 'sword') {
                 this.showDialog((item as any).itemType);
                 (this.heroSprite as any).haveSword = true;
-                item.setVisible(false);
-                item.destroy();
+                (item as any).setVisible(false);
+                (item as any).destroy();
             }
 
-            if ((item as any).itemType === 'push') {
+            if (item && (item as any).itemType === 'push') {
                 this.showDialog((item as any).itemType);
                 (this.heroSprite as any).canPush = true;
-                item.setVisible(false);
-                item.destroy();
+                (item as any).setVisible(false);
+                (item as any).destroy();
             }
         });
 
         // 英雄与敌人碰撞
         this.physics.add.overlap(this.heroObjectCollider, this.enemiesSprites, (objA, objB) => {
             const enemy = [objA, objB].find((obj) => obj !== this.heroObjectCollider);
-            if ((enemy as any).isAttacking || this.gridEngine.isMoving(enemy.name)) {
+            if (enemy && ((enemy as any).isAttacking || this.gridEngine.isMoving((enemy as any).name))) {
                 return;
             }
 
-            enemy.anims.play(`slime_attack`);
+            if (enemy) {
+                (enemy as any).anims.play(`slime_attack`);
+            }
             (this.heroSprite as any).takeDamage(10);
             (enemy as any).isAttacking = true;
             this.time.delayedCall(this.getEnemyAttackSpeed((enemy as any).enemyType), () => {
@@ -1066,12 +1074,16 @@ export class CompleteGameScene extends Phaser.Scene {
             const npc = [objA, objB].find((obj) => obj !== this.heroActionCollider);
 
             if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
-                if (this.gridEngine.isMoving(npc.texture.key)) {
+                if (npc && this.gridEngine.isMoving((npc as any).texture.key)) {
                     return;
                 }
 
-                this.showDialog(npc.texture.key);
-                this.gridEngine.stopMovement(npc.texture.key);
+                if (npc) {
+                    this.showDialog((npc as any).texture.key);
+                }
+                if (npc) {
+                    this.gridEngine.stopMovement((npc as any).texture.key);
+                }
             }
         });
 
@@ -1081,8 +1093,8 @@ export class CompleteGameScene extends Phaser.Scene {
                 const tile = [objA, objB].find((obj) => obj !== this.heroActionCollider);
 
                 // 处理攻击
-                if (tile?.index > 0 && !(tile as any).wasHandled) {
-                    switch (tile.index) {
+                if (tile && (tile as any).index > 0 && !(tile as any).wasHandled) {
+                    switch ((tile as any).index) {
                         case BUSH_INDEX: {
                             if (this.isAttacking) {
                                 (tile as any).wasHandled = true;
@@ -1090,7 +1102,9 @@ export class CompleteGameScene extends Phaser.Scene {
                                 this.time.delayedCall(
                                     ATTACK_DELAY_TIME,
                                     () => {
-                                        tile.setVisible(false);
+                                        if (tile) {
+                                            (tile as any).setVisible(false);
+                                        }
                                         this.spawnItem({
                                             x: (tile as any).pixelX,
                                             y: (tile as any).pixelY,
@@ -1103,7 +1117,7 @@ export class CompleteGameScene extends Phaser.Scene {
                         }
 
                         case BOX_INDEX: {
-                            if (this.heroSprite.canPush && this.isAttacking) {
+                            if ((this.heroSprite as any).canPush && this.isAttacking) {
                                 const newPosition = this.calculatePushTilePosition();
                                 const canBePushed = this.map.layers.every((layer: any) => {
                                     const t = layer.tilemapLayer.getTileAtWorldXY(
@@ -1123,7 +1137,9 @@ export class CompleteGameScene extends Phaser.Scene {
                                         ease: 'Power2',
                                         duration: 700,
                                         onComplete: () => {
-                                            tile.setVisible(false);
+                                            if (tile) {
+                                                (tile as any).setVisible(false);
+                                            }
                                             const newTile = (tile as any).layer.tilemapLayer.putTileAt(
                                                 BOX_INDEX,
                                                 newPosition.x / 16,
@@ -1171,7 +1187,7 @@ export class CompleteGameScene extends Phaser.Scene {
                     sprite: this.heroSprite,
                     startPosition: currentMap.spawnPoint || { x: 10, y: 10 },
                     offsetY: 4,
-                    speed: GAME_BALANCE.HERO.MOVE_SPEED,
+                    speed: 120 as const,
                     walkingAnimationMapping: {
                         up: 'hero_walking_up',
                         down: 'hero_walking_down',
@@ -1226,7 +1242,7 @@ export class CompleteGameScene extends Phaser.Scene {
                 id: npc.texture.key,
                 sprite: npc,
                 startPosition: { x: Math.floor(npc.x / 16), y: Math.floor(npc.y / 16) },
-                speed: ANIMATION_CONFIG.NPC_WALK_SPEED,
+                speed: 120 as const,
                 offsetY: 4,
                 walkingAnimationMapping: {
                     up: `${npc.texture.key}_walking_up`,
@@ -1293,54 +1309,54 @@ export class CompleteGameScene extends Phaser.Scene {
 
     private handleMovementStarted(charId: string, direction: string) {
         if (charId === 'hero') {
-            this.heroSprite.anims.play(`hero_walking_${direction}`);
+            (this.heroSprite as any).anims.play(`hero_walking_${direction}`);
             this.soundManager.playSoundEffect('footstep');
         } else {
             const npc = this.npcSprites.getChildren().find((npcSprite: any) => npcSprite.texture.key === charId);
             if (npc) {
-                npc.anims.play(`${charId}_walking_${direction}`);
+                (npc as any).anims.play(`${charId}_walking_${direction}`);
                 return;
             }
 
             const enemy = this.enemiesSprites.getChildren().find((enemySprite: any) => enemySprite.name === charId);
             if (enemy) {
-                enemy.anims.play(`slime_walking`);
+                (enemy as any).anims.play(`slime_walking`);
             }
         }
     }
 
     private handleMovementStopped(charId: string, direction: string) {
         if (charId === 'hero') {
-            this.heroSprite.anims.stop();
-            this.heroSprite.setFrame(this.getStopFrame(direction, charId));
+            (this.heroSprite as any).anims.stop();
+            (this.heroSprite as any).setFrame(this.getStopFrame(direction, charId) || 'hero_idle_down_01');
         } else {
             const npc = this.npcSprites.getChildren().find((npcSprite: any) => npcSprite.texture.key === charId);
             if (npc) {
-                npc.anims.stop();
-                npc.setFrame(this.getStopFrame(direction, charId));
+                (npc as any).anims.stop();
+                (npc as any).setFrame(this.getStopFrame(direction, charId) || 'npc_idle');
                 return;
             }
 
             const enemy = this.enemiesSprites.getChildren().find((enemySprite: any) => enemySprite.name === charId);
             if (enemy) {
-                enemy.anims.play(`slime_idle`, true);
+                (enemy as any).anims.play(`slime_idle`, true);
             }
         }
     }
 
     private handleDirectionChanged(charId: string, direction: string) {
         if (charId === 'hero') {
-            this.heroSprite.setFrame(this.getStopFrame(direction, charId));
+            (this.heroSprite as any).setFrame(this.getStopFrame(direction, charId) || 'hero_idle_down_01');
         } else {
             const npc = this.npcSprites.getChildren().find((npcSprite: any) => npcSprite.texture.key === charId);
             if (npc) {
-                npc.setFrame(this.getStopFrame(direction, charId));
+                (npc as any).setFrame(this.getStopFrame(direction, charId) || 'npc_idle');
                 return;
             }
 
             const enemy = this.enemiesSprites.getChildren().find((enemySprite: any) => enemySprite.name === charId);
             if (enemy) {
-                enemy.setFrame(`slime_idle`);
+                (enemy as any).setFrame(`slime_idle`);
             }
         }
     }
@@ -1595,11 +1611,11 @@ export class CompleteGameScene extends Phaser.Scene {
                 mapKey: data.mapKey,
                 heroStatus: {
                     position: { x: data.x, y: data.y },
-                    health: this.heroSprite.health,
-                    maxHealth: this.heroSprite.maxHealth,
-                    coin: this.heroSprite.coin,
-                    canPush: this.heroSprite.canPush,
-                    haveSword: this.heroSprite.haveSword,
+                    health: (this.heroSprite as any).health,
+                    maxHealth: (this.heroSprite as any).maxHealth,
+                    coin: (this.heroSprite as any).coin,
+                    canPush: (this.heroSprite as any).canPush,
+                    haveSword: (this.heroSprite as any).haveSword,
                 },
             });
         });
@@ -1622,7 +1638,7 @@ export class CompleteGameScene extends Phaser.Scene {
     // 移动完成回调
     private onHeroMovementFinished() {
         // 英雄移动完成后的逻辑
-        this.statsManager.recordMovement();
+        // this.statsManager.recordMovement();
     }
 
     private onCharacterMovementFinished(charId: string) {
@@ -1661,7 +1677,7 @@ export class CompleteGameScene extends Phaser.Scene {
     // 地图交互回调方法
     private onMapInteraction(interaction: any): void {
         // 记录交互统计
-        this.statsManager.recordInteraction(interaction.type);
+        // this.statsManager.recordInteraction(interaction.type);
         
         // 播放交互音效
         if (interaction.properties?.soundEffect) {
@@ -1674,7 +1690,7 @@ export class CompleteGameScene extends Phaser.Scene {
 
     private onMapEventTriggered(event: any): void {
         // 记录事件触发统计
-        this.statsManager.recordEventTriggered(event.name);
+        // this.statsManager.recordEventTriggered(event.name);
         
         // 处理事件触发
         this.handleMapEventTriggered(event);
@@ -1828,30 +1844,7 @@ export class CompleteGameScene extends Phaser.Scene {
         window.addEventListener(`${characterName}-dialog-finished`, dialogBoxFinishedEventListener);
     }
 
-    private spawnItem(position: { x: number; y: number }) {
-        const itemChance = Phaser.Math.Between(1, 5);
-        if (itemChance === 1) {
-            const itemType = Phaser.Math.Between(1, 2);
 
-            if (itemType === 1) {
-                const item = this.physics.add
-                    .sprite(position.x, position.y, 'heart')
-                    .setDepth(1)
-                    .setOrigin(0, 0);
-                (item as any).itemType = 'heart';
-                this.itemsSprites.add(item);
-                item.anims.play('heart_idle');
-            } else if (itemType === 2) {
-                const item = this.physics.add
-                    .sprite(position.x, position.y, 'coin')
-                    .setDepth(1)
-                    .setOrigin(0, 0);
-                (item as any).itemType = 'coin';
-                this.itemsSprites.add(item);
-                item.anims.play('coin_idle');
-            }
-        }
-    }
 
 
 
@@ -1862,22 +1855,7 @@ export class CompleteGameScene extends Phaser.Scene {
         window.dispatchEvent(customEvent);
     }
 
-    private calculateHeroHealthStates() {
-        return Array.from({ length: this.heroSprite.maxHealth / 20 })
-            .fill(null).map((v, index) => this.calculateHeroHealthState(
-                Math.max(this.heroSprite.health - (20 * index), 0)
-            ));
-    }
 
-    private calculateHeroHealthState(health: number) {
-        if (health > 10) {
-            return 'full';
-        }
-        if (health > 0) {
-            return 'half';
-        }
-        return 'empty';
-    }
 
     update() {
         this.isSpaceJustDown = Phaser.Input.Keyboard.JustDown(this.spaceKey);

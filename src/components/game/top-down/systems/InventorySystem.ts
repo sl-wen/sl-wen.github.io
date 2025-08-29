@@ -147,8 +147,8 @@ export class InventorySystem {
    */
   equipItem(slotIndex: number): boolean {
     const slot = this.slots[slotIndex];
-    if (!slot.item || slot.item.type !== ITEM_TYPES.WEAPON && 
-        slot.item.type !== ITEM_TYPES.ARMOR) {
+    if (!slot.item || (slot.item.type !== ITEM_TYPES.WEAPON && 
+        slot.item.type !== ITEM_TYPES.ARMOR)) {
       return false;
     }
 

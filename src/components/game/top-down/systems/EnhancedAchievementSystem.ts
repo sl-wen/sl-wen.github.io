@@ -299,7 +299,7 @@ export class EnhancedAchievementSystem {
         id: 'title_reward',
         type: 'title',
         title: '战斗大师',
-        value: '战斗大师',
+        value: 100,
         isClaimed: false,
         metadata: {}
       }],
@@ -382,7 +382,7 @@ export class EnhancedAchievementSystem {
         id: 'item_reward',
         type: 'item',
         itemId: 'collector_bag',
-        value: 'collector_bag',
+        value: 1,
         isClaimed: false,
         metadata: {}
       }],
@@ -424,7 +424,7 @@ export class EnhancedAchievementSystem {
         id: 'skill_reward',
         type: 'skill',
         skillId: 'crafting_mastery',
-        value: 'crafting_mastery',
+        value: 1,
         isClaimed: false,
         metadata: {}
       }],
@@ -466,7 +466,7 @@ export class EnhancedAchievementSystem {
         id: 'cosmetic_reward',
         type: 'cosmetic',
         cosmeticId: 'social_badge',
-        value: 'social_badge',
+        value: 1,
         isClaimed: false,
         metadata: {}
       }],
@@ -508,7 +508,7 @@ export class EnhancedAchievementSystem {
         id: 'ability_reward',
         type: 'ability',
         abilityId: 'level_boost',
-        value: 'level_boost',
+        value: 1,
         isClaimed: false,
         metadata: {}
       }],
@@ -550,6 +550,7 @@ export class EnhancedAchievementSystem {
         id: 'title_reward',
         type: 'title',
         title: '速通者',
+        value: 100,
         isClaimed: false,
         metadata: {}
       }],
@@ -591,6 +592,7 @@ export class EnhancedAchievementSystem {
         id: 'unlock_reward',
         type: 'unlock',
         unlockId: 'secret_area',
+        value: 1,
         isClaimed: false,
         metadata: {}
       }],
@@ -634,6 +636,7 @@ export class EnhancedAchievementSystem {
         id: 'event_reward',
         type: 'item',
         itemId: 'event_exclusive',
+        value: 1,
         isClaimed: false,
         metadata: {}
       }],
@@ -675,6 +678,7 @@ export class EnhancedAchievementSystem {
         id: 'mastery_reward',
         type: 'title',
         title: '技能大师',
+        value: 100,
         isClaimed: false,
         metadata: {}
       }],
@@ -704,6 +708,7 @@ export class EnhancedAchievementSystem {
         id: 'combat_series_reward',
         type: 'title',
         title: '战斗专家',
+        value: 100,
         isClaimed: false,
         metadata: {}
       },
@@ -723,6 +728,7 @@ export class EnhancedAchievementSystem {
         id: 'exploration_series_reward',
         type: 'cosmetic',
         cosmeticId: 'explorer_outfit',
+        value: 1,
         isClaimed: false,
         metadata: {}
       },
@@ -742,6 +748,7 @@ export class EnhancedAchievementSystem {
         id: 'collection_series_reward',
         type: 'item',
         itemId: 'collector_chest',
+        value: 1,
         isClaimed: false,
         metadata: {}
       },
@@ -791,7 +798,7 @@ export class EnhancedAchievementSystem {
       });
     }
     
-    this.addEvent('achievement_added', { achievement });
+    this.addEvent('custom', { achievement });
   }
 
   /**
@@ -1060,9 +1067,9 @@ export class EnhancedAchievementSystem {
    * 检查系列完成
    */
   private checkSeriesCompletion(achievement: Achievement): void {
-    for (const series of this.series.values()) {
+    for (const series of Array.from(this.series.values())) {
       if (series.achievements.includes(achievement.id) && !series.isCompleted) {
-        const allCompleted = series.achievements.every(achievementId => {
+        const allCompleted = series.achievements.every((achievementId: any) => {
           const progress = this.getAchievementProgress(achievementId);
           return progress?.isCompleted;
         });

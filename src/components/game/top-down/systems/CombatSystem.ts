@@ -312,6 +312,8 @@ export class CombatSystem {
       action: { type: 'attack', damage: finalDamage },
       damage: finalDamage,
       isCritical,
+      isDodged: false,
+      isBlocked: false,
       targetDefeated: !target.isAlive,
       experience: target.isAlive ? 0 : this.calculateExperience(target),
       gold: target.isAlive ? 0 : this.calculateGold(target),
@@ -622,6 +624,8 @@ export class CombatSystem {
       },
       damage: finalDamage,
       isCritical,
+      isDodged: false,
+      isBlocked: false,
       targetDefeated: !target.isAlive,
       experience: target.isAlive ? 0 : this.calculateExperience(target),
       gold: target.isAlive ? 0 : this.calculateGold(target),
@@ -995,8 +999,8 @@ export class CombatSystem {
   loadCombatData(): void {
     const combatData = storage.get('combat_data', null);
     if (combatData) {
-      this.combatState = combatData.state;
-      this.combatHistory = combatData.history;
+      this.combatState = (combatData as any).state;
+      this.combatHistory = (combatData as any).history;
     }
   }
 }

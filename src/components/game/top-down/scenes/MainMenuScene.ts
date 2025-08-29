@@ -2,7 +2,7 @@ import * as Phaser from 'phaser';
 import { SoundManager } from '../systems/SoundManager';
 
 export default class MainMenuScene extends Phaser.Scene {
-  private soundManager: SoundManager;
+  private soundManager!: SoundManager;
 
   constructor() {
     super('MainMenuScene');
@@ -98,7 +98,7 @@ export default class MainMenuScene extends Phaser.Scene {
     window.addEventListener('menu-item-selected', gameMenuSelectedEventListener);
 
     // 添加键盘快捷键
-    this.input.keyboard.on('keydown-ENTER', () => {
+    this.input.keyboard?.on('keydown-ENTER', () => {
       this.soundManager.playSoundEffect('ui_click');
       this.scene.start('CompleteGameScene', {
         heroStatus: {
@@ -126,7 +126,6 @@ export default class MainMenuScene extends Phaser.Scene {
       {
         fontFamily: '"Press Start 2P"',
         fontSize: '8px',
-        fill: '#ffffff',
         color: '#ffffff',
       }
     ).setOrigin(1, 1).setDepth(2);
@@ -139,7 +138,6 @@ export default class MainMenuScene extends Phaser.Scene {
       {
         fontFamily: '"Press Start 2P"',
         fontSize: '8px',
-        fill: '#ffffff',
         color: '#ffffff',
       }
     ).setOrigin(0.5, 0.5).setDepth(2);

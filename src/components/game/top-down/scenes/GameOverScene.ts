@@ -2,7 +2,7 @@ import * as Phaser from 'phaser';
 import { SoundManager } from '../systems/SoundManager';
 
 export default class GameOverScene extends Phaser.Scene {
-  private soundManager: SoundManager;
+  private soundManager!: SoundManager;
 
   constructor() {
     super('GameOverScene');
@@ -30,8 +30,6 @@ export default class GameOverScene extends Phaser.Scene {
       {
         fontFamily: '"Press Start 2P"',
         fontSize: `${fontSize}px`,
-        size: `${fontSize}px`,
-        fill: '#ffffff',
         color: '#ffffff',
       }
     ).setDepth(10).setOrigin(0.5, 0.5);
@@ -104,7 +102,7 @@ export default class GameOverScene extends Phaser.Scene {
     window.addEventListener('menu-item-selected', gameMenuSelectedEventListener);
 
     // 添加键盘快捷键
-    this.input.keyboard.on('keydown-R', () => {
+    this.input.keyboard?.on('keydown-R', () => {
       this.soundManager.playSoundEffect('ui_click');
       this.scene.start('CompleteGameScene', {
         heroStatus: {
@@ -124,12 +122,12 @@ export default class GameOverScene extends Phaser.Scene {
       });
     });
 
-    this.input.keyboard.on('keydown-M', () => {
+    this.input.keyboard?.on('keydown-M', () => {
       this.soundManager.playSoundEffect('ui_click');
       this.scene.start('MainMenuScene');
     });
 
-    this.input.keyboard.on('keydown-ESC', () => {
+    this.input.keyboard?.on('keydown-ESC', () => {
       this.soundManager.playSoundEffect('ui_click');
       window.location.reload();
     });
@@ -142,7 +140,6 @@ export default class GameOverScene extends Phaser.Scene {
       {
         fontFamily: '"Press Start 2P"',
         fontSize: '8px',
-        fill: '#ffffff',
         color: '#ffffff',
       }
     ).setOrigin(0.5, 0.5).setDepth(2);
@@ -165,7 +162,6 @@ export default class GameOverScene extends Phaser.Scene {
       {
         fontFamily: '"Press Start 2P"',
         fontSize: '12px',
-        fill: '#ffffff',
         color: '#ffffff',
         align: 'center',
       }

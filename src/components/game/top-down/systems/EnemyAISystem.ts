@@ -342,7 +342,7 @@ export class EnemyAISystem {
     // 按优先级排序状态转换
     const transitions = config.stateTransitions
       .filter(t => t.from === currentState.state)
-      .sort((a, b) => b.priority - a.priority);
+      .sort((a: any, b: any) => b.priority - a.priority);
     
     for (const transition of transitions) {
       if (this.evaluateStateConditions(transition.conditions, aiData, currentTime)) {
@@ -675,7 +675,7 @@ export class EnemyAISystem {
   private selectBestSkill(aiData: any, currentTime: number): AISkill | null {
     const { config, memory } = aiData;
     
-    const availableSkills = config.skills.filter(skill => 
+    const availableSkills = config.skills.filter((skill: any) => 
       this.canUseSkill(skill, currentTime) && 
       this.evaluateSkillConditions(skill.conditions, aiData, currentTime)
     );
@@ -683,7 +683,7 @@ export class EnemyAISystem {
     if (availableSkills.length === 0) return null;
     
     // 按优先级排序
-    availableSkills.sort((a, b) => b.priority - a.priority);
+    availableSkills.sort((a: any, b: any) => b.priority - a.priority);
     
     return availableSkills[0];
   }
@@ -758,7 +758,7 @@ export class EnemyAISystem {
    * 更新技能冷却
    */
   private updateSkillCooldowns(aiData: any, currentTime: number): void {
-    aiData.cooldowns.forEach((cooldownEnd, skillId) => {
+    aiData.cooldowns.forEach((cooldownEnd: any, skillId: any) => {
       if (currentTime >= cooldownEnd) {
         aiData.cooldowns.delete(skillId);
       }
@@ -781,7 +781,7 @@ export class EnemyAISystem {
   private evaluateSkillConditions(conditions: AISkillCondition[], aiData: any, currentTime: number): boolean {
     return conditions.every(condition => {
       const value = this.getSkillConditionValue(condition.type, aiData, currentTime);
-      return this.evaluateCondition(condition, value);
+      return this.evaluateCondition(condition as AIStateCondition, value);
     });
   }
 

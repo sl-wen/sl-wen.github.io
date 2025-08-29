@@ -15,6 +15,7 @@ import { EnhancedInventorySystem } from '../systems/EnhancedInventorySystem';
 import { ParticleSystem } from '../systems/ParticleSystem';
 import { ScreenEffectSystem } from '../systems/ScreenEffectSystem';
 import { MobileAdapterSystem } from '../systems/MobileAdapterSystem';
+import { EnhancedShopSystem } from '../systems/EnhancedShopSystem';
 import { 
     SCENE_FADE_TIME, 
     ATTACK_DELAY_TIME, 
@@ -51,6 +52,7 @@ export class CompleteGameScene extends Phaser.Scene {
   private particleSystem!: ParticleSystem;
   private screenEffectSystem!: ScreenEffectSystem;
   private mobileAdapterSystem!: MobileAdapterSystem;
+  private enhancedShopSystem!: EnhancedShopSystem;
 
     // 游戏状态
     private isShowingDialog = false;
@@ -604,6 +606,7 @@ export class CompleteGameScene extends Phaser.Scene {
         this.particleSystem = ParticleSystem.getInstance();
         this.screenEffectSystem = ScreenEffectSystem.getInstance();
         this.mobileAdapterSystem = MobileAdapterSystem.getInstance();
+        this.enhancedShopSystem = EnhancedShopSystem.getInstance();
 
         // 初始化系统
         this.soundManager.initialize(this);
@@ -617,6 +620,7 @@ export class CompleteGameScene extends Phaser.Scene {
         this.particleSystem.initialize(this);
         this.screenEffectSystem.initialize(this);
         this.mobileAdapterSystem.initialize(this);
+        this.enhancedShopSystem.initialize(this);
         
         // 设置地图交互回调
         this.mapInteractionManager.setOnInteractionCallback((interaction) => {

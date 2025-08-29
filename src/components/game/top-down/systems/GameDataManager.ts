@@ -292,6 +292,8 @@ export class GameDataManager {
         status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
         level: 1,
         category: 'main',
+        difficulty: 'easy',
+        tags: ['intro'],
         repeatable: false,
         giver: 'mayor',
         turnIn: 'mayor'
@@ -320,6 +322,8 @@ export class GameDataManager {
         status: QUEST_STATUS.NOT_STARTED,
         level: 2,
         category: 'side',
+        difficulty: 'easy',
+        tags: ['gather'],
         repeatable: true,
         giver: 'herbalist',
         turnIn: 'herbalist'
@@ -331,7 +335,7 @@ export class GameDataManager {
         objectives: [
           {
             id: 'kill_slimes',
-            type: QUEST_TYPES.KILL,
+            type: 'KILL' as keyof typeof QUEST_TYPES,
             target: 'slime',
             required: 5,
             current: 0,
@@ -345,7 +349,7 @@ export class GameDataManager {
             { id: 'leather_armor', quantity: 1 }
           ]
         },
-        status: QUEST_STATUS.NOT_STARTED,
+        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
         level: 3,
         category: 'side',
         repeatable: true,
@@ -359,7 +363,7 @@ export class GameDataManager {
         objectives: [
           {
             id: 'explore_ruins',
-            type: QUEST_TYPES.EXPLORE,
+            type: 'EXPLORE' as keyof typeof QUEST_TYPES,
             target: 'ancient_ruins',
             required: 1,
             current: 0,
@@ -367,7 +371,7 @@ export class GameDataManager {
           },
           {
             id: 'find_crystal',
-            type: QUEST_TYPES.COLLECT,
+            type: 'COLLECT' as keyof typeof QUEST_TYPES,
             target: 'crystal_shard',
             required: 3,
             current: 0,
@@ -382,7 +386,7 @@ export class GameDataManager {
             { id: 'ancient_key', quantity: 1 }
           ]
         },
-        status: 'not_started',
+        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
         level: 5,
         category: 'main',
         repeatable: false,

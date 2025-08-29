@@ -147,8 +147,8 @@ export class InventorySystem {
    */
   equipItem(slotIndex: number): boolean {
     const slot = this.slots[slotIndex];
-    if (!slot.item || (slot.item.type !== ITEM_TYPES.WEAPON && 
-        slot.item.type !== ITEM_TYPES.ARMOR)) {
+    if (!slot.item || (slot.item.type !== 'WEAPON' && 
+        slot.item.type !== 'ARMOR')) {
       return false;
     }
 
@@ -193,7 +193,7 @@ export class InventorySystem {
    */
   useConsumable(slotIndex: number): ItemEffect[] {
     const slot = this.slots[slotIndex];
-    if (!slot.item || slot.item.type !== ITEM_TYPES.CONSUMABLE) {
+    if (!slot.item || slot.item.type !== 'CONSUMABLE') {
       return [];
     }
 

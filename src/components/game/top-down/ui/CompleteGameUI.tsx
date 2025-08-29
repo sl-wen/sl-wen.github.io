@@ -5,6 +5,7 @@ import DialogBox from './DialogBox';
 import GameMenu from './GameMenu';
 import { EnhancedGameUI } from './EnhancedGameUI';
 import { AchievementUI } from './AchievementUI';
+import { SettingsUI } from './SettingsUI';
 
 interface CompleteGameUIProps {
   width: number;
@@ -39,6 +40,7 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
   const [showDialog, setShowDialog] = useState(false);
   const [showEnhancedUI, setShowEnhancedUI] = useState(false);
   const [showAchievementUI, setShowAchievementUI] = useState(false);
+  const [showSettingsUI, setShowSettingsUI] = useState(false);
   const [menuItems, setMenuItems] = useState<string[]>([]);
   const [menuPosition, setMenuPosition] = useState<'center' | 'left'>('center');
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(0);
@@ -92,6 +94,8 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
           setShowEnhancedUI(false);
         } else if (showAchievementUI) {
           setShowAchievementUI(false);
+        } else if (showSettingsUI) {
+          setShowSettingsUI(false);
         } else {
           // 显示主菜单
           setMenuItems(['继续游戏', '设置', '成就', '退出']);
@@ -130,7 +134,7 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
       if (selectedItem === '继续游戏') {
         setShowMenu(false);
       } else if (selectedItem === '设置') {
-        setShowEnhancedUI(true);
+        setShowSettingsUI(true);
         setShowMenu(false);
       } else if (selectedItem === '成就') {
         setShowAchievementUI(true);
@@ -265,6 +269,12 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
       <AchievementUI
         isVisible={showAchievementUI}
         onClose={() => setShowAchievementUI(false)}
+      />
+
+      {/* 设置UI */}
+      <SettingsUI
+        isVisible={showSettingsUI}
+        onClose={() => setShowSettingsUI(false)}
       />
 
       {/* 闪烁动画样式 */}

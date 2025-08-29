@@ -9,6 +9,7 @@ import { GameDataManager } from '../systems/GameDataManager';
 import { GameStatsManager } from '../systems/GameStatsManager';
 import { PerformanceManager } from '../systems/PerformanceManager';
 import { TeleportSystem } from '../systems/TeleportSystem';
+import { EnemyAISystem } from '../systems/EnemyAISystem';
 import { 
     SCENE_FADE_TIME, 
     ATTACK_DELAY_TIME, 
@@ -39,6 +40,7 @@ export class CompleteGameScene extends Phaser.Scene {
     private statsManager!: GameStatsManager;
     private performanceManager!: PerformanceManager;
   private teleportSystem!: TeleportSystem;
+  private enemyAISystem!: EnemyAISystem;
 
     // 游戏状态
     private isShowingDialog = false;
@@ -586,6 +588,7 @@ export class CompleteGameScene extends Phaser.Scene {
         this.statsManager = GameStatsManager.getInstance();
         this.performanceManager = PerformanceManager.getInstance();
         this.teleportSystem = TeleportSystem.getInstance();
+        this.enemyAISystem = EnemyAISystem.getInstance();
 
         // 初始化系统
         this.soundManager.initialize(this);
@@ -593,6 +596,7 @@ export class CompleteGameScene extends Phaser.Scene {
         this.mapInteractionManager.initialize(this);
         this.performanceManager.initialize(this);
         this.teleportSystem.initialize(this);
+        this.enemyAISystem.initialize(this);
         
         // 设置地图交互回调
         this.mapInteractionManager.setOnInteractionCallback((interaction) => {

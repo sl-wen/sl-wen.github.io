@@ -48,15 +48,15 @@ export default function TopDownGamePage() {
 
     return (
         <div className="min-h-screen bg-gray-900">
-            <div className="container mx-auto px-4 py-8">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold text-white mb-4">俯视角RPG游戏</h1>
-                    <p className="text-gray-300 text-lg">
+            <div className="container mx-auto px-2 py-2 md:px-4 md:py-4">
+                <div className="text-center mb-2 md:mb-4">
+                    <h1 className="text-2xl md:text-4xl font-bold text-white mb-1 md:mb-2">俯视角RPG游戏</h1>
+                    <p className="text-gray-300 text-sm md:text-lg">
                         基于Phaser 3 + React的俯视角游戏演示
                     </p>
                     {isMobile && (
-                        <div className="mt-4 p-3 bg-blue-900/50 border border-blue-500 rounded-lg">
-                            <p className="text-blue-200 text-sm">
+                        <div className="mt-2 md:mt-3 p-2 md:p-3 bg-blue-900/50 border border-blue-500 rounded-lg">
+                            <p className="text-blue-200 text-xs md:text-sm">
                                 📱 移动端优化：点击"START"按钮开始游戏
                             </p>
                         </div>
@@ -64,16 +64,17 @@ export default function TopDownGamePage() {
                 </div>
 
                 <div className="flex justify-center">
-                    <div className="relative">
+                    <div className="relative w-full">
+                        {/* 增加游戏画面大小，特别是在移动设备上 */}
                         <TopDownGameWrapper 
-                            width={isMobile ? 350 : 800} 
-                            height={isMobile ? 500 : 600} 
+                            width={isMobile ? 400 : 800} 
+                            height={isMobile ? 600 : 600} 
                         />
 
-                        {/* 游戏控制说明 */}
-                        <div className="mt-4 p-4 bg-gray-800 rounded-lg text-white">
-                            <h3 className="text-lg font-semibold mb-2">游戏控制：</h3>
-                            <ul className="text-sm space-y-1">
+                        {/* 游戏控制说明 - 移到游戏画面下方 */}
+                        <div className="mt-2 md:mt-3 p-2 md:p-3 bg-gray-800 rounded-lg text-white">
+                            <h3 className="text-sm md:text-base font-semibold mb-1 md:mb-2">游戏控制：</h3>
+                            <ul className="text-xs md:text-sm space-y-1">
                                 {isMobile ? (
                                     <>
                                         <li>• 点击"START"按钮开始游戏</li>
@@ -91,10 +92,10 @@ export default function TopDownGamePage() {
                             </ul>
                         </div>
 
-                        {/* 游戏状态信息 */}
-                        <div className="mt-4 p-4 bg-gray-800 rounded-lg text-white">
-                            <h3 className="text-lg font-semibold mb-2">游戏状态：</h3>
-                            <ul className="text-sm space-y-1">
+                        {/* 游戏状态信息 - 移到游戏画面下方 */}
+                        <div className="mt-2 md:mt-3 p-2 md:p-3 bg-gray-800 rounded-lg text-white">
+                            <h3 className="text-sm md:text-base font-semibold mb-1 md:mb-2">游戏状态：</h3>
+                            <ul className="text-xs md:text-sm space-y-1">
                                 <li>• 游戏引擎：Phaser 3</li>
                                 <li>• 地图系统：GridEngine</li>
                                 <li>• 设备类型：{isMobile ? '移动端' : '桌面端'}</li>

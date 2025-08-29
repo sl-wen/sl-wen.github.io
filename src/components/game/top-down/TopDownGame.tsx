@@ -57,19 +57,40 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
   // 计算游戏尺寸
   const calculateGameSize = () => {
-    let gameWidth = 400;
-    let gameHeight = 224; // 16 * 14 = 224
-    const multiplier = Math.min(
-      Math.floor(window.innerWidth / 400), 
-      Math.floor(window.innerHeight / 224)
-    ) || 1;
+    // 检测是否为移动设备
+    const deviceInfo = mobileTestHelper.detectDevice();
+    const isMobileDevice = deviceInfo.isMobile || deviceInfo.touchSupport;
+    
+    if (isMobileDevice) {
+      // 移动设备：使用更大的尺寸以确保START按钮可见
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      
+      // 为移动设备预留更多空间给START按钮
+      const availableWidth = Math.min(screenWidth - 40, 500); // 最大500px，留40px边距
+      const availableHeight = Math.min(screenHeight - 200, 400); // 最大400px，留200px给UI
+      
+      return { 
+        width: availableWidth, 
+        height: availableHeight, 
+        multiplier: 1 
+      };
+    } else {
+      // 桌面设备：使用原有的计算逻辑
+      let gameWidth = 400;
+      let gameHeight = 224; // 16 * 14 = 224
+      const multiplier = Math.min(
+        Math.floor(window.innerWidth / 400), 
+        Math.floor(window.innerHeight / 224)
+      ) || 1;
 
-    if (multiplier > 1) {
-      gameWidth += Math.floor((window.innerWidth - gameWidth * multiplier) / (16 * multiplier)) * 16;
-      gameHeight += Math.floor((window.innerHeight - gameHeight * multiplier) / (16 * multiplier)) * 16;
+      if (multiplier > 1) {
+        gameWidth += Math.floor((window.innerWidth - gameWidth * multiplier) / (16 * multiplier)) * 16;
+        gameHeight += Math.floor((window.innerHeight - gameHeight * multiplier) / (16 * multiplier)) * 16;
+      }
+
+      return { width: gameWidth, height: gameHeight, multiplier };
     }
-
-    return { width: gameWidth, height: gameHeight, multiplier };
   };
 
   const gameSize = calculateGameSize();
@@ -271,13 +292,15 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full max-w-4xl mx-auto">
       <div
         ref={gameContainerRef}
-        className="border-2 border-gray-600 rounded-lg overflow-hidden"
+        className="border-2 border-gray-600 rounded-lg overflow-hidden mx-auto"
         style={{
           width: gameSize.width * gameSize.multiplier,
-          height: gameSize.height * gameSize.multiplier
+          height: gameSize.height * gameSize.multiplier,
+          maxWidth: '100%',
+          maxHeight: '70vh'
         }}
       />
 
@@ -303,12 +326,39 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
       {!gameStarted && isGameReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <button
-            onClick={startGame}
-            className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg text-xl font-bold transition-colors"
-          >
-            START
-          </button>
+          <div className="text-center p-4">
+            {/* 添加闪烁动画的提示文字 */}
+            <div className="mb-4 animate-pulse">
+              <p className="text-white text-lg md:text-xl font-semibold mb-2">
+                🎮 游戏准备就绪
+              </p>
+              <p className="text-yellow-300 text-sm md:text-base">
+                点击下方按钮开始游戏
+              </p>
+            </div>
+            
+            <button
+              onClick={startGame}
+              className={`
+                bg-green-600 hover:bg-green-700 active:bg-green-800 
+                text-white font-bold transition-all duration-200 
+                transform hover:scale-105 active:scale-95
+                shadow-lg hover:shadow-xl
+                ${isMobile ? 'px-12 py-6 text-2xl rounded-xl' : 'px-10 py-5 text-xl rounded-lg'}
+              `}
+              style={{
+                minWidth: isMobile ? '200px' : '160px',
+                minHeight: isMobile ? '80px' : '60px'
+              }}
+            >
+              START
+            </button>
+            {isMobile && (
+              <p className="text-white text-sm mt-3 opacity-80">
+                点击开始游戏
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>

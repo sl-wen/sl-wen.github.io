@@ -1,11 +1,11 @@
-import * as Phaser from 'phaser';
 import GridEngine from 'grid-engine';
+import * as Phaser from 'phaser';
 
 // 导入所有场景
 import BootScene from './scenes/BootScene';
-import MainMenuScene from './scenes/MainMenuScene';
 import CompleteGameScene from './scenes/CompleteGameScene';
 import GameOverScene from './scenes/GameOverScene';
+import MainMenuScene from './scenes/MainMenuScene';
 
 interface GameConfig {
   width: number;
@@ -28,7 +28,13 @@ export class TopDownGameEngine {
   private scene: any;
 
   constructor(container: HTMLElement, config: GameConfig) {
-    console.log('TopDownGameEngine: 初始化游戏引擎');
+    console.log('🎮 [DEBUG] TopDownGameEngine: 初始化游戏引擎');
+    console.log('📋 [DEBUG] 游戏配置:', {
+      container: container,
+      config: config,
+      containerRect: container.getBoundingClientRect(),
+      containerStyle: window.getComputedStyle(container)
+    });
 
     const gameConfig: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
@@ -50,8 +56,20 @@ export class TopDownGameEngine {
         GameOverScene
       ],
       scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: config.width,
+        height: config.height,
+        min: {
+          width: 320,
+          height: 180
+        },
+        max: {
+          width: 2560,
+          height: 1440
+        },
+        expandParent: true,
+        autoRound: true
       },
       plugins: {
         scene: [
@@ -81,6 +99,18 @@ export class TopDownGameEngine {
 
     this.game = new Phaser.Game(gameConfig);
 
+    console.log('🎯 [DEBUG] Phaser游戏创建完成:', {
+      game: this.game,
+      canvas: this.game.canvas,
+      canvasRect: this.game.canvas?.getBoundingClientRect(),
+      canvasStyle: this.game.canvas ? window.getComputedStyle(this.game.canvas) : null,
+      scale: this.game.scale,
+      scaleSize: {
+        width: this.game.scale.width,
+        height: this.game.scale.height
+      }
+    });
+
     // 设置Canvas样式以支持触摸事件
     const canvas = this.game.canvas;
     if (canvas) {
@@ -88,6 +118,17 @@ export class TopDownGameEngine {
       canvas.style.userSelect = 'none';
       canvas.style.webkitUserSelect = 'none';
       (canvas.style as any).webkitTouchCallout = 'none';
+
+      console.log('🎨 [DEBUG] Canvas样式设置完成:', {
+        canvas: canvas,
+        finalStyle: {
+          touchAction: canvas.style.touchAction,
+          userSelect: canvas.style.userSelect,
+          webkitUserSelect: canvas.style.webkitUserSelect,
+          width: canvas.style.width,
+          height: canvas.style.height
+        }
+      });
     }
 
     // 监听游戏事件

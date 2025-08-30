@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { calculateGameSize } from '../utils';
 
 // 金币组件属性
 interface HeroCoinProps {
@@ -35,7 +34,7 @@ const HeroCoin: React.FC<HeroCoinProps> = ({ gameSize, heroCoins }) => {
   // 金币图标样式
   const coinStyle = {
     backgroundSize: `${16 * multiplier}px ${16 * multiplier}px`,
-    background: `url("/game/assets/images/coin.png") no-repeat 0 0`,
+    background: `url("/assets/topdown/images/coin.png") no-repeat 0 0`,
     width: `${16 * multiplier}px`,
     height: `${16 * multiplier}px`,
   };

@@ -14,7 +14,7 @@ export default class GameOverScene extends Phaser.Scene {
 
   create() {
     console.log('GameOverScene: 游戏结束');
-    
+
     const fontSize = 24;
     const { width: gameWidth, height: gameHeight } = this.cameras.main;
 
@@ -74,7 +74,7 @@ export default class GameOverScene extends Phaser.Scene {
               level: 1,
               experience: 0
             },
-            mapKey: 'home_page_city_house_01',
+            mapKey: 'village',
           });
           break;
         }
@@ -118,7 +118,7 @@ export default class GameOverScene extends Phaser.Scene {
           level: 1,
           experience: 0
         },
-        mapKey: 'home_page_city_house_01',
+        mapKey: 'village',
       });
     });
 
@@ -147,14 +147,14 @@ export default class GameOverScene extends Phaser.Scene {
 
   private addGameStats() {
     const { width: gameWidth, height: gameHeight } = this.cameras.main;
-    
+
     // 这里可以添加游戏统计信息，比如：
     // - 游戏时长
     // - 击败敌人数量
     // - 收集物品数量
     // - 完成的任务数量
     // - 获得的经验值
-    
+
     const statsText = this.add.text(
       gameWidth / 2,
       gameHeight / 2,

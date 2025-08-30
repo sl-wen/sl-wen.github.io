@@ -106,6 +106,18 @@ export const AchievementUI: React.FC<AchievementUIProps> = ({
 
   const categories = ['all', 'combat', 'collection', 'exploration', 'quest', 'crafting', 'trading', 'time'];
 
+  // 添加弹窗尺寸调试信息
+  useEffect(() => {
+    if (isVisible) {
+      console.log('🏆 [DEBUG] 成就UI显示:', {
+        isVisible,
+        achievementsCount: achievements.length,
+        unlockedCount: unlockedAchievements.length,
+        stats: stats
+      });
+    }
+  }, [isVisible, achievements.length, unlockedAchievements.length, stats]);
+
   if (!isVisible) return null;
 
   return (

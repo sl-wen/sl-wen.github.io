@@ -85,23 +85,23 @@ export class MapManager {
       key: 'village',
       name: '宁静村庄',
       tilesetKey: 'tileset',
-      tilemapKey: 'village_map',
+      tilemapKey: 'home_page_city',
       musicKey: 'village',
-      spawnPoint: { x: 10, y: 10 },
+      spawnPoint: { x: 23, y: 30 },
       background: '#87CEEB',
       lighting: 'day',
       teleportPoints: [
         {
-          x: 15,
-          y: 5,
+          x: 35,
+          y: 15,
           targetMap: 'forest',
           targetX: 5,
           targetY: 15,
           name: '森林入口'
         },
         {
-          x: 25,
-          y: 20,
+          x: 40,
+          y: 45,
           targetMap: 'cave',
           targetX: 8,
           targetY: 8,
@@ -113,8 +113,8 @@ export class MapManager {
       npcs: [
         {
           id: 'village_mayor',
-          x: 12,
-          y: 8,
+          x: 25,
+          y: 25,
           npcType: 'mayor',
           facingDirection: 'down',
           movementType: 'static',
@@ -122,8 +122,8 @@ export class MapManager {
         },
         {
           id: 'village_merchant',
-          x: 18,
-          y: 15,
+          x: 30,
+          y: 35,
           npcType: 'merchant',
           facingDirection: 'left',
           movementType: 'patrol',
@@ -132,8 +132,8 @@ export class MapManager {
         },
         {
           id: 'village_guard',
-          x: 5,
-          y: 12,
+          x: 20,
+          y: 20,
           npcType: 'guard',
           facingDirection: 'right',
           movementType: 'patrol',
@@ -144,8 +144,16 @@ export class MapManager {
       enemies: [
         {
           id: 'village_slime_1',
-          x: 22,
-          y: 8,
+          x: 35,
+          y: 25,
+          enemyType: 'slime',
+          level: 1,
+          respawnTime: 30000
+        },
+        {
+          id: 'village_slime_2',
+          x: 40,
+          y: 40,
           enemyType: 'slime',
           level: 1,
           respawnTime: 30000
@@ -154,29 +162,37 @@ export class MapManager {
       items: [
         {
           id: 'village_herb_1',
-          x: 8,
-          y: 6,
+          x: 15,
+          y: 20,
           itemType: 'herb',
           respawnTime: 60000,
           chance: 0.7
         },
         {
           id: 'village_coin_1',
-          x: 20,
-          y: 18,
+          x: 30,
+          y: 30,
           itemType: 'coin',
           respawnTime: 45000,
           chance: 0.5
+        },
+        {
+          id: 'village_heart_1',
+          x: 25,
+          y: 40,
+          itemType: 'heart',
+          respawnTime: 90000,
+          chance: 0.3
         }
       ]
     });
 
-    // 森林地图
+    // 森林地图 - 暂时使用村庄地图，因为forest_map.json不存在
     this.maps.set('forest', {
       key: 'forest',
       name: '神秘森林',
       tilesetKey: 'tileset',
-      tilemapKey: 'forest_map',
+      tilemapKey: 'home_page_city', // 暂时使用现有地图
       musicKey: 'forest',
       spawnPoint: { x: 5, y: 15 },
       background: '#228B22',
@@ -264,12 +280,12 @@ export class MapManager {
       ]
     });
 
-    // 洞穴地图
+    // 洞穴地图 - 暂时使用村庄地图，因为cave_map.json不存在
     this.maps.set('cave', {
       key: 'cave',
       name: '神秘洞穴',
       tilesetKey: 'tileset',
-      tilemapKey: 'cave_map',
+      tilemapKey: 'home_page_city', // 暂时使用现有地图
       musicKey: 'cave',
       spawnPoint: { x: 8, y: 8 },
       background: '#2F4F4F',
@@ -367,9 +383,11 @@ export class MapManager {
 
     // 加载瓦片集
     this.scene.load.image('tileset', 'assets/topdown/sprites/maps/tilesets/tileset.png');
-    this.scene.load.tilemapTiledJSON('village_map', 'assets/topdown/sprites/maps/cities/village.json');
-    this.scene.load.tilemapTiledJSON('forest_map', 'assets/topdown/sprites/maps/cities/forest.json');
-    this.scene.load.tilemapTiledJSON('cave_map', 'assets/topdown/sprites/maps/cities/cave.json');
+    // 暂时只加载现有的地图文件
+    this.scene.load.tilemapTiledJSON('home_page_city', 'assets/topdown/sprites/maps/cities/home_page_city.json');
+    this.scene.load.tilemapTiledJSON('home_page_city_house_01', 'assets/topdown/sprites/maps/houses/home_page_city_house_01.json');
+    this.scene.load.tilemapTiledJSON('home_page_city_house_02', 'assets/topdown/sprites/maps/houses/home_page_city_house_02.json');
+    this.scene.load.tilemapTiledJSON('home_page_city_house_03', 'assets/topdown/sprites/maps/houses/home_page_city_house_03.json');
   }
 
   /**
@@ -377,6 +395,21 @@ export class MapManager {
    */
   public getCurrentMap(): MapData | null {
     return this.maps.get(this.currentMap) || null;
+  }
+
+  /**
+   * 设置当前地图
+   */
+  public setCurrentMap(mapKey: string): boolean {
+    const targetMap = this.maps.get(mapKey);
+    if (!targetMap) {
+      console.warn(`Map not found: ${mapKey}`);
+      return false;
+    }
+
+    this.currentMap = mapKey;
+    console.log(`Current map set to: ${mapKey}`);
+    return true;
   }
 
   /**
@@ -505,7 +538,7 @@ export class MapManager {
     if (!map) return [];
 
     const requirements: string[] = [];
-    
+
     // 检查传送点解锁条件
     map.teleportPoints.forEach(point => {
       if (point.requiresItem) {

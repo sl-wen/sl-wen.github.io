@@ -14,7 +14,7 @@ export default class MainMenuScene extends Phaser.Scene {
 
   create() {
     console.log('MainMenuScene: 创建主菜单');
-    
+
     const { width: gameWidth, height: gameHeight } = this.cameras.main;
 
     // 添加游戏Logo
@@ -32,7 +32,7 @@ export default class MainMenuScene extends Phaser.Scene {
     // 初始化音效管理器
     this.soundManager = SoundManager.getInstance();
     this.soundManager.initialize(this);
-    
+
     // 移动端音频策略：避免自动播放，等用户操作后再播放
     // 如需播放，可在用户点击开始或设置时触发
 
@@ -65,7 +65,7 @@ export default class MainMenuScene extends Phaser.Scene {
               level: 1,
               experience: 0
             },
-            mapKey: 'home_page_city_house_01',
+            mapKey: 'village',
           });
           break;
         }
@@ -114,7 +114,7 @@ export default class MainMenuScene extends Phaser.Scene {
           level: 1,
           experience: 0
         },
-        mapKey: 'home_page_city_house_01',
+        mapKey: 'village',
       });
     });
 

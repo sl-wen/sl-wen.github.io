@@ -1,16 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import DialogBox from './DialogBox';
-import GameMenu from './GameMenu';
-import { EnhancedGameUI } from './EnhancedGameUI';
+import React, { useEffect, useState } from 'react';
 import { AchievementUI } from './AchievementUI';
+import DialogBox from './DialogBox';
+import { EnhancedGameUI } from './EnhancedGameUI';
+import GameMenu from './GameMenu';
+import { HelpUI } from './HelpUI';
+import HeroCoin from './HeroCoin';
+import HeroHealth from './HeroHealth';
 import { SettingsUI } from './SettingsUI';
 import { TutorialUI } from './TutorialUI';
-import { HelpUI } from './HelpUI';
-import HeroHealth from './HeroHealth';
-import HeroCoin from './HeroCoin';
-import Message from './Message';
 
 interface CompleteGameUIProps {
   width: number;
@@ -57,6 +56,21 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
   const [heroCoins, setHeroCoins] = useState<number>(0);
 
   const gameSize = { width, height, multiplier };
+
+  // 添加弹窗状态调试信息
+  useEffect(() => {
+    console.log('🎯 [DEBUG] CompleteGameUI状态:', {
+      showMenu,
+      showDialog,
+      showEnhancedUI,
+      showAchievementUI,
+      showSettingsUI,
+      showTutorialUI,
+      showHelpUI,
+      gameSize,
+      playerStats
+    });
+  }, [showMenu, showDialog, showEnhancedUI, showAchievementUI, showSettingsUI, showTutorialUI, showHelpUI, gameSize, playerStats]);
 
   useEffect(() => {
     // 监听菜单事件
@@ -117,7 +131,7 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
       } else if (e.code === 'KeyI' && !showMenu && !showDialog) {
         // 打开背包
         setShowEnhancedUI(true);
-      } else if (e.code === 'KeyA' && !showMenu && !showDialog) {
+      } else if (e.code === 'KeyJ' && !showMenu && !showDialog) {
         // 打开成就
         setShowAchievementUI(true);
       } else if (e.code === 'KeyT' && !showMenu && !showDialog) {
@@ -147,7 +161,7 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
   const handleMenuSelect = (index: number) => {
     if (showMenu) {
       const selectedItem = menuItems[index];
-      
+
       if (selectedItem === '继续游戏') {
         setShowMenu(false);
       } else if (selectedItem === '设置') {
@@ -240,7 +254,7 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
           healthStates={heroHealthStates as HealthState[]}
         />
       )}
-      
+
       {heroCoins !== null && (
         <HeroCoin
           gameSize={gameSize}
@@ -255,7 +269,7 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
           <div>空格: 攻击</div>
           <div>回车: 交互</div>
           <div>I: 背包</div>
-          <div>A: 成就</div>
+          <div>J: 成就</div>
           <div>T: 教程</div>
           <div>H: 帮助</div>
           <div>ESC: 菜单</div>

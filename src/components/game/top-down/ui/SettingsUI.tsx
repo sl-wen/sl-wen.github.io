@@ -70,6 +70,18 @@ export const SettingsUI: React.FC<SettingsUIProps> = ({
     loadSettings();
   };
 
+  // 添加弹窗尺寸调试信息
+  useEffect(() => {
+    if (isVisible && settings) {
+      console.log('⚙️ [DEBUG] 设置UI显示:', {
+        isVisible,
+        activeTab,
+        hasChanges,
+        settingsKeys: Object.keys(settings)
+      });
+    }
+  }, [isVisible, activeTab, hasChanges, settings]);
+
   if (!isVisible || !settings) return null;
 
   const tabs = [

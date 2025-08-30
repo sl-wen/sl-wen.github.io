@@ -89,16 +89,16 @@ export default class BootScene extends Phaser.Scene {
 
     // 加载地图资源
     this.loadTilemaps();
-    
+
     // 加载角色资源
     this.loadCharacters();
-    
+
     // 加载物品资源
     this.loadItems();
-    
+
     // 加载UI资源
     this.loadUI();
-    
+
     // 加载音效资源
     this.loadAudio();
   }
@@ -109,7 +109,7 @@ export default class BootScene extends Phaser.Scene {
     this.load.tilemapTiledJSON('home_page_city_house_01', '/assets/topdown/sprites/maps/houses/home_page_city_house_01.json');
     this.load.tilemapTiledJSON('home_page_city_house_02', '/assets/topdown/sprites/maps/houses/home_page_city_house_02.json');
     this.load.tilemapTiledJSON('home_page_city_house_03', '/assets/topdown/sprites/maps/houses/home_page_city_house_03.json');
-    
+
     // 瓦片集
     this.load.image('tileset', '/assets/topdown/sprites/maps/tilesets/tileset.png');
   }
@@ -117,10 +117,10 @@ export default class BootScene extends Phaser.Scene {
   private loadCharacters() {
     // 英雄角色
     this.load.atlas('hero', '/assets/topdown/sprites/atlas/hero.png', '/assets/topdown/sprites/atlas/hero.json');
-    
+
     // 敌人
     this.load.atlas('slime', '/assets/topdown/sprites/atlas/slime.png', '/assets/topdown/sprites/atlas/slime.json');
-    
+
     // NPC角色
     this.load.atlas('npc_01', '/assets/topdown/sprites/atlas/npc_01.png', '/assets/topdown/sprites/atlas/npc_01.json');
     this.load.atlas('npc_02', '/assets/topdown/sprites/atlas/npc_02.png', '/assets/topdown/sprites/atlas/npc_02.json');
@@ -132,7 +132,7 @@ export default class BootScene extends Phaser.Scene {
     // 物品
     this.load.atlas('heart', '/assets/topdown/sprites/atlas/heart.png', '/assets/topdown/sprites/atlas/heart.json');
     this.load.atlas('coin', '/assets/topdown/sprites/atlas/coin.png', '/assets/topdown/sprites/atlas/coin.json');
-    
+
     // 装备
     this.load.image('heart_container', '/assets/topdown/images/heart_container.png');
     this.load.image('sword', '/assets/topdown/images/sword.png');
@@ -148,21 +148,25 @@ export default class BootScene extends Phaser.Scene {
   }
 
   private loadAudio() {
-    // 背景音乐
-    this.load.audio('bgm_menu', '/assets/topdown/audio/bgm_menu.mp3');
-    this.load.audio('bgm_village', '/assets/topdown/audio/bgm_village.mp3');
-    this.load.audio('bgm_forest', '/assets/topdown/audio/bgm_forest.mp3');
-    this.load.audio('bgm_cave', '/assets/topdown/audio/bgm_cave.mp3');
-    this.load.audio('bgm_battle', '/assets/topdown/audio/bgm_battle.mp3');
-    
-    // 音效
-    this.load.audio('sfx_move', '/assets/topdown/audio/sfx_move.mp3');
-    this.load.audio('sfx_attack', '/assets/topdown/audio/sfx_attack.mp3');
-    this.load.audio('sfx_pickup', '/assets/topdown/audio/sfx_pickup.mp3');
-    this.load.audio('sfx_damage', '/assets/topdown/audio/sfx_damage.mp3');
-    this.load.audio('sfx_levelup', '/assets/topdown/audio/sfx_levelup.mp3');
-    this.load.audio('sfx_ui_click', '/assets/topdown/audio/sfx_ui_click.mp3');
-    this.load.audio('sfx_ui_hover', '/assets/topdown/audio/sfx_ui_hover.mp3');
+    // 背景音乐 - 添加错误处理，音频文件暂时缺失
+    try {
+      this.load.audio('bgm_menu', '/assets/topdown/audio/bgm_menu.mp3');
+      this.load.audio('bgm_village', '/assets/topdown/audio/bgm_village.mp3');
+      this.load.audio('bgm_forest', '/assets/topdown/audio/bgm_forest.mp3');
+      this.load.audio('bgm_cave', '/assets/topdown/audio/bgm_cave.mp3');
+      this.load.audio('bgm_battle', '/assets/topdown/audio/bgm_battle.mp3');
+
+      // 音效
+      this.load.audio('sfx_move', '/assets/topdown/audio/sfx_move.mp3');
+      this.load.audio('sfx_attack', '/assets/topdown/audio/sfx_attack.mp3');
+      this.load.audio('sfx_pickup', '/assets/topdown/audio/sfx_pickup.mp3');
+      this.load.audio('sfx_damage', '/assets/topdown/audio/sfx_damage.mp3');
+      this.load.audio('sfx_levelup', '/assets/topdown/audio/sfx_levelup.mp3');
+      this.load.audio('sfx_ui_click', '/assets/topdown/audio/sfx_ui_click.mp3');
+      this.load.audio('sfx_ui_hover', '/assets/topdown/audio/sfx_ui_hover.mp3');
+    } catch (error) {
+      console.warn('音频文件加载失败，游戏将以静音模式运行:', error);
+    }
   }
 
   create() {

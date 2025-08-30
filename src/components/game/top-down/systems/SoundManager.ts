@@ -87,7 +87,7 @@ export interface AudioStats {
 export class SoundManager {
   private static instance: SoundManager;
   private scene: Phaser.Scene | null = null;
-  
+
   // 基础设置
   private isMuted: boolean = false;
   private masterVolume: number = 1.0;
@@ -96,14 +96,14 @@ export class SoundManager {
   private voiceVolume: number = 0.8;
   private ambientVolume: number = 0.4;
   private uiVolume: number = 0.6;
-  
+
   // 高级设置
   private enable3D: boolean = true;
   private enableReverb: boolean = false;
   private enableEcho: boolean = false;
   private lowPassFilter: number = 22050;
   private highPassFilter: number = 20;
-  
+
   // 音效管理
   private currentMusic: string | null = null;
   private activeSounds: Map<string, Phaser.Sound.BaseSound> = new Map();
@@ -111,18 +111,18 @@ export class SoundManager {
   private soundPresets: Map<string, SoundPreset> = new Map();
   private events: SoundEvent[] = [];
   private callbacks: Map<string, (data: any) => void> = new Map();
-  
+
   // 3D音频
   private listenerPosition: { x: number; y: number; z: number } = { x: 0, y: 0, z: 0 };
   private spatialSounds: Map<string, SoundPosition> = new Map();
-  
+
   // 音频处理
   private audioContext: AudioContext | null = null;
   private reverbNode: ConvolverNode | null = null;
   private echoNode: DelayNode | null = null;
   private lowPassNode: BiquadFilterNode | null = null;
   private highPassNode: BiquadFilterNode | null = null;
-  
+
   // 统计信息
   private stats: AudioStats = {
     totalSounds: 0,
@@ -140,7 +140,7 @@ export class SoundManager {
     run: { key: 'run', volume: 0.4, category: 'sfx', priority: 1 },
     jump: { key: 'jump', volume: 0.5, category: 'sfx', priority: 2 },
     land: { key: 'land', volume: 0.4, category: 'sfx', priority: 2 },
-    
+
     // 战斗音效
     attack: { key: 'attack', volume: 0.6, category: 'sfx', priority: 3 },
     hit: { key: 'hit', volume: 0.5, category: 'sfx', priority: 3 },
@@ -149,7 +149,7 @@ export class SoundManager {
     block: { key: 'block', volume: 0.4, category: 'sfx', priority: 2 },
     dodge: { key: 'dodge', volume: 0.3, category: 'sfx', priority: 2 },
     critical: { key: 'critical', volume: 0.7, category: 'sfx', priority: 4 },
-    
+
     // 交互音效
     pickup: { key: 'pickup', volume: 0.4, category: 'sfx', priority: 2 },
     openChest: { key: 'open_chest', volume: 0.5, category: 'sfx', priority: 2 },
@@ -157,7 +157,7 @@ export class SoundManager {
     doorClose: { key: 'door_close', volume: 0.3, category: 'sfx', priority: 1 },
     unlock: { key: 'unlock', volume: 0.5, category: 'sfx', priority: 2 },
     teleport: { key: 'teleport', volume: 0.6, category: 'sfx', priority: 3 },
-    
+
     // UI音效
     buttonClick: { key: 'button_click', volume: 0.3, category: 'ui', priority: 1 },
     menuOpen: { key: 'menu_open', volume: 0.3, category: 'ui', priority: 1 },
@@ -165,7 +165,7 @@ export class SoundManager {
     levelUp: { key: 'level_up', volume: 0.6, category: 'ui', priority: 4 },
     achievement: { key: 'achievement', volume: 0.7, category: 'ui', priority: 4 },
     notification: { key: 'notification', volume: 0.4, category: 'ui', priority: 2 },
-    
+
     // 环境音效
     wind: { key: 'wind', volume: 0.2, category: 'ambient', priority: 1, loop: true },
     water: { key: 'water', volume: 0.3, category: 'ambient', priority: 1, loop: true },
@@ -173,7 +173,7 @@ export class SoundManager {
     rain: { key: 'rain', volume: 0.3, category: 'ambient', priority: 1, loop: true },
     thunder: { key: 'thunder', volume: 0.6, category: 'ambient', priority: 3 },
     birds: { key: 'birds', volume: 0.2, category: 'ambient', priority: 1 },
-    
+
     // 语音音效
     npcGreeting: { key: 'npc_greeting', volume: 0.8, category: 'voice', priority: 3 },
     npcFarewell: { key: 'npc_farewell', volume: 0.7, category: 'voice', priority: 2 },
@@ -333,7 +333,7 @@ export class SoundManager {
 
     this.currentMusic = musicKey;
     this.activeSounds.set(config.key, music);
-    
+
     this.addEvent('play', config.key, { type: 'music', fadeIn });
     console.log(`播放背景音乐: ${musicKey}`);
   }
@@ -377,34 +377,41 @@ export class SoundManager {
     if (!this.scene || this.isMuted) return;
 
     const config = this.soundEffects[soundKey];
-    if (!config) return;
+    if (!config) {
+      console.warn(`音效配置未找到: ${soundKey}`);
+      return;
+    }
 
-    // 检查队列优先级
-    if (this.soundQueue.length > 0) {
-      const lowestPriority = Math.min(...this.soundQueue.map(item => item.priority));
-      if (config.priority && config.priority < lowestPriority) {
-        // 停止低优先级音效
-        this.stopLowPrioritySounds(config.priority);
+    try {
+      // 检查队列优先级
+      if (this.soundQueue.length > 0) {
+        const lowestPriority = Math.min(...this.soundQueue.map(item => item.priority));
+        if (config.priority && config.priority < lowestPriority) {
+          // 停止低优先级音效
+          this.stopLowPrioritySounds(config.priority);
+        }
       }
+
+      const sound = this.scene.sound.add(config.key, {
+        volume: this.getCategoryVolume(config.category || 'sfx'),
+        loop: config.loop || false,
+        rate: config.rate || 1,
+        detune: config.detune || 0,
+        pan: config.pan || 0
+      });
+
+      // 3D音效处理
+      if (position && config.spatial && this.enable3D) {
+        this.apply3DEffects(sound, position);
+      }
+
+      sound.play();
+      this.activeSounds.set(config.key, sound);
+
+      this.addEvent('play', config.key, { type: 'sfx', position });
+    } catch (error) {
+      console.warn(`播放音效失败: ${soundKey}`, error);
     }
-
-    const sound = this.scene.sound.add(config.key, {
-      volume: this.getCategoryVolume(config.category || 'sfx'),
-      loop: config.loop || false,
-      rate: config.rate || 1,
-      detune: config.detune || 0,
-      pan: config.pan || 0
-    });
-
-    // 3D音效处理
-    if (position && config.spatial && this.enable3D) {
-      this.apply3DEffects(sound, position);
-    }
-
-    sound.play();
-    this.activeSounds.set(config.key, sound);
-    
-    this.addEvent('play', config.key, { type: 'sfx', position });
   }
 
   /**
@@ -586,7 +593,7 @@ export class SoundManager {
    */
   public toggleMute(): void {
     this.isMuted = !this.isMuted;
-    
+
     if (this.isMuted) {
       this.scene?.sound.pauseAll();
       this.addEvent('mute', 'all', {});
@@ -606,7 +613,7 @@ export class SoundManager {
     if (!sound) return;
 
     const targetVolume = this.getCategoryVolume('music');
-    
+
     this.scene.tweens.add({
       targets: sound,
       volume: targetVolume,
@@ -648,7 +655,7 @@ export class SoundManager {
     if (savedPresets) {
       this.soundPresets = new Map(savedPresets);
     }
-    
+
     // 添加默认预设
     this.addDefaultPresets();
   }
@@ -742,7 +749,7 @@ export class SoundManager {
     if (!preset) return;
 
     const settings = preset.settings;
-    
+
     this.masterVolume = settings.masterVolume;
     this.musicVolume = settings.musicVolume;
     this.sfxVolume = settings.sfxVolume;
@@ -757,7 +764,7 @@ export class SoundManager {
 
     this.updateAllVolumes();
     this.setupAudioProcessing();
-    
+
     this.addEvent('volume_change', 'preset', { presetName });
     console.log(`应用音效预设: ${presetName}`);
   }
@@ -790,11 +797,11 @@ export class SoundManager {
   public getAudioStats(): AudioStats {
     this.stats.activeSounds = this.activeSounds.size;
     this.stats.totalSounds = Object.keys(this.soundEffects).length + Object.keys(this.backgroundMusic).length;
-    
+
     if (this.audioContext) {
       this.stats.audioContextState = this.audioContext.state;
     }
-    
+
     return { ...this.stats };
   }
 
@@ -826,7 +833,7 @@ export class SoundManager {
       lowPassFilter: this.lowPassFilter,
       highPassFilter: this.highPassFilter
     };
-    
+
     storage.set('sound_settings', settings);
   }
 
@@ -840,9 +847,9 @@ export class SoundManager {
       data,
       timestamp: Date.now()
     };
-    
+
     this.events.push(event);
-    
+
     // 保持事件历史在合理范围内
     if (this.events.length > 100) {
       this.events.shift();
@@ -878,22 +885,22 @@ export class SoundManager {
    */
   destroy(): void {
     this.saveSettings();
-    
+
     if (this.scene) {
       this.scene.sound.removeAll();
     }
-    
+
     this.activeSounds.clear();
     this.soundQueue = [];
     this.spatialSounds.clear();
     this.events = [];
     this.callbacks.clear();
     this.soundPresets.clear();
-    
+
     if (this.audioContext) {
       this.audioContext.close();
     }
-    
+
     this.scene = null;
     console.log('音效管理器已销毁');
   }

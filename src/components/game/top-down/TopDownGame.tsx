@@ -1,27 +1,31 @@
 'use client';
 
+import * as Phaser from 'phaser';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { mobileTestHelper } from './MobileTestHelper';
+import BootScene from './scenes/BootScene';
+import { CompleteGameScene } from './scenes/CompleteGameScene';
+import GameOverScene from './scenes/GameOverScene';
+import MainMenuScene from './scenes/MainMenuScene';
+import { CombatSystem } from './systems/CombatSystem';
+import { CraftingSystem } from './systems/CraftingSystem';
+import { GameDataManager } from './systems/GameDataManager';
+import { InventorySystem } from './systems/InventorySystem';
+import { MapManager } from './systems/MapManager';
+import { QuestSystem } from './systems/QuestSystem';
+import { ShopSystem } from './systems/ShopSystem';
+import { SoundManager } from './systems/SoundManager';
 import { TopDownGameEngine } from './TopDownGameEngine';
 import { CompleteGameUI } from './ui/CompleteGameUI';
-import { CompleteGameScene } from './scenes/CompleteGameScene';
-import { mobileTestHelper } from './MobileTestHelper';
-import { InventorySystem } from './systems/InventorySystem';
-import { QuestSystem } from './systems/QuestSystem';
-import { CombatSystem } from './systems/CombatSystem';
-import { GameDataManager } from './systems/GameDataManager';
-import { SoundManager } from './systems/SoundManager';
-import { MapManager } from './systems/MapManager';
-import { CraftingSystem } from './systems/CraftingSystem';
-import { ShopSystem } from './systems/ShopSystem';
 
 interface TopDownGameProps {
   width?: number;
   height?: number;
 }
 
-export const TopDownGame: React.FC<TopDownGameProps> = ({ 
-  width = 800, 
-  height = 600 
+export const TopDownGame: React.FC<TopDownGameProps> = ({
+  width = 800,
+  height = 600
 }) => {
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const gameEngineRef = useRef<TopDownGameEngine | null>(null);
@@ -60,52 +64,134 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     // 检测是否为移动设备
     const deviceInfo = mobileTestHelper.detectDevice();
     const isMobileDevice = deviceInfo.isMobile || deviceInfo.touchSupport;
-    
-    if (isMobileDevice) {
-      // 移动设备：使用更大的尺寸以确保START按钮可见
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-      
-      // 为移动设备预留更多空间给START按钮
-      const availableWidth = Math.min(screenWidth - 40, 500); // 最大500px，留40px边距
-      const availableHeight = Math.min(screenHeight - 200, 400); // 最大400px，留200px给UI
-      
-      return { 
-        width: availableWidth, 
-        height: availableHeight, 
-        multiplier: 1 
-      };
-    } else {
-      // 桌面设备：使用原有的计算逻辑
-      let gameWidth = 400;
-      let gameHeight = 224; // 16 * 14 = 224
-      const multiplier = Math.min(
-        Math.floor(window.innerWidth / 400), 
-        Math.floor(window.innerHeight / 224)
-      ) || 1;
 
-      if (multiplier > 1) {
-        gameWidth += Math.floor((window.innerWidth - gameWidth * multiplier) / (16 * multiplier)) * 16;
-        gameHeight += Math.floor((window.innerHeight - gameHeight * multiplier) / (16 * multiplier)) * 16;
+    // 获取可用空间
+    const availableWidth = window.innerWidth;
+    const availableHeight = window.innerHeight;
+
+    console.log('🔍 [DEBUG] 窗口尺寸信息:', {
+      windowWidth: availableWidth,
+      windowHeight: availableHeight,
+      isMobile: isMobileDevice,
+      deviceInfo: deviceInfo
+    });
+
+    if (isMobileDevice) {
+      // 移动设备：充分利用屏幕空间
+      const maxWidth = Math.min(availableWidth - 5, 1400);
+      const maxHeight = Math.min(availableHeight - 40, 1000);
+
+      // 保持16:9的宽高比
+      const aspectRatio = 16 / 9;
+      let gameWidth = maxWidth;
+      let gameHeight = gameWidth / aspectRatio;
+
+      if (gameHeight > maxHeight) {
+        gameHeight = maxHeight;
+        gameWidth = gameHeight * aspectRatio;
       }
 
-      return { width: gameWidth, height: gameHeight, multiplier };
+      const result = {
+        width: Math.floor(gameWidth),
+        height: Math.floor(gameHeight),
+        multiplier: 1
+      };
+
+      console.log('📱 [DEBUG] 移动设备游戏尺寸计算:', {
+        maxWidth,
+        maxHeight,
+        aspectRatio,
+        calculatedWidth: gameWidth,
+        calculatedHeight: gameHeight,
+        finalResult: result
+      });
+
+      return result;
+    } else {
+      // 桌面设备：使用更大的尺寸，几乎铺满窗口
+      const maxWidth = Math.min(availableWidth - 5, 2400);
+      const maxHeight = Math.min(availableHeight - 10, 1800);
+
+      // 保持16:9的宽高比
+      const aspectRatio = 16 / 9;
+      let gameWidth = maxWidth;
+      let gameHeight = gameWidth / aspectRatio;
+
+      if (gameHeight > maxHeight) {
+        gameHeight = maxHeight;
+        gameWidth = gameHeight * aspectRatio;
+      }
+
+      // 确保尺寸是16的倍数（像素艺术要求）
+      const originalWidth = gameWidth;
+      const originalHeight = gameHeight;
+      gameWidth = Math.floor(gameWidth / 16) * 16;
+      gameHeight = Math.floor(gameHeight / 16) * 16;
+
+      const result = {
+        width: gameWidth,
+        height: gameHeight,
+        multiplier: 1
+      };
+
+      console.log('🖥️ [DEBUG] 桌面设备游戏尺寸计算:', {
+        maxWidth,
+        maxHeight,
+        aspectRatio,
+        originalWidth,
+        originalHeight,
+        adjustedWidth: gameWidth,
+        adjustedHeight: gameHeight,
+        finalResult: result,
+        widthAdjustment: originalWidth - gameWidth,
+        heightAdjustment: originalHeight - gameHeight
+      });
+
+      return result;
     }
   };
 
-  const gameSize = calculateGameSize();
+  const [gameSize, setGameSize] = useState(calculateGameSize());
+
+  // 响应式调整游戏尺寸
+  useEffect(() => {
+    const handleResize = () => {
+      console.log('📏 [DEBUG] 窗口大小变化:', {
+        oldSize: gameSize,
+        newWindowSize: {
+          width: window.innerWidth,
+          height: window.innerHeight
+        }
+      });
+
+      const newGameSize = calculateGameSize();
+      console.log('🔄 [DEBUG] 游戏尺寸重新计算:', {
+        oldSize: gameSize,
+        newSize: newGameSize,
+        sizeChange: {
+          widthDiff: newGameSize.width - gameSize.width,
+          heightDiff: newGameSize.height - gameSize.height
+        }
+      });
+
+      setGameSize(newGameSize);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [gameSize]);
 
   // 检测移动设备
   useEffect(() => {
     const checkMobile = () => {
       const deviceInfo = mobileTestHelper.detectDevice();
       setIsMobile(deviceInfo.isMobile || deviceInfo.touchSupport);
-      
+
       if (process.env.NODE_ENV === 'development') {
         mobileTestHelper.showDeviceInfo();
       }
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -117,12 +203,19 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
     setDebugInfo('创建游戏引擎...');
 
+    console.log('🎮 [DEBUG] 游戏引擎初始化:', {
+      container: gameContainerRef.current,
+      gameSize: gameSize,
+      containerRect: gameContainerRef.current.getBoundingClientRect()
+    });
+
     // 创建游戏引擎实例
     gameEngineRef.current = new TopDownGameEngine(gameContainerRef.current, {
-      // 使用容器的实际渲染尺寸，避免画布内部分辨率过小
-      width: gameSize.width * gameSize.multiplier,
-      height: gameSize.height * gameSize.multiplier,
+      // 使用计算出的游戏尺寸
+      width: gameSize.width,
+      height: gameSize.height,
       parent: gameContainerRef.current,
+      type: Phaser.AUTO,
       backgroundColor: '#2c3e50',
       physics: {
         default: 'arcade',
@@ -131,7 +224,13 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
           debug: false
         }
       },
-      scene: [CompleteGameScene]
+      scene: [BootScene, MainMenuScene, CompleteGameScene, GameOverScene]
+    });
+
+    console.log('✅ [DEBUG] 游戏引擎创建完成:', {
+      gameEngine: gameEngineRef.current,
+      gameInstance: gameEngineRef.current?.getGame(),
+      gameSize: gameEngineRef.current?.getGameSize()
     });
 
     setDebugInfo('游戏引擎创建完成，等待场景启动...');
@@ -139,6 +238,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
     return () => {
       if (gameEngineRef.current) {
+        console.log('🗑️ [DEBUG] 销毁游戏引擎');
         gameEngineRef.current.destroy();
         gameEngineRef.current = null;
       }
@@ -161,13 +261,13 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
     const onHeroHealth = (e: Event) => {
       const detail = (e as CustomEvent).detail as { healthStates: string[] };
-      
+
       // 更新玩家状态
       if (detail.healthStates && detail.healthStates[0]) {
         const healthCount = detail.healthStates.filter(state => state === 'full').length;
         const maxHealth = detail.healthStates.length * 20;
         const currentHealth = healthCount * 20;
-        
+
         setPlayerStats(prev => ({
           ...prev,
           health: currentHealth,
@@ -291,22 +391,76 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     window.dispatchEvent(customEvent);
   };
 
+  // 添加容器尺寸调试信息
+  useEffect(() => {
+    if (gameContainerRef.current) {
+      const container = gameContainerRef.current;
+      const rect = container.getBoundingClientRect();
+      const computedStyle = window.getComputedStyle(container);
+
+      console.log('📦 [DEBUG] 游戏容器尺寸信息:', {
+        containerElement: container,
+        boundingRect: {
+          width: rect.width,
+          height: rect.height,
+          top: rect.top,
+          left: rect.left,
+          bottom: rect.bottom,
+          right: rect.right
+        },
+        computedStyle: {
+          width: computedStyle.width,
+          height: computedStyle.height,
+          maxWidth: computedStyle.maxWidth,
+          maxHeight: computedStyle.maxHeight,
+          margin: computedStyle.margin,
+          padding: computedStyle.padding
+        },
+        gameSize: gameSize,
+        windowSize: {
+          innerWidth: window.innerWidth,
+          innerHeight: window.innerHeight,
+          outerWidth: window.outerWidth,
+          outerHeight: window.outerHeight
+        }
+      });
+    }
+  }, [gameSize]);
+
   return (
-    <div className="relative w-full max-w-4xl mx-auto">
+    <div className="relative w-full max-w-full mx-auto">
       <div
         ref={gameContainerRef}
-        className="border-2 border-gray-600 rounded-lg overflow-hidden mx-auto"
+        className="border-2 border-gray-600 rounded-lg overflow-hidden mx-auto bg-black"
         style={{
-          width: gameSize.width * gameSize.multiplier,
-          height: gameSize.height * gameSize.multiplier,
+          width: gameSize.width,
+          height: gameSize.height,
           maxWidth: '100%',
-          maxHeight: '70vh'
+          maxHeight: '95vh'
         }}
       />
 
+      {/* 调试信息显示 */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="absolute top-2 right-2 z-50 bg-black bg-opacity-75 text-white text-xs p-2 rounded border border-gray-600 max-w-xs">
+          <div className="font-bold mb-1">🔍 调试信息</div>
+          <div>窗口: {window.innerWidth} x {window.innerHeight}</div>
+          <div>游戏: {gameSize.width} x {gameSize.height}</div>
+          <div>设备: {isMobile ? '移动' : '桌面'}</div>
+          <div>状态: {isGameReady ? '就绪' : '初始化'}</div>
+          <div>开始: {gameStarted ? '是' : '否'}</div>
+          <div className="mt-1 text-yellow-300">{debugInfo}</div>
+        </div>
+      )}
+
       {!isGameReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/70">
-          <div className="text-white text-xl">{debugInfo}</div>
+          <div className="text-white text-center">
+            <div className="text-xl mb-2">{debugInfo}</div>
+            <div className="text-sm opacity-75">
+              游戏尺寸: {gameSize.width} x {gameSize.height}
+            </div>
+          </div>
         </div>
       )}
 
@@ -336,7 +490,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
                 点击下方按钮开始游戏
               </p>
             </div>
-            
+
             <button
               onClick={startGame}
               className={`

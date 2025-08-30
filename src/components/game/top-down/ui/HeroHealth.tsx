@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { calculateGameSize } from '../utils';
 
 // 生命值状态类型
 export type HealthState = 'full' | 'half' | 'empty';
@@ -39,22 +38,22 @@ const HeroHealth: React.FC<HeroHealthProps> = ({ gameSize, healthStates }) => {
   // 生命值状态样式
   const getHealthStateStyle = (state: HealthState) => {
     const backgroundSize = `${48 * multiplier}px ${16 * multiplier}px`;
-    
+
     switch (state) {
       case 'full':
         return {
           backgroundSize,
-          background: `url("/game/assets/images/health.png") no-repeat 0 0`,
+          background: `url("/assets/topdown/images/health.png") no-repeat 0 0`,
         };
       case 'half':
         return {
           backgroundSize,
-          background: `url("/game/assets/images/health.png") no-repeat -${16 * multiplier}px 0`,
+          background: `url("/assets/topdown/images/health.png") no-repeat -${16 * multiplier}px 0`,
         };
       case 'empty':
         return {
           backgroundSize,
-          background: `url("/game/assets/images/health.png") no-repeat -${32 * multiplier}px 0`,
+          background: `url("/assets/topdown/images/health.png") no-repeat -${32 * multiplier}px 0`,
         };
       default:
         return {};

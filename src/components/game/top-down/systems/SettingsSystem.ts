@@ -361,10 +361,10 @@ export class SettingsSystem {
   public getSetting<T>(category: SettingsCategory, key: string): T {
     if (!this.isInitialized) {
       console.warn('设置系统尚未初始化');
-      return this.defaultSettings[category][key] as T;
+      return (this.defaultSettings as any)[category][key] as T;
     }
     
-    return this.settings[category][key] as T;
+    return (this.settings as any)[category][key] as T;
   }
 
   /**
@@ -376,8 +376,8 @@ export class SettingsSystem {
       return;
     }
     
-    const oldValue = this.settings[category][key];
-    this.settings[category][key] = value;
+    const oldValue = (this.settings as any)[category][key];
+    (this.settings as any)[category][key] = value;
     this.settings.lastModified = Date.now();
     
     // 应用设置
@@ -391,7 +391,7 @@ export class SettingsSystem {
       category,
       key,
       value,
-      oldValue
+      // oldValue
     });
     
     console.log(`设置已更新: ${category}.${key} = ${value}`);
@@ -417,7 +417,7 @@ export class SettingsSystem {
   public resetSettings(category?: SettingsCategory): void {
     if (category) {
       // 重置特定分类
-      this.settings[category] = { ...this.defaultSettings[category] };
+      (this.settings as any)[category] = { ...(this.defaultSettings as any)[category] };
       this.applyCategorySettings(category);
     } else {
       // 重置所有设置
@@ -842,7 +842,7 @@ export class SettingsSystem {
       // 保存到存储
       this.saveToStorage();
       
-      this.emitEvent('settings_imported', { settings: this.settings });
+      this.emitEvent('settings_imported', {});
       console.log('设置导入成功');
       return true;
     } catch (error) {

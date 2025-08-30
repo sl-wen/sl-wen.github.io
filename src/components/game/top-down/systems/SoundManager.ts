@@ -427,11 +427,11 @@ export class SoundManager {
     // 计算音量衰减
     const maxDistance = 1000;
     const volume = Math.max(0, 1 - distance / maxDistance);
-    sound.setVolume(volume * this.getCategoryVolume('sfx'));
+    (sound as any).setVolume(volume * this.getCategoryVolume('sfx'));
 
     // 计算立体声平衡
     const pan = (position.x - position.listenerX) / maxDistance;
-    sound.setPan(Math.max(-1, Math.min(1, pan)));
+    (sound as any).setPan(Math.max(-1, Math.min(1, pan)));
 
     this.spatialSounds.set(sound.key, position);
   }
@@ -583,7 +583,7 @@ export class SoundManager {
       const config = this.soundEffects[key] || this.backgroundMusic[key];
       if (config) {
         const newVolume = this.getCategoryVolume(config.category || 'sfx');
-        sound.setVolume(newVolume);
+        (sound as any).setVolume(newVolume);
       }
     });
   }

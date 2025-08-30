@@ -501,7 +501,7 @@ export class AudioSystem {
       return false;
     }
 
-    const startVolume = audio.sound.volume;
+    const startVolume = (audio.sound as any).volume || 1;
     const startTime = Date.now();
     
     audio.state = AudioState.FADING;
@@ -512,7 +512,7 @@ export class AudioSystem {
 
     this.fadeQueue.push({ audioId, targetVolume, duration });
     
-    this.emitEvent('audio_fade_started', { audioId, config: audio.config, duration, targetVolume });
+    this.emitEvent('audio_fade_started', { audioId, config: audio.config });
     return true;
   }
 
@@ -542,11 +542,11 @@ export class AudioSystem {
    * 停止所有音频
    */
   public stopAllAudio(): void {
-    for (const [audioId, audio] of this.audioInstances) {
+    this.audioInstances.forEach((audio, audioId) => {
       if (audio.sound) {
         audio.sound.stop();
       }
-    }
+    });
     
     this.audioInstances.clear();
     this.currentMusic = undefined;
@@ -559,11 +559,11 @@ export class AudioSystem {
    * 暂停所有音频
    */
   public pauseAllAudio(): void {
-    for (const [audioId, audio] of this.audioInstances) {
+    this.audioInstances.forEach((audio, audioId) => {
       if (audio.sound && audio.state === AudioState.PLAYING) {
         this.pauseAudio(audioId);
       }
-    }
+    });
     
     this.emitEvent('all_audio_paused', {});
   }
@@ -572,11 +572,11 @@ export class AudioSystem {
    * 恢复所有音频
    */
   public resumeAllAudio(): void {
-    for (const [audioId, audio] of this.audioInstances) {
+    this.audioInstances.forEach((audio, audioId) => {
       if (audio.sound && audio.state === AudioState.PAUSED) {
         this.resumeAudio(audioId);
       }
-    }
+    });
     
     this.emitEvent('all_audio_resumed', {});
   }
@@ -593,7 +593,7 @@ export class AudioSystem {
       this.resumeAllAudio();
     }
     
-    this.emitEvent('audio_muted_changed', { muted });
+    this.emitEvent('audio_muted_changed', {});
   }
 
   /**
@@ -602,7 +602,7 @@ export class AudioSystem {
   public setMasterVolume(volume: number): void {
     this.masterVolume = Math.max(0, Math.min(1, volume));
     this.updateAllVolumes();
-    this.emitEvent('master_volume_changed', { volume: this.masterVolume });
+    this.emitEvent('master_volume_changed', {});
   }
 
   /**
@@ -611,7 +611,7 @@ export class AudioSystem {
   public setMusicVolume(volume: number): void {
     this.musicVolume = Math.max(0, Math.min(1, volume));
     this.updateTypeVolumes(AudioType.MUSIC);
-    this.emitEvent('music_volume_changed', { volume: this.musicVolume });
+    this.emitEvent('music_volume_changed', {});
   }
 
   /**
@@ -620,7 +620,7 @@ export class AudioSystem {
   public setSfxVolume(volume: number): void {
     this.sfxVolume = Math.max(0, Math.min(1, volume));
     this.updateTypeVolumes(AudioType.SFX);
-    this.emitEvent('sfx_volume_changed', { volume: this.sfxVolume });
+    this.emitEvent('sfx_volume_changed', {});
   }
 
   /**
@@ -629,7 +629,7 @@ export class AudioSystem {
   public setVoiceVolume(volume: number): void {
     this.voiceVolume = Math.max(0, Math.min(1, volume));
     this.updateTypeVolumes(AudioType.VOICE);
-    this.emitEvent('voice_volume_changed', { volume: this.voiceVolume });
+    this.emitEvent('voice_volume_changed', {});
   }
 
   /**
@@ -638,7 +638,7 @@ export class AudioSystem {
   public setAmbientVolume(volume: number): void {
     this.ambientVolume = Math.max(0, Math.min(1, volume));
     this.updateTypeVolumes(AudioType.AMBIENT);
-    this.emitEvent('ambient_volume_changed', { volume: this.ambientVolume });
+    this.emitEvent('ambient_volume_changed', {});
   }
 
   /**
@@ -647,7 +647,7 @@ export class AudioSystem {
   public setUiVolume(volume: number): void {
     this.uiVolume = Math.max(0, Math.min(1, volume));
     this.updateTypeVolumes(AudioType.UI);
-    this.emitEvent('ui_volume_changed', { volume: this.uiVolume });
+    this.emitEvent('ui_volume_changed', {});
   }
 
   /**
@@ -664,7 +664,7 @@ export class AudioSystem {
   public setSpatialAudioEnabled(enabled: boolean): void {
     this.spatialAudioEnabled = enabled;
     this.updateSpatialAudio();
-    this.emitEvent('spatial_audio_changed', { enabled });
+    this.emitEvent('spatial_audio_changed', {});
   }
 
   /**
@@ -683,10 +683,10 @@ export class AudioSystem {
     
     // 计算立体声平衡
     const pan = (position.x - this.listenerPosition.x) / maxDistance;
-    audio.sound.setPan(Math.max(-1, Math.min(1, pan)));
+    (audio.sound as any).setPan(Math.max(-1, Math.min(1, pan)));
     
     // 设置音量
-    audio.sound.setVolume(volume * audio.volume);
+    (audio.sound as any).setVolume(volume * audio.volume);
   }
 
   /**
@@ -695,13 +695,13 @@ export class AudioSystem {
   private updateSpatialAudio(): void {
     if (!this.spatialAudioEnabled) return;
 
-    for (const [audioId, audio] of this.audioInstances) {
+    this.audioInstances.forEach((audio, audioId) => {
       if (audio.config.spatial && audio.sound) {
         // 这里需要根据音频的位置信息更新3D效果
         // 由于我们没有存储位置信息，这里只是示例
         this.updateAudioVolume(audio);
       }
-    }
+    });
   }
 
   /**
@@ -735,20 +735,20 @@ export class AudioSystem {
    * 更新所有音量
    */
   private updateAllVolumes(): void {
-    for (const [audioId, audio] of this.audioInstances) {
+    this.audioInstances.forEach((audio, audioId) => {
       this.updateAudioVolume(audio);
-    }
+    });
   }
 
   /**
    * 更新特定类型的音量
    */
   private updateTypeVolumes(type: AudioType): void {
-    for (const [audioId, audio] of this.audioInstances) {
+    this.audioInstances.forEach((audio, audioId) => {
       if (audio.config.type === type) {
         this.updateAudioVolume(audio);
       }
-    }
+    });
   }
 
   /**
@@ -759,7 +759,7 @@ export class AudioSystem {
 
     const newVolume = this.calculateVolume(audio.config);
     audio.volume = newVolume;
-    audio.sound.setVolume(newVolume);
+    (audio.sound as any).setVolume(newVolume);
   }
 
   /**
@@ -832,22 +832,22 @@ export class AudioSystem {
   private handleSfxEnabledChange = (data: any): void => {
     if (!data.enabled) {
       // 停止所有音效
-      for (const [audioId, audio] of this.audioInstances) {
+      this.audioInstances.forEach((audio, audioId) => {
         if (audio.config.type === AudioType.SFX) {
           this.stopAudio(audioId);
         }
-      }
+      });
     }
   };
 
   private handleVoiceEnabledChange = (data: any): void => {
     if (!data.enabled) {
       // 停止所有语音
-      for (const [audioId, audio] of this.audioInstances) {
+      this.audioInstances.forEach((audio, audioId) => {
         if (audio.config.type === AudioType.VOICE) {
           this.stopAudio(audioId);
         }
-      }
+      });
     }
   };
 
@@ -930,7 +930,7 @@ export class AudioSystem {
         const progress = Math.min(1, elapsed / duration);
         
         const currentVolume = audio.fadeStartVolume + (audio.fadeEndVolume - audio.fadeStartVolume) * progress;
-        audio.sound.setVolume(currentVolume);
+        (audio.sound as any).setVolume(currentVolume);
         
         if (progress >= 1) {
           audio.state = AudioState.PLAYING;

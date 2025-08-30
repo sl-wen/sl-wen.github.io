@@ -646,7 +646,7 @@ export class SaveSystem {
     } catch (error) {
       console.error('保存游戏失败:', error);
       saveData.status = SaveStatus.CORRUPTED;
-      this.emitEvent('save_failed', { saveData, error });
+      this.emitEvent('save_failed', { saveData });
       return false;
     }
   }
@@ -683,7 +683,7 @@ export class SaveSystem {
       return true;
     } catch (error) {
       console.error('加载游戏失败:', error);
-      this.emitEvent('load_failed', { saveData, error });
+      this.emitEvent('load_failed', { saveData });
       return false;
     }
   }
@@ -749,7 +749,7 @@ export class SaveSystem {
     this.saveSlots.set(targetSlotId, copiedSave);
     this.saveToStorage(copiedSave);
     
-    this.emitEvent('save_copied', { sourceSave, copiedSave });
+    this.emitEvent('save_copied', { saveData: copiedSave });
     return true;
   }
 
@@ -1037,12 +1037,12 @@ export class SaveSystem {
    * 验证所有存档
    */
   private validateAllSaves(): void {
-    for (const [slotId, saveData] of this.saveSlots) {
+    this.saveSlots.forEach((saveData, slotId) => {
       if (!this.validateSave(saveData)) {
         saveData.status = SaveStatus.CORRUPTED;
         console.warn('存档损坏:', slotId);
       }
-    }
+    });
   }
 
   /**

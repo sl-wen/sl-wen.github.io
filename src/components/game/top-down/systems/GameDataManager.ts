@@ -271,6 +271,9 @@ export class GameDataManager {
         id: 'first_steps',
         title: '第一步',
         description: '与村长对话，了解村庄的情况。',
+        type: QuestType.TALK,
+        level: 1,
+        status: QuestStatus.NOT_STARTED,
         objectives: [
           {
             id: 'talk_to_mayor',
@@ -289,18 +292,27 @@ export class GameDataManager {
             { itemId: 'wooden_sword', quantity: 1 }
           ]
         },
-        status: QuestStatus.NOT_STARTED,
-        level: 1,
-        isMainQuest: true,
-        // tags: ['intro'], // Quest interface doesn't have tags property
-        isRepeatable: false,
+        prerequisites: [],
         giver: 'mayor',
-        // turnIn: 'mayor' // Quest interface doesn't have turnIn property
+        receiver: 'player',
+        location: { x: 100, y: 100 },
+        isRepeatable: false,
+        isMainQuest: true,
+        isHidden: false,
+        dialogue: {
+          start: ['欢迎来到我们的村庄！'],
+          progress: ['请继续与村长对话。'],
+          complete: ['很好！你已经完成了第一步。'],
+          fail: ['任务失败了。']
+        }
       },
       {
         id: 'herb_collection',
         title: '草药收集',
         description: '收集10个草药，用于制作药水。',
+        type: QuestType.COLLECT,
+        level: 2,
+        status: QuestStatus.NOT_STARTED,
         objectives: [
           {
             id: 'collect_herbs',
@@ -319,18 +331,27 @@ export class GameDataManager {
             { itemId: 'health_potion', quantity: 3 }
           ]
         },
-        status: QuestStatus.NOT_STARTED,
-        level: 2,
-        isMainQuest: false,
-        // tags: ['gather'], // Quest interface doesn't have tags property
-        isRepeatable: true,
+        prerequisites: [],
         giver: 'herbalist',
-        // turnIn: 'herbalist' // Quest interface doesn't have turnIn property
+        receiver: 'player',
+        location: { x: 150, y: 120 },
+        isRepeatable: true,
+        isMainQuest: false,
+        isHidden: false,
+        dialogue: {
+          start: ['我需要一些草药来制作药水。'],
+          progress: ['继续收集草药。'],
+          complete: ['谢谢你的帮助！'],
+          fail: ['收集失败了。']
+        }
       },
       {
         id: 'slime_hunt',
         title: '史莱姆狩猎',
         description: '击败5只史莱姆，保护村庄的安全。',
+        type: QuestType.KILL,
+        level: 3,
+        status: QuestStatus.NOT_STARTED,
         objectives: [
           {
             id: 'kill_slimes',
@@ -349,18 +370,27 @@ export class GameDataManager {
             { itemId: 'leather_armor', quantity: 1 }
           ]
         },
-        status: QuestStatus.NOT_STARTED,
-        level: 3,
-        isMainQuest: false,
-        // tags: ['combat'], // Quest interface doesn't have tags property
-        isRepeatable: true,
+        prerequisites: [],
         giver: 'guard',
-        // turnIn: 'guard' // Quest interface doesn't have turnIn property
+        receiver: 'player',
+        location: { x: 200, y: 150 },
+        isRepeatable: true,
+        isMainQuest: false,
+        isHidden: false,
+        dialogue: {
+          start: ['史莱姆正在威胁村庄的安全。'],
+          progress: ['继续消灭史莱姆。'],
+          complete: ['干得好！村庄现在安全了。'],
+          fail: ['任务失败了。']
+        }
       },
       {
         id: 'ancient_ruins',
         title: '古代遗迹',
         description: '探索古代遗迹，寻找神秘的宝藏。',
+        type: QuestType.EXPLORE,
+        level: 5,
+        status: QuestStatus.NOT_STARTED,
         objectives: [
           {
             id: 'explore_ruins',
@@ -389,14 +419,19 @@ export class GameDataManager {
             { itemId: 'ancient_key', quantity: 1 }
           ]
         },
-        status: QuestStatus.NOT_STARTED,
-        level: 5,
-        isMainQuest: true,
-        // tags: ['exploration'], // Quest interface doesn't have tags property
-        isRepeatable: false,
         prerequisites: ['first_steps'],
         giver: 'scholar',
-        // turnIn: 'scholar' // Quest interface doesn't have turnIn property
+        receiver: 'player',
+        location: { x: 300, y: 200 },
+        isRepeatable: false,
+        isMainQuest: true,
+        isHidden: false,
+        dialogue: {
+          start: ['古代遗迹中隐藏着神秘的宝藏。'],
+          progress: ['继续探索遗迹。'],
+          complete: ['你发现了珍贵的宝藏！'],
+          fail: ['探索失败了。']
+        }
       }
     ];
 

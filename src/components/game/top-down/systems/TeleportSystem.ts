@@ -929,8 +929,8 @@ export class TeleportSystem {
     if (savedData) {
       this.discoveredPoints = new Set((savedData as any).discoveredPoints || []);
       this.unlockedNetworks = new Set((savedData as any).unlockedNetworks || []);
-      this.stats = savedData.stats || this.stats;
-      this.teleportHistory = savedData.history || [];
+      this.stats = (savedData as any).stats || this.stats;
+      this.teleportHistory = (savedData as any).history || [];
     }
   }
 

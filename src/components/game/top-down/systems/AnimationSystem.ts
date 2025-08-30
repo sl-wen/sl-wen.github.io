@@ -121,7 +121,7 @@ export interface AnimationInstance {
   progress: number;
   elapsedTime: number;
   sprite?: Phaser.GameObjects.Sprite;
-  timeline?: Phaser.Tweens.Timeline;
+  timeline?: any; // Phaser.Tweens.Timeline type issue
   onComplete?: () => void;
 }
 
@@ -385,7 +385,7 @@ export class AnimationSystem {
       loop: LoopMode.NONE,
       duration: 1000,
       ease: EaseType.QUAD_IN_OUT
-    });
+    } as TransitionAnimationConfig);
 
     this.createAnimation({
       key: 'fade_out',
@@ -398,7 +398,7 @@ export class AnimationSystem {
       loop: LoopMode.NONE,
       duration: 1000,
       ease: EaseType.QUAD_IN_OUT
-    });
+    } as TransitionAnimationConfig);
 
     // 滑动过场
     this.createAnimation({
@@ -412,7 +412,7 @@ export class AnimationSystem {
       loop: LoopMode.NONE,
       duration: 600,
       ease: EaseType.CUBIC_OUT
-    });
+    } as TransitionAnimationConfig);
 
     this.createAnimation({
       key: 'slide_out_right',
@@ -425,7 +425,7 @@ export class AnimationSystem {
       loop: LoopMode.NONE,
       duration: 600,
       ease: EaseType.CUBIC_IN
-    });
+    } as TransitionAnimationConfig);
 
     // 缩放过场
     this.createAnimation({
@@ -439,7 +439,7 @@ export class AnimationSystem {
       loop: LoopMode.NONE,
       duration: 800,
       ease: EaseType.BOUNCE_OUT
-    });
+    } as TransitionAnimationConfig);
 
     this.createAnimation({
       key: 'zoom_out',
@@ -452,7 +452,7 @@ export class AnimationSystem {
       loop: LoopMode.NONE,
       duration: 800,
       ease: EaseType.BOUNCE_IN
-    });
+    } as TransitionAnimationConfig);
   }
 
   /**
@@ -529,7 +529,7 @@ export class AnimationSystem {
     if (!animation.sprite) return;
 
     const config = animation.config as TransitionAnimationConfig;
-    const timeline = this.scene.tweens.createTimeline();
+    const timeline = (this.scene.tweens as any).createTimeline();
 
     // 根据过场类型创建不同的动画
     switch (config.transitionType) {
@@ -652,7 +652,7 @@ export class AnimationSystem {
       animation.timeline.timeScale = speed;
     }
 
-    this.emitEvent('animation_speed_changed', { animationId, speed, config: animation.config });
+    this.emitEvent('animation_speed_changed', { animationId, config: animation.config });
     return true;
   }
 
@@ -663,13 +663,13 @@ export class AnimationSystem {
     this.globalSpeed = Math.max(0, speed);
     
     // 更新所有正在播放的动画
-    for (const [animationId, animation] of this.animations) {
+    this.animations.forEach((animation, animationId) => {
       if (animation.state === AnimationState.PLAYING && animation.timeline) {
         animation.timeline.timeScale = this.globalSpeed;
       }
-    }
+    });
 
-    this.emitEvent('global_speed_changed', { speed: this.globalSpeed });
+    this.emitEvent('global_speed_changed', {});
   }
 
   /**
@@ -678,11 +678,11 @@ export class AnimationSystem {
   public pauseAllAnimations(): void {
     this.isPaused = true;
     
-    for (const [animationId, animation] of this.animations) {
+    this.animations.forEach((animation, animationId) => {
       if (animation.state === AnimationState.PLAYING) {
         this.pauseAnimation(animationId);
       }
-    }
+    });
 
     this.emitEvent('all_animations_paused', {});
   }
@@ -693,11 +693,11 @@ export class AnimationSystem {
   public resumeAllAnimations(): void {
     this.isPaused = false;
     
-    for (const [animationId, animation] of this.animations) {
+    this.animations.forEach((animation, animationId) => {
       if (animation.state === AnimationState.PAUSED) {
         this.resumeAnimation(animationId);
       }
-    }
+    });
 
     this.emitEvent('all_animations_resumed', {});
   }
@@ -706,11 +706,11 @@ export class AnimationSystem {
    * 停止所有动画
    */
   public stopAllAnimations(): void {
-    for (const [animationId, animation] of this.animations) {
+    this.animations.forEach((animation, animationId) => {
       if (animation.state === AnimationState.PLAYING || animation.state === AnimationState.PAUSED) {
         this.stopAnimation(animationId);
       }
-    }
+    });
 
     this.emitEvent('all_animations_stopped', {});
   }
@@ -868,11 +868,11 @@ export class AnimationSystem {
     if (this.isPaused) return;
 
     // 更新所有正在播放的动画
-    for (const [animationId, animation] of this.animations) {
+    this.animations.forEach((animation, animationId) => {
       if (animation.state === AnimationState.PLAYING) {
         this.updateAnimation(animation, delta);
       }
-    }
+    });
   }
 
   /**

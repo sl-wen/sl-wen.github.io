@@ -266,16 +266,16 @@ export class WindowManager {
     this.game.scale.setZoom(this.config.scale);
     
     // 设置像素艺术模式
-    this.game.scale.setPixelArt(this.config.pixelArt);
-    this.game.scale.setAutoRound(this.config.autoRound);
+    // this.game.scale.setPixelArt(this.config.pixelArt); // Phaser method not available
+    this.game.scale.autoRound = this.config.autoRound;
 
     // 设置缩放模式
     if (this.config.deviceType === DeviceType.MOBILE) {
-      this.game.scale.setScaleMode(Phaser.Scale.FIT);
-      this.game.scale.setAutoCenter(Phaser.Scale.CENTER_BOTH);
+      this.game.scale.scaleMode = Phaser.Scale.FIT;
+      this.game.scale.autoCenter = Phaser.Scale.CENTER_BOTH;
     } else {
-      this.game.scale.setScaleMode(Phaser.Scale.FIT);
-      this.game.scale.setAutoCenter(Phaser.Scale.CENTER_BOTH);
+      this.game.scale.scaleMode = Phaser.Scale.FIT;
+      this.game.scale.autoCenter = Phaser.Scale.CENTER_BOTH;
     }
 
     console.log('🔄 WindowManager: 应用新配置', this.config);
@@ -283,7 +283,7 @@ export class WindowManager {
 
   // 切换到指定尺寸
   public setScreenSize(screenSize: ScreenSize): void {
-    const preset = PRESET_SIZES[screenSize];
+    const preset = (PRESET_SIZES as any)[screenSize];
     if (!preset) return;
 
     const oldConfig = { ...this.config };

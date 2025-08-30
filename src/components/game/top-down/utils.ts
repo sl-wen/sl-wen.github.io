@@ -273,7 +273,7 @@ export const mergeObjects = <T extends Record<string, any>>(
       });
     }
     return result;
-  }, { ...target });
+  }, { ...target } as any) as T;
 };
 
 // 检查是否为有效的JSON字符串
@@ -440,7 +440,7 @@ export const events = {
 };
 
 // 动画工具函数
-export const animation = {
+export const animation: any = {
   // 缓动函数
   easeInQuad: (t: number): number => t * t,
   easeOutQuad: (t: number): number => t * (2 - t),
@@ -566,7 +566,7 @@ export const string = {
 export const array = {
   // 数组去重
   unique: <T>(arr: T[]): T[] => {
-    return [...new Set(arr)];
+    return Array.from(new Set(arr));
   },
 
   // 数组分组

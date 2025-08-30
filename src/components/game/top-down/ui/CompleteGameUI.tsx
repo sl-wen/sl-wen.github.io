@@ -251,7 +251,7 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
       {heroHealthStates.length > 0 && (
         <HeroHealth
           gameSize={gameSize}
-          healthStates={heroHealthStates as HealthState[]}
+          healthStates={heroHealthStates as any[]}
         />
       )}
 
@@ -323,12 +323,51 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
       <AchievementUI
         isVisible={showAchievementUI}
         onClose={() => setShowAchievementUI(false)}
+        achievements={[]}
+        stats={{
+          totalAchievements: 0,
+          unlockedAchievements: 0,
+          completionRate: 0,
+          totalRewards: 0,
+          totalPlayTime: 0
+        } as any}
+        config={{
+          showSecret: false,
+          showCompleted: true,
+          sortBy: 'name',
+          filterCategory: 'all',
+          showRewards: true
+        } as any}
+        onConfigChange={() => {}}
+        onShareAchievement={() => {}}
+        onAchievementClick={() => {}}
       />
 
       {/* 设置UI */}
       <SettingsUI
         isVisible={showSettingsUI}
         onClose={() => setShowSettingsUI(false)}
+        settings={{
+          audio: {} as any,
+          video: {} as any,
+          controls: {} as any,
+          game: {} as any,
+          accessibility: {} as any,
+          lastModified: 0,
+          version: '1.0.0'
+        } as any}
+        config={{
+          activeCategory: 'audio' as any,
+          showAdvanced: false,
+          showPreview: true,
+          autoApply: false
+        } as any}
+        onConfigChange={() => {}}
+        onSettingChange={() => {}}
+        onResetCategory={() => {}}
+        onResetAll={() => {}}
+        onExport={() => {}}
+        onImport={() => {}}
       />
 
       {/* 教程UI */}

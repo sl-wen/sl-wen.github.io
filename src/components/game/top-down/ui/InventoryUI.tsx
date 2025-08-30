@@ -311,7 +311,7 @@ export const InventoryUI: React.FC<InventoryUIProps> = ({
           margin: finalConfig.slotSpacing / 2
         }}
         onClick={() => handleSlotClick(slot)}
-        draggable={slot.item && finalConfig.enableDragDrop}
+        draggable={slot.item && finalConfig.enableDragDrop ? true : undefined}
         onDragStart={(e) => handleDragStart(e, slot)}
         onDragEnd={(e) => handleDragEnd(e, slot)}
         onDragOver={(e) => handleDragOver(e, slot)}
@@ -348,10 +348,10 @@ export const InventoryUI: React.FC<InventoryUIProps> = ({
 
   // 渲染物品详情
   const renderItemDetails = () => {
-    const selectedSlot = slots.find(slot => slot.id === selectedSlot);
-    if (!selectedSlot?.item) return null;
+    const selectedSlotItem = slots.find((slot: any) => slot.id === selectedSlot);
+          if (!selectedSlotItem?.item) return null;
 
-    const item = selectedSlot.item;
+      const item = selectedSlotItem.item;
 
     return (
       <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">

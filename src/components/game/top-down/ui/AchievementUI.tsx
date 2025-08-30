@@ -169,7 +169,7 @@ export const AchievementUI: React.FC<AchievementUIProps> = ({
   // 处理分享成就
   const handleShareAchievement = async (achievementId: string) => {
     setIsSharing(true);
-    const shareText = onShareAchievement(achievementId);
+    const shareText = (onShareAchievement(achievementId) as unknown as string) || '';
     setShareText(shareText);
 
     try {

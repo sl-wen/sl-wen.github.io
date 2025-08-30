@@ -284,7 +284,7 @@ export class PlayerController {
 
     const gridDirection = directionMap[direction];
     if (gridDirection && gridDirection !== 'none') {
-      this.gridEngine.move('player', gridDirection);
+      this.gridEngine.move('player', gridDirection as any);
     }
   }
 
@@ -407,7 +407,7 @@ export class PlayerController {
     ) as Phaser.GameObjects.GameObject[];
 
     let closestDistance = this.config.interactionRange;
-    let closestObject: Phaser.GameObjects.GameObject | null = null;
+    let closestObject: Phaser.GameObjects.Sprite | null = null;
 
     interactableObjects.forEach(obj => {
       const distance = Phaser.Math.Distance.Between(
@@ -416,11 +416,13 @@ export class PlayerController {
       );
 
       if (distance <= this.config.interactionRange) {
-        this.nearbyObjects.push(obj);
+        if (obj instanceof Phaser.GameObjects.Sprite) {
+          this.nearbyObjects.push(obj);
 
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestObject = obj;
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestObject = obj;
+          }
         }
       }
     });

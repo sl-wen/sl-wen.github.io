@@ -21,7 +21,7 @@ export interface MapConfig {
   tileWidth: number;
   tileHeight: number;
   layers: string[];
-  spawnPoints: { [key: string]: { x: number; y: number } };
+  spawnPoints: { [key: string]: { x: number; y: number; direction?: string } };
   transitions: MapTransition[];
   preload: boolean;
   chunked: boolean;
@@ -264,9 +264,11 @@ export class MapSystem {
         
         // 创建图层
         config.layers.forEach(layerName => {
-          const layer = this.tilemap.createLayer(layerName, config.tileset);
-          if (layer) {
-            layer.setCollisionByProperty({ collides: true });
+          if (this.tilemap) {
+            const layer = this.tilemap.createLayer(layerName, config.tileset);
+            if (layer) {
+              layer.setCollisionByProperty({ collides: true });
+            }
           }
         });
 
@@ -299,7 +301,9 @@ export class MapSystem {
         };
 
         // 设置网格引擎
-        this.gridEngine.create(this.tilemap, gridEngineConfig);
+        if (this.tilemap) {
+          this.gridEngine.create(this.tilemap, gridEngineConfig);
+        }
         
         resolve();
       } catch (error) {
@@ -418,7 +422,7 @@ export class MapSystem {
     this.emitEvent('transition', {
       type: 'transition',
       mapKey: toMap,
-      fromMap,
+      fromMap: fromMap || undefined,
       toMap
     });
 

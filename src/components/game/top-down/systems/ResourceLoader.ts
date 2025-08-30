@@ -68,6 +68,7 @@ export interface ResourceLoaderConfig {
 export class ResourceLoader {
   private static instance: ResourceLoader;
   private game: Phaser.Game | null = null;
+  private scene: Phaser.Scene | null = null;
   private resources: Map<string, ResourceItem> = new Map();
   private loadQueue: ResourceItem[] = [];
   private loadingItems: Set<string> = new Set();
@@ -98,6 +99,11 @@ export class ResourceLoader {
   // 设置游戏实例
   public setGame(game: Phaser.Game): void {
     this.game = game;
+  }
+
+  // 设置场景实例
+  public setScene(scene: Phaser.Scene): void {
+    this.scene = scene;
   }
 
   // 添加资源
@@ -243,18 +249,18 @@ export class ResourceLoader {
 
   // 根据类型加载资源
   private async loadResourceByType(item: ResourceItem): Promise<void> {
-    if (!this.game) return;
+    if (!this.scene) return;
 
     switch (item.type) {
       case ResourceType.IMAGE:
-        this.game.load.image(item.key, item.url);
+        this.scene.load.image(item.key, item.url);
         break;
       case ResourceType.AUDIO:
-        this.game.load.audio(item.key, item.url);
+        this.scene.load.audio(item.key, item.url);
         break;
       case ResourceType.SPRITESHEET:
         const { frameWidth, frameHeight, spacing, margin } = item.config || {};
-        this.game.load.spritesheet(item.key, item.url, {
+        this.scene.load.spritesheet(item.key, item.url, {
           frameWidth,
           frameHeight,
           spacing,
@@ -262,24 +268,24 @@ export class ResourceLoader {
         });
         break;
       case ResourceType.TILESET:
-        this.game.load.image(item.key, item.url);
+        this.scene.load.image(item.key, item.url);
         break;
       case ResourceType.ATLAS:
         const { atlasURL, format } = item.config || {};
         if (format === 'XML') {
-          this.game.load.atlasXML(item.key, item.url, atlasURL);
+          this.scene.load.atlasXML(item.key, item.url, atlasURL);
         } else {
-          this.game.load.atlas(item.key, item.url, atlasURL);
+          this.scene.load.atlas(item.key, item.url, atlasURL);
         }
         break;
       case ResourceType.JSON:
-        this.game.load.json(item.key, item.url);
+        this.scene.load.json(item.key, item.url);
         break;
       case ResourceType.XML:
-        this.game.load.xml(item.key, item.url);
+        this.scene.load.xml(item.key, item.url);
         break;
       case ResourceType.TEXT:
-        this.game.load.text(item.key, item.url);
+        this.scene.load.text(item.key, item.url);
         break;
       default:
         throw new Error(`Unsupported resource type: ${item.type}`);
@@ -288,20 +294,20 @@ export class ResourceLoader {
     // 等待加载完成
     return new Promise((resolve, reject) => {
       const onComplete = () => {
-        this.game!.load.off('complete', onComplete);
-        this.game!.load.off('loaderror', onError);
+        this.scene!.load.off('complete', onComplete);
+        this.scene!.load.off('loaderror', onError);
         resolve();
       };
 
       const onError = (file: any) => {
-        this.game!.load.off('complete', onComplete);
-        this.game!.load.off('loaderror', onError);
+        this.scene!.load.off('complete', onComplete);
+        this.scene!.load.off('loaderror', onError);
         reject(new Error(`Failed to load ${file.key}`));
       };
 
-      this.game!.load.once('complete', onComplete);
-      this.game!.load.once('loaderror', onError);
-      this.game!.load.start();
+      this.scene!.load.once('complete', onComplete);
+      this.scene!.load.once('loaderror', onError);
+      this.scene!.load.start();
     });
   }
 

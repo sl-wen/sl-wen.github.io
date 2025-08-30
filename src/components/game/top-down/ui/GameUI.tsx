@@ -220,9 +220,9 @@ const InventoryTab: React.FC<{
   const handleUseItem = (index: number) => {
     const slot = inventoryData[index];
     if (slot.item) {
-      if (slot.item.type === 'consumable') {
+      if (slot.item.type === 'CONSUMABLE') {
         inventory.useConsumable(index);
-      } else if (slot.item.type === 'weapon' || slot.item.type === 'armor') {
+              } else if (slot.item.type === 'WEAPON' || slot.item.type === 'ARMOR') {
         inventory.equipItem(index);
       }
     }

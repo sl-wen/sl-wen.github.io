@@ -1,7 +1,6 @@
 import { GameItem, Equipment } from './InventorySystem';
-import { Quest } from './QuestSystem';
-import { QUEST_STATUS } from '../ref/constants';
-import { ITEM_TYPES, QUEST_TYPES } from '../ref/constants';
+import { Quest, QuestType, QuestStatus } from './QuestSystem';
+import { ITEM_TYPES } from '../ref/constants';
 
 /**
  * 游戏数据管理器
@@ -272,13 +271,17 @@ export class GameDataManager {
         id: 'first_steps',
         title: '第一步',
         description: '与村长对话，了解村庄的情况。',
+        type: QuestType.TALK,
+        level: 1,
+        status: QuestStatus.NOT_STARTED,
         objectives: [
           {
             id: 'talk_to_mayor',
-            type: 'TALK' as keyof typeof QUEST_TYPES,
+            type: QuestType.TALK,
             target: 'mayor',
             required: 1,
             current: 0,
+            completed: false,
             description: '与村长对话'
           }
         ],
@@ -286,29 +289,38 @@ export class GameDataManager {
           experience: 50,
           gold: 25,
           items: [
-            { id: 'wooden_sword', quantity: 1 }
+            { itemId: 'wooden_sword', quantity: 1 }
           ]
         },
-        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
-        level: 1,
-        category: 'main',
-        difficulty: 'easy',
-        tags: ['intro'],
-        repeatable: false,
+        prerequisites: [],
         giver: 'mayor',
-        turnIn: 'mayor'
+        receiver: 'player',
+        location: { x: 100, y: 100 },
+        isRepeatable: false,
+        isMainQuest: true,
+        isHidden: false,
+        dialogue: {
+          start: ['欢迎来到我们的村庄！'],
+          progress: ['请继续与村长对话。'],
+          complete: ['很好！你已经完成了第一步。'],
+          fail: ['任务失败了。']
+        }
       },
       {
         id: 'herb_collection',
         title: '草药收集',
         description: '收集10个草药，用于制作药水。',
+        type: QuestType.COLLECT,
+        level: 2,
+        status: QuestStatus.NOT_STARTED,
         objectives: [
           {
             id: 'collect_herbs',
-            type: 'COLLECT' as keyof typeof QUEST_TYPES,
+            type: QuestType.COLLECT,
             target: 'herb',
             required: 10,
             current: 0,
+            completed: false,
             description: '收集草药'
           }
         ],
@@ -316,29 +328,38 @@ export class GameDataManager {
           experience: 100,
           gold: 50,
           items: [
-            { id: 'health_potion', quantity: 3 }
+            { itemId: 'health_potion', quantity: 3 }
           ]
         },
-        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
-        level: 2,
-        category: 'side',
-        difficulty: 'easy',
-        tags: ['gather'],
-        repeatable: true,
+        prerequisites: [],
         giver: 'herbalist',
-        turnIn: 'herbalist'
+        receiver: 'player',
+        location: { x: 150, y: 120 },
+        isRepeatable: true,
+        isMainQuest: false,
+        isHidden: false,
+        dialogue: {
+          start: ['我需要一些草药来制作药水。'],
+          progress: ['继续收集草药。'],
+          complete: ['谢谢你的帮助！'],
+          fail: ['收集失败了。']
+        }
       },
       {
         id: 'slime_hunt',
         title: '史莱姆狩猎',
         description: '击败5只史莱姆，保护村庄的安全。',
+        type: QuestType.KILL,
+        level: 3,
+        status: QuestStatus.NOT_STARTED,
         objectives: [
           {
             id: 'kill_slimes',
-            type: 'KILL' as keyof typeof QUEST_TYPES,
+            type: QuestType.KILL,
             target: 'slime',
             required: 5,
             current: 0,
+            completed: false,
             description: '击败史莱姆'
           }
         ],
@@ -346,37 +367,47 @@ export class GameDataManager {
           experience: 150,
           gold: 75,
           items: [
-            { id: 'leather_armor', quantity: 1 }
+            { itemId: 'leather_armor', quantity: 1 }
           ]
         },
-        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
-        level: 3,
-        category: 'side',
-        difficulty: 'easy',
-        tags: ['combat'],
-        repeatable: true,
+        prerequisites: [],
         giver: 'guard',
-        turnIn: 'guard'
+        receiver: 'player',
+        location: { x: 200, y: 150 },
+        isRepeatable: true,
+        isMainQuest: false,
+        isHidden: false,
+        dialogue: {
+          start: ['史莱姆正在威胁村庄的安全。'],
+          progress: ['继续消灭史莱姆。'],
+          complete: ['干得好！村庄现在安全了。'],
+          fail: ['任务失败了。']
+        }
       },
       {
         id: 'ancient_ruins',
         title: '古代遗迹',
         description: '探索古代遗迹，寻找神秘的宝藏。',
+        type: QuestType.EXPLORE,
+        level: 5,
+        status: QuestStatus.NOT_STARTED,
         objectives: [
           {
             id: 'explore_ruins',
-            type: 'EXPLORE' as keyof typeof QUEST_TYPES,
+            type: QuestType.EXPLORE,
             target: 'ancient_ruins',
             required: 1,
             current: 0,
+            completed: false,
             description: '探索古代遗迹'
           },
           {
             id: 'find_crystal',
-            type: 'COLLECT' as keyof typeof QUEST_TYPES,
+            type: QuestType.COLLECT,
             target: 'crystal_shard',
             required: 3,
             current: 0,
+            completed: false,
             description: '收集水晶碎片'
           }
         ],
@@ -384,19 +415,23 @@ export class GameDataManager {
           experience: 300,
           gold: 200,
           items: [
-            { id: 'steel_sword', quantity: 1 },
-            { id: 'ancient_key', quantity: 1 }
+            { itemId: 'steel_sword', quantity: 1 },
+            { itemId: 'ancient_key', quantity: 1 }
           ]
         },
-        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
-        level: 5,
-        category: 'main',
-        difficulty: 'medium',
-        tags: ['exploration'],
-        repeatable: false,
         prerequisites: ['first_steps'],
         giver: 'scholar',
-        turnIn: 'scholar'
+        receiver: 'player',
+        location: { x: 300, y: 200 },
+        isRepeatable: false,
+        isMainQuest: true,
+        isHidden: false,
+        dialogue: {
+          start: ['古代遗迹中隐藏着神秘的宝藏。'],
+          progress: ['继续探索遗迹。'],
+          complete: ['你发现了珍贵的宝藏！'],
+          fail: ['探索失败了。']
+        }
       }
     ];
 
@@ -549,6 +584,6 @@ export class GameDataManager {
    * @returns 指定类别的任务数组
    */
   getQuestsByCategory(category: string): Quest[] {
-    return Array.from(this.quests.values()).filter(quest => quest.category === category);
+    return Array.from(this.quests.values()).filter(quest => quest.isMainQuest === (category === 'main'));
   }
 }

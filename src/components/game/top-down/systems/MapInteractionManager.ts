@@ -535,7 +535,7 @@ export class MapInteractionManager {
 
       // 生成掉落物品
       if (interaction.properties.reward) {
-        this.spawnReward(interaction.x, interaction.y, interaction.properties.reward, interaction.properties.rewardAmount);
+        this.spawnReward(interaction.x, interaction.y, interaction.properties.reward, interaction.properties.rewardAmount || 1);
       }
 
       // 隐藏物体
@@ -563,7 +563,7 @@ export class MapInteractionManager {
     if (!gameObject) return;
 
     // 检查揭示条件
-    if (this.checkRevealCondition(interaction.properties.revealCondition)) {
+    if (interaction.properties.revealCondition && this.checkRevealCondition(interaction.properties.revealCondition)) {
       interaction.state = InteractionState.ACTIVATED;
       gameObject.setData('isHidden', false);
       
@@ -971,7 +971,9 @@ export class MapInteractionManager {
     interaction.state = InteractionState.INTACT;
     const gameObject = this.dynamicElements.get(interactionId);
     if (gameObject) {
-      gameObject.setVisible(true);
+      if ((gameObject as any) && typeof (gameObject as any).setVisible === 'function') {
+        (gameObject as any).setVisible(true);
+      }
     }
   }
 

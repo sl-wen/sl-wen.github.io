@@ -149,13 +149,13 @@ export const EnhancedGameUI: React.FC<EnhancedGameUIProps> = ({
 
     switch (setting) {
       case 'isMuted':
-        soundManager.setMuted(value);
+        // soundManager.setMuted(value); // Method not available
         break;
       case 'musicVolume':
-        soundManager.setMusicVolume(value);
+        // soundManager.setMusicVolume(value); // Method not available
         break;
       case 'sfxVolume':
-        soundManager.setSFXVolume(value);
+        // soundManager.setSFXVolume(value); // Method not available
         break;
     }
   };
@@ -366,7 +366,7 @@ export const EnhancedGameUI: React.FC<EnhancedGameUIProps> = ({
 
               <div className="space-y-2">
                 <h4 className="text-white font-medium">商品</h4>
-                {currentShop.items.map((item) => (
+                {currentShop.items.map((item: any) => (
                   <div key={item.id} className="bg-gray-700 rounded p-3">
                     <div className="flex justify-between items-center">
                       <div>

@@ -809,14 +809,14 @@ export class MenuSystem {
     if (isHovering) {
       container.setScale(this.config.animation.hoverScale);
       const tintVal = parseInt(this.config.animation.hoverColor.replace('#', '0x'));
-      container.iterate(child => {
+      container.iterate((child: any) => {
         if ((child as any)?.setTint) {
           (child as any).setTint(tintVal);
         }
       });
     } else {
       container.setScale(1);
-      container.iterate(child => {
+      container.iterate((child: any) => {
         if ((child as any)?.clearTint) {
           (child as any).clearTint();
         }

@@ -1,7 +1,6 @@
 import { GameItem, Equipment } from './InventorySystem';
-import { Quest } from './QuestSystem';
-import { QUEST_STATUS } from '../ref/constants';
-import { ITEM_TYPES, QUEST_TYPES } from '../ref/constants';
+import { Quest, QuestType, QuestStatus } from './QuestSystem';
+import { ITEM_TYPES } from '../ref/constants';
 
 /**
  * 游戏数据管理器
@@ -275,10 +274,11 @@ export class GameDataManager {
         objectives: [
           {
             id: 'talk_to_mayor',
-            type: 'TALK' as keyof typeof QUEST_TYPES,
+            type: QuestType.TALK,
             target: 'mayor',
             required: 1,
             current: 0,
+            completed: false,
             description: '与村长对话'
           }
         ],
@@ -286,10 +286,10 @@ export class GameDataManager {
           experience: 50,
           gold: 25,
           items: [
-            { id: 'wooden_sword', quantity: 1 }
+            { itemId: 'wooden_sword', quantity: 1 }
           ]
         },
-        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
+        status: QuestStatus.NOT_STARTED,
         level: 1,
         category: 'main',
         difficulty: 'easy',
@@ -305,10 +305,11 @@ export class GameDataManager {
         objectives: [
           {
             id: 'collect_herbs',
-            type: 'COLLECT' as keyof typeof QUEST_TYPES,
+            type: QuestType.COLLECT,
             target: 'herb',
             required: 10,
             current: 0,
+            completed: false,
             description: '收集草药'
           }
         ],
@@ -316,10 +317,10 @@ export class GameDataManager {
           experience: 100,
           gold: 50,
           items: [
-            { id: 'health_potion', quantity: 3 }
+            { itemId: 'health_potion', quantity: 3 }
           ]
         },
-        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
+        status: QuestStatus.NOT_STARTED,
         level: 2,
         category: 'side',
         difficulty: 'easy',
@@ -335,10 +336,11 @@ export class GameDataManager {
         objectives: [
           {
             id: 'kill_slimes',
-            type: 'KILL' as keyof typeof QUEST_TYPES,
+            type: QuestType.KILL,
             target: 'slime',
             required: 5,
             current: 0,
+            completed: false,
             description: '击败史莱姆'
           }
         ],
@@ -346,10 +348,10 @@ export class GameDataManager {
           experience: 150,
           gold: 75,
           items: [
-            { id: 'leather_armor', quantity: 1 }
+            { itemId: 'leather_armor', quantity: 1 }
           ]
         },
-        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
+        status: QuestStatus.NOT_STARTED,
         level: 3,
         category: 'side',
         difficulty: 'easy',
@@ -365,18 +367,20 @@ export class GameDataManager {
         objectives: [
           {
             id: 'explore_ruins',
-            type: 'EXPLORE' as keyof typeof QUEST_TYPES,
+            type: QuestType.EXPLORE,
             target: 'ancient_ruins',
             required: 1,
             current: 0,
+            completed: false,
             description: '探索古代遗迹'
           },
           {
             id: 'find_crystal',
-            type: 'COLLECT' as keyof typeof QUEST_TYPES,
+            type: QuestType.COLLECT,
             target: 'crystal_shard',
             required: 3,
             current: 0,
+            completed: false,
             description: '收集水晶碎片'
           }
         ],
@@ -384,11 +388,11 @@ export class GameDataManager {
           experience: 300,
           gold: 200,
           items: [
-            { id: 'steel_sword', quantity: 1 },
-            { id: 'ancient_key', quantity: 1 }
+            { itemId: 'steel_sword', quantity: 1 },
+            { itemId: 'ancient_key', quantity: 1 }
           ]
         },
-        status: 'NOT_STARTED' as keyof typeof QUEST_STATUS,
+        status: QuestStatus.NOT_STARTED,
         level: 5,
         category: 'main',
         difficulty: 'medium',
@@ -549,6 +553,6 @@ export class GameDataManager {
    * @returns 指定类别的任务数组
    */
   getQuestsByCategory(category: string): Quest[] {
-    return Array.from(this.quests.values()).filter(quest => quest.category === category);
+    return Array.from(this.quests.values()).filter(quest => quest.isMainQuest === (category === 'main'));
   }
 }

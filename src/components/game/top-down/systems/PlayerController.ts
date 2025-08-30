@@ -67,7 +67,7 @@ export class PlayerController {
   private inputKeys: Map<string, Phaser.Input.Keyboard.Key> = new Map();
   private currentDirection: MoveDirection = MoveDirection.NONE;
   private currentState: MoveState = MoveState.IDLE;
-  private isRunning: boolean = false;
+  private isRunningState: boolean = false;
   private isInteracting: boolean = false;
   
   // 动画状态
@@ -75,8 +75,8 @@ export class PlayerController {
   private currentAnimation: string = '';
   
   // 交互状态
-  private nearbyObjects: Phaser.GameObjects.GameObject[] = [];
-  private interactionTarget: Phaser.GameObjects.GameObject | null = null;
+  private nearbyObjects: Phaser.GameObjects.Sprite[] = [];
+  private interactionTarget: Phaser.GameObjects.Sprite | null = null;
   
   // 事件监听器
   private eventListeners: Map<string, ((event: any) => void)[]> = new Map();
@@ -115,27 +115,29 @@ export class PlayerController {
 
   // 初始化输入系统
   private initializeInput(): void {
-    // WASD 键
-    this.inputKeys.set('W', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W));
-    this.inputKeys.set('A', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A));
-    this.inputKeys.set('S', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S));
-    this.inputKeys.set('D', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D));
-    
-    // 方向键
-    this.inputKeys.set('UP', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP));
-    this.inputKeys.set('DOWN', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN));
-    this.inputKeys.set('LEFT', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT));
-    this.inputKeys.set('RIGHT', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT));
-    
-    // 功能键
-    this.inputKeys.set('SPACE', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE));
-    this.inputKeys.set('SHIFT', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT));
-    this.inputKeys.set('E', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
-    
-    // 设置按键重复
-    Object.values(this.inputKeys).forEach(key => {
-      key.setRepeat(0, 50); // 50ms 延迟后开始重复
-    });
+    if (this.scene.input.keyboard) {
+      // WASD 键
+      this.inputKeys.set('W', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W));
+      this.inputKeys.set('A', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A));
+      this.inputKeys.set('S', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S));
+      this.inputKeys.set('D', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D));
+      
+      // 方向键
+      this.inputKeys.set('UP', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP));
+      this.inputKeys.set('DOWN', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN));
+      this.inputKeys.set('LEFT', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT));
+      this.inputKeys.set('RIGHT', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT));
+      
+      // 功能键
+      this.inputKeys.set('SPACE', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE));
+      this.inputKeys.set('SHIFT', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT));
+      this.inputKeys.set('E', this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
+      
+      // 设置按键重复
+      Object.values(this.inputKeys).forEach(key => {
+        key.setRepeat(0, 50); // 50ms 延迟后开始重复
+      });
+    }
   }
 
   // 初始化动画
@@ -171,13 +173,15 @@ export class PlayerController {
     });
 
     // 监听交互事件
-    this.scene.input.keyboard.on('keydown-SPACE', () => {
-      this.interact();
-    });
+    if (this.scene.input.keyboard) {
+      this.scene.input.keyboard.on('keydown-SPACE', () => {
+        this.interact();
+      });
 
-    this.scene.input.keyboard.on('keydown-E', () => {
-      this.interact();
-    });
+      this.scene.input.keyboard.on('keydown-E', () => {
+        this.interact();
+      });
+    }
   }
 
   // 更新方法 - 在场景的 update 中调用
@@ -195,7 +199,7 @@ export class PlayerController {
   // 处理输入
   private handleInput(): void {
     // 检查运行键
-    this.isRunning = this.config.enableRunning && 
+    this.isRunningState = this.config.enableRunning && 
       (this.inputKeys.get('SHIFT')?.isDown || false);
 
     // 获取移动方向
@@ -243,10 +247,10 @@ export class PlayerController {
     }
 
     this.currentDirection = direction;
-    this.currentState = this.isRunning ? MoveState.RUNNING : MoveState.WALKING;
+    this.currentState = this.isRunningState ? MoveState.RUNNING : MoveState.WALKING;
 
     // 计算移动速度
-    const speed = this.isRunning ? this.config.runSpeed : this.config.moveSpeed;
+    const speed = this.isRunningState ? this.config.runSpeed : this.config.moveSpeed;
 
     // 使用网格引擎移动
     if (this.smoothMovement) {
@@ -266,7 +270,7 @@ export class PlayerController {
 
   // 网格移动
   private moveGrid(direction: MoveDirection): void {
-    const directionMap = {
+    const directionMap: Record<MoveDirection, string> = {
       [MoveDirection.UP]: 'up',
       [MoveDirection.DOWN]: 'down',
       [MoveDirection.LEFT]: 'left',
@@ -274,11 +278,12 @@ export class PlayerController {
       [MoveDirection.UP_LEFT]: 'up-left',
       [MoveDirection.UP_RIGHT]: 'up-right',
       [MoveDirection.DOWN_LEFT]: 'down-left',
-      [MoveDirection.DOWN_RIGHT]: 'down-right'
+      [MoveDirection.DOWN_RIGHT]: 'down-right',
+      [MoveDirection.NONE]: 'none'
     };
 
     const gridDirection = directionMap[direction];
-    if (gridDirection) {
+    if (gridDirection && gridDirection !== 'none') {
       this.gridEngine.move('player', gridDirection);
     }
   }
@@ -301,7 +306,7 @@ export class PlayerController {
 
   // 获取方向向量
   private getDirectionVector(direction: MoveDirection): { x: number; y: number } {
-    const vectors = {
+    const vectors: Record<MoveDirection, { x: number; y: number }> = {
       [MoveDirection.UP]: { x: 0, y: -1 },
       [MoveDirection.DOWN]: { x: 0, y: 1 },
       [MoveDirection.LEFT]: { x: -1, y: 0 },
@@ -309,10 +314,11 @@ export class PlayerController {
       [MoveDirection.UP_LEFT]: { x: -0.707, y: -0.707 },
       [MoveDirection.UP_RIGHT]: { x: 0.707, y: -0.707 },
       [MoveDirection.DOWN_LEFT]: { x: -0.707, y: 0.707 },
-      [MoveDirection.DOWN_RIGHT]: { x: 0.707, y: 0.707 }
+      [MoveDirection.DOWN_RIGHT]: { x: 0.707, y: 0.707 },
+      [MoveDirection.NONE]: { x: 0, y: 0 }
     };
 
-    return vectors[direction] || { x: 0, y: 0 };
+    return vectors[direction];
   }
 
   // 停止移动
@@ -369,7 +375,7 @@ export class PlayerController {
       animationKey = this.animations.get(this.currentDirection) || 'hero_walk_down';
       
       // 运行动画
-      if (this.isRunning) {
+      if (this.isRunningState) {
         animationKey = animationKey.replace('walk', 'run');
       }
     }
@@ -495,7 +501,7 @@ export class PlayerController {
 
   // 移动开始事件
   private onMovementStarted(): void {
-    this.currentState = this.isRunning ? MoveState.RUNNING : MoveState.WALKING;
+    this.currentState = this.isRunningState ? MoveState.RUNNING : MoveState.WALKING;
   }
 
   // 移动停止事件
@@ -550,7 +556,7 @@ export class PlayerController {
   }
 
   public isRunning(): boolean {
-    return this.isRunning;
+    return this.isRunningState;
   }
 
   // 设置配置

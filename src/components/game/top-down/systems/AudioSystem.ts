@@ -231,7 +231,8 @@ export class AudioSystem {
         id: audioId,
         config: { ...config.config },
         state: AudioState.STOPPED,
-        volume: config.config.volume
+        volume: config.config.volume,
+        startTime: Date.now()
       };
       
       pool.push(audio);
@@ -980,10 +981,10 @@ export class AudioSystem {
       }
     };
     
-    for (const [audioId, audio] of this.audioInstances) {
-      stats[audio.state]++;
-      stats.byType[audio.config.type]++;
-    }
+    this.audioInstances.forEach((audio) => {
+      (stats as any)[audio.state]++;
+      (stats.byType as any)[audio.config.type]++;
+    });
     
     return stats;
   }

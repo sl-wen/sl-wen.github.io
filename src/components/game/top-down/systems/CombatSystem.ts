@@ -158,21 +158,23 @@ export class CombatSystem {
   // 设置事件监听器
   private setupEventListeners(): void {
     // 监听攻击输入
-    this.scene.input.keyboard.on('keydown-SPACE', () => {
-      this.handlePlayerAttack('melee_basic');
-    });
+    if (this.scene.input.keyboard) {
+      this.scene.input.keyboard.on('keydown-SPACE', () => {
+        this.handlePlayerAttack('melee_basic');
+      });
 
-    this.scene.input.keyboard.on('keydown-R', () => {
-      this.handlePlayerAttack('ranged_basic');
-    });
+      this.scene.input.keyboard.on('keydown-R', () => {
+        this.handlePlayerAttack('ranged_basic');
+      });
 
-    this.scene.input.keyboard.on('keydown-F', () => {
-      this.handlePlayerAttack('magic_fire');
-    });
+      this.scene.input.keyboard.on('keydown-F', () => {
+        this.handlePlayerAttack('magic_fire');
+      });
 
-    this.scene.input.keyboard.on('keydown-Q', () => {
-      this.handlePlayerAttack('special_spin');
-    });
+      this.scene.input.keyboard.on('keydown-Q', () => {
+        this.handlePlayerAttack('special_spin');
+      });
+    }
   }
 
   // 注册战斗实体
@@ -775,10 +777,12 @@ export class CombatSystem {
     this.combatEffects.forEach(effect => effect.destroy());
 
     // 清理事件监听器
-    this.scene.input.keyboard.off('keydown-SPACE');
-    this.scene.input.keyboard.off('keydown-R');
-    this.scene.input.keyboard.off('keydown-F');
-    this.scene.input.keyboard.off('keydown-Q');
+    if (this.scene.input.keyboard) {
+      this.scene.input.keyboard.off('keydown-SPACE');
+      this.scene.input.keyboard.off('keydown-R');
+      this.scene.input.keyboard.off('keydown-F');
+      this.scene.input.keyboard.off('keydown-Q');
+    }
 
     // 清理数据
     this.entities.clear();

@@ -17,6 +17,8 @@ import { ShopSystem } from './systems/ShopSystem';
 import { SoundManager } from './systems/SoundManager';
 import { TopDownGameEngine } from './TopDownGameEngine';
 import { CompleteGameUI } from './ui/CompleteGameUI';
+import { createWindowManager, WindowManager, DeviceType } from './systems/WindowManager';
+import { LoadingProgressUI, MobileLoadingProgress } from './ui/LoadingProgressUI';
 
 interface TopDownGameProps {
   width?: number;
@@ -29,10 +31,13 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 }) => {
   const gameContainerRef = useRef<HTMLDivElement>(null);
   const gameEngineRef = useRef<TopDownGameEngine | null>(null);
+  const windowManagerRef = useRef<WindowManager | null>(null);
   const [isGameReady, setIsGameReady] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>('游戏初始化中...');
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState({ total: 0, loaded: 0, failed: 0, retrying: 0, percentage: 0 });
 
   // 游戏状态
   const [playerStats, setPlayerStats] = useState({
@@ -59,29 +64,26 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     shopSystem: ShopSystem.getInstance()
   }));
 
-  // 计算游戏尺寸
+  // 计算游戏尺寸 - 使用窗口管理器
   const calculateGameSize = () => {
-    // 检测是否为移动设备
+    if (windowManagerRef.current) {
+      const config = windowManagerRef.current.getConfig();
+      return {
+        width: config.width,
+        height: config.height,
+        multiplier: config.scale
+      };
+    }
+
+    // 备用计算方式
     const deviceInfo = mobileTestHelper.detectDevice();
     const isMobileDevice = deviceInfo.isMobile || deviceInfo.touchSupport;
-
-    // 获取可用空间
     const availableWidth = window.innerWidth;
     const availableHeight = window.innerHeight;
 
-    console.log('🔍 [DEBUG] 窗口尺寸信息:', {
-      windowWidth: availableWidth,
-      windowHeight: availableHeight,
-      isMobile: isMobileDevice,
-      deviceInfo: deviceInfo
-    });
-
     if (isMobileDevice) {
-      // 移动设备：充分利用屏幕空间
       const maxWidth = Math.min(availableWidth - 5, 1400);
       const maxHeight = Math.min(availableHeight - 40, 1000);
-
-      // 保持16:9的宽高比
       const aspectRatio = 16 / 9;
       let gameWidth = maxWidth;
       let gameHeight = gameWidth / aspectRatio;
@@ -91,28 +93,14 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
         gameWidth = gameHeight * aspectRatio;
       }
 
-      const result = {
+      return {
         width: Math.floor(gameWidth),
         height: Math.floor(gameHeight),
         multiplier: 1
       };
-
-      console.log('📱 [DEBUG] 移动设备游戏尺寸计算:', {
-        maxWidth,
-        maxHeight,
-        aspectRatio,
-        calculatedWidth: gameWidth,
-        calculatedHeight: gameHeight,
-        finalResult: result
-      });
-
-      return result;
     } else {
-      // 桌面设备：使用更大的尺寸，几乎铺满窗口
       const maxWidth = Math.min(availableWidth - 5, 2400);
       const maxHeight = Math.min(availableHeight - 10, 1800);
-
-      // 保持16:9的宽高比
       const aspectRatio = 16 / 9;
       let gameWidth = maxWidth;
       let gameHeight = gameWidth / aspectRatio;
@@ -122,64 +110,31 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
         gameWidth = gameHeight * aspectRatio;
       }
 
-      // 确保尺寸是16的倍数（像素艺术要求）
-      const originalWidth = gameWidth;
-      const originalHeight = gameHeight;
       gameWidth = Math.floor(gameWidth / 16) * 16;
       gameHeight = Math.floor(gameHeight / 16) * 16;
 
-      const result = {
+      return {
         width: gameWidth,
         height: gameHeight,
         multiplier: 1
       };
-
-      console.log('🖥️ [DEBUG] 桌面设备游戏尺寸计算:', {
-        maxWidth,
-        maxHeight,
-        aspectRatio,
-        originalWidth,
-        originalHeight,
-        adjustedWidth: gameWidth,
-        adjustedHeight: gameHeight,
-        finalResult: result,
-        widthAdjustment: originalWidth - gameWidth,
-        heightAdjustment: originalHeight - gameHeight
-      });
-
-      return result;
     }
   };
 
   const [gameSize, setGameSize] = useState(calculateGameSize());
 
-  // 响应式调整游戏尺寸
+  // 响应式调整游戏尺寸 - 使用窗口管理器
   useEffect(() => {
-    const handleResize = () => {
-      console.log('📏 [DEBUG] 窗口大小变化:', {
-        oldSize: gameSize,
-        newWindowSize: {
-          width: window.innerWidth,
-          height: window.innerHeight
-        }
-      });
+    if (windowManagerRef.current) {
+      const handleResize = () => {
+        const newGameSize = calculateGameSize();
+        setGameSize(newGameSize);
+      };
 
-      const newGameSize = calculateGameSize();
-      console.log('🔄 [DEBUG] 游戏尺寸重新计算:', {
-        oldSize: gameSize,
-        newSize: newGameSize,
-        sizeChange: {
-          widthDiff: newGameSize.width - gameSize.width,
-          heightDiff: newGameSize.height - gameSize.height
-        }
-      });
-
-      setGameSize(newGameSize);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [gameSize]);
+      windowManagerRef.current.on('resize', handleResize);
+      return () => windowManagerRef.current?.off('resize', handleResize);
+    }
+  }, []);
 
   // 检测移动设备
   useEffect(() => {
@@ -203,15 +158,8 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
     setDebugInfo('创建游戏引擎...');
 
-    console.log('🎮 [DEBUG] 游戏引擎初始化:', {
-      container: gameContainerRef.current,
-      gameSize: gameSize,
-      containerRect: gameContainerRef.current.getBoundingClientRect()
-    });
-
     // 创建游戏引擎实例
     gameEngineRef.current = new TopDownGameEngine(gameContainerRef.current, {
-      // 使用计算出的游戏尺寸
       width: gameSize.width,
       height: gameSize.height,
       parent: gameContainerRef.current,
@@ -227,18 +175,32 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
       scene: [BootScene, MainMenuScene, CompleteGameScene, GameOverScene]
     });
 
-    console.log('✅ [DEBUG] 游戏引擎创建完成:', {
-      gameEngine: gameEngineRef.current,
-      gameInstance: gameEngineRef.current?.getGame(),
-      gameSize: gameEngineRef.current?.getGameSize()
-    });
+    // 创建窗口管理器
+    const game = gameEngineRef.current.getGame();
+    if (game) {
+      windowManagerRef.current = createWindowManager(game);
+      
+      // 监听窗口管理器事件
+      windowManagerRef.current.on('resize', (event) => {
+        console.log('🔄 窗口大小变化:', event);
+        setGameSize(calculateGameSize());
+      });
+
+      windowManagerRef.current.on('orientation', (event) => {
+        console.log('📱 方向变化:', event);
+        setGameSize(calculateGameSize());
+      });
+    }
 
     setDebugInfo('游戏引擎创建完成，等待场景启动...');
     setIsGameReady(true);
 
     return () => {
+      if (windowManagerRef.current) {
+        windowManagerRef.current.destroy();
+        windowManagerRef.current = null;
+      }
       if (gameEngineRef.current) {
-        console.log('🗑️ [DEBUG] 销毁游戏引擎');
         gameEngineRef.current.destroy();
         gameEngineRef.current = null;
       }
@@ -429,6 +391,22 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
   return (
     <div className="relative w-full max-w-full mx-auto">
+      {/* 加载进度UI */}
+      {isLoading && (
+        isMobile ? (
+          <MobileLoadingProgress progress={loadingProgress} />
+        ) : (
+          <LoadingProgressUI 
+            progress={loadingProgress}
+            onComplete={() => setIsLoading(false)}
+            onError={(error) => {
+              console.error('加载错误:', error);
+              setIsLoading(false);
+            }}
+          />
+        )
+      )}
+
       <div
         ref={gameContainerRef}
         className="border-2 border-gray-600 rounded-lg overflow-hidden mx-auto bg-black"

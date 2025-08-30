@@ -1,42 +1,71 @@
 import * as Phaser from 'phaser';
+import { ResourceLoader, ResourceType, createResourceLoader } from '../systems/ResourceLoader';
 
 export default class BootScene extends Phaser.Scene {
+  private resourceLoader: ResourceLoader;
+  private progressBar: Phaser.GameObjects.Graphics;
+  private progressBox: Phaser.GameObjects.Graphics;
+  private loadingText: Phaser.GameObjects.Text;
+  private percentText: Phaser.GameObjects.Text;
+  private assetText: Phaser.GameObjects.Text;
+
   constructor() {
     super('BootScene');
   }
 
   preload() {
-    const fontSize = 16;
+    console.log('🎮 BootScene: 开始资源加载');
+    
+    // 创建资源加载器
+    this.resourceLoader = createResourceLoader(this.game, {
+      maxConcurrent: 3,
+      retryDelay: 2000,
+      timeout: 30000,
+      enableCache: true,
+      enableCompression: true
+    });
 
-    // 设置加载进度条
-    const progressBar = this.add.graphics();
-    const progressBox = this.add.graphics();
+    // 设置加载进度UI
+    this.setupLoadingUI();
+
+    // 添加自定义资源
+    this.addCustomResources();
+
+    // 开始加载
+    this.startResourceLoading();
+  }
+
+  private setupLoadingUI() {
+    const fontSize = 16;
     const { width: gameWidth, height: gameHeight } = this.cameras.main;
 
+    // 进度条背景
+    this.progressBox = this.add.graphics();
     const barPositionX = Math.ceil((gameWidth - (gameWidth * 0.7)) / 2);
-    progressBox.fillStyle(0x222222, 0.8);
-    progressBox.fillRect(
+    this.progressBox.fillStyle(0x222222, 0.8);
+    this.progressBox.fillRect(
       barPositionX,
       Math.ceil(gameHeight / 6),
       Math.ceil(gameWidth * 0.7),
       Math.ceil(gameHeight / 10)
     );
 
-    const loadingText = this.add.text(
+    // 加载文本
+    this.loadingText = this.add.text(
       gameWidth / 2,
       Math.ceil(gameHeight / 10),
-      'loading...',
+      '正在加载游戏资源...',
       {
         fontFamily: '"Press Start 2P"',
         fontSize: `${fontSize}px`,
         color: '#ffffff',
       }
     );
+    this.loadingText.setOrigin(0.5);
+    this.loadingText.setResolution(30);
 
-    loadingText.setOrigin(0.5);
-    loadingText.setResolution(30);
-
-    const percentText = this.add.text(
+    // 百分比文本
+    this.percentText = this.add.text(
       gameWidth / 2,
       Math.ceil((gameHeight / 6) + (fontSize / 2) + (gameHeight / 60)),
       '0%',
@@ -46,11 +75,11 @@ export default class BootScene extends Phaser.Scene {
         color: '#ffffff',
       }
     );
+    this.percentText.setOrigin(0.5);
+    this.percentText.setResolution(30);
 
-    percentText.setOrigin(0.5);
-    percentText.setResolution(30);
-
-    const assetText = this.add.text(
+    // 当前加载项文本
+    this.assetText = this.add.text(
       gameWidth / 2,
       Math.ceil(gameHeight / 3),
       '',
@@ -60,117 +89,213 @@ export default class BootScene extends Phaser.Scene {
         color: '#ffffff',
       }
     );
+    this.assetText.setOrigin(0.5);
+    this.assetText.setResolution(30);
 
-    assetText.setOrigin(0.5);
-    assetText.setResolution(30);
+    // 进度条
+    this.progressBar = this.add.graphics();
+  }
 
-    this.load.on('progress', (value: number) => {
-      progressBar.clear();
-      progressBar.fillStyle(0xFFFFFF, 1);
-      progressBar.fillRect(
-        barPositionX,
-        Math.ceil(gameHeight / 6),
-        Math.ceil(gameWidth * 0.7) * value,
-        Math.ceil(gameHeight / 10)
-      );
-      percentText.setText(`${Number.parseInt((value * 100).toString(), 10)}%`);
+  private addCustomResources() {
+    // 添加地图资源 (优先级: 80)
+    this.resourceLoader.addResource('home_page_city', ResourceType.JSON, '/assets/topdown/sprites/maps/cities/home_page_city.json', 80);
+    this.resourceLoader.addResource('home_page_city_house_01', ResourceType.JSON, '/assets/topdown/sprites/maps/houses/home_page_city_house_01.json', 80);
+    this.resourceLoader.addResource('home_page_city_house_02', ResourceType.JSON, '/assets/topdown/sprites/maps/houses/home_page_city_house_02.json', 80);
+    this.resourceLoader.addResource('home_page_city_house_03', ResourceType.JSON, '/assets/topdown/sprites/maps/houses/home_page_city_house_03.json', 80);
+    this.resourceLoader.addResource('tileset', ResourceType.IMAGE, '/assets/topdown/sprites/maps/tilesets/tileset.png', 80);
+
+    // 添加角色资源 (优先级: 70)
+    this.resourceLoader.addResource('hero', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/hero.png', 70, {
+      atlasURL: '/assets/topdown/sprites/atlas/hero.json'
+    });
+    this.resourceLoader.addResource('slime', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/slime.png', 70, {
+      atlasURL: '/assets/topdown/sprites/atlas/slime.json'
+    });
+    this.resourceLoader.addResource('npc_01', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/npc_01.png', 70, {
+      atlasURL: '/assets/topdown/sprites/atlas/npc_01.json'
+    });
+    this.resourceLoader.addResource('npc_02', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/npc_02.png', 70, {
+      atlasURL: '/assets/topdown/sprites/atlas/npc_02.json'
+    });
+    this.resourceLoader.addResource('npc_03', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/npc_03.png', 70, {
+      atlasURL: '/assets/topdown/sprites/atlas/npc_03.json'
+    });
+    this.resourceLoader.addResource('npc_04', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/npc_04.png', 70, {
+      atlasURL: '/assets/topdown/sprites/atlas/npc_04.json'
     });
 
-    this.load.on('fileprogress', (file: any) => {
-      assetText.setText(`loading: ${file.key}`);
+    // 添加物品资源 (优先级: 60)
+    this.resourceLoader.addResource('heart', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/heart.png', 60, {
+      atlasURL: '/assets/topdown/sprites/atlas/heart.json'
     });
-
-    this.load.on('complete', () => {
-      progressBar.destroy();
-      progressBox.destroy();
-      percentText.destroy();
-      assetText.destroy();
+    this.resourceLoader.addResource('coin', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/coin.png', 60, {
+      atlasURL: '/assets/topdown/sprites/atlas/coin.json'
     });
+    this.resourceLoader.addResource('heart_container', ResourceType.IMAGE, '/assets/topdown/images/heart_container.png', 60);
+    this.resourceLoader.addResource('sword', ResourceType.IMAGE, '/assets/topdown/images/sword.png', 60);
+    this.resourceLoader.addResource('push', ResourceType.IMAGE, '/assets/topdown/images/push.png', 60);
 
-    // 加载地图资源
-    this.loadTilemaps();
+    // 添加UI资源 (优先级: 90)
+    this.resourceLoader.addResource('main_menu_background', ResourceType.IMAGE, '/assets/topdown/images/main_menu_background.png', 90);
+    this.resourceLoader.addResource('game_over_background', ResourceType.IMAGE, '/assets/topdown/images/game_over_background.png', 90);
+    this.resourceLoader.addResource('game_logo', ResourceType.IMAGE, '/assets/topdown/images/game_logo.png', 90);
+    this.resourceLoader.addResource('dialog_borderbox', ResourceType.IMAGE, '/assets/topdown/images/dialog_borderbox.png', 90);
 
-    // 加载角色资源
-    this.loadCharacters();
-
-    // 加载物品资源
-    this.loadItems();
-
-    // 加载UI资源
-    this.loadUI();
-
-    // 加载音效资源
-    this.loadAudio();
+    // 添加音频资源 (优先级: 50)
+    this.addAudioResources();
   }
 
-  private loadTilemaps() {
-    // 地图文件
-    this.load.tilemapTiledJSON('home_page_city', '/assets/topdown/sprites/maps/cities/home_page_city.json');
-    this.load.tilemapTiledJSON('home_page_city_house_01', '/assets/topdown/sprites/maps/houses/home_page_city_house_01.json');
-    this.load.tilemapTiledJSON('home_page_city_house_02', '/assets/topdown/sprites/maps/houses/home_page_city_house_02.json');
-    this.load.tilemapTiledJSON('home_page_city_house_03', '/assets/topdown/sprites/maps/houses/home_page_city_house_03.json');
+  private addAudioResources() {
+    const audioResources = [
+      { key: 'bgm_menu', url: '/assets/topdown/audio/bgm_menu.mp3' },
+      { key: 'bgm_village', url: '/assets/topdown/audio/bgm_village.mp3' },
+      { key: 'bgm_forest', url: '/assets/topdown/audio/bgm_forest.mp3' },
+      { key: 'bgm_cave', url: '/assets/topdown/audio/bgm_cave.mp3' },
+      { key: 'bgm_battle', url: '/assets/topdown/audio/bgm_battle.mp3' },
+      { key: 'sfx_move', url: '/assets/topdown/audio/sfx_move.mp3' },
+      { key: 'sfx_attack', url: '/assets/topdown/audio/sfx_attack.mp3' },
+      { key: 'sfx_pickup', url: '/assets/topdown/audio/sfx_pickup.mp3' },
+      { key: 'sfx_damage', url: '/assets/topdown/audio/sfx_damage.mp3' },
+      { key: 'sfx_levelup', url: '/assets/topdown/audio/sfx_levelup.mp3' },
+      { key: 'sfx_ui_click', url: '/assets/topdown/audio/sfx_ui_click.mp3' },
+      { key: 'sfx_ui_hover', url: '/assets/topdown/audio/sfx_ui_hover.mp3' }
+    ];
 
-    // 瓦片集
-    this.load.image('tileset', '/assets/topdown/sprites/maps/tilesets/tileset.png');
+    audioResources.forEach(resource => {
+      this.resourceLoader.addResource(resource.key, ResourceType.AUDIO, resource.url, 50);
+    });
   }
 
-  private loadCharacters() {
-    // 英雄角色
-    this.load.atlas('hero', '/assets/topdown/sprites/atlas/hero.png', '/assets/topdown/sprites/atlas/hero.json');
-
-    // 敌人
-    this.load.atlas('slime', '/assets/topdown/sprites/atlas/slime.png', '/assets/topdown/sprites/atlas/slime.json');
-
-    // NPC角色
-    this.load.atlas('npc_01', '/assets/topdown/sprites/atlas/npc_01.png', '/assets/topdown/sprites/atlas/npc_01.json');
-    this.load.atlas('npc_02', '/assets/topdown/sprites/atlas/npc_02.png', '/assets/topdown/sprites/atlas/npc_02.json');
-    this.load.atlas('npc_03', '/assets/topdown/sprites/atlas/npc_03.png', '/assets/topdown/sprites/atlas/npc_03.json');
-    this.load.atlas('npc_04', '/assets/topdown/sprites/atlas/npc_04.png', '/assets/topdown/sprites/atlas/npc_04.json');
-  }
-
-  private loadItems() {
-    // 物品
-    this.load.atlas('heart', '/assets/topdown/sprites/atlas/heart.png', '/assets/topdown/sprites/atlas/heart.json');
-    this.load.atlas('coin', '/assets/topdown/sprites/atlas/coin.png', '/assets/topdown/sprites/atlas/coin.json');
-
-    // 装备
-    this.load.image('heart_container', '/assets/topdown/images/heart_container.png');
-    this.load.image('sword', '/assets/topdown/images/sword.png');
-    this.load.image('push', '/assets/topdown/images/push.png');
-  }
-
-  private loadUI() {
-    // UI背景
-    this.load.image('main_menu_background', '/assets/topdown/images/main_menu_background.png');
-    this.load.image('game_over_background', '/assets/topdown/images/game_over_background.png');
-    this.load.image('game_logo', '/assets/topdown/images/game_logo.png');
-    this.load.image('dialog_borderbox', '/assets/topdown/images/dialog_borderbox.png');
-  }
-
-  private loadAudio() {
-    // 背景音乐 - 添加错误处理，音频文件暂时缺失
+  private async startResourceLoading() {
     try {
-      this.load.audio('bgm_menu', '/assets/topdown/audio/bgm_menu.mp3');
-      this.load.audio('bgm_village', '/assets/topdown/audio/bgm_village.mp3');
-      this.load.audio('bgm_forest', '/assets/topdown/audio/bgm_forest.mp3');
-      this.load.audio('bgm_cave', '/assets/topdown/audio/bgm_cave.mp3');
-      this.load.audio('bgm_battle', '/assets/topdown/audio/bgm_battle.mp3');
+      // 监听加载进度
+      this.resourceLoader.on('progress', (event) => {
+        this.updateLoadingProgress(event.progress!);
+      });
 
-      // 音效
-      this.load.audio('sfx_move', '/assets/topdown/audio/sfx_move.mp3');
-      this.load.audio('sfx_attack', '/assets/topdown/audio/sfx_attack.mp3');
-      this.load.audio('sfx_pickup', '/assets/topdown/audio/sfx_pickup.mp3');
-      this.load.audio('sfx_damage', '/assets/topdown/audio/sfx_damage.mp3');
-      this.load.audio('sfx_levelup', '/assets/topdown/audio/sfx_levelup.mp3');
-      this.load.audio('sfx_ui_click', '/assets/topdown/audio/sfx_ui_click.mp3');
-      this.load.audio('sfx_ui_hover', '/assets/topdown/audio/sfx_ui_hover.mp3');
+      // 监听加载完成
+      this.resourceLoader.on('complete', (event) => {
+        console.log('✅ 资源加载完成:', event.progress);
+        this.onLoadingComplete();
+      });
+
+      // 监听加载错误
+      this.resourceLoader.on('error', (event) => {
+        console.error('❌ 资源加载错误:', event.error);
+        this.onLoadingError(event.error!);
+      });
+
+      // 监听重试
+      this.resourceLoader.on('retry', (event) => {
+        console.log('🔄 重试加载资源:', event.item?.key);
+        this.updateLoadingProgress(event.progress!);
+      });
+
+      // 开始加载
+      await this.resourceLoader.startLoading();
+
     } catch (error) {
-      console.warn('音频文件加载失败，游戏将以静音模式运行:', error);
+      console.error('❌ 资源加载器启动失败:', error);
+      this.onLoadingError(error instanceof Error ? error.message : 'Unknown error');
     }
   }
 
-  create() {
-    console.log('BootScene: 资源加载完成，启动主菜单');
+  private updateLoadingProgress(progress: any) {
+    const { width: gameWidth, height: gameHeight } = this.cameras.main;
+    const barPositionX = Math.ceil((gameWidth - (gameWidth * 0.7)) / 2);
+
+    // 更新进度条
+    this.progressBar.clear();
+    this.progressBar.fillStyle(0xFFFFFF, 1);
+    this.progressBar.fillRect(
+      barPositionX,
+      Math.ceil(gameHeight / 6),
+      Math.ceil(gameWidth * 0.7) * (progress.percentage / 100),
+      Math.ceil(gameHeight / 10)
+    );
+
+    // 更新百分比
+    this.percentText.setText(`${progress.percentage}%`);
+
+    // 更新当前加载项
+    if (progress.currentItem) {
+      this.assetText.setText(`正在加载: ${progress.currentItem.key}`);
+    }
+
+    // 更新加载文本
+    if (progress.failed > 0) {
+      this.loadingText.setText(`加载中... (${progress.failed} 个失败)`);
+      this.loadingText.setColor('#ff6b6b');
+    } else if (progress.retrying > 0) {
+      this.loadingText.setText(`重试中... (${progress.retrying} 个重试)`);
+      this.loadingText.setColor('#ffd93d');
+    } else {
+      this.loadingText.setText('正在加载游戏资源...');
+      this.loadingText.setColor('#ffffff');
+    }
+
+    // 添加统计信息
+    const statsText = `${progress.loaded}/${progress.total} 资源已加载`;
+    if (progress.estimatedTime && progress.estimatedTime > 0) {
+      const timeText = this.formatTime(progress.estimatedTime);
+      this.assetText.setText(`${this.assetText.text}\n${statsText} • 预计剩余: ${timeText}`);
+    }
+  }
+
+  private formatTime(ms: number): string {
+    if (ms < 1000) return `${ms}ms`;
+    if (ms < 60000) return `${Math.round(ms / 1000)}s`;
+    return `${Math.round(ms / 60000)}m ${Math.round((ms % 60000) / 1000)}s`;
+  }
+
+  private onLoadingComplete() {
+    console.log('🎉 BootScene: 所有资源加载完成');
+    
+    // 清理加载UI
+    this.cleanupLoadingUI();
+    
+    // 启动主菜单场景
     this.scene.start('MainMenuScene');
+  }
+
+  private onLoadingError(error: string) {
+    console.error('❌ BootScene: 资源加载失败:', error);
+    
+    // 显示错误信息
+    this.loadingText.setText('资源加载失败');
+    this.loadingText.setColor('#ff6b6b');
+    this.assetText.setText(`错误: ${error}\n请刷新页面重试`);
+    this.assetText.setColor('#ff6b6b');
+
+    // 5秒后自动重试
+    setTimeout(() => {
+      console.log('🔄 自动重试资源加载...');
+      this.scene.restart();
+    }, 5000);
+  }
+
+  private cleanupLoadingUI() {
+    if (this.progressBar) this.progressBar.destroy();
+    if (this.progressBox) this.progressBox.destroy();
+    if (this.loadingText) this.loadingText.destroy();
+    if (this.percentText) this.percentText.destroy();
+    if (this.assetText) this.assetText.destroy();
+  }
+
+  create() {
+    // 这个方法现在由 onLoadingComplete 处理
+    console.log('🎮 BootScene: 场景创建完成');
+  }
+
+  destroy() {
+    // 清理资源加载器
+    if (this.resourceLoader) {
+      this.resourceLoader.destroy();
+    }
+    
+    // 清理UI
+    this.cleanupLoadingUI();
+    
+    console.log('🗑️ BootScene: 场景销毁完成');
   }
 }

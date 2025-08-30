@@ -81,6 +81,7 @@ export interface QuestEvent {
 }
 
 export class QuestSystem {
+  private static instance: QuestSystem;
   private scene: Phaser.Scene;
   private quests: Map<string, Quest> = new Map();
   private activeQuests: Map<string, Quest> = new Map();
@@ -92,6 +93,14 @@ export class QuestSystem {
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.initializeQuestTemplates();
+  }
+
+  // 单例模式
+  public static getInstance(scene?: Phaser.Scene): QuestSystem {
+    if (!QuestSystem.instance && scene) {
+      QuestSystem.instance = new QuestSystem(scene);
+    }
+    return QuestSystem.instance;
   }
 
   // 初始化任务模板
@@ -603,6 +612,49 @@ export class QuestSystem {
     if (data.failedQuests) {
       this.failedQuests = new Set(data.failedQuests);
     }
+  }
+
+  // 接受任务
+  public acceptQuest(quest: Quest): boolean {
+    if (this.activeQuests.has(quest.id)) {
+      return false; // 任务已接受
+    }
+
+    this.activeQuests.set(quest.id, quest);
+    quest.status = QuestStatus.IN_PROGRESS;
+    quest.startTime = Date.now();
+
+    this.emitEvent('started', { quest });
+    return true;
+  }
+
+  // 获取NPC可用任务
+  public getAvailableQuestsForNPC(npcId: string, quests: Quest[]): Quest[] {
+    return quests.filter(quest => 
+      quest.giver === npcId && 
+      quest.status === QuestStatus.NOT_STARTED &&
+      this.checkQuestPrerequisites(quest)
+    );
+  }
+
+  // 获取NPC可完成任务
+  public getCompletableQuestsForNPC(npcId: string): Quest[] {
+    return Array.from(this.activeQuests.values()).filter(quest => 
+      quest.receiver === npcId && 
+      this.isQuestCompletable(quest)
+    );
+  }
+
+  // 检查任务前置条件
+  private checkQuestPrerequisites(quest: Quest): boolean {
+    return quest.prerequisites.every(prereq => 
+      this.completedQuests.has(prereq)
+    );
+  }
+
+  // 检查任务是否可完成
+  private isQuestCompletable(quest: Quest): boolean {
+    return quest.objectives.every(objective => objective.completed);
   }
 
   // 销毁

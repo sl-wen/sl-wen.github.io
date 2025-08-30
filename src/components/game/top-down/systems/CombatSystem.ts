@@ -81,6 +81,7 @@ export interface CombatEvent {
 }
 
 export class CombatSystem {
+  private static instance: CombatSystem;
   private scene: Phaser.Scene;
   private entities: Map<string, CombatEntity> = new Map();
   private attackConfigs: Map<string, AttackConfig> = new Map();
@@ -94,6 +95,14 @@ export class CombatSystem {
     this.scene = scene;
     this.initializeAttackConfigs();
     this.setupEventListeners();
+  }
+
+  // 单例模式
+  public static getInstance(scene?: Phaser.Scene): CombatSystem {
+    if (!CombatSystem.instance && scene) {
+      CombatSystem.instance = new CombatSystem(scene);
+    }
+    return CombatSystem.instance;
   }
 
   // 初始化攻击配置
@@ -768,6 +777,52 @@ export class CombatSystem {
   // 添加攻击配置
   public addAttackConfig(attackKey: string, config: AttackConfig): void {
     this.attackConfigs.set(attackKey, config);
+  }
+
+  // 开始战斗
+  public startCombat(playerEntity: CombatEntity, enemies: CombatEntity[]): void {
+    // 添加玩家实体
+    this.entities.set(playerEntity.id, playerEntity);
+    
+    // 添加敌人实体
+    enemies.forEach(enemy => {
+      this.entities.set(enemy.id, enemy);
+    });
+    
+    // 发送战斗开始事件
+    this.emitEvent('combat_started', { entity: playerEntity });
+  }
+
+  // 获取战斗状态
+  public getCombatState(): any {
+    return {
+      entities: Array.from(this.entities.values()),
+      activeCombat: this.entities.size > 1
+    };
+  }
+
+  // 获取战斗历史
+  public getCombatHistory(): any[] {
+    // 这里可以返回战斗历史记录
+    return [];
+  }
+
+  // 保存数据
+  public saveData(): any {
+    return {
+      entities: Array.from(this.entities.entries()),
+      attackCooldowns: Array.from(this.attackCooldowns.entries())
+    };
+  }
+
+  // 加载数据
+  public loadData(data: any): void {
+    if (data.entities) {
+      this.entities = new Map(data.entities);
+    }
+    if (data.attackCooldowns) {
+      this.attackCooldowns = new Map(data.attackCooldowns);
+    }
   }
 
   // 销毁

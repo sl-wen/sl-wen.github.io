@@ -101,6 +101,7 @@ export interface ItemEvent {
 }
 
 export class ItemSystem {
+  private static instance: ItemSystem;
   private scene: Phaser.Scene;
   private items: Map<string, Item> = new Map();
   private itemTemplates: Map<string, Item> = new Map();
@@ -108,6 +109,20 @@ export class ItemSystem {
   private eventListeners: Map<string, ((event: ItemEvent) => void)[]> = new Map();
 
   constructor(scene: Phaser.Scene) {
+    this.scene = scene;
+    this.initializeItemTemplates();
+  }
+
+  // 单例模式
+  public static getInstance(scene?: Phaser.Scene): ItemSystem {
+    if (!ItemSystem.instance && scene) {
+      ItemSystem.instance = new ItemSystem(scene);
+    }
+    return ItemSystem.instance;
+  }
+
+  // 初始化方法
+  public initialize(scene: Phaser.Scene): void {
     this.scene = scene;
     this.initializeItemTemplates();
   }

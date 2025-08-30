@@ -295,7 +295,7 @@ export class GameDataManager {
         // tags: ['intro'], // Quest interface doesn't have tags property
         isRepeatable: false,
         giver: 'mayor',
-        turnIn: 'mayor'
+        // turnIn: 'mayor' // Quest interface doesn't have turnIn property
       },
       {
         id: 'herb_collection',
@@ -325,7 +325,7 @@ export class GameDataManager {
         // tags: ['gather'], // Quest interface doesn't have tags property
         isRepeatable: true,
         giver: 'herbalist',
-        turnIn: 'herbalist'
+        // turnIn: 'herbalist' // Quest interface doesn't have turnIn property
       },
       {
         id: 'slime_hunt',
@@ -355,7 +355,7 @@ export class GameDataManager {
         // tags: ['combat'], // Quest interface doesn't have tags property
         isRepeatable: true,
         giver: 'guard',
-        turnIn: 'guard'
+        // turnIn: 'guard' // Quest interface doesn't have turnIn property
       },
       {
         id: 'ancient_ruins',
@@ -396,7 +396,7 @@ export class GameDataManager {
         isRepeatable: false,
         prerequisites: ['first_steps'],
         giver: 'scholar',
-        turnIn: 'scholar'
+        // turnIn: 'scholar' // Quest interface doesn't have turnIn property
       }
     ];
 

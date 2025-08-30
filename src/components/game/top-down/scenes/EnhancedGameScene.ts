@@ -693,7 +693,7 @@ export class EnhancedGameScene extends Phaser.Scene {
     this.isInCombat = true;
     
     // 创建战斗实体
-    const playerEntity = {
+    const playerEntity: any = {
       id: 'player',
       name: '玩家',
       health: this.gameState.playerStats.health,
@@ -707,7 +707,7 @@ export class EnhancedGameScene extends Phaser.Scene {
       isAlive: true
     };
 
-    const enemyEntity = {
+    const enemyEntity: any = {
       id: 'enemy',
       name: '敌人',
       health: enemy.getData('health'),
@@ -747,18 +747,20 @@ export class EnhancedGameScene extends Phaser.Scene {
    */
   private completeQuest(quest: any): void {
     const rewards = this.questSystem.completeQuest(quest.id);
-    if (rewards) {
-      this.gameState.playerStats.experience += rewards.experience;
-      this.gameState.playerStats.gold += rewards.gold;
+    if (rewards && typeof rewards === 'object') {
+      this.gameState.playerStats.experience += (rewards as any).experience || 0;
+      this.gameState.playerStats.gold += (rewards as any).gold || 0;
       
-      rewards.items.forEach((itemReward: any) => {
-        const item = this.gameDataManager.getItem(itemReward.id);
-        if (item) {
-          this.inventorySystem.addItem(item, itemReward.quantity);
-        }
-      });
+      if ((rewards as any).items) {
+        (rewards as any).items.forEach((itemReward: any) => {
+          const item = this.gameDataManager.getItem(itemReward.id);
+          if (item) {
+            this.inventorySystem.addItem(item, itemReward.quantity);
+          }
+        });
+      }
       
-      this.showMessage(`任务完成！获得 ${rewards.experience} 经验，${rewards.gold} 金币`);
+      this.showMessage(`任务完成！获得 ${(rewards as any).experience || 0} 经验，${(rewards as any).gold || 0} 金币`);
       this.checkLevelUp();
     }
   }

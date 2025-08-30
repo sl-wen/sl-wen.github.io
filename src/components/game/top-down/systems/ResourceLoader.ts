@@ -157,6 +157,10 @@ export class ResourceLoader {
       throw new Error('Game instance not set');
     }
 
+    console.log('🎮 ResourceLoader: 开始加载资源');
+    console.log('📊 总资源数量:', this.resources.size);
+    console.log('📋 资源列表:', Array.from(this.resources.keys()));
+
     this.startTime = Date.now();
     this.emitEvent('progress', { progress: this.getProgress() });
 
@@ -171,10 +175,14 @@ export class ResourceLoader {
 
   // 处理加载队列
   private async processQueue(): Promise<void> {
+    console.log('🔄 ResourceLoader: 开始处理加载队列');
+    console.log('📊 队列长度:', this.loadQueue.length);
+
     while (this.loadQueue.length > 0 || this.loadingItems.size > 0) {
       // 启动新的加载任务
       while (this.loadingItems.size < this.config.maxConcurrent && this.loadQueue.length > 0) {
         const item = this.loadQueue.shift()!;
+        console.log('📥 开始加载资源:', item.key, item.url);
         this.loadResource(item);
       }
 
@@ -182,17 +190,21 @@ export class ResourceLoader {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
 
+    console.log('✅ ResourceLoader: 队列处理完成');
+
     // 检查是否所有资源都加载成功
     const failedItems = Array.from(this.resources.values()).filter(
       item => item.status === LoadStatus.FAILED
     );
 
     if (failedItems.length > 0) {
+      console.error('❌ ResourceLoader: 加载失败的资源:', failedItems.map(item => item.key));
       this.emitEvent('error', {
         error: `${failedItems.length} resources failed to load`,
         item: failedItems[0]
       });
     } else {
+      console.log('🎉 ResourceLoader: 所有资源加载成功');
       this.emitEvent('complete', { progress: this.getProgress() });
     }
   }
@@ -464,48 +476,48 @@ export class ResourceLoader {
   }
 }
 
-// 预定义的资源加载顺序
+// 预定义的资源加载顺序 - 使用实际存在的资源路径
 export const RESOURCE_LOAD_ORDER = {
-  // 1. 核心引擎资源 (优先级: 100)
-  CORE: [
-    { key: 'phaser-logo', type: ResourceType.IMAGE, url: '/assets/phaser-logo.png', priority: 100 }
+  // 1. 地图资源 (优先级: 80)
+  MAPS: [
+    { key: 'home_page_city', type: ResourceType.JSON, url: '/assets/topdown/sprites/maps/cities/home_page_city.json', priority: 80 },
+    { key: 'home_page_city_house_01', type: ResourceType.JSON, url: '/assets/topdown/sprites/maps/houses/home_page_city_house_01.json', priority: 80 },
+    { key: 'home_page_city_house_02', type: ResourceType.JSON, url: '/assets/topdown/sprites/maps/houses/home_page_city_house_02.json', priority: 80 },
+    { key: 'home_page_city_house_03', type: ResourceType.JSON, url: '/assets/topdown/sprites/maps/houses/home_page_city_house_03.json', priority: 80 },
+    { key: 'tileset', type: ResourceType.IMAGE, url: '/assets/topdown/sprites/maps/tilesets/tileset.png', priority: 80 }
   ],
 
-  // 2. 基础UI资源 (优先级: 90)
-  UI: [
-    { key: 'ui-font', type: ResourceType.IMAGE, url: '/assets/ui/font.png', priority: 90 },
-    { key: 'ui-icons', type: ResourceType.SPRITESHEET, url: '/assets/ui/icons.png', priority: 90, config: { frameWidth: 16, frameHeight: 16 } }
-  ],
-
-  // 3. 地图瓦片集 (优先级: 80)
-  TILESETS: [
-    { key: 'tileset-main', type: ResourceType.TILESET, url: '/assets/tilesets/main-tileset.png', priority: 80 },
-    { key: 'tileset-indoor', type: ResourceType.TILESET, url: '/assets/tilesets/indoor-tileset.png', priority: 80 }
-  ],
-
-  // 4. 角色精灵 (优先级: 70)
+  // 2. 角色资源 (优先级: 70)
   CHARACTERS: [
-    { key: 'hero', type: ResourceType.SPRITESHEET, url: '/assets/characters/hero.png', priority: 70, config: { frameWidth: 16, frameHeight: 16 } },
-    { key: 'npc-villager', type: ResourceType.SPRITESHEET, url: '/assets/characters/npc-villager.png', priority: 70, config: { frameWidth: 16, frameHeight: 16 } },
-    { key: 'enemy-slime', type: ResourceType.SPRITESHEET, url: '/assets/characters/enemy-slime.png', priority: 70, config: { frameWidth: 16, frameHeight: 16 } }
+    { key: 'hero', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/hero.png', priority: 70, config: { atlasURL: '/assets/topdown/sprites/atlas/hero.json' } },
+    { key: 'slime', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/slime.png', priority: 70, config: { atlasURL: '/assets/topdown/sprites/atlas/slime.json' } },
+    { key: 'npc_01', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/npc_01.png', priority: 70, config: { atlasURL: '/assets/topdown/sprites/atlas/npc_01.json' } },
+    { key: 'npc_02', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/npc_02.png', priority: 70, config: { atlasURL: '/assets/topdown/sprites/atlas/npc_02.json' } },
+    { key: 'npc_03', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/npc_03.png', priority: 70, config: { atlasURL: '/assets/topdown/sprites/atlas/npc_03.json' } },
+    { key: 'npc_04', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/npc_04.png', priority: 70, config: { atlasURL: '/assets/topdown/sprites/atlas/npc_04.json' } }
   ],
 
-  // 5. 物品图标 (优先级: 60)
+  // 3. 物品资源 (优先级: 60)
   ITEMS: [
-    { key: 'items', type: ResourceType.SPRITESHEET, url: '/assets/items/items.png', priority: 60, config: { frameWidth: 16, frameHeight: 16 } }
+    { key: 'heart', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/heart.png', priority: 60, config: { atlasURL: '/assets/topdown/sprites/atlas/heart.json' } },
+    { key: 'coin', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/coin.png', priority: 60, config: { atlasURL: '/assets/topdown/sprites/atlas/coin.json' } }
   ],
 
-  // 6. 音效资源 (优先级: 50)
-  AUDIO: [
-    { key: 'sfx-attack', type: ResourceType.AUDIO, url: '/assets/audio/sfx-attack.mp3', priority: 50 },
-    { key: 'sfx-collect', type: ResourceType.AUDIO, url: '/assets/audio/sfx-collect.mp3', priority: 50 },
-    { key: 'sfx-dialog', type: ResourceType.AUDIO, url: '/assets/audio/sfx-dialog.mp3', priority: 50 }
+  // 4. UI资源 (优先级: 90)
+  UI: [
+    { key: 'main_menu_background', type: ResourceType.IMAGE, url: '/assets/topdown/images/main_menu_background.png', priority: 90 },
+    { key: 'game_over_background', type: ResourceType.IMAGE, url: '/assets/topdown/images/game_over_background.png', priority: 90 },
+    { key: 'game_logo', type: ResourceType.IMAGE, url: '/assets/topdown/images/game_logo.png', priority: 90 },
+    { key: 'dialog_borderbox', type: ResourceType.IMAGE, url: '/assets/topdown/images/dialog_borderbox.png', priority: 90 }
   ],
 
-  // 7. 背景音乐 (优先级: 40)
-  BGM: [
-    { key: 'bgm-menu', type: ResourceType.AUDIO, url: '/assets/audio/bgm-menu.mp3', priority: 40 },
-    { key: 'bgm-game', type: ResourceType.AUDIO, url: '/assets/audio/bgm-game.mp3', priority: 40 }
+  // 3. 物品资源 (优先级: 60)
+  ITEMS: [
+    { key: 'heart', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/heart.png', priority: 60, config: { atlasURL: '/assets/topdown/sprites/atlas/heart.json' } },
+    { key: 'coin', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/coin.png', priority: 60, config: { atlasURL: '/assets/topdown/sprites/atlas/coin.json' } },
+    { key: 'heart_container', type: ResourceType.IMAGE, url: '/assets/topdown/images/heart_container.png', priority: 60 },
+    { key: 'sword', type: ResourceType.IMAGE, url: '/assets/topdown/images/sword.png', priority: 60 },
+    { key: 'push', type: ResourceType.IMAGE, url: '/assets/topdown/images/push.png', priority: 60 }
   ]
 };
 

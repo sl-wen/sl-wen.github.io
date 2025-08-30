@@ -25,6 +25,9 @@ export default class BootScene extends Phaser.Scene {
       enableCompression: true
     });
 
+    // 设置场景
+    this.resourceLoader.setScene(this);
+
     // 设置加载进度UI
     this.setupLoadingUI();
 
@@ -97,85 +100,26 @@ export default class BootScene extends Phaser.Scene {
   }
 
   private addCustomResources() {
-    // 添加地图资源 (优先级: 80)
-    this.resourceLoader.addResource('home_page_city', ResourceType.JSON, '/assets/topdown/sprites/maps/cities/home_page_city.json', 80);
-    this.resourceLoader.addResource('home_page_city_house_01', ResourceType.JSON, '/assets/topdown/sprites/maps/houses/home_page_city_house_01.json', 80);
-    this.resourceLoader.addResource('home_page_city_house_02', ResourceType.JSON, '/assets/topdown/sprites/maps/houses/home_page_city_house_02.json', 80);
-    this.resourceLoader.addResource('home_page_city_house_03', ResourceType.JSON, '/assets/topdown/sprites/maps/houses/home_page_city_house_03.json', 80);
-    this.resourceLoader.addResource('tileset', ResourceType.IMAGE, '/assets/topdown/sprites/maps/tilesets/tileset.png', 80);
-
-    // 添加角色资源 (优先级: 70)
-    this.resourceLoader.addResource('hero', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/hero.png', 70, {
-      atlasURL: '/assets/topdown/sprites/atlas/hero.json'
-    });
-    this.resourceLoader.addResource('slime', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/slime.png', 70, {
-      atlasURL: '/assets/topdown/sprites/atlas/slime.json'
-    });
-    this.resourceLoader.addResource('npc_01', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/npc_01.png', 70, {
-      atlasURL: '/assets/topdown/sprites/atlas/npc_01.json'
-    });
-    this.resourceLoader.addResource('npc_02', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/npc_02.png', 70, {
-      atlasURL: '/assets/topdown/sprites/atlas/npc_02.json'
-    });
-    this.resourceLoader.addResource('npc_03', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/npc_03.png', 70, {
-      atlasURL: '/assets/topdown/sprites/atlas/npc_03.json'
-    });
-    this.resourceLoader.addResource('npc_04', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/npc_04.png', 70, {
-      atlasURL: '/assets/topdown/sprites/atlas/npc_04.json'
-    });
-
-    // 添加物品资源 (优先级: 60)
-    this.resourceLoader.addResource('heart', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/heart.png', 60, {
-      atlasURL: '/assets/topdown/sprites/atlas/heart.json'
-    });
-    this.resourceLoader.addResource('coin', ResourceType.ATLAS, '/assets/topdown/sprites/atlas/coin.png', 60, {
-      atlasURL: '/assets/topdown/sprites/atlas/coin.json'
-    });
-    this.resourceLoader.addResource('heart_container', ResourceType.IMAGE, '/assets/topdown/images/heart_container.png', 60);
-    this.resourceLoader.addResource('sword', ResourceType.IMAGE, '/assets/topdown/images/sword.png', 60);
-    this.resourceLoader.addResource('push', ResourceType.IMAGE, '/assets/topdown/images/push.png', 60);
-
-    // 添加UI资源 (优先级: 90)
-    this.resourceLoader.addResource('main_menu_background', ResourceType.IMAGE, '/assets/topdown/images/main_menu_background.png', 90);
-    this.resourceLoader.addResource('game_over_background', ResourceType.IMAGE, '/assets/topdown/images/game_over_background.png', 90);
-    this.resourceLoader.addResource('game_logo', ResourceType.IMAGE, '/assets/topdown/images/game_logo.png', 90);
-    this.resourceLoader.addResource('dialog_borderbox', ResourceType.IMAGE, '/assets/topdown/images/dialog_borderbox.png', 90);
-
-    // 添加音频资源 (优先级: 50)
-    this.addAudioResources();
+    // 资源已经在 createResourceLoader 中预定义了，这里不需要重复添加
+    console.log('🎮 BootScene: 使用预定义的资源列表');
   }
 
-  private addAudioResources() {
-    const audioResources = [
-      { key: 'bgm_menu', url: '/assets/topdown/audio/bgm_menu.mp3' },
-      { key: 'bgm_village', url: '/assets/topdown/audio/bgm_village.mp3' },
-      { key: 'bgm_forest', url: '/assets/topdown/audio/bgm_forest.mp3' },
-      { key: 'bgm_cave', url: '/assets/topdown/audio/bgm_cave.mp3' },
-      { key: 'bgm_battle', url: '/assets/topdown/audio/bgm_battle.mp3' },
-      { key: 'sfx_move', url: '/assets/topdown/audio/sfx_move.mp3' },
-      { key: 'sfx_attack', url: '/assets/topdown/audio/sfx_attack.mp3' },
-      { key: 'sfx_pickup', url: '/assets/topdown/audio/sfx_pickup.mp3' },
-      { key: 'sfx_damage', url: '/assets/topdown/audio/sfx_damage.mp3' },
-      { key: 'sfx_levelup', url: '/assets/topdown/audio/sfx_levelup.mp3' },
-      { key: 'sfx_ui_click', url: '/assets/topdown/audio/sfx_ui_click.mp3' },
-      { key: 'sfx_ui_hover', url: '/assets/topdown/audio/sfx_ui_hover.mp3' }
-    ];
 
-    audioResources.forEach(resource => {
-      this.resourceLoader.addResource(resource.key, ResourceType.AUDIO, resource.url, 50);
-    });
-  }
 
   private async startResourceLoading() {
     try {
       // 监听加载进度
       this.resourceLoader.on('progress', (event) => {
         this.updateLoadingProgress(event.progress!);
+        // 发送进度事件到游戏引擎
+        this.game.events.emit('load-progress', event.progress);
       });
 
       // 监听加载完成
       this.resourceLoader.on('complete', (event) => {
         console.log('✅ 资源加载完成:', event.progress);
+        // 发送完成事件到游戏引擎
+        this.game.events.emit('load-complete', event.progress);
         this.onLoadingComplete();
       });
 

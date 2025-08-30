@@ -1,1006 +1,791 @@
-import { COMBAT_RANGE, COMBAT_DAMAGE, COMBAT_COOLDOWN, ENEMY_DETECTION_RANGE } from '../ref/constants';
-import { storage } from '../utils';
+import * as Phaser from 'phaser';
+import { MoveDirection } from './PlayerController';
+
+// 战斗状态枚举
+export enum CombatState {
+  IDLE = 'idle',
+  ATTACKING = 'attacking',
+  DEFENDING = 'defending',
+  STUNNED = 'stunned',
+  DEAD = 'dead'
+}
+
+// 攻击类型枚举
+export enum AttackType {
+  MELEE = 'melee',
+  RANGED = 'ranged',
+  MAGIC = 'magic',
+  SPECIAL = 'special'
+}
+
+// 伤害类型枚举
+export enum DamageType {
+  PHYSICAL = 'physical',
+  MAGICAL = 'magical',
+  TRUE = 'true',
+  FIRE = 'fire',
+  ICE = 'ice',
+  LIGHTNING = 'lightning'
+}
 
 // 战斗实体接口
 export interface CombatEntity {
   id: string;
-  name: string;
+  sprite: Phaser.GameObjects.Sprite;
   health: number;
   maxHealth: number;
   attack: number;
   defense: number;
   speed: number;
   level: number;
-  position: { x: number; y: number };
-  isPlayer: boolean;
-  isAlive: boolean;
-  // 新增属性
-  magicAttack?: number;
-  magicDefense?: number;
-  criticalRate?: number;
-  criticalDamage?: number;
-  dodgeRate?: number;
-  blockRate?: number;
-  statusEffects?: StatusEffect[];
-  equipment?: Equipment;
-  skills?: Skill[];
-  experience?: number;
-  maxExperience?: number;
-  gold?: number;
-  faction?: string;
-  aiType?: 'aggressive' | 'defensive' | 'support' | 'flee';
-  aggressionLevel?: number;
-  fearThreshold?: number;
-  lastActionTime?: number;
-  actionCooldown?: number;
-}
-
-// 状态效果接口
-export interface StatusEffect {
-  id: string;
-  name: string;
-  type: 'buff' | 'debuff' | 'dot' | 'hot';
-  duration: number;
-  remainingTurns: number;
-  effects: {
-    attack?: number;
-    defense?: number;
-    speed?: number;
-    health?: number;
-    magicAttack?: number;
-    magicDefense?: number;
-    criticalRate?: number;
-    dodgeRate?: number;
-    blockRate?: number;
-  };
-  description: string;
-  icon?: string;
-}
-
-// 装备接口
-export interface Equipment {
-  weapon?: Item;
-  armor?: Item;
-  helmet?: Item;
-  boots?: Item;
-  accessory1?: Item;
-  accessory2?: Item;
-}
-
-// 物品接口
-export interface Item {
-  id: string;
-  name: string;
-  type: 'weapon' | 'armor' | 'helmet' | 'boots' | 'accessory' | 'consumable';
-  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
-  level: number;
-  stats: {
-    attack?: number;
-    defense?: number;
-    magicAttack?: number;
-    magicDefense?: number;
-    criticalRate?: number;
-    criticalDamage?: number;
-    dodgeRate?: number;
-    blockRate?: number;
-    health?: number;
-    speed?: number;
-  };
-  effects?: StatusEffect[];
-  description: string;
-  icon?: string;
-}
-
-// 技能接口
-export interface Skill {
-  id: string;
-  name: string;
-  type: 'physical' | 'magical' | 'support' | 'debuff';
-  damage: number;
-  healing?: number;
-  mpCost: number;
-  cooldown: number;
-  currentCooldown: number;
-  range: number;
-  targetType: 'single' | 'all' | 'self' | 'enemy' | 'ally';
-  effects?: StatusEffect[];
-  description: string;
-  icon?: string;
-  animation?: string;
-}
-
-// 战斗动作接口
-export interface CombatAction {
-  type: 'attack' | 'defend' | 'item' | 'flee' | 'skill' | 'magic' | 'special';
-  target?: string;
-  itemId?: string;
-  skillId?: string;
-  damage?: number;
-  healing?: number;
-  effects?: StatusEffect[];
-  isCritical?: boolean;
-  isDodged?: boolean;
-  isBlocked?: boolean;
-}
-
-// 战斗结果接口
-export interface CombatResult {
-  attacker: string;
-  target: string;
-  action: CombatAction;
-  damage: number;
-  healing?: number;
-  isCritical: boolean;
-  isDodged: boolean;
-  isBlocked: boolean;
-  targetDefeated: boolean;
   experience: number;
-  gold: number;
-  items: string[];
-  statusEffectsApplied?: StatusEffect[];
-  statusEffectsRemoved?: StatusEffect[];
-  skillUsed?: Skill;
-  comboCount?: number;
-  chainReaction?: boolean;
-  environmentalEffect?: string;
+  state: CombatState;
+  team: 'player' | 'enemy' | 'neutral';
+  position: { x: number; y: number };
 }
 
-// 战斗状态接口
-export interface CombatState {
-  isInCombat: boolean;
-  participants: CombatEntity[];
-  currentTurn: number;
-  turnOrder: string[];
-  lastActionTime: number;
-  // 新增属性
-  phase: 'preparation' | 'action' | 'resolution' | 'cleanup';
-  round: number;
-  maxRounds: number;
-  environment: CombatEnvironment;
-  weather: 'clear' | 'rain' | 'storm' | 'fog';
-  timeOfDay: 'day' | 'night' | 'dawn' | 'dusk';
-  terrain: 'grass' | 'forest' | 'mountain' | 'water' | 'cave';
-  chainReactionCount: number;
-  comboMultiplier: number;
-  lastComboTime: number;
+// 攻击配置接口
+export interface AttackConfig {
+  type: AttackType;
+  damageType: DamageType;
+  baseDamage: number;
+  range: number;
+  cooldown: number;
+  criticalChance: number;
+  criticalMultiplier: number;
+  animationDuration: number;
+  soundKey: string;
+  effectKey: string;
 }
 
-// 战斗环境接口
-export interface CombatEnvironment {
-  type: string;
-  effects: {
-    attackBonus?: number;
-    defenseBonus?: number;
-    speedBonus?: number;
-    magicBonus?: number;
-    criticalBonus?: number;
-    dodgeBonus?: number;
-  };
-  hazards?: string[];
-  cover?: string[];
-  interactiveElements?: string[];
+// 伤害信息接口
+export interface DamageInfo {
+  amount: number;
+  type: DamageType;
+  isCritical: boolean;
+  isBlocked: boolean;
+  isDodged: boolean;
+  position: { x: number; y: number };
+  target: CombatEntity;
+  attacker: CombatEntity;
 }
 
-/**
- * 战斗系统
- * 处理游戏中的战斗逻辑、伤害计算和战斗结果
- */
+// 战斗事件接口
+export interface CombatEvent {
+  type: 'attack' | 'damage' | 'heal' | 'death' | 'level_up';
+  entity: CombatEntity;
+  target?: CombatEntity;
+  damage?: DamageInfo;
+  healAmount?: number;
+  experience?: number;
+}
+
 export class CombatSystem {
-  private static instance: CombatSystem;
-  private combatState: CombatState;
-  private lastAttackTime: number;
-  private combatHistory: CombatResult[];
+  private scene: Phaser.Scene;
+  private entities: Map<string, CombatEntity> = new Map();
+  private attackConfigs: Map<string, AttackConfig> = new Map();
+  private damageTexts: Phaser.GameObjects.Text[] = [];
+  private combatEffects: Phaser.GameObjects.Sprite[] = [];
+  private eventListeners: Map<string, ((event: CombatEvent) => void)[]> = new Map();
+  private attackCooldowns: Map<string, number> = new Map();
+  private lastUpdateTime: number = 0;
 
-  private constructor() {
-    this.combatState = {
-      isInCombat: false,
-      participants: [],
-      currentTurn: 0,
-      turnOrder: [],
-      lastActionTime: 0,
-      phase: 'preparation',
-      round: 1,
-      maxRounds: 50,
-      environment: {
-        type: 'default',
-        effects: {},
-        hazards: [],
-        cover: [],
-        interactiveElements: []
-      },
-      weather: 'clear',
-      timeOfDay: 'day',
-      terrain: 'grass',
-      chainReactionCount: 0,
-      comboMultiplier: 1.0,
-      lastComboTime: 0
-    };
-    this.lastAttackTime = 0;
-    this.combatHistory = [];
+  constructor(scene: Phaser.Scene) {
+    this.scene = scene;
+    this.initializeAttackConfigs();
+    this.setupEventListeners();
   }
 
-  public static getInstance(): CombatSystem {
-    if (!CombatSystem.instance) {
-      CombatSystem.instance = new CombatSystem();
-    }
-    return CombatSystem.instance;
+  // 初始化攻击配置
+  private initializeAttackConfigs(): void {
+    // 近战攻击
+    this.attackConfigs.set('melee_basic', {
+      type: AttackType.MELEE,
+      damageType: DamageType.PHYSICAL,
+      baseDamage: 10,
+      range: 32,
+      cooldown: 500,
+      criticalChance: 0.15,
+      criticalMultiplier: 2.0,
+      animationDuration: 300,
+      soundKey: 'sfx-attack',
+      effectKey: 'attack-effect'
+    });
+
+    // 远程攻击
+    this.attackConfigs.set('ranged_basic', {
+      type: AttackType.RANGED,
+      damageType: DamageType.PHYSICAL,
+      baseDamage: 8,
+      range: 128,
+      cooldown: 800,
+      criticalChance: 0.20,
+      criticalMultiplier: 2.5,
+      animationDuration: 400,
+      soundKey: 'sfx-ranged',
+      effectKey: 'ranged-effect'
+    });
+
+    // 魔法攻击
+    this.attackConfigs.set('magic_fire', {
+      type: AttackType.MAGIC,
+      damageType: DamageType.FIRE,
+      baseDamage: 15,
+      range: 96,
+      cooldown: 1200,
+      criticalChance: 0.25,
+      criticalMultiplier: 2.0,
+      animationDuration: 600,
+      soundKey: 'sfx-magic',
+      effectKey: 'fire-effect'
+    });
+
+    // 特殊攻击
+    this.attackConfigs.set('special_spin', {
+      type: AttackType.SPECIAL,
+      damageType: DamageType.PHYSICAL,
+      baseDamage: 20,
+      range: 64,
+      cooldown: 2000,
+      criticalChance: 0.30,
+      criticalMultiplier: 3.0,
+      animationDuration: 800,
+      soundKey: 'sfx-special',
+      effectKey: 'spin-effect'
+    });
   }
 
-  /**
-   * 开始战斗
-   * @param player - 玩家实体
-   * @param enemies - 敌人实体数组
-   * @returns 是否成功开始战斗
-   */
-  startCombat(player: CombatEntity, enemies: CombatEntity[]): boolean {
-    if (this.combatState.isInCombat) {
-      return false;
-    }
+  // 设置事件监听器
+  private setupEventListeners(): void {
+    // 监听攻击输入
+    this.scene.input.keyboard.on('keydown-SPACE', () => {
+      this.handlePlayerAttack('melee_basic');
+    });
 
-    // 检查是否有敌人在攻击范围内
-    const nearbyEnemies = enemies.filter(enemy => 
-      this.calculateDistance(player.position, enemy.position) <= ENEMY_DETECTION_RANGE
-    );
+    this.scene.input.keyboard.on('keydown-R', () => {
+      this.handlePlayerAttack('ranged_basic');
+    });
 
-    if (nearbyEnemies.length === 0) {
-      return false;
-    }
+    this.scene.input.keyboard.on('keydown-F', () => {
+      this.handlePlayerAttack('magic_fire');
+    });
 
-    // 初始化战斗状态
-    this.combatState.isInCombat = true;
-    this.combatState.participants = [player, ...nearbyEnemies];
-    this.combatState.currentTurn = 0;
-    this.combatState.turnOrder = this.calculateTurnOrder([player, ...nearbyEnemies]);
-    this.combatState.lastActionTime = Date.now();
-
-    return true;
+    this.scene.input.keyboard.on('keydown-Q', () => {
+      this.handlePlayerAttack('special_spin');
+    });
   }
 
-  /**
-   * 结束战斗
-   */
-  endCombat(): void {
-    this.combatState.isInCombat = false;
-    this.combatState.participants = [];
-    this.combatState.turnOrder = [];
-    this.combatHistory = [];
+  // 注册战斗实体
+  public registerEntity(entity: CombatEntity): void {
+    this.entities.set(entity.id, entity);
+    console.log(`Combat entity registered: ${entity.id}`);
   }
 
-  /**
-   * 执行攻击
-   * @param attackerId - 攻击者ID
-   * @param targetId - 目标ID
-   * @returns 攻击结果
-   */
-  performAttack(attackerId: string, targetId: string): CombatResult | null {
-    const attacker = this.findEntity(attackerId);
-    const target = this.findEntity(targetId);
-
-    if (!attacker || !target || !attacker.isAlive || !target.isAlive) {
-      return null;
-    }
-
-    // 检查攻击冷却
-    const now = Date.now();
-    if (now - this.lastAttackTime < COMBAT_COOLDOWN) {
-      return null;
-    }
-
-    // 检查攻击范围
-    if (this.calculateDistance(attacker.position, target.position) > COMBAT_RANGE) {
-      return null;
-    }
-
-    // 计算伤害
-    const damage = this.calculateDamage(attacker, target);
-    const isCritical = this.isCriticalHit(attacker);
-    const finalDamage = isCritical ? Math.floor(damage * 1.5) : damage;
-
-    // 应用伤害
-    target.health = Math.max(0, target.health - finalDamage);
-    if (target.health <= 0) {
-      target.isAlive = false;
-    }
-
-    // 更新攻击时间
-    this.lastAttackTime = now;
-
-    // 创建战斗结果
-    const result: CombatResult = {
-      attacker: attackerId,
-      target: targetId,
-      action: { type: 'attack', damage: finalDamage },
-      damage: finalDamage,
-      isCritical,
-      isDodged: false,
-      isBlocked: false,
-      targetDefeated: !target.isAlive,
-      experience: target.isAlive ? 0 : this.calculateExperience(target),
-      gold: target.isAlive ? 0 : this.calculateGold(target),
-      items: target.isAlive ? [] : this.generateLoot(target)
-    };
-
-    this.combatHistory.push(result);
-
-    // 检查战斗是否结束
-    this.checkCombatEnd();
-
-    return result;
+  // 注销战斗实体
+  public unregisterEntity(entityId: string): void {
+    this.entities.delete(entityId);
+    this.attackCooldowns.delete(entityId);
+    console.log(`Combat entity unregistered: ${entityId}`);
   }
 
-  /**
-   * 计算伤害
-   * @param attacker - 攻击者
-   * @param target - 目标
-   * @returns 伤害值
-   */
-  private calculateDamage(attacker: CombatEntity, target: CombatEntity): number {
-    const baseDamage = attacker.attack;
-    const defense = target.defense;
-    const levelDifference = attacker.level - target.level;
-    
-    // 基础伤害计算
-    let damage = Math.max(1, baseDamage - defense);
-    
-    // 等级差异影响
-    if (levelDifference > 0) {
-      damage = Math.floor(damage * (1 + levelDifference * 0.1));
-    } else if (levelDifference < 0) {
-      damage = Math.floor(damage * (1 + levelDifference * 0.05));
-    }
-    
-    // 随机波动 (±10%)
-    const variation = 0.9 + Math.random() * 0.2;
-    damage = Math.floor(damage * variation);
-    
-    return Math.max(1, damage);
-  }
-
-  /**
-   * 检查是否暴击
-   * @param attacker - 攻击者
-   * @returns 是否暴击
-   */
-  private isCriticalHit(attacker: CombatEntity): boolean {
-    // 基础暴击率 5%，每级增加 1%
-    const criticalChance = 0.05 + (attacker.level - 1) * 0.01;
-    return Math.random() < criticalChance;
-  }
-
-  /**
-   * 计算经验值奖励
-   * @param target - 被击败的目标
-   * @returns 经验值
-   */
-  private calculateExperience(target: CombatEntity): number {
-    return target.level * 10;
-  }
-
-  /**
-   * 计算金币奖励
-   * @param target - 被击败的目标
-   * @returns 金币数量
-   */
-  private calculateGold(target: CombatEntity): number {
-    return Math.floor(target.level * 5 + Math.random() * 10);
-  }
-
-  /**
-   * 生成战利品
-   * @param target - 被击败的目标
-   * @returns 物品ID数组
-   */
-  private generateLoot(target: CombatEntity): string[] {
-    const loot: string[] = [];
-    
-    // 根据敌人等级和类型生成战利品
-    if (target.level >= 5) {
-      loot.push('health_potion');
-    }
-    
-    if (target.level >= 10) {
-      loot.push('mana_potion');
-    }
-    
-    // 随机掉落
-    if (Math.random() < 0.3) {
-      loot.push('coin');
-    }
-    
-    return loot;
-  }
-
-  /**
-   * 计算距离
-   * @param pos1 - 位置1
-   * @param pos2 - 位置2
-   * @returns 距离
-   */
-  private calculateDistance(pos1: { x: number; y: number }, pos2: { x: number; y: number }): number {
-    const dx = pos1.x - pos2.x;
-    const dy = pos1.y - pos2.y;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  /**
-   * 计算回合顺序
-   * @param entities - 实体数组
-   * @returns 回合顺序ID数组
-   */
-  private calculateTurnOrder(entities: CombatEntity[]): string[] {
-    return entities
-      .sort((a, b) => b.speed - a.speed)
-      .map(entity => entity.id);
-  }
-
-  /**
-   * 查找实体
-   * @param id - 实体ID
-   * @returns 实体对象
-   */
-  private findEntity(id: string): CombatEntity | undefined {
-    return this.combatState.participants.find(entity => entity.id === id);
-  }
-
-  /**
-   * 检查战斗是否结束
-   */
-  private checkCombatEnd(): void {
-    const aliveParticipants = this.combatState.participants.filter(entity => entity.isAlive);
-    const players = aliveParticipants.filter(entity => entity.isPlayer);
-    const enemies = aliveParticipants.filter(entity => !entity.isPlayer);
-
-    if (players.length === 0) {
-      // 玩家失败
-      this.endCombat();
-    } else if (enemies.length === 0) {
-      // 玩家胜利
-      this.endCombat();
-    }
-  }
-
-  /**
-   * 获取战斗状态
-   * @returns 战斗状态
-   */
-  getCombatState(): CombatState {
-    return { ...this.combatState };
-  }
-
-  /**
-   * 检查是否在战斗中
-   * @returns 是否在战斗中
-   */
-  isInCombat(): boolean {
-    return this.combatState.isInCombat;
-  }
-
-  /**
-   * 获取战斗历史
-   * @returns 战斗结果数组
-   */
-  getCombatHistory(): CombatResult[] {
-    return [...this.combatHistory];
-  }
-
-  /**
-   * 获取当前回合的实体
-   * @returns 当前回合实体
-   */
-  getCurrentTurnEntity(): CombatEntity | null {
-    if (!this.combatState.isInCombat || this.combatState.turnOrder.length === 0) {
-      return null;
-    }
-
-    const currentEntityId = this.combatState.turnOrder[this.combatState.currentTurn];
-    return this.findEntity(currentEntityId) || null;
-  }
-
-  /**
-   * 下一回合
-   */
-  nextTurn(): void {
-    if (!this.combatState.isInCombat) {
+  // 处理玩家攻击
+  private handlePlayerAttack(attackKey: string): void {
+    const player = this.entities.get('player');
+    if (!player || player.state !== CombatState.IDLE) {
       return;
     }
 
-    this.combatState.currentTurn = (this.combatState.currentTurn + 1) % this.combatState.turnOrder.length;
-    this.combatState.lastActionTime = Date.now();
+    // 检查冷却时间
+    if (this.isOnCooldown('player', attackKey)) {
+      return;
+    }
+
+    // 寻找目标
+    const target = this.findNearestEnemy(player);
+    if (!target) {
+      return;
+    }
+
+    // 执行攻击
+    this.performAttack(player, target, attackKey);
   }
 
-  /**
-   * 获取可用目标
-   * @param attackerId - 攻击者ID
-   * @returns 可用目标数组
-   */
-  getAvailableTargets(attackerId: string): CombatEntity[] {
-    const attacker = this.findEntity(attackerId);
-    if (!attacker) {
-      return [];
-    }
+  // 寻找最近的敌人
+  private findNearestEnemy(attacker: CombatEntity): CombatEntity | null {
+    let nearestEnemy: CombatEntity | null = null;
+    let nearestDistance = Infinity;
 
-    return this.combatState.participants.filter(entity => 
-      entity.id !== attackerId && 
-      entity.isAlive && 
-      this.calculateDistance(attacker.position, entity.position) <= COMBAT_RANGE
-    );
-  }
+    this.entities.forEach(entity => {
+      if (entity.team !== attacker.team && entity.state !== CombatState.DEAD) {
+        const distance = Phaser.Math.Distance.Between(
+          attacker.position.x, attacker.position.y,
+          entity.position.x, entity.position.y
+        );
 
-  /**
-   * 保存战斗数据
-   * @returns 战斗数据
-   */
-  saveData() {
-    return {
-      combatState: this.combatState,
-      lastAttackTime: this.lastAttackTime,
-      combatHistory: this.combatHistory
-    };
-  }
-
-  /**
-   * 加载战斗数据
-   * @param data - 战斗数据
-   */
-  loadData(data: any) {
-    this.combatState = data.combatState || this.combatState;
-    this.lastAttackTime = data.lastAttackTime || 0;
-    this.combatHistory = data.combatHistory || [];
-  }
-
-  // 新增的高级战斗方法
-
-  /**
-   * 执行技能攻击
-   * @param attackerId - 攻击者ID
-   * @param targetId - 目标ID
-   * @param skillId - 技能ID
-   * @returns 攻击结果
-   */
-  performSkillAttack(attackerId: string, targetId: string, skillId: string): CombatResult | null {
-    const attacker = this.findEntity(attackerId);
-    const target = this.findEntity(targetId);
-    const skill = attacker?.skills?.find(s => s.id === skillId);
-
-    if (!attacker || !target || !skill || !attacker.isAlive || !target.isAlive) {
-      return null;
-    }
-
-    // 检查技能冷却
-    if (skill.currentCooldown > 0) {
-      return null;
-    }
-
-    // 检查MP消耗
-    if (attacker.magicAttack && attacker.magicAttack < skill.mpCost) {
-      return null;
-    }
-
-    // 检查攻击范围
-    if (this.calculateDistance(attacker.position, target.position) > skill.range) {
-      return null;
-    }
-
-    // 计算技能伤害
-    const damage = this.calculateSkillDamage(attacker, target, skill);
-    const isCritical = this.isCriticalHit(attacker);
-    const finalDamage = isCritical ? Math.floor(damage * (attacker.criticalDamage || 1.5)) : damage;
-
-    // 应用伤害
-    target.health = Math.max(0, target.health - finalDamage);
-    if (target.health <= 0) {
-      target.isAlive = false;
-    }
-
-    // 消耗MP
-    if (attacker.magicAttack) {
-      attacker.magicAttack -= skill.mpCost;
-    }
-
-    // 设置技能冷却
-    skill.currentCooldown = skill.cooldown;
-
-    // 应用状态效果
-    const statusEffectsApplied: StatusEffect[] = [];
-    if (skill.effects) {
-      skill.effects.forEach(effect => {
-        const appliedEffect = this.applyStatusEffect(target, effect);
-        if (appliedEffect) {
-          statusEffectsApplied.push(appliedEffect);
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestEnemy = entity;
         }
-      });
+      }
+    });
+
+    return nearestEnemy;
+  }
+
+  // 执行攻击
+  public performAttack(attacker: CombatEntity, target: CombatEntity, attackKey: string): void {
+    const config = this.attackConfigs.get(attackKey);
+    if (!config) {
+      console.error(`Attack config not found: ${attackKey}`);
+      return;
     }
 
-    // 创建战斗结果
-    const result: CombatResult = {
-      attacker: attackerId,
-      target: targetId,
-      action: { 
-        type: 'skill', 
-        skillId: skillId,
-        damage: finalDamage,
-        isCritical,
-        effects: statusEffectsApplied
-      },
-      damage: finalDamage,
+    // 检查距离
+    const distance = Phaser.Math.Distance.Between(
+      attacker.position.x, attacker.position.y,
+      target.position.x, target.position.y
+    );
+
+    if (distance > config.range) {
+      console.log('Target out of range');
+      return;
+    }
+
+    // 设置冷却时间
+    this.setCooldown(attacker.id, attackKey, config.cooldown);
+
+    // 更新攻击者状态
+    attacker.state = CombatState.ATTACKING;
+
+    // 播放攻击动画
+    this.playAttackAnimation(attacker, config);
+
+    // 播放攻击音效
+    this.playAttackSound(config.soundKey);
+
+    // 创建攻击特效
+    this.createAttackEffect(attacker, target, config);
+
+    // 延迟计算伤害（等待动画播放）
+    this.scene.time.delayedCall(config.animationDuration * 0.5, () => {
+      const damage = this.calculateDamage(attacker, target, config);
+      this.applyDamage(target, damage);
+    });
+
+    // 恢复攻击者状态
+    this.scene.time.delayedCall(config.animationDuration, () => {
+      attacker.state = CombatState.IDLE;
+    });
+  }
+
+  // 播放攻击动画
+  private playAttackAnimation(attacker: CombatEntity, config: AttackConfig): void {
+    const direction = this.getDirectionToTarget(attacker, this.findNearestEnemy(attacker));
+    let animationKey = '';
+
+    switch (config.type) {
+      case AttackType.MELEE:
+        animationKey = `hero_attack_${direction}`;
+        break;
+      case AttackType.RANGED:
+        animationKey = `hero_ranged_${direction}`;
+        break;
+      case AttackType.MAGIC:
+        animationKey = `hero_magic_${direction}`;
+        break;
+      case AttackType.SPECIAL:
+        animationKey = 'hero_special_spin';
+        break;
+    }
+
+    if (animationKey) {
+      attacker.sprite.play(animationKey, true);
+    }
+  }
+
+  // 获取朝向目标的方向
+  private getDirectionToTarget(attacker: CombatEntity, target: CombatEntity | null): string {
+    if (!target) return 'down';
+
+    const deltaX = target.position.x - attacker.position.x;
+    const deltaY = target.position.y - attacker.position.y;
+
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      return deltaX > 0 ? 'right' : 'left';
+    } else {
+      return deltaY > 0 ? 'down' : 'up';
+    }
+  }
+
+  // 播放攻击音效
+  private playAttackSound(soundKey: string): void {
+    try {
+      this.scene.sound.play(soundKey);
+    } catch (error) {
+      console.warn(`Sound not found: ${soundKey}`);
+    }
+  }
+
+  // 创建攻击特效
+  private createAttackEffect(attacker: CombatEntity, target: CombatEntity, config: AttackConfig): void {
+    const effect = this.scene.add.sprite(
+      target.position.x,
+      target.position.y,
+      config.effectKey
+    );
+
+    effect.setDepth(100);
+    effect.play(config.effectKey, true);
+
+    // 特效动画完成后销毁
+    effect.once('animationcomplete', () => {
+      effect.destroy();
+    });
+
+    this.combatEffects.push(effect);
+  }
+
+  // 计算伤害
+  private calculateDamage(attacker: CombatEntity, target: CombatEntity, config: AttackConfig): DamageInfo {
+    // 基础伤害
+    let damage = config.baseDamage + attacker.attack - target.defense;
+    damage = Math.max(1, damage); // 最小伤害为1
+
+    // 暴击判定
+    const isCritical = Math.random() < config.criticalChance;
+    if (isCritical) {
+      damage = Math.floor(damage * config.criticalMultiplier);
+    }
+
+    // 闪避判定
+    const dodgeChance = target.speed * 0.01; // 速度影响闪避率
+    const isDodged = Math.random() < dodgeChance;
+
+    // 格挡判定
+    const blockChance = target.defense * 0.005; // 防御影响格挡率
+    const isBlocked = Math.random() < blockChance;
+
+    if (isDodged) {
+      damage = 0;
+    } else if (isBlocked) {
+      damage = Math.floor(damage * 0.5);
+    }
+
+    return {
+      amount: damage,
+      type: config.damageType,
       isCritical,
-      isDodged: false,
-      isBlocked: false,
-      targetDefeated: !target.isAlive,
-      experience: target.isAlive ? 0 : this.calculateExperience(target),
-      gold: target.isAlive ? 0 : this.calculateGold(target),
-      items: target.isAlive ? [] : this.generateLoot(target),
-      statusEffectsApplied,
-      skillUsed: skill
+      isBlocked,
+      isDodged,
+      position: { x: target.position.x, y: target.position.y },
+      target,
+      attacker
     };
-
-    this.combatHistory.push(result);
-    this.checkCombatEnd();
-
-    return result;
   }
 
-  /**
-   * 计算技能伤害
-   * @param attacker - 攻击者
-   * @param target - 目标
-   * @param skill - 技能
-   * @returns 伤害值
-   */
-  private calculateSkillDamage(attacker: CombatEntity, target: CombatEntity, skill: Skill): number {
-    let baseDamage = skill.damage;
-
-    // 根据技能类型调整伤害
-    switch (skill.type) {
-      case 'physical':
-        baseDamage += (attacker.attack || 0);
-        baseDamage -= (target.defense || 0);
-        break;
-      case 'magical':
-        baseDamage += (attacker.magicAttack || 0);
-        baseDamage -= (target.magicDefense || 0);
-        break;
-      case 'support':
-        return skill.healing || 0;
-      case 'debuff':
-        baseDamage = Math.floor(baseDamage * 0.7); // 减益技能伤害较低
-        break;
+  // 应用伤害
+  private applyDamage(target: CombatEntity, damage: DamageInfo): void {
+    if (damage.isDodged) {
+      this.showDodgeText(target);
+      return;
     }
 
-    // 环境效果影响
-    baseDamage = this.applyEnvironmentalEffects(baseDamage, 'damage');
+    // 减少生命值
+    target.health = Math.max(0, target.health - damage.amount);
 
-    // 随机波动 (±15%)
-    const variation = 0.85 + Math.random() * 0.3;
-    baseDamage = Math.floor(baseDamage * variation);
+    // 显示伤害数字
+    this.showDamageText(damage);
 
-    return Math.max(1, baseDamage);
-  }
+    // 播放受伤动画
+    this.playDamageAnimation(target, damage);
 
-  /**
-   * 应用状态效果
-   * @param target - 目标实体
-   * @param effect - 状态效果
-   * @returns 应用的状态效果
-   */
-  private applyStatusEffect(target: CombatEntity, effect: StatusEffect): StatusEffect | null {
-    if (!target.statusEffects) {
-      target.statusEffects = [];
-    }
-
-    // 检查是否已有相同效果
-    const existingEffect = target.statusEffects.find(e => e.id === effect.id);
-    if (existingEffect) {
-      // 刷新持续时间
-      existingEffect.remainingTurns = Math.max(existingEffect.remainingTurns, effect.duration);
-      return existingEffect;
-    }
-
-    // 应用新效果
-    const appliedEffect = { ...effect, remainingTurns: effect.duration };
-    target.statusEffects.push(appliedEffect);
-
-    // 立即应用效果
-    this.applyEffectStats(target, effect.effects);
-
-    return appliedEffect;
-  }
-
-  /**
-   * 应用效果属性
-   * @param target - 目标实体
-   * @param effects - 效果属性
-   */
-  private applyEffectStats(target: CombatEntity, effects: any): void {
-    if (effects.attack) target.attack += effects.attack;
-    if (effects.defense) target.defense += effects.defense;
-    if (effects.speed) target.speed += effects.speed;
-    if (effects.health) {
-      target.health = Math.min(target.maxHealth, target.health + effects.health);
-    }
-    if (effects.magicAttack) target.magicAttack = (target.magicAttack || 0) + effects.magicAttack;
-    if (effects.magicDefense) target.magicDefense = (target.magicDefense || 0) + effects.magicDefense;
-    if (effects.criticalRate) target.criticalRate = (target.criticalRate || 0) + effects.criticalRate;
-    if (effects.dodgeRate) target.dodgeRate = (target.dodgeRate || 0) + effects.dodgeRate;
-    if (effects.blockRate) target.blockRate = (target.blockRate || 0) + effects.blockRate;
-  }
-
-  /**
-   * 移除状态效果
-   * @param target - 目标实体
-   * @param effectId - 效果ID
-   */
-  private removeStatusEffect(target: CombatEntity, effectId: string): void {
-    if (!target.statusEffects) return;
-
-    const effectIndex = target.statusEffects.findIndex(e => e.id === effectId);
-    if (effectIndex !== -1) {
-      const effect = target.statusEffects[effectIndex];
-      
-      // 移除效果属性
-      this.removeEffectStats(target, effect.effects);
-      
-      target.statusEffects.splice(effectIndex, 1);
-    }
-  }
-
-  /**
-   * 移除效果属性
-   * @param target - 目标实体
-   * @param effects - 效果属性
-   */
-  private removeEffectStats(target: CombatEntity, effects: any): void {
-    if (effects.attack) target.attack -= effects.attack;
-    if (effects.defense) target.defense -= effects.defense;
-    if (effects.speed) target.speed -= effects.speed;
-    if (effects.magicAttack) target.magicAttack = Math.max(0, (target.magicAttack || 0) - effects.magicAttack);
-    if (effects.magicDefense) target.magicDefense = Math.max(0, (target.magicDefense || 0) - effects.magicDefense);
-    if (effects.criticalRate) target.criticalRate = Math.max(0, (target.criticalRate || 0) - effects.criticalRate);
-    if (effects.dodgeRate) target.dodgeRate = Math.max(0, (target.dodgeRate || 0) - effects.dodgeRate);
-    if (effects.blockRate) target.blockRate = Math.max(0, (target.blockRate || 0) - effects.blockRate);
-  }
-
-  /**
-   * 更新状态效果
-   */
-  updateStatusEffects(): void {
-    this.combatState.participants.forEach(entity => {
-      if (!entity.statusEffects) return;
-
-      const effectsToRemove: string[] = [];
-      
-      entity.statusEffects.forEach(effect => {
-        effect.remainingTurns--;
-        
-        // 处理持续效果
-        if (effect.type === 'dot' && effect.remainingTurns > 0) {
-          // 持续伤害
-          const dotDamage = Math.floor((effect.effects.health || 0) * -1);
-          entity.health = Math.max(0, entity.health + dotDamage);
-        } else if (effect.type === 'hot' && effect.remainingTurns > 0) {
-          // 持续治疗
-          const hotHealing = effect.effects.health || 0;
-          entity.health = Math.min(entity.maxHealth, entity.health + hotHealing);
-        }
-        
-        if (effect.remainingTurns <= 0) {
-          effectsToRemove.push(effect.id);
-        }
-      });
-
-      // 移除过期效果
-      effectsToRemove.forEach(effectId => {
-        this.removeStatusEffect(entity, effectId);
-      });
+    // 发送伤害事件
+    this.emitEvent('damage', {
+      type: 'damage',
+      entity: target,
+      target,
+      damage
     });
-  }
 
-  /**
-   * 检查闪避
-   * @param attacker - 攻击者
-   * @param target - 目标
-   * @returns 是否闪避
-   */
-  private checkDodge(attacker: CombatEntity, target: CombatEntity): boolean {
-    const dodgeRate = target.dodgeRate || 0;
-    const accuracy = 100 - (attacker.criticalRate || 0); // 简化精度计算
-    const finalDodgeChance = Math.max(0, dodgeRate - accuracy);
-    
-    return Math.random() * 100 < finalDodgeChance;
-  }
-
-  /**
-   * 检查格挡
-   * @param target - 目标
-   * @returns 是否格挡
-   */
-  private checkBlock(target: CombatEntity): boolean {
-    const blockRate = target.blockRate || 0;
-    return Math.random() * 100 < blockRate;
-  }
-
-  /**
-   * 应用环境效果
-   * @param value - 原始值
-   * @param type - 效果类型
-   * @returns 调整后的值
-   */
-  private applyEnvironmentalEffects(value: number, type: string): number {
-    const env = this.combatState.environment;
-    
-    switch (type) {
-      case 'damage':
-        if (env.effects.attackBonus) value += env.effects.attackBonus;
-        break;
-      case 'defense':
-        if (env.effects.defenseBonus) value += env.effects.defenseBonus;
-        break;
-      case 'speed':
-        if (env.effects.speedBonus) value += env.effects.speedBonus;
-        break;
-      case 'magic':
-        if (env.effects.magicBonus) value += env.effects.magicBonus;
-        break;
-      case 'critical':
-        if (env.effects.criticalBonus) value += env.effects.criticalBonus;
-        break;
-      case 'dodge':
-        if (env.effects.dodgeBonus) value += env.effects.dodgeBonus;
-        break;
+    // 检查死亡
+    if (target.health <= 0) {
+      this.handleDeath(target);
+    } else {
+      // 播放受伤音效
+      this.playDamageSound(damage);
     }
+  }
+
+  // 显示伤害数字
+  private showDamageText(damage: DamageInfo): void {
+    const { target, amount, isCritical, isBlocked, isDodged } = damage;
     
-    return value;
-  }
+    if (isDodged) {
+      this.showDodgeText(target);
+      return;
+    }
 
-  /**
-   * 设置战斗环境
-   * @param environment - 环境配置
-   */
-  setCombatEnvironment(environment: CombatEnvironment): void {
-    this.combatState.environment = environment;
-  }
-
-  /**
-   * 设置天气
-   * @param weather - 天气类型
-   */
-  setWeather(weather: 'clear' | 'rain' | 'storm' | 'fog'): void {
-    this.combatState.weather = weather;
-  }
-
-  /**
-   * 设置地形
-   * @param terrain - 地形类型
-   */
-  setTerrain(terrain: 'grass' | 'forest' | 'mountain' | 'water' | 'cave'): void {
-    this.combatState.terrain = terrain;
-  }
-
-  /**
-   * 执行连击
-   * @param attackerId - 攻击者ID
-   * @param targets - 目标数组
-   * @returns 连击结果
-   */
-  performCombo(attackerId: string, targets: string[]): CombatResult[] {
-    const results: CombatResult[] = [];
-    let comboCount = 0;
-
-    targets.forEach((targetId, index) => {
-      const result = this.performAttack(attackerId, targetId);
-      if (result) {
-        comboCount++;
-        result.comboCount = comboCount;
-        results.push(result);
-        
-        // 连击伤害递增
-        if (comboCount > 1) {
-          const damageIncrease = 1 + (comboCount - 1) * 0.2; // 每次连击增加20%伤害
-          result.damage = Math.floor(result.damage * damageIncrease);
-        }
+    const text = this.scene.add.text(
+      target.position.x + (Math.random() - 0.5) * 20,
+      target.position.y - 20,
+      amount.toString(),
+      {
+        fontSize: isCritical ? '24px' : '16px',
+        color: this.getDamageColor(damage.type),
+        fontFamily: 'Arial',
+        stroke: '#000000',
+        strokeThickness: 2
       }
-    });
-
-    // 更新连击状态
-    this.combatState.comboMultiplier = 1 + comboCount * 0.1;
-    this.combatState.lastComboTime = Date.now();
-
-    return results;
-  }
-
-  /**
-   * 执行连锁反应
-   * @param triggerId - 触发者ID
-   * @param chainTargets - 连锁目标
-   * @returns 连锁结果
-   */
-  performChainReaction(triggerId: string, chainTargets: string[]): CombatResult[] {
-    const results: CombatResult[] = [];
-    let chainCount = 0;
-
-    chainTargets.forEach(targetId => {
-      const result = this.performAttack(triggerId, targetId);
-      if (result) {
-        chainCount++;
-        result.chainReaction = true;
-        results.push(result);
-      }
-    });
-
-    this.combatState.chainReactionCount = chainCount;
-    return results;
-  }
-
-  /**
-   * 获取可用技能
-   * @param entityId - 实体ID
-   * @returns 可用技能列表
-   */
-  getAvailableSkills(entityId: string): Skill[] {
-    const entity = this.findEntity(entityId);
-    if (!entity || !entity.skills) return [];
-
-    return entity.skills.filter(skill => 
-      skill.currentCooldown === 0 && 
-      (entity.magicAttack || 0) >= skill.mpCost
     );
-  }
 
-  /**
-   * 获取状态效果
-   * @param entityId - 实体ID
-   * @returns 状态效果列表
-   */
-  getStatusEffects(entityId: string): StatusEffect[] {
-    const entity = this.findEntity(entityId);
-    return entity?.statusEffects || [];
-  }
+    text.setOrigin(0.5);
+    text.setDepth(1000);
 
-  /**
-   * 获取战斗统计
-   * @returns 战斗统计信息
-   */
-  getCombatStats(): any {
-    const totalDamage = this.combatHistory.reduce((sum, result) => sum + result.damage, 0);
-    const criticalHits = this.combatHistory.filter(result => result.isCritical).length;
-    const totalHealing = this.combatHistory.reduce((sum, result) => sum + (result.healing || 0), 0);
-    const combos = this.combatHistory.filter(result => result.comboCount && result.comboCount > 1).length;
-    const chainReactions = this.combatHistory.filter(result => result.chainReaction).length;
-
-    return {
-      totalDamage,
-      criticalHits,
-      totalHealing,
-      combos,
-      chainReactions,
-      totalActions: this.combatHistory.length,
-      averageDamage: this.combatHistory.length > 0 ? Math.floor(totalDamage / this.combatHistory.length) : 0,
-      criticalRate: this.combatHistory.length > 0 ? (criticalHits / this.combatHistory.length) * 100 : 0
-    };
-  }
-
-  /**
-   * 保存战斗数据
-   */
-  saveCombatData(): void {
-    const combatData = {
-      state: this.combatState,
-      history: this.combatHistory,
-      stats: this.getCombatStats(),
-      timestamp: Date.now()
-    };
-    
-    storage.set('combat_data', combatData);
-  }
-
-  /**
-   * 加载战斗数据
-   */
-  loadCombatData(): void {
-    const combatData = storage.get('combat_data', null);
-    if (combatData) {
-      this.combatState = (combatData as any).state;
-      this.combatHistory = (combatData as any).history;
+    // 添加特殊效果
+    if (isCritical) {
+      text.setScale(1.5);
+      this.scene.tweens.add({
+        targets: text,
+        scale: 1,
+        duration: 300,
+        ease: 'Back.easeOut'
+      });
     }
+
+    if (isBlocked) {
+      text.setText(`BLOCKED ${amount}`);
+    }
+
+    // 动画效果
+    this.scene.tweens.add({
+      targets: text,
+      y: text.y - 50,
+      alpha: 0,
+      duration: 1000,
+      ease: 'Power2',
+      onComplete: () => {
+        text.destroy();
+      }
+    });
+
+    this.damageTexts.push(text);
+  }
+
+  // 显示闪避文本
+  private showDodgeText(target: CombatEntity): void {
+    const text = this.scene.add.text(
+      target.position.x,
+      target.position.y - 20,
+      'DODGE!',
+      {
+        fontSize: '16px',
+        color: '#00ff00',
+        fontFamily: 'Arial',
+        stroke: '#000000',
+        strokeThickness: 2
+      }
+    );
+
+    text.setOrigin(0.5);
+    text.setDepth(1000);
+
+    this.scene.tweens.add({
+      targets: text,
+      y: text.y - 30,
+      alpha: 0,
+      duration: 800,
+      ease: 'Power2',
+      onComplete: () => {
+        text.destroy();
+      }
+    });
+  }
+
+  // 获取伤害颜色
+  private getDamageColor(damageType: DamageType): string {
+    const colors = {
+      [DamageType.PHYSICAL]: '#ffffff',
+      [DamageType.MAGICAL]: '#ff00ff',
+      [DamageType.TRUE]: '#ffff00',
+      [DamageType.FIRE]: '#ff4400',
+      [DamageType.ICE]: '#00ffff',
+      [DamageType.LIGHTNING]: '#ffff00'
+    };
+    return colors[damageType] || '#ffffff';
+  }
+
+  // 播放受伤动画
+  private playDamageAnimation(target: CombatEntity, damage: DamageInfo): void {
+    // 闪烁效果
+    this.scene.tweens.add({
+      targets: target.sprite,
+      alpha: 0.5,
+      duration: 100,
+      yoyo: true,
+      repeat: 2
+    });
+
+    // 震动效果
+    this.scene.tweens.add({
+      targets: target.sprite,
+      x: target.sprite.x + 2,
+      duration: 50,
+      yoyo: true,
+      repeat: 3
+    });
+  }
+
+  // 播放受伤音效
+  private playDamageSound(damage: DamageInfo): void {
+    const soundKey = damage.isCritical ? 'sfx-critical' : 'sfx-damage';
+    try {
+      this.scene.sound.play(soundKey);
+    } catch (error) {
+      console.warn(`Sound not found: ${soundKey}`);
+    }
+  }
+
+  // 处理死亡
+  private handleDeath(entity: CombatEntity): void {
+    entity.state = CombatState.DEAD;
+
+    // 播放死亡动画
+    entity.sprite.play('death', true);
+
+    // 播放死亡音效
+    try {
+      this.scene.sound.play('sfx-death');
+    } catch (error) {
+      console.warn('Death sound not found');
+    }
+
+    // 发送死亡事件
+    this.emitEvent('death', {
+      type: 'death',
+      entity
+    });
+
+    // 如果是敌人死亡，给予经验值
+    if (entity.team === 'enemy') {
+      const player = this.entities.get('player');
+      if (player) {
+        const experience = entity.level * 10;
+        this.giveExperience(player, experience);
+      }
+    }
+
+    // 延迟销毁实体
+    this.scene.time.delayedCall(2000, () => {
+      this.unregisterEntity(entity.id);
+      entity.sprite.destroy();
+    });
+  }
+
+  // 给予经验值
+  private giveExperience(entity: CombatEntity, amount: number): void {
+    entity.experience += amount;
+
+    // 检查升级
+    const experienceNeeded = entity.level * 100;
+    if (entity.experience >= experienceNeeded) {
+      this.levelUp(entity);
+    }
+
+    // 发送经验事件
+    this.emitEvent('heal', {
+      type: 'heal',
+      entity,
+      experience: amount
+    });
+  }
+
+  // 升级
+  private levelUp(entity: CombatEntity): void {
+    entity.level++;
+    entity.experience = 0;
+    entity.maxHealth += 10;
+    entity.health = entity.maxHealth;
+    entity.attack += 2;
+    entity.defense += 1;
+    entity.speed += 1;
+
+    // 播放升级音效
+    try {
+      this.scene.sound.play('sfx-levelup');
+    } catch (error) {
+      console.warn('Level up sound not found');
+    }
+
+    // 显示升级文本
+    this.showLevelUpText(entity);
+
+    // 发送升级事件
+    this.emitEvent('level_up', {
+      type: 'level_up',
+      entity
+    });
+  }
+
+  // 显示升级文本
+  private showLevelUpText(entity: CombatEntity): void {
+    const text = this.scene.add.text(
+      entity.position.x,
+      entity.position.y - 40,
+      'LEVEL UP!',
+      {
+        fontSize: '20px',
+        color: '#ffff00',
+        fontFamily: 'Arial',
+        stroke: '#000000',
+        strokeThickness: 3
+      }
+    );
+
+    text.setOrigin(0.5);
+    text.setDepth(1000);
+
+    this.scene.tweens.add({
+      targets: text,
+      y: text.y - 40,
+      alpha: 0,
+      duration: 1500,
+      ease: 'Power2',
+      onComplete: () => {
+        text.destroy();
+      }
+    });
+  }
+
+  // 检查冷却时间
+  private isOnCooldown(entityId: string, attackKey: string): boolean {
+    const cooldownKey = `${entityId}_${attackKey}`;
+    const cooldownEnd = this.attackCooldowns.get(cooldownKey);
+    return cooldownEnd ? Date.now() < cooldownEnd : false;
+  }
+
+  // 设置冷却时间
+  private setCooldown(entityId: string, attackKey: string, duration: number): void {
+    const cooldownKey = `${entityId}_${attackKey}`;
+    this.attackCooldowns.set(cooldownKey, Date.now() + duration);
+  }
+
+  // 更新方法
+  public update(time: number, delta: number): void {
+    this.lastUpdateTime = time;
+
+    // 清理过期的伤害文本
+    this.damageTexts = this.damageTexts.filter(text => text.active);
+
+    // 清理过期的战斗特效
+    this.combatEffects = this.combatEffects.filter(effect => effect.active);
+
+    // 更新AI（如果有的话）
+    this.updateAI();
+  }
+
+  // 更新AI
+  private updateAI(): void {
+    this.entities.forEach(entity => {
+      if (entity.team === 'enemy' && entity.state === CombatState.IDLE) {
+        this.updateEnemyAI(entity);
+      }
+    });
+  }
+
+  // 更新敌人AI
+  private updateEnemyAI(enemy: CombatEntity): void {
+    const player = this.entities.get('player');
+    if (!player || player.state === CombatState.DEAD) {
+      return;
+    }
+
+    const distance = Phaser.Math.Distance.Between(
+      enemy.position.x, enemy.position.y,
+      player.position.x, player.position.y
+    );
+
+    // 简单的AI：在范围内就攻击
+    if (distance < 64) {
+      this.performAttack(enemy, player, 'melee_basic');
+    }
+  }
+
+  // 事件监听
+  public on(event: string, callback: (event: CombatEvent) => void): void {
+    if (!this.eventListeners.has(event)) {
+      this.eventListeners.set(event, []);
+    }
+    this.eventListeners.get(event)!.push(callback);
+  }
+
+  public off(event: string, callback: (event: CombatEvent) => void): void {
+    const listeners = this.eventListeners.get(event);
+    if (listeners) {
+      const index = listeners.indexOf(callback);
+      if (index > -1) {
+        listeners.splice(index, 1);
+      }
+    }
+  }
+
+  // 发送事件
+  private emitEvent(type: string, data: Partial<CombatEvent>): void {
+    const event: CombatEvent = {
+      type: type as any,
+      entity: data.entity!,
+      ...data
+    };
+
+    const listeners = this.eventListeners.get(type);
+    if (listeners) {
+      listeners.forEach(callback => {
+        try {
+          callback(event);
+        } catch (error) {
+          console.error('Error in combat event listener:', error);
+        }
+      });
+    }
+  }
+
+  // 获取实体
+  public getEntity(entityId: string): CombatEntity | undefined {
+    return this.entities.get(entityId);
+  }
+
+  // 获取所有实体
+  public getAllEntities(): CombatEntity[] {
+    return Array.from(this.entities.values());
+  }
+
+  // 获取攻击配置
+  public getAttackConfig(attackKey: string): AttackConfig | undefined {
+    return this.attackConfigs.get(attackKey);
+  }
+
+  // 添加攻击配置
+  public addAttackConfig(attackKey: string, config: AttackConfig): void {
+    this.attackConfigs.set(attackKey, config);
+  }
+
+  // 销毁
+  public destroy(): void {
+    // 清理所有文本和特效
+    this.damageTexts.forEach(text => text.destroy());
+    this.combatEffects.forEach(effect => effect.destroy());
+
+    // 清理事件监听器
+    this.scene.input.keyboard.off('keydown-SPACE');
+    this.scene.input.keyboard.off('keydown-R');
+    this.scene.input.keyboard.off('keydown-F');
+    this.scene.input.keyboard.off('keydown-Q');
+
+    // 清理数据
+    this.entities.clear();
+    this.attackConfigs.clear();
+    this.attackCooldowns.clear();
+    this.eventListeners.clear();
+    this.damageTexts = [];
+    this.combatEffects = [];
   }
 }

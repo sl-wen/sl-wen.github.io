@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { ResourceLoader, ResourceType, createResourceLoader } from '../systems/ResourceLoader';
+import { ResourceLoader, createResourceLoader } from '../systems/ResourceLoader';
 
 export default class BootScene extends Phaser.Scene {
   private resourceLoader!: ResourceLoader;
@@ -14,9 +14,9 @@ export default class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    console.log('🎮 BootScene: 开始资源加载');
-    
-    // 创建资源加载器
+    console.log('🎮 BootScene: 预加载阶段');
+
+    // 在 preload 阶段只创建资源加载器，不开始加载
     this.resourceLoader = createResourceLoader(this.game, {
       maxConcurrent: 3,
       retryDelay: 2000,
@@ -28,17 +28,12 @@ export default class BootScene extends Phaser.Scene {
     // 设置场景
     this.resourceLoader.setScene(this);
 
-    // 设置加载进度UI
-    this.setupLoadingUI();
-
     // 添加自定义资源
     this.addCustomResources();
-
-    // 开始加载
-    this.startResourceLoading();
   }
 
   private setupLoadingUI() {
+    // 此时相机已经确保初始化完成
     const fontSize = 16;
     const { width: gameWidth, height: gameHeight } = this.cameras.main;
 
@@ -104,6 +99,30 @@ export default class BootScene extends Phaser.Scene {
     console.log('🎮 BootScene: 使用预定义的资源列表');
   }
 
+  private ensureCameraReady() {
+    // 检查相机是否已初始化
+    if (!this.cameras.main) {
+      console.log('⏳ BootScene: 等待相机初始化...');
+      this.time.delayedCall(50, () => this.ensureCameraReady());
+      return;
+    }
+
+    // 检查相机尺寸是否已设置
+    if (!this.cameras.main.width || !this.cameras.main.height) {
+      console.log('⏳ BootScene: 等待相机尺寸设置...');
+      this.time.delayedCall(50, () => this.ensureCameraReady());
+      return;
+    }
+
+    console.log('✅ BootScene: 相机已就绪，开始设置UI');
+
+    // 相机已就绪，设置UI
+    this.setupLoadingUI();
+
+    // 延迟一帧后开始加载，确保UI完全设置
+    this.time.delayedCall(16, () => this.startResourceLoading());
+  }
+
 
 
   private async startResourceLoading() {
@@ -145,44 +164,60 @@ export default class BootScene extends Phaser.Scene {
   }
 
   private updateLoadingProgress(progress: any) {
+    // 安全检查：确保相机和UI元素都已初始化
+    if (!this.cameras.main || !this.progressBar || !this.percentText || !this.assetText || !this.loadingText) {
+      console.warn('⚠️ BootScene: 相机或UI元素未初始化，跳过进度更新');
+      return;
+    }
+
+    // 安全检查：确保进度对象有效
+    if (!progress || typeof progress.percentage !== 'number') {
+      console.warn('⚠️ BootScene: 进度对象无效，跳过进度更新', progress);
+      return;
+    }
+
     const { width: gameWidth, height: gameHeight } = this.cameras.main;
     const barPositionX = Math.ceil((gameWidth - (gameWidth * 0.7)) / 2);
 
-    // 更新进度条
-    this.progressBar.clear();
-    this.progressBar.fillStyle(0xFFFFFF, 1);
-    this.progressBar.fillRect(
-      barPositionX,
-      Math.ceil(gameHeight / 6),
-      Math.ceil(gameWidth * 0.7) * (progress.percentage / 100),
-      Math.ceil(gameHeight / 10)
-    );
+    try {
+      // 更新进度条
+      this.progressBar.clear();
+      this.progressBar.fillStyle(0xFFFFFF, 1);
+      this.progressBar.fillRect(
+        barPositionX,
+        Math.ceil(gameHeight / 6),
+        Math.ceil(gameWidth * 0.7) * (progress.percentage / 100),
+        Math.ceil(gameHeight / 10)
+      );
 
-    // 更新百分比
-    this.percentText.setText(`${progress.percentage}%`);
+      // 更新百分比
+      this.percentText.setText(`${progress.percentage}%`);
 
-    // 更新当前加载项
-    if (progress.currentItem) {
-      this.assetText.setText(`正在加载: ${progress.currentItem.key}`);
-    }
+      // 更新当前加载项
+      if (progress.currentItem) {
+        this.assetText.setText(`正在加载: ${progress.currentItem.key}`);
+      }
 
-    // 更新加载文本
-    if (progress.failed > 0) {
-      this.loadingText.setText(`加载中... (${progress.failed} 个失败)`);
-      this.loadingText.setColor('#ff6b6b');
-    } else if (progress.retrying > 0) {
-      this.loadingText.setText(`重试中... (${progress.retrying} 个重试)`);
-      this.loadingText.setColor('#ffd93d');
-    } else {
-      this.loadingText.setText('正在加载游戏资源...');
-      this.loadingText.setColor('#ffffff');
-    }
+      // 更新加载文本
+      if (progress.failed > 0) {
+        this.loadingText.setText(`加载中... (${progress.failed} 个失败)`);
+        this.loadingText.setColor('#ff6b6b');
+      } else if (progress.retrying > 0) {
+        this.loadingText.setText(`重试中... (${progress.retrying} 个重试)`);
+        this.loadingText.setColor('#ffd93d');
+      } else {
+        this.loadingText.setText('正在加载游戏资源...');
+        this.loadingText.setColor('#ffffff');
+      }
 
-    // 添加统计信息
-    const statsText = `${progress.loaded}/${progress.total} 资源已加载`;
-    if (progress.estimatedTime && progress.estimatedTime > 0) {
-      const timeText = this.formatTime(progress.estimatedTime);
-      this.assetText.setText(`${this.assetText.text}\n${statsText} • 预计剩余: ${timeText}`);
+      // 添加统计信息
+      const statsText = `${progress.loaded}/${progress.total} 资源已加载`;
+      if (progress.estimatedTime && progress.estimatedTime > 0) {
+        const timeText = this.formatTime(progress.estimatedTime);
+        this.assetText.setText(`${this.assetText.text}\n${statsText} • 预计剩余: ${timeText}`);
+      }
+    } catch (error) {
+      console.error('❌ BootScene: 更新进度UI时出错:', error);
     }
   }
 
@@ -194,28 +229,50 @@ export default class BootScene extends Phaser.Scene {
 
   private onLoadingComplete() {
     console.log('🎉 BootScene: 所有资源加载完成');
-    
-    // 清理加载UI
-    this.cleanupLoadingUI();
-    
-    // 启动主菜单场景
-    this.scene.start('MainMenuScene');
+
+    try {
+      // 清理加载UI
+      this.cleanupLoadingUI();
+
+      // 直接启动游戏场景，跳过菜单
+      this.scene.start('CompleteGameScene');
+    } catch (error) {
+      console.error('❌ BootScene: 加载完成处理时出错:', error);
+      // 如果出错，尝试直接启动游戏场景
+      try {
+        this.scene.start('CompleteGameScene');
+      } catch (sceneError) {
+        console.error('❌ BootScene: 无法启动游戏场景:', sceneError);
+      }
+    }
   }
 
   private onLoadingError(error: string) {
     console.error('❌ BootScene: 资源加载失败:', error);
-    
-    // 显示错误信息
-    this.loadingText.setText('资源加载失败');
-    this.loadingText.setColor('#ff6b6b');
-    this.assetText.setText(`错误: ${error}\n请刷新页面重试`);
-    this.assetText.setColor('#ff6b6b');
 
-    // 5秒后自动重试
-    setTimeout(() => {
-      console.log('🔄 自动重试资源加载...');
-      this.scene.restart();
-    }, 5000);
+    try {
+      // 显示错误信息
+      if (this.loadingText) {
+        this.loadingText.setText('资源加载失败');
+        this.loadingText.setColor('#ff6b6b');
+      }
+      if (this.assetText) {
+        this.assetText.setText(`错误: ${error}\n请刷新页面重试`);
+        this.assetText.setColor('#ff6b6b');
+      }
+
+      // 5秒后自动重试
+      setTimeout(() => {
+        console.log('🔄 自动重试资源加载...');
+        try {
+          this.scene.restart();
+        } catch (restartError) {
+          console.error('❌ BootScene: 场景重启失败:', restartError);
+        }
+      }, 5000);
+    } catch (uiError) {
+      console.error('❌ BootScene: 错误UI更新失败:', uiError);
+    }
   }
 
   private cleanupLoadingUI() {
@@ -227,8 +284,10 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create() {
-    // 这个方法现在由 onLoadingComplete 处理
     console.log('🎮 BootScene: 场景创建完成');
+
+    // 确保相机完全初始化后再设置UI
+    this.ensureCameraReady();
   }
 
   destroy() {
@@ -236,10 +295,10 @@ export default class BootScene extends Phaser.Scene {
     if (this.resourceLoader) {
       this.resourceLoader.destroy();
     }
-    
+
     // 清理UI
     this.cleanupLoadingUI();
-    
+
     console.log('🗑️ BootScene: 场景销毁完成');
   }
 }

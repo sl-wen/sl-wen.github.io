@@ -15,9 +15,9 @@ import { MapManager } from './systems/MapManager';
 import { QuestSystem } from './systems/QuestSystem';
 import { ShopSystem } from './systems/ShopSystem';
 import { SoundManager } from './systems/SoundManager';
+import { createWindowManager, WindowManager } from './systems/WindowManager';
 import { TopDownGameEngine } from './TopDownGameEngine';
 import { CompleteGameUI } from './ui/CompleteGameUI';
-import { createWindowManager, WindowManager, DeviceType } from './systems/WindowManager';
 import { LoadingProgressUI, MobileLoadingProgress } from './ui/LoadingProgressUI';
 
 interface TopDownGameProps {
@@ -188,7 +188,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
       if (game) {
         console.log('🎮 游戏实例获取成功');
         windowManagerRef.current = createWindowManager(game);
-        
+
         // 监听窗口管理器事件
         windowManagerRef.current.on('resize', (event) => {
           console.log('🔄 窗口大小变化:', event);
@@ -369,22 +369,9 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     setGameStarted(true);
     setDebugInfo('游戏开始！');
 
-    // 启动游戏场景
-    const game = gameEngineRef.current.getGame();
-    if (game) {
-      game.scene.start('CompleteGameScene', {
-        heroStatus: {
-          health: playerStats.health,
-          maxHealth: playerStats.maxHealth,
-          coin: playerStats.gold,
-          canPush: false,
-          haveSword: false,
-          level: playerStats.level,
-          experience: playerStats.experience
-        }
-      });
-    }
-  }, [playerStats]);
+    // 调用游戏引擎的startGame方法，启动BootScene
+    gameEngineRef.current.startGame();
+  }, []);
 
   const handleInventoryChange = (newInventory: any[]) => {
     setInventory(newInventory);
@@ -447,7 +434,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
         isMobile ? (
           <MobileLoadingProgress progress={loadingProgress} />
         ) : (
-          <LoadingProgressUI 
+          <LoadingProgressUI
             progress={loadingProgress}
             onComplete={() => setIsLoading(false)}
             onError={(error) => {

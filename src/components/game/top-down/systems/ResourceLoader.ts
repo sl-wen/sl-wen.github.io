@@ -18,7 +18,8 @@ export enum ResourceType {
   ATLAS = 'atlas',
   JSON = 'json',
   XML = 'xml',
-  TEXT = 'text'
+  TEXT = 'text',
+  TILEMAP = 'tilemap'
 }
 
 // 资源项接口
@@ -127,7 +128,7 @@ export class ResourceLoader {
 
     this.resources.set(key, resource);
     this.loadQueue.push(resource);
-    
+
     // 按优先级排序
     this.loadQueue.sort((a, b) => b.priority - a.priority);
   }
@@ -222,7 +223,7 @@ export class ResourceLoader {
       });
 
       const loadPromise = this.loadResourceByType(item);
-      
+
       await Promise.race([loadPromise, timeoutPromise]);
 
       item.status = LoadStatus.SUCCESS;
@@ -244,7 +245,7 @@ export class ResourceLoader {
       if (item.retryCount < item.maxRetries) {
         item.retryCount++;
         item.status = LoadStatus.RETRYING;
-        
+
         this.emitEvent('retry', { item, error: item.error });
 
         setTimeout(() => {
@@ -292,6 +293,9 @@ export class ResourceLoader {
         break;
       case ResourceType.JSON:
         this.scene.load.json(item.key, item.url);
+        break;
+      case ResourceType.TILEMAP:
+        this.scene.load.tilemapTiledJSON(item.key, item.url);
         break;
       case ResourceType.XML:
         this.scene.load.xml(item.key, item.url);
@@ -349,7 +353,7 @@ export class ResourceLoader {
     try {
       const cached = localStorage.getItem('game_resources_cache') || '{}';
       const cacheData = JSON.parse(cached);
-      
+
       cacheData[item.key] = {
         version: this.getResourceVersion(item),
         timestamp: Date.now(),
@@ -381,8 +385,8 @@ export class ResourceLoader {
     ).length;
 
     const percentage = total > 0 ? Math.round((loaded / total) * 100) : 0;
-    
-    const currentItem = this.loadQueue[0] || 
+
+    const currentItem = this.loadQueue[0] ||
       Array.from(this.resources.values()).find(item => item.status === LoadStatus.LOADING);
 
     let estimatedTime: number | undefined;
@@ -480,10 +484,10 @@ export class ResourceLoader {
 export const RESOURCE_LOAD_ORDER = {
   // 1. 地图资源 (优先级: 80)
   MAPS: [
-    { key: 'home_page_city', type: ResourceType.JSON, url: '/assets/topdown/sprites/maps/cities/home_page_city.json', priority: 80 },
-    { key: 'home_page_city_house_01', type: ResourceType.JSON, url: '/assets/topdown/sprites/maps/houses/home_page_city_house_01.json', priority: 80 },
-    { key: 'home_page_city_house_02', type: ResourceType.JSON, url: '/assets/topdown/sprites/maps/houses/home_page_city_house_02.json', priority: 80 },
-    { key: 'home_page_city_house_03', type: ResourceType.JSON, url: '/assets/topdown/sprites/maps/houses/home_page_city_house_03.json', priority: 80 },
+    { key: 'home_page_city', type: ResourceType.TILEMAP, url: '/assets/topdown/sprites/maps/cities/home_page_city.json', priority: 80 },
+    { key: 'home_page_city_house_01', type: ResourceType.TILEMAP, url: '/assets/topdown/sprites/maps/houses/home_page_city_house_01.json', priority: 80 },
+    { key: 'home_page_city_house_02', type: ResourceType.TILEMAP, url: '/assets/topdown/sprites/maps/houses/home_page_city_house_02.json', priority: 80 },
+    { key: 'home_page_city_house_03', type: ResourceType.TILEMAP, url: '/assets/topdown/sprites/maps/houses/home_page_city_house_03.json', priority: 80 },
     { key: 'tileset', type: ResourceType.IMAGE, url: '/assets/topdown/sprites/maps/tilesets/tileset.png', priority: 80 }
   ],
 

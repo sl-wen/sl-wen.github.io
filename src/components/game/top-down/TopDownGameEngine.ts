@@ -100,9 +100,6 @@ export class TopDownGameEngine {
     };
 
     this.game = new Phaser.Game(gameConfig);
-    
-    // 启动测试场景
-    this.game.scene.start('SimpleTestScene');
 
     console.log('🎯 [DEBUG] Phaser游戏创建完成:', {
       game: this.game,
@@ -145,12 +142,8 @@ export class TopDownGameEngine {
       console.log(`场景创建: ${scene.scene.key}`);
     });
 
-    // 启动BootScene
-    if (this.game.scene.isActive('BootScene')) {
-      console.log('BootScene已激活');
-    } else {
-      this.game.scene.start('BootScene');
-    }
+    // 不自动启动任何场景，等待用户点击start按钮
+    console.log('🎮 游戏引擎初始化完成，等待用户点击start按钮');
 
     this.scene = null;
   }
@@ -179,6 +172,14 @@ export class TopDownGameEngine {
   resume(): void {
     if (this.game) {
       this.game.scene.resume('BootScene');
+    }
+  }
+
+  // 启动游戏 - 由start按钮调用
+  startGame(): void {
+    if (this.game) {
+      console.log('🎮 用户点击start按钮，开始启动游戏');
+      this.game.scene.start('BootScene');
     }
   }
 

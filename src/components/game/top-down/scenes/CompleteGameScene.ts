@@ -4,7 +4,6 @@ import {
     BOX_INDEX,
     BUSH_INDEX,
     ENEMY_AI_TYPE,
-    GAME_BALANCE,
     NPC_MOVEMENT_RANDOM,
     SCENE_FADE_TIME
 } from '../constants';
@@ -95,7 +94,11 @@ export class CompleteGameScene extends Phaser.Scene {
         canPush: false,
         haveSword: false,
         level: 1,
-        experience: 0
+        experience: 0,
+        position: { x: 23, y: 30 },
+        frame: 'hero_idle_down_01',
+        facingDirection: 'down',
+        previousPosition: { x: 23, y: 30 }
     };
 
     constructor() {
@@ -159,8 +162,16 @@ export class CompleteGameScene extends Phaser.Scene {
     }
 
     private createPlayerWalkingAnimation(assetKey: string, animationName: string) {
+        const animationKey = `${assetKey}_${animationName}`;
+
+        // 检查动画是否已存在
+        if (this.anims.exists(animationKey)) {
+            console.log(`动画已存在，跳过创建: ${animationKey}`);
+            return;
+        }
+
         this.anims.create({
-            key: `${assetKey}_${animationName}`,
+            key: animationKey,
             frames: [
                 { key: assetKey, frame: `${assetKey}_${animationName}_01` },
                 { key: assetKey, frame: `${assetKey}_${animationName.replace('walking', 'idle')}_01` },
@@ -173,8 +184,16 @@ export class CompleteGameScene extends Phaser.Scene {
     }
 
     private createPlayerAttackAnimation(assetKey: string, animationName: string) {
+        const animationKey = `${assetKey}_${animationName}`;
+
+        // 检查动画是否已存在
+        if (this.anims.exists(animationKey)) {
+            console.log(`动画已存在，跳过创建: ${animationKey}`);
+            return;
+        }
+
         this.anims.create({
-            key: `${assetKey}_${animationName}`,
+            key: animationKey,
             frames: [
                 { key: assetKey, frame: `${assetKey}_${animationName}_01` },
                 { key: assetKey, frame: `${assetKey}_${animationName}_02` },
@@ -438,6 +457,12 @@ export class CompleteGameScene extends Phaser.Scene {
         // Map
         this.createMap();
 
+        // 检查地图是否创建成功
+        if (!this.map) {
+            console.error('❌ 地图创建失败，无法继续初始化游戏');
+            return;
+        }
+
         if (isDebugMode) {
             (window as any).phaserGame = game;
         }
@@ -491,9 +516,6 @@ export class CompleteGameScene extends Phaser.Scene {
         // 设置碰撞检测
         this.setupCollisions(elementsLayers);
 
-        // 设置相机
-        this.setupCamera();
-
         // 加载地图交互数据
         this.mapInteractionManager.loadMapInteractions(mapKey || 'map_main');
 
@@ -511,45 +533,89 @@ export class CompleteGameScene extends Phaser.Scene {
     }
 
     private initializeGameSystems() {
-        this.soundManager = SoundManager.getInstance();
-        this.mapManager = MapManager.getInstance();
-        this.mapInteractionManager = MapInteractionManager.getInstance();
-        this.inventorySystem = InventorySystem.getInstance();
-        this.questSystem = QuestSystem.getInstance();
-        this.combatSystem = CombatSystem.getInstance();
-        this.gameDataManager = GameDataManager.getInstance();
-        this.statsManager = GameStatsManager.getInstance();
-        this.performanceManager = PerformanceManager.getInstance();
-        this.teleportSystem = TeleportSystem.getInstance();
-        this.enemyAISystem = EnemyAISystem.getInstance();
-        this.itemSystem = ItemSystem.getInstance();
-        this.enhancedInventorySystem = EnhancedInventorySystem.getInstance();
-        this.particleSystem = ParticleSystem.getInstance();
-        this.screenEffectSystem = ScreenEffectSystem.getInstance();
-        this.mobileAdapterSystem = MobileAdapterSystem.getInstance();
-        this.enhancedShopSystem = EnhancedShopSystem.getInstance();
-        this.enhancedCraftingSystem = EnhancedCraftingSystem.getInstance();
-        this.enhancedGameStatsSystem = EnhancedGameStatsSystem.getInstance();
-        this.enhancedAchievementSystem = EnhancedAchievementSystem.getInstance();
-        this.testSystem = TestSystem.getInstance();
+        try {
+            // 获取系统实例
+            this.soundManager = SoundManager.getInstance();
+            this.mapManager = MapManager.getInstance();
+            this.mapInteractionManager = MapInteractionManager.getInstance();
+            this.inventorySystem = InventorySystem.getInstance();
+            this.questSystem = QuestSystem.getInstance(this); // 传递场景实例
+            this.combatSystem = CombatSystem.getInstance(this); // 传递场景实例
+            this.gameDataManager = GameDataManager.getInstance();
+            this.statsManager = GameStatsManager.getInstance();
+            this.performanceManager = PerformanceManager.getInstance();
+            this.teleportSystem = TeleportSystem.getInstance();
+            this.enemyAISystem = EnemyAISystem.getInstance();
+            this.itemSystem = ItemSystem.getInstance(this); // 传递场景实例
+            this.enhancedInventorySystem = EnhancedInventorySystem.getInstance();
+            this.particleSystem = ParticleSystem.getInstance();
+            this.screenEffectSystem = ScreenEffectSystem.getInstance();
+            this.mobileAdapterSystem = MobileAdapterSystem.getInstance();
+            this.enhancedShopSystem = EnhancedShopSystem.getInstance();
+            this.enhancedCraftingSystem = EnhancedCraftingSystem.getInstance();
+            this.enhancedGameStatsSystem = EnhancedGameStatsSystem.getInstance();
+            this.enhancedAchievementSystem = EnhancedAchievementSystem.getInstance();
+            this.testSystem = TestSystem.getInstance();
 
-        // 初始化系统
-        this.soundManager.initialize(this);
-        this.mapManager.initialize(this);
-        this.mapInteractionManager.initialize(this);
-        this.performanceManager.initialize(this);
-        this.teleportSystem.initialize(this);
-        this.enemyAISystem.initialize(this);
-        this.itemSystem.initialize(this);
-        this.enhancedInventorySystem.initialize(this);
-        this.particleSystem.initialize(this);
-        this.screenEffectSystem.initialize(this);
-        this.mobileAdapterSystem.initialize(this);
-        this.enhancedShopSystem.initialize(this);
-        this.enhancedCraftingSystem.initialize(this);
-        this.enhancedGameStatsSystem.initialize(this);
-        this.enhancedAchievementSystem.initialize(this);
-        this.testSystem.initialize(this);
+            // 检查系统实例是否有效
+            const systems = [
+                { name: 'SoundManager', instance: this.soundManager },
+                { name: 'MapManager', instance: this.mapManager },
+                { name: 'MapInteractionManager', instance: this.mapInteractionManager },
+                { name: 'InventorySystem', instance: this.inventorySystem },
+                { name: 'QuestSystem', instance: this.questSystem },
+                { name: 'CombatSystem', instance: this.combatSystem },
+                { name: 'GameDataManager', instance: this.gameDataManager },
+                { name: 'GameStatsManager', instance: this.statsManager },
+                { name: 'PerformanceManager', instance: this.performanceManager },
+                { name: 'TeleportSystem', instance: this.teleportSystem },
+                { name: 'EnemyAISystem', instance: this.enemyAISystem },
+                { name: 'ItemSystem', instance: this.itemSystem },
+                { name: 'EnhancedInventorySystem', instance: this.enhancedInventorySystem },
+                { name: 'ParticleSystem', instance: this.particleSystem },
+                { name: 'ScreenEffectSystem', instance: this.screenEffectSystem },
+                { name: 'MobileAdapterSystem', instance: this.mobileAdapterSystem },
+                { name: 'EnhancedShopSystem', instance: this.enhancedShopSystem },
+                { name: 'EnhancedCraftingSystem', instance: this.enhancedCraftingSystem },
+                { name: 'EnhancedGameStatsSystem', instance: this.enhancedGameStatsSystem },
+                { name: 'EnhancedAchievementSystem', instance: this.enhancedAchievementSystem },
+                { name: 'TestSystem', instance: this.testSystem }
+            ];
+
+            // 验证所有系统实例
+            for (const system of systems) {
+                if (!system.instance) {
+                    console.error(`❌ 系统实例获取失败: ${system.name}`);
+                    throw new Error(`系统实例获取失败: ${system.name}`);
+                }
+            }
+
+            console.log('✅ 所有系统实例获取成功');
+
+            // 初始化系统
+            if (this.soundManager) this.soundManager.initialize(this);
+            if (this.mapManager) this.mapManager.initialize(this);
+            if (this.mapInteractionManager) this.mapInteractionManager.initialize(this);
+            if (this.performanceManager) this.performanceManager.initialize(this);
+            if (this.teleportSystem) this.teleportSystem.initialize(this);
+            if (this.enemyAISystem) this.enemyAISystem.initialize(this);
+            if (this.itemSystem) this.itemSystem.initialize(this);
+            if (this.enhancedInventorySystem) this.enhancedInventorySystem.initialize(this);
+            if (this.particleSystem) this.particleSystem.initialize(this);
+            if (this.screenEffectSystem) this.screenEffectSystem.initialize(this);
+            if (this.mobileAdapterSystem) this.mobileAdapterSystem.initialize(this);
+            if (this.enhancedShopSystem) this.enhancedShopSystem.initialize(this);
+            if (this.enhancedCraftingSystem) this.enhancedCraftingSystem.initialize(this);
+            if (this.enhancedGameStatsSystem) this.enhancedGameStatsSystem.initialize(this);
+            if (this.enhancedAchievementSystem) this.enhancedAchievementSystem.initialize(this);
+            if (this.testSystem) this.testSystem.initialize(this);
+
+            console.log('✅ 所有系统初始化完成');
+
+        } catch (error) {
+            console.error('❌ 系统初始化失败:', error);
+            throw error;
+        }
 
         // 设置地图交互回调
         this.mapInteractionManager.setOnInteractionCallback((interaction) => {
@@ -599,14 +665,51 @@ export class CompleteGameScene extends Phaser.Scene {
         const currentMap = this.mapManager.getCurrentMap();
 
         // 如果没有当前地图，尝试使用传入的mapKey
-        const tilemapKey = currentMap?.tilemapKey || mapKey || 'home_page_city';
+        const tilemapKey = currentMap?.tilemapKey || mapKey || 'home_page_city_house_01';
 
         console.log('🗺️ [DEBUG] 地图创建开始:');
         console.log(`   🎯 传入的mapKey: ${mapKey}`);
         console.log(`   🗺️ 当前地图: ${currentMap?.name || '无'}`);
         console.log(`   📍 使用的tilemapKey: ${tilemapKey}`);
 
-        this.map = this.make.tilemap({ key: tilemapKey });
+        // 检查地图资源是否存在
+        if (!this.cache.tilemap.exists(tilemapKey)) {
+            console.error(`❌ 地图资源不存在: ${tilemapKey}`);
+            console.log('📋 可用的地图资源:', this.cache.tilemap.entries);
+
+            // 尝试使用房间地图作为默认地图
+            const defaultTilemapKey = 'home_page_city_house_01';
+            if (this.cache.tilemap.exists(defaultTilemapKey)) {
+                console.log(`🔄 使用房间地图: ${defaultTilemapKey}`);
+                this.map = this.make.tilemap({ key: defaultTilemapKey });
+            } else {
+                console.error(`❌ 房间地图也不存在: ${defaultTilemapKey}`);
+                console.log('📋 所有可用的地图资源:', this.cache.tilemap.entries);
+
+                // 尝试使用任何可用的地图
+                const availableMaps = Array.from(this.cache.tilemap.entries.keys());
+                if (availableMaps.length > 0) {
+                    const firstAvailableMap = availableMaps[0] as string;
+                    console.log(`🔄 使用第一个可用的地图: ${firstAvailableMap}`);
+                    this.map = this.make.tilemap({ key: firstAvailableMap });
+                } else {
+                    console.error('❌ 没有任何可用的地图资源');
+                    // 尝试创建一个简单的默认地图
+                    console.log('🔄 尝试创建简单的默认地图');
+                    this.createSimpleDefaultMap();
+                    return;
+                }
+            }
+        } else {
+            this.map = this.make.tilemap({ key: tilemapKey });
+        }
+
+        // 检查瓦片集是否存在
+        if (!this.textures.exists('tileset')) {
+            console.error(`❌ 瓦片集纹理不存在: tileset`);
+            return;
+        }
+
         this.map.addTilesetImage('tileset', 'tileset');
 
         // 计算缩放比例和居中位置
@@ -620,9 +723,17 @@ export class CompleteGameScene extends Phaser.Scene {
         const scaleY = gameHeight / mapHeight;
         this.mapScale = Math.min(scaleX, scaleY) * 0.8; // 留一些边距
 
-        // 计算居中位置
+        // 计算居中位置 - 确保地图在屏幕正中央
         this.mapCenterX = (gameWidth - mapWidth * this.mapScale) / 2;
         this.mapCenterY = (gameHeight - mapHeight * this.mapScale) / 2;
+
+        // 验证地图是否真的居中
+        const mapDisplayWidth = mapWidth * this.mapScale;
+        const mapDisplayHeight = mapHeight * this.mapScale;
+        const expectedCenterX = gameWidth / 2;
+        const expectedCenterY = gameHeight / 2;
+        const actualCenterX = this.mapCenterX + mapDisplayWidth / 2;
+        const actualCenterY = this.mapCenterY + mapDisplayHeight / 2;
 
         // 添加详细的调试信息
         console.log('🗺️ [DEBUG] 地图创建信息:');
@@ -640,6 +751,10 @@ export class CompleteGameScene extends Phaser.Scene {
         console.log(`      - 缩放后高度: ${(mapHeight * this.mapScale).toFixed(1)} 像素`);
         console.log(`   🎯 地图边界信息:`);
         console.log(`      - 物理世界边界: (${this.mapCenterX.toFixed(1)}, ${this.mapCenterY.toFixed(1)}, ${(mapWidth * this.mapScale).toFixed(1)}, ${(mapHeight * this.mapScale).toFixed(1)})`);
+        console.log(`   🎯 地图居中验证:`);
+        console.log(`      - 期望中心: (${expectedCenterX.toFixed(1)}, ${expectedCenterY.toFixed(1)})`);
+        console.log(`      - 实际中心: (${actualCenterX.toFixed(1)}, ${actualCenterY.toFixed(1)})`);
+        console.log(`      - 居中偏差: (${(actualCenterX - expectedCenterX).toFixed(1)}, ${(actualCenterY - expectedCenterY).toFixed(1)})`);
         console.log(`   🎮 瓦片信息:`);
         console.log(`      - 瓦片大小: 16x16 像素`);
         console.log(`      - 缩放后瓦片大小: ${(16 * this.mapScale).toFixed(1)}x${(16 * this.mapScale).toFixed(1)} 像素`);
@@ -649,6 +764,7 @@ export class CompleteGameScene extends Phaser.Scene {
             const layer = this.map.createLayer(i, 'tileset', this.mapCenterX, this.mapCenterY);
             if (layer) {
                 layer.setScale(this.mapScale);
+                console.log(`🗺️ 图层 ${i} 创建完成: 位置(${layer.x}, ${layer.y}), 缩放(${layer.scaleX}, ${layer.scaleY}), 尺寸(${layer.width}, ${layer.height})`);
             }
         }
 
@@ -657,6 +773,39 @@ export class CompleteGameScene extends Phaser.Scene {
 
         // 设置相机边界
         this.cameras.main.setBounds(this.mapCenterX, this.mapCenterY, mapWidth * this.mapScale, mapHeight * this.mapScale);
+    }
+
+    private createSimpleDefaultMap() {
+        console.log('🗺️ 创建简单的默认地图');
+
+        // 创建一个简单的默认地图
+        const mapData = {
+            width: 20,
+            height: 15,
+            tilewidth: 16,
+            tileheight: 16,
+            layers: [
+                {
+                    name: 'ground',
+                    width: 20,
+                    height: 15,
+                    data: Array(300).fill(1) // 填充草地瓦片
+                }
+            ]
+        };
+
+        // 添加地图到缓存
+        this.cache.tilemap.add('default_map', mapData);
+
+        // 创建地图
+        this.map = this.make.tilemap({ key: 'default_map' });
+
+        // 设置默认缩放和位置
+        this.mapScale = 2;
+        this.mapCenterX = 100;
+        this.mapCenterY = 100;
+
+        console.log('✅ 简单默认地图创建完成');
     }
 
     /**
@@ -684,17 +833,61 @@ export class CompleteGameScene extends Phaser.Scene {
         const currentMap = this.mapManager.getCurrentMap();
         if (!currentMap) return;
 
+        // 检查英雄纹理是否存在
+        if (!this.textures.exists('hero')) {
+            console.error('❌ 英雄纹理不存在: hero');
+            console.log('📋 可用的纹理:', this.textures.getTextureKeys());
+            return;
+        }
+
+        // 检查英雄帧是否存在
+        if (!this.textures.get('hero').has('hero_idle_down_01')) {
+            console.error('❌ 英雄帧不存在: hero_idle_down_01');
+            console.log('📋 可用的帧:', this.textures.get('hero').getFrameNames());
+            return;
+        }
+
+        // 获取英雄初始状态
+        const {
+            frame: initialFrame,
+            facingDirection: initialFacingDirection,
+            health: heroHealth,
+            maxHealth: heroMaxHealth,
+            coin: heroCoin,
+            canPush: heroCanPush,
+            haveSword: heroHaveSword,
+        } = this.heroStatus;
+
+        // 使用地图配置的生成点
+        const initialPosition = currentMap.spawnPoint;
+
+        // 计算英雄在世界中的位置
+        const worldPosition = this.tileToWorldPosition(initialPosition.x, initialPosition.y);
+
         // 创建英雄精灵
         this.heroSprite = this.physics.add
-            .sprite(0, 0, 'hero', 'hero_idle_down_01')
+            .sprite(worldPosition.x, worldPosition.y, 'hero', initialFrame || 'hero_idle_down_01')
             .setDepth(1);
 
+        console.log('✅ 英雄创建成功');
+        console.log(`   🎯 初始位置: (${initialPosition.x}, ${initialPosition.y})`);
+        console.log(`   🌍 世界位置: (${worldPosition.x.toFixed(1)}, ${worldPosition.y.toFixed(1)})`);
+        console.log(`   📍 面向方向: ${initialFacingDirection}`);
+        console.log(`   🎮 英雄精灵:`, this.heroSprite);
+        console.log(`   👁️ 英雄可见性:`, this.heroSprite.visible);
+        console.log(`   🎨 英雄纹理:`, this.heroSprite.texture.key);
+        console.log(`   📍 英雄帧:`, this.heroSprite.frame.name);
+        console.log(`   📍 英雄精灵位置: (${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)})`);
+        console.log(`   📍 英雄精灵深度:`, this.heroSprite.depth);
+        console.log(`   📍 英雄精灵激活:`, this.heroSprite.active);
+        console.log(`   📍 英雄精灵父容器:`, this.heroSprite.parentContainer);
+
         // 设置英雄属性
-        (this.heroSprite as any).health = this.heroStatus.health;
-        (this.heroSprite as any).maxHealth = this.heroStatus.maxHealth;
-        (this.heroSprite as any).coin = this.heroStatus.coin;
-        (this.heroSprite as any).canPush = this.heroStatus.canPush;
-        (this.heroSprite as any).haveSword = this.heroStatus.haveSword;
+        (this.heroSprite as any).health = heroHealth;
+        (this.heroSprite as any).maxHealth = heroMaxHealth;
+        (this.heroSprite as any).coin = heroCoin;
+        (this.heroSprite as any).canPush = heroCanPush;
+        (this.heroSprite as any).haveSword = heroHaveSword;
 
         // 设置碰撞体
         (this.heroSprite.body as Phaser.Physics.Arcade.Body).setSize(14, 14);
@@ -737,6 +930,9 @@ export class CompleteGameScene extends Phaser.Scene {
 
         // 创建动画
         this.createHeroAnimations();
+
+        // 设置相机 - 在英雄创建完成后
+        this.setupCamera();
     }
 
     private addHeroMethods() {
@@ -987,16 +1183,42 @@ export class CompleteGameScene extends Phaser.Scene {
         // 计算NPC在世界中的位置
         const worldPosition = this.tileToWorldPosition(npcSpawn.x, npcSpawn.y);
 
-        const npc = this.physics.add.sprite(worldPosition.x, worldPosition.y, npcSpawn.npcType, `${npcSpawn.npcType}_idle_${npcSpawn.facingDirection}_01`);
+        // NPC纹理映射
+        const npcTextureMap: { [key: string]: string } = {
+            'mayor': 'npc_01',
+            'merchant': 'npc_02',
+            'guard': 'npc_03',
+            'hermit': 'npc_04',
+            'miner': 'npc_01'
+        };
+
+        // 获取实际的纹理键
+        const textureKey = npcTextureMap[npcSpawn.npcType] || npcSpawn.npcType;
+        const frameKey = `${textureKey}_idle_${npcSpawn.facingDirection}_01`;
+
+        if (!this.textures.exists(textureKey)) {
+            console.warn(`纹理不存在: ${textureKey}，跳过创建NPC: ${npcSpawn.npcType}`);
+            console.log('📋 可用的纹理:', this.textures.getTextureKeys());
+            return;
+        }
+
+        // 检查帧是否存在
+        if (!this.textures.get(textureKey).has(frameKey)) {
+            console.warn(`纹理帧不存在: ${frameKey}，使用默认帧`);
+            // 使用默认帧或跳过创建
+            return;
+        }
+
+        const npc = this.physics.add.sprite(worldPosition.x, worldPosition.y, textureKey, frameKey);
         (npc.body as Phaser.Physics.Arcade.Body).setSize(14, 14);
         (npc.body as Phaser.Physics.Arcade.Body).setOffset(9, 13);
         this.npcSprites.add(npc);
 
-        // 创建NPC动画
-        this.createPlayerWalkingAnimation(npcSpawn.npcType, 'walking_up');
-        this.createPlayerWalkingAnimation(npcSpawn.npcType, 'walking_right');
-        this.createPlayerWalkingAnimation(npcSpawn.npcType, 'walking_down');
-        this.createPlayerWalkingAnimation(npcSpawn.npcType, 'walking_left');
+        // 创建NPC动画 - 使用映射后的纹理键
+        this.createPlayerWalkingAnimation(textureKey, 'walking_up');
+        this.createPlayerWalkingAnimation(textureKey, 'walking_right');
+        this.createPlayerWalkingAnimation(textureKey, 'walking_down');
+        this.createPlayerWalkingAnimation(textureKey, 'walking_left');
     }
 
     private setupCollisions(elementsLayers?: Phaser.GameObjects.Group) {
@@ -1175,19 +1397,46 @@ export class CompleteGameScene extends Phaser.Scene {
 
     private setupCamera() {
         const camera = this.cameras.main;
-        camera.startFollow(this.heroSprite, true);
-        camera.setFollowOffset(-this.heroSprite.width, -this.heroSprite.height);
+
+        // 先设置相机边界
         if (this.map) {
-            camera.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+            camera.setBounds(this.mapCenterX, this.mapCenterY, this.map.widthInPixels * this.mapScale, this.map.heightInPixels * this.mapScale);
         }
+
+        // 计算地图中心位置
+        const mapCenterX = this.mapCenterX + (this.map.widthInPixels * this.mapScale) / 2;
+        const mapCenterY = this.mapCenterY + (this.map.heightInPixels * this.mapScale) / 2;
+
+        // 设置相机初始位置到地图中心
+        camera.setScroll(mapCenterX - this.cameras.main.width / 2, mapCenterY - this.cameras.main.height / 2);
+
+        // 设置相机跟随，使用默认偏移（英雄在屏幕中央）
+        camera.startFollow(this.heroSprite, true, 0.1, 0.1);
+
+        console.log('📷 相机设置完成:');
+        console.log(`   📍 跟随目标: 英雄精灵`);
+        console.log(`   📍 屏幕尺寸: ${this.cameras.main.width}x${this.cameras.main.height}`);
+        console.log(`   📍 地图中心: (${mapCenterX.toFixed(1)}, ${mapCenterY.toFixed(1)})`);
+        console.log(`   📍 英雄位置: (${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)})`);
+        console.log(`   📍 相机初始滚动: (${(mapCenterX - this.cameras.main.width / 2).toFixed(1)}, ${(mapCenterY - this.cameras.main.height / 2).toFixed(1)})`);
+        console.log(`   📍 相机边界: (${this.mapCenterX.toFixed(1)}, ${this.mapCenterY.toFixed(1)}, ${(this.map.widthInPixels * this.mapScale).toFixed(1)}, ${(this.map.heightInPixels * this.mapScale).toFixed(1)})`);
     }
 
     private setupGridEngine() {
-        const currentMap = this.mapManager.getCurrentMap();
-        if (!currentMap) return;
+        // 检查地图是否已创建
+        if (!this.map) {
+            console.error('❌ 地图未创建，无法设置GridEngine');
+            return;
+        }
 
-        // 计算英雄在世界中的位置
-        const spawnPoint = currentMap.spawnPoint || { x: 10, y: 10 };
+        const currentMap = this.mapManager.getCurrentMap();
+        if (!currentMap) {
+            console.error('❌ 当前地图数据不存在，无法设置GridEngine');
+            return;
+        }
+
+        // 使用地图配置的生成点
+        const spawnPoint = currentMap.spawnPoint;
         const worldPosition = this.tileToWorldPosition(spawnPoint.x, spawnPoint.y);
 
         // 设置英雄位置
@@ -1206,8 +1455,9 @@ export class CompleteGameScene extends Phaser.Scene {
                     id: 'hero',
                     sprite: this.heroSprite,
                     startPosition: spawnPoint,
+                    facingDirection: this.heroStatus.facingDirection,
                     offsetY: 4,
-                    speed: 120 as const,
+                    speed: 4 as const, // 降低速度，参考原项目设置
                     walkingAnimationMapping: {
                         up: 'hero_walking_up',
                         down: 'hero_walking_down',
@@ -1231,7 +1481,8 @@ export class CompleteGameScene extends Phaser.Scene {
                     id: enemy.name,
                     sprite: enemy,
                     startPosition: { x: Math.floor(enemy.x / 16), y: Math.floor(enemy.y / 16) },
-                    speed: (enemy as any).speed || GAME_BALANCE.ENEMY.SLIME.MOVE_SPEED,
+                    facingDirection: 'down',
+                    speed: 4 as const, // 降低速度，参考原项目设置
                     offsetY: -4,
                     walkingAnimationMapping: {
                         up: 'slime_walking',
@@ -1265,7 +1516,8 @@ export class CompleteGameScene extends Phaser.Scene {
                     id: npc.texture.key,
                     sprite: npc,
                     startPosition: { x: Math.floor(npc.x / 16), y: Math.floor(npc.y / 16) },
-                    speed: 120 as const,
+                    facingDirection: 'down',
+                    speed: 4 as const, // 降低速度，参考原项目设置
                     offsetY: 4,
                     walkingAnimationMapping: {
                         up: `${npc.texture.key}_walking_up`,
@@ -1955,14 +2207,30 @@ export class CompleteGameScene extends Phaser.Scene {
 
         // 移动逻辑
         if (this.cursors && this.wasd) {
+            let moved = false;
+
             if (this.cursors.left?.isDown || this.wasd[2]?.isDown) {
+                console.log('🎮 向左移动');
                 this.gridEngine.move('hero', 'left');
+                moved = true;
             } else if (this.cursors.right?.isDown || this.wasd[3]?.isDown) {
+                console.log('🎮 向右移动');
                 this.gridEngine.move('hero', 'right');
+                moved = true;
             } else if (this.cursors.up?.isDown || this.wasd[0]?.isDown) {
+                console.log('🎮 向上移动');
                 this.gridEngine.move('hero', 'up');
+                moved = true;
             } else if (this.cursors.down?.isDown || this.wasd[1]?.isDown) {
+                console.log('🎮 向下移动');
                 this.gridEngine.move('hero', 'down');
+                moved = true;
+            }
+
+            if (!moved && !this.gridEngine.isMoving('hero')) {
+                // 停止移动动画
+                (this.heroSprite as any).anims.stop();
+                (this.heroSprite as any).setFrame('hero_idle_down_01');
             }
         }
     }

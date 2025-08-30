@@ -85,9 +85,9 @@ export class MapManager {
       key: 'village',
       name: '宁静村庄',
       tilesetKey: 'tileset',
-      tilemapKey: 'home_page_city',
+      tilemapKey: 'home_page_city_house_01',
       musicKey: 'village',
-      spawnPoint: { x: 23, y: 30 },
+      spawnPoint: { x: 5, y: 6 }, // 修复：使用地图范围内的位置
       background: '#87CEEB',
       lighting: 'day',
       teleportPoints: [
@@ -113,8 +113,8 @@ export class MapManager {
       npcs: [
         {
           id: 'village_mayor',
-          x: 25,
-          y: 25,
+          x: 3,
+          y: 3,
           npcType: 'mayor',
           facingDirection: 'down',
           movementType: 'static',
@@ -122,8 +122,8 @@ export class MapManager {
         },
         {
           id: 'village_merchant',
-          x: 30,
-          y: 35,
+          x: 7,
+          y: 8,
           npcType: 'merchant',
           facingDirection: 'left',
           movementType: 'patrol',
@@ -132,8 +132,8 @@ export class MapManager {
         },
         {
           id: 'village_guard',
-          x: 20,
-          y: 20,
+          x: 2,
+          y: 2,
           npcType: 'guard',
           facingDirection: 'right',
           movementType: 'patrol',
@@ -144,16 +144,16 @@ export class MapManager {
       enemies: [
         {
           id: 'village_slime_1',
-          x: 35,
-          y: 25,
+          x: 4,
+          y: 4,
           enemyType: 'slime',
           level: 1,
           respawnTime: 30000
         },
         {
           id: 'village_slime_2',
-          x: 40,
-          y: 40,
+          x: 8,
+          y: 9,
           enemyType: 'slime',
           level: 1,
           respawnTime: 30000

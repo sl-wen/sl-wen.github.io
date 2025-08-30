@@ -6,6 +6,7 @@ import BootScene from './scenes/BootScene';
 import CompleteGameScene from './scenes/CompleteGameScene';
 import GameOverScene from './scenes/GameOverScene';
 import MainMenuScene from './scenes/MainMenuScene';
+import SimpleTestScene from './scenes/SimpleTestScene';
 
 interface GameConfig {
   width: number;
@@ -50,6 +51,7 @@ export class TopDownGameEngine {
         }
       },
       scene: [
+        SimpleTestScene,
         BootScene,
         MainMenuScene,
         CompleteGameScene,
@@ -98,6 +100,9 @@ export class TopDownGameEngine {
     };
 
     this.game = new Phaser.Game(gameConfig);
+    
+    // 启动测试场景
+    this.game.scene.start('SimpleTestScene');
 
     console.log('🎯 [DEBUG] Phaser游戏创建完成:', {
       game: this.game,

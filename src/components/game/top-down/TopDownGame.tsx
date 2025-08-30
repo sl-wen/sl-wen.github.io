@@ -154,48 +154,99 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
   // 初始化游戏引擎
   useEffect(() => {
-    if (!gameContainerRef.current) return;
-
-    setDebugInfo('创建游戏引擎...');
-
-    // 创建游戏引擎实例
-    gameEngineRef.current = new TopDownGameEngine(gameContainerRef.current, {
-      width: gameSize.width,
-      height: gameSize.height,
-      parent: gameContainerRef.current,
-      type: Phaser.AUTO,
-      backgroundColor: '#2c3e50',
-      physics: {
-        default: 'arcade',
-        arcade: {
-          gravity: { x: 0, y: 0 },
-          debug: false
-        }
-      },
-      scene: [BootScene, MainMenuScene, CompleteGameScene, GameOverScene]
-    });
-
-    // 创建窗口管理器
-    const game = gameEngineRef.current.getGame();
-    if (game) {
-      windowManagerRef.current = createWindowManager(game);
-      
-      // 监听窗口管理器事件
-      windowManagerRef.current.on('resize', (event) => {
-        console.log('🔄 窗口大小变化:', event);
-        setGameSize(calculateGameSize());
-      });
-
-      windowManagerRef.current.on('orientation', (event) => {
-        console.log('📱 方向变化:', event);
-        setGameSize(calculateGameSize());
-      });
+    if (!gameContainerRef.current) {
+      console.log('❌ 游戏容器未找到');
+      return;
     }
 
-    setDebugInfo('游戏引擎创建完成，等待场景启动...');
-    setIsGameReady(true);
+    console.log('🎮 开始初始化游戏引擎');
+    setDebugInfo('创建游戏引擎...');
+    setIsLoading(true);
+
+    try {
+      // 创建游戏引擎实例
+      gameEngineRef.current = new TopDownGameEngine(gameContainerRef.current, {
+        width: gameSize.width,
+        height: gameSize.height,
+        parent: gameContainerRef.current,
+        type: Phaser.AUTO,
+        backgroundColor: '#2c3e50',
+        physics: {
+          default: 'arcade',
+          arcade: {
+            gravity: { x: 0, y: 0 },
+            debug: false
+          }
+        },
+        scene: [BootScene, MainMenuScene, CompleteGameScene, GameOverScene]
+      });
+
+      console.log('✅ 游戏引擎创建成功');
+
+      // 创建窗口管理器
+      const game = gameEngineRef.current.getGame();
+      if (game) {
+        console.log('🎮 游戏实例获取成功');
+        windowManagerRef.current = createWindowManager(game);
+        
+        // 监听窗口管理器事件
+        windowManagerRef.current.on('resize', (event) => {
+          console.log('🔄 窗口大小变化:', event);
+          setGameSize(calculateGameSize());
+        });
+
+        windowManagerRef.current.on('orientation', (event) => {
+          console.log('📱 方向变化:', event);
+          setGameSize(calculateGameSize());
+        });
+
+        // 监听游戏场景事件
+        game.events.on('scene-start', (scene: Phaser.Scene) => {
+          console.log('🎮 场景启动:', scene.scene.key);
+          if (scene.scene.key === 'BootScene') {
+            setDebugInfo('资源加载中...');
+          } else if (scene.scene.key === 'MainMenuScene') {
+            setDebugInfo('主菜单已加载');
+            setIsLoading(false);
+            setIsGameReady(true);
+          }
+        });
+
+        // 监听资源加载进度
+        game.events.on('load-progress', (progress: any) => {
+          console.log('📊 加载进度:', progress);
+          setLoadingProgress(progress);
+        });
+
+        // 监听资源加载完成
+        game.events.on('load-complete', (progress: any) => {
+          console.log('✅ 资源加载完成:', progress);
+          setLoadingProgress(progress);
+          setIsLoading(false);
+          setIsGameReady(true);
+          setDebugInfo('游戏准备就绪');
+        });
+
+        // 监听游戏错误
+        game.events.on('error', (error: any) => {
+          console.error('❌ 游戏错误:', error);
+          setDebugInfo('游戏错误: ' + error.message);
+        });
+
+      } else {
+        console.error('❌ 无法获取游戏实例');
+        setDebugInfo('游戏实例创建失败');
+      }
+
+      setDebugInfo('游戏引擎创建完成，等待场景启动...');
+
+    } catch (error) {
+      console.error('❌ 游戏引擎初始化失败:', error);
+      setDebugInfo('游戏引擎初始化失败: ' + (error as Error).message);
+    }
 
     return () => {
+      console.log('🧹 清理游戏引擎');
       if (windowManagerRef.current) {
         windowManagerRef.current.destroy();
         windowManagerRef.current = null;

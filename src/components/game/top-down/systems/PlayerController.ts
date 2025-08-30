@@ -412,7 +412,7 @@ export class PlayerController {
     interactableObjects.forEach(obj => {
       const distance = Phaser.Math.Distance.Between(
         this.player.x, this.player.y,
-        obj.x, obj.y
+        (obj as any).x, (obj as any).y
       );
 
       if (distance <= this.config.interactionRange) {

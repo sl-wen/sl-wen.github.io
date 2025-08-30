@@ -292,8 +292,8 @@ export class GameDataManager {
         status: QuestStatus.NOT_STARTED,
         level: 1,
         isMainQuest: true,
-        tags: ['intro'],
-        repeatable: false,
+        // tags: ['intro'], // Quest interface doesn't have tags property
+        isRepeatable: false,
         giver: 'mayor',
         turnIn: 'mayor'
       },
@@ -322,8 +322,8 @@ export class GameDataManager {
         status: QuestStatus.NOT_STARTED,
         level: 2,
         isMainQuest: false,
-        tags: ['gather'],
-        repeatable: true,
+        // tags: ['gather'], // Quest interface doesn't have tags property
+        isRepeatable: true,
         giver: 'herbalist',
         turnIn: 'herbalist'
       },
@@ -352,8 +352,8 @@ export class GameDataManager {
         status: QuestStatus.NOT_STARTED,
         level: 3,
         isMainQuest: false,
-        tags: ['combat'],
-        repeatable: true,
+        // tags: ['combat'], // Quest interface doesn't have tags property
+        isRepeatable: true,
         giver: 'guard',
         turnIn: 'guard'
       },
@@ -392,8 +392,8 @@ export class GameDataManager {
         status: QuestStatus.NOT_STARTED,
         level: 5,
         isMainQuest: true,
-        tags: ['exploration'],
-        repeatable: false,
+        // tags: ['exploration'], // Quest interface doesn't have tags property
+        isRepeatable: false,
         prerequisites: ['first_steps'],
         giver: 'scholar',
         turnIn: 'scholar'

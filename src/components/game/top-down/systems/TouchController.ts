@@ -91,7 +91,7 @@ export class TouchController {
   public disable(): void {
     this.isEnabled = false;
     this.hideControls();
-    this.resetJoystick();
+    this.resetJoystickPosition();
   }
 
   // 创建虚拟控制
@@ -341,6 +341,14 @@ export class TouchController {
     this.joystickHandle.strokeCircle(basePosition.x, basePosition.y, this.config.joystickRadius * 0.4);
   }
 
+  // 重置摇杆位置
+  private resetJoystickPosition(): void {
+    this.joystickState.isActive = false;
+    this.joystickState.direction = MoveDirection.NONE;
+    this.joystickState.intensity = 0;
+    this.resetJoystickVisual();
+  }
+
   // 更新摇杆视觉
   private updateJoystickVisual(distance: number, angle: number): void {
     if (!this.joystickHandle) return;
@@ -418,7 +426,7 @@ export class TouchController {
     
     // 发送按钮事件
     this.emitEvent(eventType, {
-      type: eventType,
+      type: eventType as 'move' | 'interact' | 'attack' | 'menu',
       position: { x, y },
       intensity: 1
     });

@@ -2,12 +2,12 @@ import * as Phaser from 'phaser';
 import { ResourceLoader, ResourceType, createResourceLoader } from '../systems/ResourceLoader';
 
 export default class BootScene extends Phaser.Scene {
-  private resourceLoader: ResourceLoader;
-  private progressBar: Phaser.GameObjects.Graphics;
-  private progressBox: Phaser.GameObjects.Graphics;
-  private loadingText: Phaser.GameObjects.Text;
-  private percentText: Phaser.GameObjects.Text;
-  private assetText: Phaser.GameObjects.Text;
+  private resourceLoader!: ResourceLoader;
+  private progressBar!: Phaser.GameObjects.Graphics;
+  private progressBox!: Phaser.GameObjects.Graphics;
+  private loadingText!: Phaser.GameObjects.Text;
+  private percentText!: Phaser.GameObjects.Text;
+  private assetText!: Phaser.GameObjects.Text;
 
   constructor() {
     super('BootScene');

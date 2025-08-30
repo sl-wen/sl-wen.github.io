@@ -288,14 +288,14 @@ export class MapSystem {
           characters: [
             {
               id: 'player',
-              sprite: 'hero',
+              sprite: 'hero' as any,
               walkingAnimationMapping: 6,
               startPosition: config.spawnPoints[spawnPoint] || config.spawnPoints.default,
               speed: 4
             }
           ],
           numberOfDirections: 8,
-          characterCollisionStrategy: 1,
+          characterCollisionStrategy: 1 as any,
           tileWidth: config.tileWidth,
           tileHeight: config.tileHeight
         };

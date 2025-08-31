@@ -18,7 +18,7 @@ export interface PerformanceConfig {
     maxLights: number;
     enablePostProcessing: boolean;
   };
-  
+
   // 内存设置
   memory: {
     enableMemoryPool: boolean;
@@ -28,7 +28,7 @@ export interface PerformanceConfig {
     gcInterval: number; // 毫秒
     enableMemoryMonitoring: boolean;
   };
-  
+
   // 加载设置
   loading: {
     enableLazyLoading: boolean;
@@ -38,7 +38,7 @@ export interface PerformanceConfig {
     cacheSize: number; // MB
     enableCompression: boolean;
   };
-  
+
   // 移动端设置
   mobile: {
     enableTouchOptimization: boolean;
@@ -48,7 +48,7 @@ export interface PerformanceConfig {
     enableDynamicQuality: boolean;
     enableFrameSkip: boolean;
   };
-  
+
   // 网络设置
   network: {
     enableRequestCaching: boolean;
@@ -58,7 +58,7 @@ export interface PerformanceConfig {
     retryAttempts: number;
     enableOfflineMode: boolean;
   };
-  
+
   // 调试设置
   debug: {
     enablePerformanceMonitoring: boolean;
@@ -79,7 +79,7 @@ export interface PerformanceMetrics {
     max: number;
     target: number;
   };
-  
+
   // 内存使用
   memory: {
     used: number;
@@ -89,7 +89,7 @@ export interface PerformanceMetrics {
     audioMemory: number;
     objectCount: number;
   };
-  
+
   // 渲染性能
   rendering: {
     drawCalls: number;
@@ -98,7 +98,7 @@ export interface PerformanceMetrics {
     batches: number;
     renderTime: number;
   };
-  
+
   // 加载性能
   loading: {
     loadTime: number;
@@ -106,7 +106,7 @@ export interface PerformanceMetrics {
     compressionRatio: number;
     activeLoads: number;
   };
-  
+
   // 网络性能
   network: {
     requestCount: number;
@@ -114,7 +114,7 @@ export interface PerformanceMetrics {
     cacheHitRate: number;
     errorRate: number;
   };
-  
+
   // 时间戳
   timestamp: number;
 }
@@ -152,7 +152,7 @@ export class PerformanceManager {
   private fpsHistory: number[] = [];
   private memoryHistory: number[] = [];
   private renderHistory: number[] = [];
-  
+
   // 性能优化状态
   private optimizationState = {
     isLowPowerMode: false,
@@ -261,17 +261,23 @@ export class PerformanceManager {
    * 保存配置
    */
   private saveConfig(): void {
-    storage.set('performance_config', this.config);
+    if (this.config) {
+      storage.set('performance_config', this.config);
+    }
   }
 
   /**
    * 检测设备能力
    */
   private detectDeviceCapabilities(): void {
+    if (!this.config) {
+      this.config = this.getDefaultConfig();
+    }
+
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const isLowEnd = navigator.hardwareConcurrency <= 2;
     const hasLowMemory = (navigator as any).deviceMemory < 4;
-    
+
     if (isMobile || isLowEnd || hasLowMemory) {
       this.optimizationState.currentQualityLevel = 'medium';
       this.config.rendering.textureQuality = 'medium';
@@ -279,7 +285,7 @@ export class PerformanceManager {
       this.config.rendering.particleLimit = 500;
       this.config.mobile.enableLowPowerMode = true;
     }
-    
+
     if (isMobile) {
       this.config.mobile.enableTouchOptimization = true;
       this.config.mobile.enableBatteryOptimization = true;
@@ -303,14 +309,14 @@ export class PerformanceManager {
    */
   private setupPerformanceMonitoring(): void {
     if (!this.config.debug.enablePerformanceMonitoring) return;
-    
+
     this.isMonitoring = true;
     this.monitoringInterval = setInterval(() => {
       this.updateMetrics();
       this.checkPerformanceIssues();
       this.generateOptimizationSuggestions();
     }, 1000);
-    
+
     console.log('性能监控已启动');
   }
 
@@ -319,35 +325,41 @@ export class PerformanceManager {
    */
   private updateMetrics(): void {
     if (!this.scene) return;
-    
+
     const currentTime = Date.now();
     const deltaTime = currentTime - this.lastFrameTime;
-    
+
     // 更新FPS
     if (deltaTime > 0) {
       const currentFPS = 1000 / deltaTime;
       this.metrics.fps.current = Math.round(currentFPS);
+
+      if (!this.fpsHistory) {
+        this.fpsHistory = [];
+      }
       this.fpsHistory.push(currentFPS);
-      
+
       if (this.fpsHistory.length > 60) {
         this.fpsHistory.shift();
       }
-      
-      this.metrics.fps.average = Math.round(
-        this.fpsHistory.reduce((sum, fps) => sum + fps, 0) / this.fpsHistory.length
-      );
-      this.metrics.fps.min = Math.round(Math.min(...this.fpsHistory));
-      this.metrics.fps.max = Math.round(Math.max(...this.fpsHistory));
+
+      if (this.fpsHistory.length > 0) {
+        this.metrics.fps.average = Math.round(
+          this.fpsHistory.reduce((sum, fps) => sum + fps, 0) / this.fpsHistory.length
+        );
+        this.metrics.fps.min = Math.round(Math.min(...this.fpsHistory));
+        this.metrics.fps.max = Math.round(Math.max(...this.fpsHistory));
+      }
     }
-    
+
     this.lastFrameTime = currentTime;
-    
+
     // 更新内存使用
     this.updateMemoryMetrics();
-    
+
     // 更新渲染指标
     this.updateRenderingMetrics();
-    
+
     this.metrics.timestamp = currentTime;
   }
 
@@ -356,26 +368,32 @@ export class PerformanceManager {
    */
   private updateMemoryMetrics(): void {
     if (!this.scene) return;
-    
+
     // 获取内存使用情况
     const game = this.scene.game;
     const textureManager = game.textures;
     const audioManager = game.sound;
-    
+
     // 计算纹理内存
     let textureMemory = 0;
-    textureManager.each((texture: any) => {
-      if (texture.source && texture.source.image) {
-        const canvas = texture.source.image;
-        textureMemory += (canvas.width * canvas.height * 4) / (1024 * 1024); // MB
-      }
-    }, this);
-    
+    if (textureManager && typeof textureManager.each === 'function') {
+      textureManager.each((texture: any) => {
+        if (texture && texture.source && texture.source.image) {
+          const canvas = texture.source.image;
+          textureMemory += (canvas.width * canvas.height * 4) / (1024 * 1024); // MB
+        }
+      }, this);
+    }
+
     this.metrics.memory.textureMemory = Math.round(textureMemory);
     this.metrics.memory.used = this.metrics.memory.textureMemory + this.metrics.memory.audioMemory;
-    
+
     // 计算对象数量
-    this.metrics.memory.objectCount = this.scene.children.length;
+    if (this.scene.children) {
+      this.metrics.memory.objectCount = this.scene.children.length;
+    } else {
+      this.metrics.memory.objectCount = 0;
+    }
   }
 
   /**
@@ -383,35 +401,61 @@ export class PerformanceManager {
    */
   private updateRenderingMetrics(): void {
     if (!this.scene) return;
-    
+
     // 这里可以添加更详细的渲染指标收集
     // 由于Phaser的限制，一些指标可能无法直接获取
-    this.metrics.rendering.drawCalls = this.scene.children.length;
+    if (this.scene.children) {
+      this.metrics.rendering.drawCalls = this.scene.children.length;
+    } else {
+      this.metrics.rendering.drawCalls = 0;
+    }
   }
 
   /**
    * 检查性能问题
    */
   private checkPerformanceIssues(): void {
+    if (!this.config) {
+      this.config = this.getDefaultConfig();
+    }
+
     // 检查FPS下降
     if (this.metrics.fps.current < this.config.rendering.targetFPS * 0.8) {
-      this.addPerformanceEvent('fps_drop', 'medium', 
+      this.addPerformanceEvent('fps_drop', 'medium',
         `FPS下降: ${this.metrics.fps.current}/${this.config.rendering.targetFPS}`);
     }
-    
+
     // 检查内存使用
     if (this.metrics.memory.used > this.config.memory.maxTextureMemory * 0.8) {
-      this.addPerformanceEvent('memory_warning', 'high', 
+      this.addPerformanceEvent('memory_warning', 'high',
         `内存使用过高: ${this.metrics.memory.used}MB`);
+      if (!this.optimizationState) {
+        this.optimizationState = {
+          isLowPowerMode: false,
+          isMemoryLow: false,
+          isBatteryLow: false,
+          isNetworkSlow: false,
+          currentQualityLevel: 'medium'
+        };
+      }
       this.optimizationState.isMemoryLow = true;
     }
-    
+
     // 检查电池状态
     if ('getBattery' in navigator) {
       (navigator as any).getBattery().then((battery: any) => {
         if (battery.level < 0.2) {
-          this.addPerformanceEvent('battery_low', 'medium', 
+          this.addPerformanceEvent('battery_low', 'medium',
             `电池电量低: ${Math.round(battery.level * 100)}%`);
+          if (!this.optimizationState) {
+            this.optimizationState = {
+              isLowPowerMode: false,
+              isMemoryLow: false,
+              isBatteryLow: false,
+              isNetworkSlow: false,
+              currentQualityLevel: 'medium'
+            };
+          }
           this.optimizationState.isBatteryLow = true;
         }
       });
@@ -422,6 +466,10 @@ export class PerformanceManager {
    * 添加性能事件
    */
   private addPerformanceEvent(type: PerformanceEvent['type'], severity: PerformanceEvent['severity'], message: string, data?: any): void {
+    if (!this.events) {
+      this.events = [];
+    }
+
     const event: PerformanceEvent = {
       type,
       severity,
@@ -429,14 +477,14 @@ export class PerformanceManager {
       data: data || {},
       timestamp: Date.now()
     };
-    
+
     this.events.push(event);
-    
+
     // 保持事件历史在合理范围内
     if (this.events.length > 100) {
       this.events.shift();
     }
-    
+
     if (this.config.debug.logPerformanceData) {
       console.warn(`性能事件: ${message}`, event);
     }
@@ -446,8 +494,13 @@ export class PerformanceManager {
    * 生成优化建议
    */
   private generateOptimizationSuggestions(): void {
-    this.suggestions = [];
-    
+    if (!this.suggestions) {
+      this.suggestions = [];
+    }
+    if (!this.config) {
+      this.config = this.getDefaultConfig();
+    }
+
     // FPS优化建议
     if (this.metrics.fps.current < this.config.rendering.targetFPS * 0.9) {
       this.suggestions.push({
@@ -459,7 +512,7 @@ export class PerformanceManager {
         impact: '可能提高10-20 FPS'
       });
     }
-    
+
     // 内存优化建议
     if (this.metrics.memory.used > this.config.memory.maxTextureMemory * 0.7) {
       this.suggestions.push({
@@ -471,9 +524,9 @@ export class PerformanceManager {
         impact: '减少内存使用10-30%'
       });
     }
-    
+
     // 移动端优化建议
-    if (this.optimizationState.isBatteryLow) {
+    if (this.optimizationState && this.optimizationState.isBatteryLow) {
       this.suggestions.push({
         type: 'mobile',
         priority: 'high',
@@ -501,22 +554,27 @@ export class PerformanceManager {
    */
   private applyRenderingOptimizations(): void {
     if (!this.scene) return;
-    
+    if (!this.config) {
+      this.config = this.getDefaultConfig();
+    }
+
     const game = this.scene.game;
-    
+
     // 设置目标FPS
-    game.loop.targetFps = this.config.rendering.targetFPS;
-    
+    if (game.loop) {
+      game.loop.targetFps = this.config.rendering.targetFPS;
+    }
+
     // 设置VSync
-    if (this.config.rendering.enableVSync) {
+    if (this.config.rendering.enableVSync && game.renderer) {
       (game.renderer as any).setBlendMode(Phaser.BlendModes.NORMAL);
     }
-    
+
     // 设置抗锯齿
-    if (!this.config.rendering.enableAntiAliasing) {
+    if (!this.config.rendering.enableAntiAliasing && game.renderer) {
       (game.renderer as any).setAntialias(false);
     }
-    
+
     console.log('渲染优化已应用');
   }
 
@@ -525,21 +583,24 @@ export class PerformanceManager {
    */
   private applyMemoryOptimizations(): void {
     if (!this.scene) return;
-    
+    if (!this.config) {
+      this.config = this.getDefaultConfig();
+    }
+
     const game = this.scene.game;
-    
+
     // 启用垃圾回收
     if (this.config.memory.enableGarbageCollection) {
       setInterval(() => {
         this.performGarbageCollection();
       }, this.config.memory.gcInterval);
     }
-    
+
     // 设置内存限制
     if (this.config.memory.maxTextureMemory > 0) {
       // 这里可以添加纹理内存限制逻辑
     }
-    
+
     console.log('内存优化已应用');
   }
 
@@ -548,17 +609,20 @@ export class PerformanceManager {
    */
   private applyLoadingOptimizations(): void {
     if (!this.scene) return;
-    
+    if (!this.config) {
+      this.config = this.getDefaultConfig();
+    }
+
     // 启用懒加载
     if (this.config.loading.enableLazyLoading) {
       // 这里可以添加懒加载逻辑
     }
-    
+
     // 启用预加载
     if (this.config.loading.enablePreloading) {
       // 这里可以添加预加载逻辑
     }
-    
+
     console.log('加载优化已应用');
   }
 
@@ -567,26 +631,29 @@ export class PerformanceManager {
    */
   private applyMobileOptimizations(): void {
     if (!this.scene) return;
-    
+    if (!this.config) {
+      this.config = this.getDefaultConfig();
+    }
+
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
+
     if (isMobile) {
       // 启用触摸优化
-      if (this.config.mobile.enableTouchOptimization) {
+      if (this.config.mobile.enableTouchOptimization && this.scene.input) {
         this.scene.input.setDefaultCursor('pointer');
       }
-      
+
       // 启用电池优化
       if (this.config.mobile.enableBatteryOptimization) {
         this.enableBatteryOptimization();
       }
-      
+
       // 启用动态质量调整
       if (this.config.mobile.enableDynamicQuality) {
         this.enableDynamicQualityAdjustment();
       }
     }
-    
+
     console.log('移动端优化已应用');
   }
 
@@ -594,16 +661,20 @@ export class PerformanceManager {
    * 应用网络优化
    */
   private applyNetworkOptimizations(): void {
+    if (!this.config) {
+      this.config = this.getDefaultConfig();
+    }
+
     // 启用请求缓存
     if (this.config.network.enableRequestCaching) {
       // 这里可以添加网络缓存逻辑
     }
-    
+
     // 启用压缩
     if (this.config.network.enableCompression) {
       // 这里可以添加网络压缩逻辑
     }
-    
+
     console.log('网络优化已应用');
   }
 
@@ -611,18 +682,22 @@ export class PerformanceManager {
    * 启用电池优化
    */
   private enableBatteryOptimization(): void {
+    if (!this.config) {
+      this.config = this.getDefaultConfig();
+    }
+
     this.optimizationState.isLowPowerMode = true;
-    
+
     // 降低渲染质量
     this.config.rendering.textureQuality = 'medium';
     this.config.rendering.shadowQuality = 'low';
     this.config.rendering.particleLimit = 200;
-    
+
     // 降低FPS
-    if (this.scene) {
+    if (this.scene && this.scene.game && this.scene.game.loop) {
       this.scene.game.loop.targetFps = 30;
     }
-    
+
     console.log('电池优化已启用');
   }
 
@@ -630,6 +705,10 @@ export class PerformanceManager {
    * 启用动态质量调整
    */
   private enableDynamicQualityAdjustment(): void {
+    if (!this.metrics) {
+      this.metrics = this.getMetrics();
+    }
+
     let qualityCheckInterval = setInterval(() => {
       if (this.metrics.fps.current < 30) {
         this.lowerQuality();
@@ -637,7 +716,7 @@ export class PerformanceManager {
         this.raiseQuality();
       }
     }, 5000);
-    
+
     console.log('动态质量调整已启用');
   }
 
@@ -645,6 +724,16 @@ export class PerformanceManager {
    * 降低质量
    */
   private lowerQuality(): void {
+    if (!this.optimizationState) {
+      this.optimizationState = {
+        isLowPowerMode: false,
+        isMemoryLow: false,
+        isBatteryLow: false,
+        isNetworkSlow: false,
+        currentQualityLevel: 'medium'
+      };
+    }
+
     if (this.optimizationState.currentQualityLevel === 'ultra') {
       this.optimizationState.currentQualityLevel = 'high';
     } else if (this.optimizationState.currentQualityLevel === 'high') {
@@ -652,7 +741,7 @@ export class PerformanceManager {
     } else if (this.optimizationState.currentQualityLevel === 'medium') {
       this.optimizationState.currentQualityLevel = 'low';
     }
-    
+
     this.applyQualitySettings();
     console.log(`质量已降低到: ${this.optimizationState.currentQualityLevel}`);
   }
@@ -661,6 +750,16 @@ export class PerformanceManager {
    * 提高质量
    */
   private raiseQuality(): void {
+    if (!this.optimizationState) {
+      this.optimizationState = {
+        isLowPowerMode: false,
+        isMemoryLow: false,
+        isBatteryLow: false,
+        isNetworkSlow: false,
+        currentQualityLevel: 'medium'
+      };
+    }
+
     if (this.optimizationState.currentQualityLevel === 'low') {
       this.optimizationState.currentQualityLevel = 'medium';
     } else if (this.optimizationState.currentQualityLevel === 'medium') {
@@ -668,7 +767,7 @@ export class PerformanceManager {
     } else if (this.optimizationState.currentQualityLevel === 'high') {
       this.optimizationState.currentQualityLevel = 'ultra';
     }
-    
+
     this.applyQualitySettings();
     console.log(`质量已提高到: ${this.optimizationState.currentQualityLevel}`);
   }
@@ -677,8 +776,21 @@ export class PerformanceManager {
    * 应用质量设置
    */
   private applyQualitySettings(): void {
+    if (!this.config) {
+      this.config = this.getDefaultConfig();
+    }
+    if (!this.optimizationState) {
+      this.optimizationState = {
+        isLowPowerMode: false,
+        isMemoryLow: false,
+        isBatteryLow: false,
+        isNetworkSlow: false,
+        currentQualityLevel: 'medium'
+      };
+    }
+
     const quality = this.optimizationState.currentQualityLevel;
-    
+
     switch (quality) {
       case 'ultra':
         this.config.rendering.textureQuality = 'ultra';
@@ -712,23 +824,27 @@ export class PerformanceManager {
    */
   private performGarbageCollection(): void {
     if (!this.scene) return;
-    
+
     const game = this.scene.game;
-    
+
     // 清理纹理缓存
     // game.textures.removeAll(); // 暂时注释掉，因为Phaser API不支持
-    
+
     // 清理音频缓存
-    game.sound.removeAll();
-    
+    if (game.sound) {
+      game.sound.removeAll();
+    }
+
     // 清理场景对象
-    this.scene.children.removeAll(true);
-    
+    if (this.scene.children) {
+      this.scene.children.removeAll(true);
+    }
+
     // 强制垃圾回收（如果可用）
     if ('gc' in window) {
       (window as any).gc();
     }
-    
+
     console.log('垃圾回收已执行');
   }
 
@@ -739,17 +855,17 @@ export class PerformanceManager {
    */
   optimizeTextureLoading(textureKey: string, url: string): void {
     if (!this.scene) return;
-    
+
     // 检查是否已加载
     if (this.scene.textures.exists(textureKey)) {
       return;
     }
-    
+
     // 检查内存使用
     if (this.metrics.memory.used > this.config.memory.maxTextureMemory * 0.9) {
       this.performGarbageCollection();
     }
-    
+
     // 加载纹理
     this.scene.load.image(textureKey, url);
   }
@@ -761,18 +877,18 @@ export class PerformanceManager {
    */
   optimizeAudioLoading(audioKey: string, url: string): void {
     if (!this.scene) return;
-    
+
     // 检查是否已加载
     if (this.scene.cache.audio.exists(audioKey)) {
       return;
     }
-    
+
     // 检查内存使用
     if (this.metrics.memory.audioMemory > this.config.memory.maxAudioMemory * 0.9) {
       // 清理音频缓存
       this.scene.sound.removeAll();
     }
-    
+
     // 加载音频
     this.scene.load.audio(audioKey, url);
   }
@@ -782,7 +898,14 @@ export class PerformanceManager {
    * @returns 性能指标
    */
   getMetrics(): PerformanceMetrics {
-    return { ...this.metrics };
+    return this.metrics ? { ...this.metrics } : {
+      fps: { current: 0, average: 0, min: 0, max: 0, target: 60 },
+      memory: { used: 0, total: 0, available: 0, textureMemory: 0, audioMemory: 0, objectCount: 0 },
+      rendering: { drawCalls: 0, triangles: 0, vertices: 0, batches: 0, renderTime: 0 },
+      loading: { loadTime: 0, cacheHitRate: 0, compressionRatio: 0, activeLoads: 0 },
+      network: { requestCount: 0, averageResponseTime: 0, cacheHitRate: 0, errorRate: 0 },
+      timestamp: Date.now()
+    };
   }
 
   /**
@@ -790,7 +913,7 @@ export class PerformanceManager {
    * @returns 性能事件数组
    */
   getEvents(): PerformanceEvent[] {
-    return [...this.events];
+    return this.events ? [...this.events] : [];
   }
 
   /**
@@ -798,7 +921,7 @@ export class PerformanceManager {
    * @returns 优化建议数组
    */
   getSuggestions(): OptimizationSuggestion[] {
-    return [...this.suggestions];
+    return this.suggestions ? [...this.suggestions] : [];
   }
 
   /**
@@ -806,7 +929,7 @@ export class PerformanceManager {
    * @returns 性能配置
    */
   getConfig(): PerformanceConfig {
-    return { ...this.config };
+    return this.config ? { ...this.config } : this.getDefaultConfig();
   }
 
   /**
@@ -814,6 +937,9 @@ export class PerformanceManager {
    * @param config - 新配置
    */
   updateConfig(config: Partial<PerformanceConfig>): void {
+    if (!this.config) {
+      this.config = this.getDefaultConfig();
+    }
     this.config = { ...this.config, ...config };
     this.saveConfig();
     this.applyOptimizations();
@@ -841,7 +967,7 @@ export class PerformanceManager {
   disableMonitoring(): void {
     this.config.debug.enablePerformanceMonitoring = false;
     this.isMonitoring = false;
-    
+
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;

@@ -71,6 +71,7 @@ export class CompleteGameScene extends Phaser.Scene {
     private enemiesSprites!: Phaser.GameObjects.Group;
     private itemsSprites!: Phaser.GameObjects.Group;
     private npcSprites!: Phaser.GameObjects.Group;
+    private elementsLayers!: Phaser.GameObjects.Group;
     private map!: Phaser.Tilemaps.Tilemap;
     private gridEngine: any;
 
@@ -457,6 +458,9 @@ export class CompleteGameScene extends Phaser.Scene {
         // 设置输入控制
         this.setupInput();
 
+        // 初始化elementsLayers组
+        this.elementsLayers = this.add.group();
+
         // Map
         this.createMap();
 
@@ -497,15 +501,25 @@ export class CompleteGameScene extends Phaser.Scene {
 
         // 创建地图图层和元素 - 按照原项目的方式
         const enemiesData: any[] = [];
-        const elementsLayers = this.add.group();
 
-        // 设置英雄与地图图层的碰撞 - 按照原项目的方式
+        // 设置英雄与地图图层的碰撞，并收集elements类型的图层 - 按照原项目的方式
         if (this.map && this.map.layers) {
             for (let i = 0; i < this.map.layers.length; i++) {
                 const layer = this.map.layers[i];
                 if (layer && layer.tilemapLayer) {
                     this.physics.add.collider(this.heroSprite, layer.tilemapLayer);
                     console.log(`🎯 添加碰撞器: 英雄 <-> 图层 ${i}`);
+
+                    // 处理图层属性，收集elements类型的图层
+                    if (layer.properties) {
+                        layer.properties.forEach((property: any) => {
+                            const { value, name } = property;
+                            if (name === 'type' && value === 'elements') {
+                                this.elementsLayers.add(layer.tilemapLayer!);
+                                console.log(`   🎯 添加elements图层: ${i}`);
+                            }
+                        });
+                    }
                 }
             }
         }
@@ -518,7 +532,7 @@ export class CompleteGameScene extends Phaser.Scene {
         this.setupGridEngine();
 
         // 设置碰撞检测
-        this.setupCollisions(elementsLayers);
+        this.setupCollisions(this.elementsLayers);
 
         // 加载地图交互数据
         this.mapInteractionManager.loadMapInteractions(mapKey || 'map_main');
@@ -719,49 +733,40 @@ export class CompleteGameScene extends Phaser.Scene {
 
         this.map.addTilesetImage('tileset', 'tileset');
 
-        // 按照原项目的方式创建地图，不进行缩放和居中处理
-        // 设置地图缩放为1，位置为(0,0)，保持与原始项目一致
-        this.mapScale = 1;
-        this.mapCenterX = 0;
-        this.mapCenterY = 0;
+        // 参照参考项目：直接创建图层，不进行复杂缩放
+        console.log('🗺️ [DEBUG] 地图创建信息（参照参考项目）:');
+        console.log(`   🗺️ 地图尺寸: ${this.map.widthInPixels}x${this.map.heightInPixels} 像素 (${this.map.width}x${this.map.height} 瓦片)`);
 
-        console.log('🗺️ [DEBUG] 地图创建信息（原项目方式）:');
-        console.log(`   🗺️ 地图原始尺寸: ${this.map.widthInPixels}x${this.map.heightInPixels} 像素 (${this.map.width}x${this.map.height} 瓦片)`);
-        console.log(`   📐 缩放比例: ${this.mapScale} (固定为1)`);
-        console.log(`   📍 地图位置: (${this.mapCenterX}, ${this.mapCenterY}) (固定为0,0)`);
-
-        // 创建图层，按照原项目的方式处理
+        // 创建图层，参照参考项目
         for (let i = 0; i < this.map.layers.length; i++) {
             const layer = this.map.createLayer(i, 'tileset', 0, 0);
             if (layer) {
-                console.log(`🗺️ 图层 ${i} 创建完成: 位置(${layer.x}, ${layer.y}), 缩放(${layer.scaleX}, ${layer.scaleY}), 尺寸(${layer.width}, ${layer.height})`);
-                
-                // 处理图层属性，按照原项目的方式
+                console.log(`🗺️ 图层 ${i} 创建完成: 位置(${layer.x}, ${layer.y}), 尺寸(${layer.width}, ${layer.height})`);
+
+                // 处理图层属性
                 if (layer.layer && layer.layer.properties) {
                     layer.layer.properties.forEach((property: any) => {
                         const { value, name } = property;
                         console.log(`   📋 图层属性: ${name} = ${value}`);
-                        
-                        // 如果是elements类型的图层，添加到elementsLayers组
+
                         if (name === 'type' && value === 'elements') {
-                            elementsLayers.add(layer);
-                            console.log(`   🎯 添加elements图层: ${i}`);
+                            this.elementsLayers.add(layer);
                         }
                     });
                 }
             }
         }
 
-        // 设置世界边界 - 使用地图的实际尺寸
+        // 参照参考项目：设置物理世界边界为地图尺寸
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
 
-        console.log('🎯 [DEBUG] 物理世界边界设置（原项目方式）:');
+        console.log('🎯 [DEBUG] 物理世界边界设置（参照参考项目）:');
         console.log(`   📍 边界位置: (0, 0)`);
         console.log(`   📏 边界尺寸: ${this.map.widthInPixels} x ${this.map.heightInPixels}`);
         console.log(`   🎮 可移动范围: 从 (0, 0) 到 (${this.map.widthInPixels}, ${this.map.heightInPixels})`);
-
-        // 注意：相机边界将在setupCamera()中设置
     }
+
+
 
     private createSimpleDefaultMap() {
         console.log('🗺️ 创建简单的默认地图');
@@ -802,17 +807,17 @@ export class CompleteGameScene extends Phaser.Scene {
     private tileToWorldPosition(tileX: number, tileY: number): { x: number, y: number } {
         const tileSize = 16; // 瓦片大小
 
-        // 按照原项目的方式，直接计算世界坐标，不考虑地图中心偏移
-        const worldX = tileX * tileSize;
-        const worldY = tileY * tileSize;
+        // 计算世界坐标，考虑地图中心偏移和缩放
+        const worldX = this.mapCenterX + tileX * tileSize * this.mapScale;
+        const worldY = this.mapCenterY + tileY * tileSize * this.mapScale;
 
         // 添加坐标转换调试信息（只在第一次调用时显示）
         if (!this._coordinateDebugShown) {
-            console.log('🎯 [DEBUG] 坐标转换示例（原项目方式）:');
+            console.log('🎯 [DEBUG] 坐标转换示例（优化缩放方案）:');
             console.log(`   📍 瓦片坐标: (${tileX}, ${tileY})`);
             console.log(`   🌍 世界坐标: (${worldX.toFixed(1)}, ${worldY.toFixed(1)})`);
-            console.log(`   📐 转换公式: 世界坐标 = 瓦片坐标 × 瓦片大小`);
-            console.log(`   🔢 计算过程: (${tileX} × ${tileSize}, ${tileY} × ${tileSize})`);
+            console.log(`   📐 转换公式: 世界坐标 = 地图中心 + 瓦片坐标 × 瓦片大小 × 缩放比例`);
+            console.log(`   🔢 计算过程: (${this.mapCenterX.toFixed(1)} + ${tileX} × ${tileSize} × ${this.mapScale.toFixed(3)}, ${this.mapCenterY.toFixed(1)} + ${tileY} × ${tileSize} × ${this.mapScale.toFixed(3)})`);
             this._coordinateDebugShown = true;
         }
 
@@ -820,8 +825,8 @@ export class CompleteGameScene extends Phaser.Scene {
     }
 
     private createHero() {
-        const currentMap = this.mapManager.getCurrentMap();
-        if (!currentMap) return;
+        const mapData = this.mapManager.getCurrentMap();
+        if (!mapData) return;
 
         // 检查英雄纹理是否存在
         if (!this.textures.exists('hero')) {
@@ -848,12 +853,12 @@ export class CompleteGameScene extends Phaser.Scene {
             haveSword: heroHaveSword,
         } = this.heroStatus;
 
-        // 按照原项目的方式，英雄初始位置为(0, 0)，然后通过GridEngine移动到正确位置
+        // 参照参考项目：英雄初始位置
         this.heroSprite = this.physics.add
             .sprite(0, 0, 'hero', initialFrame || 'hero_idle_down_01')
             .setDepth(1);
 
-        console.log('✅ 英雄创建成功（原项目方式）');
+        console.log('✅ 英雄创建成功（参照参考项目）');
         console.log(`   🎯 初始位置: (0, 0)`);
         console.log(`   📍 面向方向: ${initialFacingDirection}`);
         console.log(`   🎮 英雄精灵:`, this.heroSprite);
@@ -872,15 +877,15 @@ export class CompleteGameScene extends Phaser.Scene {
         (this.heroSprite as any).canPush = heroCanPush;
         (this.heroSprite as any).haveSword = heroHaveSword;
 
-        // 设置碰撞体 - 按照原项目的方式，不考虑缩放
+        // 参照参考项目：设置碰撞体
         (this.heroSprite.body as Phaser.Physics.Arcade.Body).setSize(14, 14);
         (this.heroSprite.body as Phaser.Physics.Arcade.Body).setOffset(9, 13);
 
-        console.log('🎯 [DEBUG] 英雄碰撞体设置（原项目方式）:');
+        console.log('🎯 [DEBUG] 英雄碰撞体设置（参照参考项目）:');
         console.log(`   📏 碰撞体尺寸: 14 x 14`);
         console.log(`   📍 碰撞体偏移: (9, 13)`);
 
-        // 创建交互碰撞器
+        // 参照参考项目：创建交互碰撞器
         this.heroActionCollider = createInteractiveGameObject(
             this,
             this.heroSprite.x + 9,
@@ -1289,7 +1294,7 @@ export class CompleteGameScene extends Phaser.Scene {
                 if (npc) {
                     this.showDialog((npc as any).texture.key);
                 }
-                if (npc) {
+                if (npc && this.gridEngine.stopMovement) {
                     this.gridEngine.stopMovement((npc as any).texture.key);
                 }
             }
@@ -1380,40 +1385,16 @@ export class CompleteGameScene extends Phaser.Scene {
     }
 
     private setupCamera() {
-        // 按照原项目的方式设置相机
+        // 参照参考项目：设置相机
         const camera = this.cameras.main;
 
         // 设置相机跟随英雄
         camera.startFollow(this.heroSprite, true, 0.1, 0.1);
 
-        // 设置相机边界 - 使用地图的实际尺寸，参考原项目
-        const game = this.game;
-        camera.setBounds(
-            0,
-            0,
-            Math.max(this.map.widthInPixels, game.scale.gameSize.width),
-            Math.max(this.map.heightInPixels, game.scale.gameSize.height)
-        );
-
-        // 如果地图小于游戏窗口，居中显示
-        if (this.map.widthInPixels < game.scale.gameSize.width) {
-            camera.setPosition(
-                (game.scale.gameSize.width - this.map.widthInPixels) / 2
-            );
-        }
-
-        if (this.map.heightInPixels < game.scale.gameSize.height) {
-            camera.setPosition(
-                camera.x,
-                (game.scale.gameSize.height - this.map.heightInPixels) / 2
-            );
-        }
-
-        console.log('📷 相机设置完成（原项目方式）:');
+        console.log('📷 相机设置完成（参照参考项目）:');
         console.log(`   📍 跟随目标: 英雄精灵`);
         console.log(`   📍 屏幕尺寸: ${this.cameras.main.width}x${this.cameras.main.height}`);
         console.log(`   📍 英雄位置: (${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)})`);
-        console.log(`   📍 相机边界: (0, 0, ${Math.max(this.map.widthInPixels, game.scale.gameSize.width)}, ${Math.max(this.map.heightInPixels, game.scale.gameSize.height)})`);
     }
 
 
@@ -1431,19 +1412,19 @@ export class CompleteGameScene extends Phaser.Scene {
             return;
         }
 
-        // 按照原项目的方式计算英雄的瓦片坐标
-        const heroTileX = Math.floor(this.heroSprite.x / 16);
-        const heroTileY = Math.floor(this.heroSprite.y / 16);
+        // 计算英雄的瓦片坐标，考虑地图中心偏移和缩放
+        const heroTileX = Math.floor((this.heroSprite.x - this.mapCenterX) / (16 * this.mapScale));
+        const heroTileY = Math.floor((this.heroSprite.y - this.mapCenterY) / (16 * this.mapScale));
 
-        console.log(`🎯 英雄瓦片坐标计算（原项目方式）: 世界坐标(${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)}) -> 瓦片坐标(${heroTileX}, ${heroTileY})`);
+        console.log(`🎯 英雄瓦片坐标计算（优化缩放方案）: 世界坐标(${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)}) -> 瓦片坐标(${heroTileX}, ${heroTileY})`);
 
         // 添加英雄位置调试信息
-        console.log('👤 [DEBUG] 英雄生成位置（原项目方式）:');
+        console.log('👤 [DEBUG] 英雄生成位置（优化缩放方案）:');
         console.log(`   🎯 计算瓦片坐标: (${heroTileX}, ${heroTileY})`);
         console.log(`   📍 英雄精灵位置: (${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)})`);
 
-        // 创建GridEngine配置 - 使用原始配置的初始位置
-        const initialPosition = { x: 4, y: 3 }; // 原始项目的初始位置
+        // 参照参考项目：创建GridEngine配置
+        const initialPosition = { x: 5, y: 6 }; // 使用固定坐标
         const gridEngineConfig = {
             characters: [
                 {
@@ -1452,7 +1433,7 @@ export class CompleteGameScene extends Phaser.Scene {
                     startPosition: initialPosition,
                     facingDirection: this.heroStatus.facingDirection,
                     offsetY: 4,
-                    speed: 4 as const, // 降低速度，参考原项目设置
+                    speed: 4 as const,
                     walkingAnimationMapping: {
                         up: 'hero_walking_up',
                         down: 'hero_walking_down',
@@ -1469,15 +1450,20 @@ export class CompleteGameScene extends Phaser.Scene {
             ],
         };
 
+        console.log('🎯 [DEBUG] GridEngine配置:');
+        console.log(`   📍 生成点瓦片坐标: (${initialPosition.x}, ${initialPosition.y})`);
+        console.log(`   📍 英雄精灵位置: (${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)})`);
+        console.log(`   📍 面向方向: ${this.heroStatus.facingDirection}`);
+
         // 添加敌人到GridEngine
         if (this.enemiesSprites && this.enemiesSprites.getChildren) {
             this.enemiesSprites.getChildren().forEach((enemy: any) => {
                 const enemyConfig = {
                     id: enemy.name,
                     sprite: enemy,
-                    startPosition: { x: Math.floor(enemy.x / 16), y: Math.floor(enemy.y / 16) },
+                    startPosition: { x: Math.floor((enemy.x - this.mapCenterX) / (16 * this.mapScale)), y: Math.floor((enemy.y - this.mapCenterY) / (16 * this.mapScale)) },
                     facingDirection: 'down',
-                    speed: 4 as const, // 降低速度，参考原项目设置
+                    speed: 4 as const,
                     offsetY: -4,
                     walkingAnimationMapping: {
                         up: 'slime_walking',
@@ -1510,7 +1496,7 @@ export class CompleteGameScene extends Phaser.Scene {
                 const npcConfig = {
                     id: npc.texture.key,
                     sprite: npc,
-                    startPosition: { x: Math.floor(npc.x / 16), y: Math.floor(npc.y / 16) },
+                    startPosition: { x: Math.floor((npc.x - this.mapCenterX) / (16 * this.mapScale)), y: Math.floor((npc.y - this.mapCenterY) / (16 * this.mapScale)) },
                     facingDirection: 'down',
                     speed: 4 as const, // 降低速度，参考原项目设置
                     offsetY: 4,
@@ -1547,17 +1533,21 @@ export class CompleteGameScene extends Phaser.Scene {
         console.log(`   📍 GridEngine瓦片坐标: (${heroPosition.x}, ${heroPosition.y})`);
         console.log(`   📍 英雄精灵世界坐标: (${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)})`);
 
-        // 修复英雄位置和缩放 - GridEngine使用原始瓦片大小，需要重新计算
-        const correctWorldX = this.mapCenterX + heroPosition.x * 16 * this.mapScale;
-        const correctWorldY = this.mapCenterY + heroPosition.y * 16 * this.mapScale;
+        // 确保英雄位置正确 - 强制设置正确的位置
+        const expectedWorldX = this.mapCenterX + heroPosition.x * 16 * this.mapScale;
+        const expectedWorldY = this.mapCenterY + heroPosition.y * 16 * this.mapScale;
 
-        this.heroSprite.setPosition(correctWorldX, correctWorldY);
+        // 强制设置英雄位置，确保与GridEngine同步
+        this.heroSprite.setPosition(expectedWorldX, expectedWorldY);
+
+        console.log('🔧 [DEBUG] 英雄位置同步（优化缩放方案）:');
+        console.log(`   📍 GridEngine瓦片坐标: (${heroPosition.x}, ${heroPosition.y})`);
+        console.log(`   📍 计算世界坐标: (${expectedWorldX.toFixed(1)}, ${expectedWorldY.toFixed(1)})`);
+        console.log(`   📍 英雄精灵位置: (${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)})`);
+
+        // 确保英雄应用缩放
         this.heroSprite.setScale(this.mapScale);
-
-        console.log('🔧 [DEBUG] 英雄位置修复:');
-        console.log(`   📍 修复前位置: (${heroPosition.x * 16}, ${heroPosition.y * 16})`);
-        console.log(`   📍 修复后位置: (${correctWorldX.toFixed(1)}, ${correctWorldY.toFixed(1)})`);
-        console.log(`   📏 英雄缩放: ${this.mapScale}`);
+        console.log(`🎯 英雄缩放设置: ${this.mapScale.toFixed(3)}`);
 
         // 检查英雄是否在地图范围内
         const mapLeft = this.mapCenterX;
@@ -1565,20 +1555,20 @@ export class CompleteGameScene extends Phaser.Scene {
         const mapRight = this.mapCenterX + this.map.widthInPixels * this.mapScale;
         const mapBottom = this.mapCenterY + this.map.heightInPixels * this.mapScale;
 
-        const isInMap = correctWorldX >= mapLeft && correctWorldX <= mapRight &&
-            correctWorldY >= mapTop && correctWorldY <= mapBottom;
+        const isInMap = this.heroSprite.x >= mapLeft && this.heroSprite.x <= mapRight &&
+            this.heroSprite.y >= mapTop && this.heroSprite.y <= mapBottom;
 
         console.log('🗺️ [DEBUG] 地图范围检查:');
         console.log(`   📍 地图边界: 左(${mapLeft.toFixed(1)}) 上(${mapTop.toFixed(1)}) 右(${mapRight.toFixed(1)}) 下(${mapBottom.toFixed(1)})`);
-        console.log(`   📍 英雄位置: (${correctWorldX.toFixed(1)}, ${correctWorldY.toFixed(1)})`);
+        console.log(`   📍 英雄位置: (${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)})`);
         console.log(`   ✅ 英雄在地图内: ${isInMap}`);
 
         // 添加可视化调试信息
         console.log('🎯 [DEBUG] 位置关系可视化:');
         console.log(`   🗺️ 地图区域: [${mapLeft.toFixed(0)}, ${mapTop.toFixed(0)}] 到 [${mapRight.toFixed(0)}, ${mapBottom.toFixed(0)}]`);
-        console.log(`   👤 英雄位置: [${correctWorldX.toFixed(0)}, ${correctWorldY.toFixed(0)}]`);
-        console.log(`   📐 英雄相对位置: X偏移(${(correctWorldX - mapLeft).toFixed(0)}), Y偏移(${(correctWorldY - mapTop).toFixed(0)})`);
-        console.log(`   📊 英雄在地图中的百分比: X(${((correctWorldX - mapLeft) / (mapRight - mapLeft) * 100).toFixed(1)}%), Y(${((correctWorldY - mapTop) / (mapBottom - mapTop) * 100).toFixed(1)}%)`);
+        console.log(`   👤 英雄位置: [${this.heroSprite.x.toFixed(0)}, ${this.heroSprite.y.toFixed(0)}]`);
+        console.log(`   📐 英雄相对位置: X偏移(${(this.heroSprite.x - mapLeft).toFixed(0)}), Y偏移(${(this.heroSprite.y - mapTop).toFixed(0)})`);
+        console.log(`   📊 英雄在地图中的百分比: X(${((this.heroSprite.x - mapLeft) / (mapRight - mapLeft) * 100).toFixed(1)}%), Y(${((this.heroSprite.y - mapTop) / (mapBottom - mapTop) * 100).toFixed(1)}%)`);
 
         // 设置移动事件
         this.setupGridEngineEvents();
@@ -1807,11 +1797,15 @@ export class CompleteGameScene extends Phaser.Scene {
         if (distance <= enemy.aiState.followDistance && !enemy.aiState.isFollowing) {
             enemy.aiState.isFollowing = true;
             enemy.aiState.type = 'follow';
-            this.gridEngine.setSpeed(enemy.name, enemy.aiState.followSpeed || 2);
+            if (this.gridEngine.setSpeed) {
+                this.gridEngine.setSpeed(enemy.name, enemy.aiState.followSpeed || 2);
+            }
         } else if (distance > enemy.aiState.followDistance && enemy.aiState.isFollowing) {
             enemy.aiState.isFollowing = false;
             enemy.aiState.type = 'patrol';
-            this.gridEngine.setSpeed(enemy.name, enemy.aiState.patrolSpeed || 1);
+            if (this.gridEngine.setSpeed) {
+                this.gridEngine.setSpeed(enemy.name, enemy.aiState.patrolSpeed || 1);
+            }
             this.startEnemyPatrol(enemy);
         }
 
@@ -1838,7 +1832,12 @@ export class CompleteGameScene extends Phaser.Scene {
 
     private startEnemyPatrol(enemy: any) {
         if (enemy.aiState.type === 'patrol') {
-            this.gridEngine.moveRandomly(enemy.name, 2000, enemy.aiState.patrolRadius);
+            // 使用基础的移动方法替代 moveRandomly
+            const directions = ['up', 'down', 'left', 'right'];
+            const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+            if (this.gridEngine.move) {
+                this.gridEngine.move(enemy.name, randomDirection);
+            }
         }
     }
 
@@ -1888,7 +1887,12 @@ export class CompleteGameScene extends Phaser.Scene {
 
     private startNPCBehavior(npc: any) {
         if (npc.aiState.type === 'idle') {
-            this.gridEngine.moveRandomly(npc.texture.key, npc.aiState.movementDelay, npc.aiState.movementArea);
+            // 使用基础的移动方法替代 moveRandomly
+            const directions = ['up', 'down', 'left', 'right'];
+            const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+            if (this.gridEngine.move) {
+                this.gridEngine.move(npc.texture.key, randomDirection);
+            }
         }
     }
 
@@ -2006,7 +2010,16 @@ export class CompleteGameScene extends Phaser.Scene {
             // 随机转向
             const directions = ['up', 'down', 'left', 'right'];
             const randomDirection = directions[Math.floor(Math.random() * directions.length)];
-            this.gridEngine.setFacingDirection(npc.texture.key, randomDirection);
+            // 使用 setDirection 方法设置方向
+            if (this.gridEngine.setDirection) {
+                this.gridEngine.setDirection(npc.texture.key, randomDirection);
+            } else {
+                // 如果没有 setDirection 方法，直接设置精灵的帧
+                const frameKey = `${npc.texture.key}_idle_${randomDirection}_01`;
+                if (this.textures.get(npc.texture.key).has(frameKey)) {
+                    npc.setFrame(frameKey);
+                }
+            }
         }
     }
 
@@ -2135,6 +2148,7 @@ export class CompleteGameScene extends Phaser.Scene {
                 const position = this.gridEngine.getPosition(enemy.name);
                 const worldPosition = this.tileToWorldPosition(position.x, position.y);
                 enemy.setPosition(worldPosition.x, worldPosition.y);
+                enemy.setScale(this.mapScale); // 应用缩放
             });
         }
 
@@ -2143,6 +2157,7 @@ export class CompleteGameScene extends Phaser.Scene {
                 const position = this.gridEngine.getPosition(npc.texture.key);
                 const worldPosition = this.tileToWorldPosition(position.x, position.y);
                 npc.setPosition(worldPosition.x, worldPosition.y);
+                npc.setScale(this.mapScale); // 应用缩放
             });
         }
     }
@@ -2230,8 +2245,15 @@ export class CompleteGameScene extends Phaser.Scene {
                 enemy.canSeeHero = enemy.body.embedded;
                 if (!enemy.canSeeHero && enemy.isFollowingHero) {
                     enemy.isFollowingHero = false;
-                    this.gridEngine.setSpeed(enemy.name, enemy.speed);
-                    this.gridEngine.moveRandomly(enemy.name, 1000, 4);
+                    if (this.gridEngine.setSpeed) {
+                        this.gridEngine.setSpeed(enemy.name, enemy.speed);
+                    }
+                    // 使用基础的移动方法替代 moveRandomly
+                    const directions = ['up', 'down', 'left', 'right'];
+                    const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+                    if (this.gridEngine.move) {
+                        this.gridEngine.move(enemy.name, randomDirection);
+                    }
                 }
             });
         }
@@ -2273,42 +2295,42 @@ export class CompleteGameScene extends Phaser.Scene {
         const facingDirection = this.gridEngine.getFacingDirection('hero');
 
         this.heroPresenceCollider.setPosition(
-            this.heroSprite.x + 16,
-            this.heroSprite.y + 20
+            this.heroSprite.x + 16 * this.mapScale,
+            this.heroSprite.y + 20 * this.mapScale
         );
 
         this.heroObjectCollider.setPosition(
-            this.heroSprite.x + 16,
-            this.heroSprite.y + 20
+            this.heroSprite.x + 16 * this.mapScale,
+            this.heroSprite.y + 20 * this.mapScale
         );
 
         switch (facingDirection) {
             case 'down': {
-                this.heroActionCollider.setSize(14, 8);
-                (this.heroActionCollider.body as Phaser.Physics.Arcade.Body).setSize(14, 8);
-                this.heroActionCollider.setX(this.heroSprite.x + 9);
-                this.heroActionCollider.setY(this.heroSprite.y + 36);
+                this.heroActionCollider.setSize(14 * this.mapScale, 8 * this.mapScale);
+                (this.heroActionCollider.body as Phaser.Physics.Arcade.Body).setSize(14 * this.mapScale, 8 * this.mapScale);
+                this.heroActionCollider.setX(this.heroSprite.x + 9 * this.mapScale);
+                this.heroActionCollider.setY(this.heroSprite.y + 36 * this.mapScale);
                 break;
             }
             case 'up': {
-                this.heroActionCollider.setSize(14, 8);
-                (this.heroActionCollider.body as Phaser.Physics.Arcade.Body).setSize(14, 8);
-                this.heroActionCollider.setX(this.heroSprite.x + 9);
-                this.heroActionCollider.setY(this.heroSprite.y + 12);
+                this.heroActionCollider.setSize(14 * this.mapScale, 8 * this.mapScale);
+                (this.heroActionCollider.body as Phaser.Physics.Arcade.Body).setSize(14 * this.mapScale, 8 * this.mapScale);
+                this.heroActionCollider.setX(this.heroSprite.x + 9 * this.mapScale);
+                this.heroActionCollider.setY(this.heroSprite.y + 12 * this.mapScale);
                 break;
             }
             case 'left': {
-                this.heroActionCollider.setSize(8, 14);
-                (this.heroActionCollider.body as Phaser.Physics.Arcade.Body).setSize(8, 14);
+                this.heroActionCollider.setSize(8 * this.mapScale, 14 * this.mapScale);
+                (this.heroActionCollider.body as Phaser.Physics.Arcade.Body).setSize(8 * this.mapScale, 14 * this.mapScale);
                 this.heroActionCollider.setX(this.heroSprite.x);
-                this.heroActionCollider.setY(this.heroSprite.y + 21);
+                this.heroActionCollider.setY(this.heroSprite.y + 21 * this.mapScale);
                 break;
             }
             case 'right': {
-                this.heroActionCollider.setSize(8, 14);
-                (this.heroActionCollider.body as Phaser.Physics.Arcade.Body).setSize(8, 14);
-                this.heroActionCollider.setX(this.heroSprite.x + 24);
-                this.heroActionCollider.setY(this.heroSprite.y + 21);
+                this.heroActionCollider.setSize(8 * this.mapScale, 14 * this.mapScale);
+                (this.heroActionCollider.body as Phaser.Physics.Arcade.Body).setSize(8 * this.mapScale, 14 * this.mapScale);
+                this.heroActionCollider.setX(this.heroSprite.x + 24 * this.mapScale);
+                this.heroActionCollider.setY(this.heroSprite.y + 21 * this.mapScale);
                 break;
             }
         }

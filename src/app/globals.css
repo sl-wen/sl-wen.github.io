@@ -49,27 +49,27 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    
+
     /* 防止触摸时的缩放和滚动 */
     -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: none;
-    
+
     /* 优化渲染性能 */
     will-change: transform;
     transform: translateZ(0);
-    
+
     /* 防止上下文菜单 */
     -webkit-context-menu: none;
     context-menu: none;
-    
+
     /* 防止图像拖拽 */
     -webkit-user-drag: none;
     -khtml-user-drag: none;
     -moz-user-drag: none;
     -o-user-drag: none;
     user-drag: none;
-    
+
     /* 优化触摸响应 */
     -ms-touch-action: none;
     -webkit-overflow-scrolling: touch;
@@ -109,7 +109,9 @@
 
   /* 移动端按钮优化 */
   @media (max-width: 768px) {
-    button, .button {
+
+    button,
+    .button {
       /* 增加触摸目标大小 */
       min-height: 44px;
       min-width: 44px;
@@ -117,10 +119,14 @@
       -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
     }
 
-    input[type="number"], input[type="text"], select, textarea {
+    input[type="number"],
+    input[type="text"],
+    select,
+    textarea {
       /* 增加表单元素大小 */
       min-height: 44px;
-      font-size: 16px; /* 防止iOS缩放 */
+      font-size: 16px;
+      /* 防止iOS缩放 */
     }
 
     /* 移动端地图编辑区域 */
@@ -187,11 +193,11 @@
       /* iOS Safari 全屏优化 */
       height: 100vh !important;
       height: -webkit-fill-available !important;
-      
+
       /* 防止iOS Safari的橡皮筋效果 */
       overscroll-behavior: none;
       -webkit-overflow-scrolling: touch;
-      
+
       /* 确保覆盖状态栏区域 */
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
@@ -215,7 +221,7 @@
       -webkit-touch-callout: none;
       -webkit-tap-highlight-color: transparent;
     }
-    
+
     /* PWA Header 安全区域适配 */
     .pwa-safe-header {
       padding-top: env(safe-area-inset-top);
@@ -224,26 +230,26 @@
       /* 减少顶部内边距，避免拥挤 */
       margin-top: 0;
     }
-    
+
     .pwa-header-content {
       min-height: 4rem;
       /* 移除额外的高度计算，避免过高 */
       padding-top: 0.5rem;
       padding-bottom: 0.5rem;
     }
-    
+
     /* PWA 模式下的主内容区域优化 */
     .mobile-content {
       /* 减少顶部内边距，因为header已经处理了安全区域 */
       padding-top: 1rem !important;
       padding-bottom: calc(env(safe-area-inset-bottom) + 5rem);
     }
-    
+
     /* PWA 模式下隐藏不必要的元素 */
     .pwa-hide-when-installed {
       display: none;
     }
-    
+
     /* PWA 模式下的状态指示器位置调整 */
     .fixed.top-4.right-4 {
       top: calc(1rem + env(safe-area-inset-top));
@@ -258,7 +264,7 @@
       padding-bottom: constant(safe-area-inset-bottom);
       padding-left: constant(safe-area-inset-left);
       padding-right: constant(safe-area-inset-right);
-      
+
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
       padding-left: env(safe-area-inset-left);
@@ -443,7 +449,7 @@
   position: relative;
   overflow: hidden;
   border-radius: 1rem;
-  box-shadow: 
+  box-shadow:
     0 25px 50px -12px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.05);
   background: linear-gradient(145deg, #1e293b, #0f172a);
@@ -494,18 +500,37 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+
+  100% {
+    left: 100%;
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  50% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
 }
 
 /* 游戏UI增强样式 */
@@ -513,7 +538,7 @@
   backdrop-filter: blur(10px);
   background: rgba(30, 41, 59, 0.8);
   border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 
+  box-shadow:
     0 10px 25px -5px rgba(0, 0, 0, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.05);
 }
@@ -540,28 +565,28 @@
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
-  
+
   /* 防止iOS Safari的弹跳效果 */
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
-  
+
   /* 优化触摸响应 */
   -ms-touch-action: none;
   -webkit-user-drag: none;
-  
+
   /* 确保硬件加速 */
   transform: translateZ(0);
   will-change: transform;
-  
+
   /* 防止文本选择和上下文菜单 */
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  
+
   /* 移动设备优化 */
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
-  -webkit-focus-ring-color: rgba(0,0,0,0);
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-focus-ring-color: rgba(0, 0, 0, 0);
   outline: none;
 }
 
@@ -572,7 +597,7 @@
     -webkit-overflow-scrolling: auto;
     overscroll-behavior-y: none;
     overscroll-behavior-x: none;
-    
+
     /* 防止iOS Safari地址栏影响 */
     min-height: 100vh;
     min-height: -webkit-fill-available;
@@ -592,12 +617,12 @@
   touch-action: none;
   pointer-events: auto;
   z-index: 1000;
-  
+
   /* 防止意外选择 */
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
-  
+
   /* 优化触摸响应 */
   -webkit-tap-highlight-color: transparent;
 }
@@ -607,11 +632,11 @@
 .game-container.fullscreen-simulated .virtual-joystick {
   z-index: 10001 !important;
   position: fixed !important;
-  
+
   /* 确保在全屏模式下可见 */
   visibility: visible !important;
   opacity: 1 !important;
-  
+
   /* 防止被游戏画布覆盖 */
   pointer-events: auto !important;
 }
@@ -620,11 +645,11 @@
   touch-action: none;
   pointer-events: auto;
   z-index: 1010;
-  
+
   /* 防止长按菜单 */
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  
+
   /* 触摸反馈优化 */
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
   transition: transform 0.1s ease-out;
@@ -635,11 +660,11 @@
 .game-container.fullscreen-simulated .action-button {
   z-index: 10011 !important;
   position: fixed !important;
-  
+
   /* 确保在全屏模式下可见 */
   visibility: visible !important;
   opacity: 1 !important;
-  
+
   /* 防止被游戏画布覆盖 */
   pointer-events: auto !important;
 }
@@ -649,10 +674,10 @@
 .game-container.fullscreen-simulated canvas {
   /* 确保画布不会覆盖UI元素 */
   z-index: 1 !important;
-  
+
   /* 保持触摸事件穿透到控制器 */
   pointer-events: auto;
-  
+
   /* 防止画布阻止触摸事件 */
   touch-action: none;
 }
@@ -673,6 +698,7 @@
 
 /* 移动端游戏优化样式 */
 @media (max-width: 768px) {
+
   /* 游戏容器移动端优化 */
   .game-container {
     touch-action: manipulation;
@@ -699,9 +725,9 @@
   }
 
   /* 防止iOS缩放 */
-  input[type="text"], 
-  input[type="number"], 
-  input[type="email"], 
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
   input[type="password"] {
     font-size: 16px;
   }

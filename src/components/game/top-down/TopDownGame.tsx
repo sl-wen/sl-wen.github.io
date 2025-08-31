@@ -60,61 +60,18 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     shopSystem: ShopSystem.getInstance()
   }));
 
-  // 计算游戏尺寸 - 使用窗口管理器
+  // 参照参考项目：计算游戏尺寸
   const calculateGameSize = () => {
-    if (windowManagerRef.current) {
-      const config = windowManagerRef.current.getConfig();
-      return {
-        width: config.width,
-        height: config.height,
-        multiplier: config.scale
-      };
+    let width = 400;
+    let height = 224; // 16 * 14 = 224
+    const multiplier = Math.min(Math.floor(window.innerWidth / 400), Math.floor(window.innerHeight / 224)) || 1;
+
+    if (multiplier > 1) {
+      width += Math.floor((window.innerWidth - width * multiplier) / (16 * multiplier)) * 16;
+      height += Math.floor((window.innerHeight - height * multiplier) / (16 * multiplier)) * 16;
     }
 
-    // 备用计算方式
-    const deviceInfo = mobileTestHelper.detectDevice();
-    const isMobileDevice = deviceInfo.isMobile || deviceInfo.touchSupport;
-    const availableWidth = window.innerWidth;
-    const availableHeight = window.innerHeight;
-
-    if (isMobileDevice) {
-      const maxWidth = Math.min(availableWidth - 5, 1400);
-      const maxHeight = Math.min(availableHeight - 40, 1000);
-      const aspectRatio = 16 / 9;
-      let gameWidth = maxWidth;
-      let gameHeight = gameWidth / aspectRatio;
-
-      if (gameHeight > maxHeight) {
-        gameHeight = maxHeight;
-        gameWidth = gameHeight * aspectRatio;
-      }
-
-      return {
-        width: Math.floor(gameWidth),
-        height: Math.floor(gameHeight),
-        multiplier: 1
-      };
-    } else {
-      const maxWidth = Math.min(availableWidth - 5, 2400);
-      const maxHeight = Math.min(availableHeight - 10, 1800);
-      const aspectRatio = 16 / 9;
-      let gameWidth = maxWidth;
-      let gameHeight = gameWidth / aspectRatio;
-
-      if (gameHeight > maxHeight) {
-        gameHeight = maxHeight;
-        gameWidth = gameHeight * aspectRatio;
-      }
-
-      gameWidth = Math.floor(gameWidth / 16) * 16;
-      gameHeight = Math.floor(gameHeight / 16) * 16;
-
-      return {
-        width: gameWidth,
-        height: gameHeight,
-        multiplier: 1
-      };
-    }
+    return { width, height, multiplier };
   };
 
   const [gameSize, setGameSize] = useState(calculateGameSize());
@@ -449,19 +406,6 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
           maxHeight: '95vh'
         }}
       />
-
-      {/* 调试信息显示 */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="absolute top-2 right-2 z-50 bg-black bg-opacity-75 text-white text-xs p-2 rounded border border-gray-600 max-w-xs">
-          <div className="font-bold mb-1">🔍 调试信息</div>
-          <div>窗口: {window.innerWidth} x {window.innerHeight}</div>
-          <div>游戏: {gameSize.width} x {gameSize.height}</div>
-          <div>设备: {isMobile ? '移动' : '桌面'}</div>
-          <div>状态: {isGameReady ? '就绪' : '初始化'}</div>
-          <div>开始: {gameStarted ? '是' : '否'}</div>
-          <div className="mt-1 text-yellow-300">{debugInfo}</div>
-        </div>
-      )}
 
       {!isGameReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/70">

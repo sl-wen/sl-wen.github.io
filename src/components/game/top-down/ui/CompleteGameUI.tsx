@@ -262,20 +262,6 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
         />
       )}
 
-      {/* 控制提示 */}
-      <div className="absolute bottom-4 left-4 z-10">
-        <div className="text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
-          <div>WASD/方向键: 移动</div>
-          <div>空格: 攻击</div>
-          <div>回车: 交互</div>
-          <div>I: 背包</div>
-          <div>J: 成就</div>
-          <div>T: 教程</div>
-          <div>H: 帮助</div>
-          <div>ESC: 菜单</div>
-        </div>
-      </div>
-
       {/* 对话框 */}
       {showDialog && (
         <DialogBox
@@ -338,9 +324,9 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
           filterCategory: 'all',
           showRewards: true
         } as any}
-        onConfigChange={() => {}}
-        onShareAchievement={() => {}}
-        onAchievementClick={() => {}}
+        onConfigChange={() => { }}
+        onShareAchievement={() => { }}
+        onAchievementClick={() => { }}
       />
 
       {/* 设置UI */}
@@ -362,12 +348,12 @@ export const CompleteGameUI: React.FC<CompleteGameUIProps> = ({
           showPreview: true,
           autoApply: false
         } as any}
-        onConfigChange={() => {}}
-        onSettingChange={() => {}}
-        onResetCategory={() => {}}
-        onResetAll={() => {}}
-        onExport={() => {}}
-        onImport={() => {}}
+        onConfigChange={() => { }}
+        onSettingChange={() => { }}
+        onResetCategory={() => { }}
+        onResetAll={() => { }}
+        onExport={() => { }}
+        onImport={() => { }}
       />
 
       {/* 教程UI */}

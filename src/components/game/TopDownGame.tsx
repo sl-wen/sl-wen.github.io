@@ -9,6 +9,9 @@ import { GameMenu } from './ui/GameMenu';
 import { HeroHealth } from './ui/HeroHealth';
 import { HeroCoin } from './ui/HeroCoin';
 import { Message } from './ui/Message';
+import { PerformanceMonitor } from './ui/PerformanceMonitor';
+import { ErrorBoundary } from './ui/ErrorBoundary';
+import { BrowserCompatibility } from './ui/BrowserCompatibility';
 
 // 导入游戏场景
 import BootScene from './scenes/BootScene';
@@ -34,6 +37,13 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     heroHealthStates: [],
     heroCoins: null
   });
+
+  // 性能监控状态
+  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
+
+  // 浏览器兼容性状态
+  const [showCompatibilityCheck, setShowCompatibilityCheck] = useState(true);
+  const [isCompatible, setIsCompatible] = useState(false);
 
   // 计算游戏尺寸
   const gameSize = propWidth && propHeight 
@@ -68,6 +78,10 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
       ],
       physics: {
         default: 'arcade',
+        arcade: {
+          gravity: { x: 0, y: 0 },
+          debug: false,
+        },
       },
       plugins: {
         scene: [
@@ -222,6 +236,18 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     window.dispatchEvent(event);
   }, []);
 
+  // 处理浏览器兼容性检查结果
+  const handleCompatibilityResult = (compatible: boolean) => {
+    setIsCompatible(compatible);
+    setShowCompatibilityCheck(false);
+  };
+
+  if (showCompatibilityCheck) {
+    return (
+      <BrowserCompatibility onCompatibilityResult={handleCompatibilityResult} />
+    );
+  }
+
   if (!gameState.isGameReady) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-900">
@@ -231,71 +257,87 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
   }
 
   return (
-    <div className="relative w-full h-full">
-      {/* 游戏画布容器 */}
-      <div
-        ref={gameRef}
-        className="w-full h-full"
-        style={{
-          width: `${gameSize.width * gameSize.multiplier}px`,
-          height: `${gameSize.height * gameSize.multiplier}px`,
-          margin: 'auto',
-          padding: 0,
-          overflow: 'hidden',
-        }}
-      />
+    <ErrorBoundary>
+      <div className="relative w-full h-full">
+        {/* 游戏画布容器 */}
+        <div
+          ref={gameRef}
+          className="w-full h-full"
+          style={{
+            width: `${gameSize.width * gameSize.multiplier}px`,
+            height: `${gameSize.height * gameSize.multiplier}px`,
+            margin: 'auto',
+            padding: 0,
+            overflow: 'hidden',
+          }}
+        />
 
-      {/* 游戏UI层 */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* 血量显示 */}
-        {gameState.heroHealthStates.length > 0 && (
-          <HeroHealth
-            gameSize={gameSize}
-            healthStates={gameState.heroHealthStates}
-          />
-        )}
-
-        {/* 金币显示 */}
-        {gameState.heroCoins !== null && (
-          <HeroCoin
-            gameSize={gameSize}
-            heroCoins={gameState.heroCoins}
-          />
-        )}
-
-        {/* 对话框 */}
-        {gameState.messages.length > 0 && (
-          <div className="pointer-events-auto">
-            <DialogBox
-              onDone={handleDialogDone}
-              characterName={gameState.characterName}
-              messages={gameState.messages}
+        {/* 游戏UI层 */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* 血量显示 */}
+          {gameState.heroHealthStates.length > 0 && (
+            <HeroHealth
               gameSize={gameSize}
+              healthStates={gameState.heroHealthStates}
             />
-          </div>
-        )}
+          )}
 
-        {/* 游戏菜单 */}
-        {gameState.gameMenuItems.length > 0 && (
-          <div className="pointer-events-auto">
-            <GameMenu
-              items={gameState.gameMenuItems}
+          {/* 金币显示 */}
+          {gameState.heroCoins !== null && (
+            <HeroCoin
               gameSize={gameSize}
-              position={gameState.gameMenuPosition}
-              onSelected={handleMenuSelected}
+              heroCoins={gameState.heroCoins}
             />
+          )}
+
+          {/* 对话框 */}
+          {gameState.messages.length > 0 && (
+            <div className="pointer-events-auto">
+              <DialogBox
+                onDone={handleDialogDone}
+                characterName={gameState.characterName}
+                messages={gameState.messages}
+                gameSize={gameSize}
+              />
+            </div>
+          )}
+
+          {/* 游戏菜单 */}
+          {gameState.gameMenuItems.length > 0 && (
+            <div className="pointer-events-auto">
+              <GameMenu
+                items={gameState.gameMenuItems}
+                gameSize={gameSize}
+                position={gameState.gameMenuPosition}
+                onSelected={handleMenuSelected}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* 性能监控 */}
+        <PerformanceMonitor
+          gameSize={gameSize}
+          isVisible={showPerformanceMonitor}
+        />
+
+        {/* 性能监控切换按钮 */}
+        <button
+          onClick={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
+          className="absolute top-2 right-2 z-40 bg-gray-800 bg-opacity-70 text-white text-xs px-2 py-1 rounded border border-gray-600 hover:bg-opacity-90 transition-all"
+        >
+          {showPerformanceMonitor ? '隐藏性能' : '显示性能'}
+        </button>
+
+        {/* 移动端提示 */}
+        {gameState.isMobile && (
+          <div className="absolute bottom-4 left-4 right-4 bg-blue-900 bg-opacity-50 border border-blue-500 rounded-lg p-3 pointer-events-none">
+            <p className="text-blue-200 text-sm text-center">
+              📱 移动端优化：点击"START"按钮开始游戏
+            </p>
           </div>
         )}
       </div>
-
-      {/* 移动端提示 */}
-      {gameState.isMobile && (
-        <div className="absolute bottom-4 left-4 right-4 bg-blue-900 bg-opacity-50 border border-blue-500 rounded-lg p-3 pointer-events-none">
-          <p className="text-blue-200 text-sm text-center">
-            📱 移动端优化：点击"START"按钮开始游戏
-          </p>
-        </div>
-      )}
-    </div>
+    </ErrorBoundary>
   );
 };

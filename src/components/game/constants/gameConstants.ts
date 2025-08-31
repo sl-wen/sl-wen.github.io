@@ -87,6 +87,27 @@ export const GAME_CONSTANTS = {
     MUSIC_VOLUME: 0.5,
     SFX_VOLUME: 0.8,
   },
+  
+  // 游戏逻辑配置
+  GAMEPLAY: {
+    ATTACK_DELAY_TIME: 180,
+    SCENE_FADE_TIME: 500,
+    NPC_MOVEMENT_RANDOM: 'random',
+    ENEMY_AI_TYPE: 'follow',
+    BOX_INDEX: 2,
+    BUSH_INDEX: 3,
+    HERO_SPEED: 4,
+    ENEMY_SPEED: 2,
+    NPC_SPEED: 1,
+    COLLISION_OFFSET: 8,
+    INTERACTION_RANGE: 16,
+    HERO_START_HEALTH: 100,
+    HERO_MAX_HEALTH: 100,
+    HERO_START_COINS: 0,
+    ITEM_COLLECTION_RANGE: 32,
+    DIALOG_TRIGGER_RANGE: 24,
+    ATTACK_RANGE: 16,
+  },
 } as const;
 
 // 对话框配置

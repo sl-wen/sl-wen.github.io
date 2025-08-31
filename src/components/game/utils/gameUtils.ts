@@ -102,3 +102,165 @@ export const GAME_CONFIG = {
   AUTHOR: 'Game Developer',
   DESCRIPTION: 'A top-down RPG game built with React, TypeScript, and Phaser',
 } as const;
+
+// 游戏状态管理
+export class GameStateManager {
+  private static instance: GameStateManager;
+  private state: any = {};
+
+  private constructor() {}
+
+  static getInstance(): GameStateManager {
+    if (!GameStateManager.instance) {
+      GameStateManager.instance = new GameStateManager();
+    }
+    return GameStateManager.instance;
+  }
+
+  setState(key: string, value: any): void {
+    this.state[key] = value;
+  }
+
+  getState(key: string): any {
+    return this.state[key];
+  }
+
+  getFullState(): any {
+    return { ...this.state };
+  }
+
+  clearState(): void {
+    this.state = {};
+  }
+}
+
+// 游戏事件管理器
+export class GameEventManager {
+  private static instance: GameEventManager;
+  private listeners: Map<string, Function[]> = new Map();
+
+  private constructor() {}
+
+  static getInstance(): GameEventManager {
+    if (!GameEventManager.instance) {
+      GameEventManager.instance = new GameEventManager();
+    }
+    return GameEventManager.instance;
+  }
+
+  on(event: string, callback: Function): void {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, []);
+    }
+    this.listeners.get(event)!.push(callback);
+  }
+
+  off(event: string, callback: Function): void {
+    if (this.listeners.has(event)) {
+      const callbacks = this.listeners.get(event)!;
+      const index = callbacks.indexOf(callback);
+      if (index > -1) {
+        callbacks.splice(index, 1);
+      }
+    }
+  }
+
+  emit(event: string, data?: any): void {
+    if (this.listeners.has(event)) {
+      this.listeners.get(event)!.forEach(callback => {
+        callback(data);
+      });
+    }
+  }
+
+  clear(): void {
+    this.listeners.clear();
+  }
+}
+
+// 游戏数据持久化
+export class GameDataManager {
+  private static instance: GameDataManager;
+  private storageKey = 'top-down-rpg-save';
+
+  private constructor() {}
+
+  static getInstance(): GameDataManager {
+    if (!GameDataManager.instance) {
+      GameDataManager.instance = new GameDataManager();
+    }
+    return GameDataManager.instance;
+  }
+
+  saveGame(data: any): void {
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(data));
+    } catch (error) {
+      console.error('Failed to save game data:', error);
+    }
+  }
+
+  loadGame(): any {
+    try {
+      const data = localStorage.getItem(this.storageKey);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('Failed to load game data:', error);
+      return null;
+    }
+  }
+
+  clearSave(): void {
+    try {
+      localStorage.removeItem(this.storageKey);
+    } catch (error) {
+      console.error('Failed to clear save data:', error);
+    }
+  }
+
+  hasSave(): boolean {
+    return localStorage.getItem(this.storageKey) !== null;
+  }
+}
+
+// 游戏性能监控
+export class PerformanceMonitor {
+  private static instance: PerformanceMonitor;
+  private metrics: Map<string, number[]> = new Map();
+
+  private constructor() {}
+
+  static getInstance(): PerformanceMonitor {
+    if (!PerformanceMonitor.instance) {
+      PerformanceMonitor.instance = new PerformanceMonitor();
+    }
+    return PerformanceMonitor.instance;
+  }
+
+  startTimer(name: string): void {
+    this.metrics.set(name, [performance.now()]);
+  }
+
+  endTimer(name: string): number {
+    const metric = this.metrics.get(name);
+    if (metric && metric.length > 0) {
+      const duration = performance.now() - metric[0];
+      metric.push(duration);
+      return duration;
+    }
+    return 0;
+  }
+
+  getAverageTime(name: string): number {
+    const metric = this.metrics.get(name);
+    if (metric && metric.length > 1) {
+      const times = metric.slice(1);
+      return times.reduce((sum, time) => sum + time, 0) / times.length;
+    }
+    return 0;
+  }
+
+  clearMetrics(): void {
+    this.metrics.clear();
+  }
+}

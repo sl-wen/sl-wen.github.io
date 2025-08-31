@@ -49,11 +49,11 @@ export const Message: React.FC<MessageProps> = ({
 
   return (
     <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
-      <div className="bg-black bg-opacity-80 border-2 border-white rounded-lg p-4 max-w-md">
-        <div className="text-white text-center">
+      <div className="bg-black bg-opacity-90 border-2 border-white rounded-lg p-4 max-w-md shadow-2xl backdrop-blur-sm">
+        <div className="text-white text-center drop-shadow-lg">
           {displayedText}
           {isTyping && (
-            <span className="animate-pulse">|</span>
+            <span className="animate-pulse text-yellow-400">|</span>
           )}
         </div>
       </div>

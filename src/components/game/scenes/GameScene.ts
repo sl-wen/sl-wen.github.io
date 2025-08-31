@@ -3,332 +3,385 @@ import GridEngine from 'grid-engine';
 import { GAME_CONSTANTS, DIALOG_CONFIG, GAME_EVENTS } from '../constants/gameConstants';
 
 export default class GameScene extends Phaser.Scene {
-  private player!: Phaser.GameObjects.Sprite;
-  private npcs: Phaser.GameObjects.Sprite[] = [];
-  private items: Phaser.GameObjects.Sprite[] = [];
+  // 输入控制
+  private enterKey!: Phaser.Input.Keyboard.Key;
+  private spaceKey!: Phaser.Input.Keyboard.Key;
+  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  private wasd!: any;
+  private isSpaceJustDown = false;
+
+  // 游戏状态
+  private isShowingDialog = false;
+  private isTeleporting = false;
+  private isAttacking = false;
+
+  // 游戏对象
+  private heroSprite!: Phaser.Physics.Arcade.Sprite & {
+    health: number;
+    maxHealth: number;
+    coin: number;
+    canPush: boolean;
+    haveSword: boolean;
+    restoreHealth: (restore: number) => void;
+    increaseMaxHealth: (increase: number) => void;
+    collectCoin: (coinQuantity: number) => void;
+    takeDamage: (damage: number) => void;
+  };
   private map!: Phaser.Tilemaps.Tilemap;
   private groundLayer!: Phaser.Tilemaps.TilemapLayer;
   private objectsLayer!: Phaser.Tilemaps.TilemapLayer;
-  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private wasdKeys!: any;
-  private spaceKey!: Phaser.Input.Keyboard.Key;
-  private escKey!: Phaser.Input.Keyboard.Key;
-  private gameState: any = {
-    health: 100,
-    maxHealth: 100,
-    coins: 0,
-    hasSword: false,
-    canPush: false,
-    currentDialog: null,
-    isInDialog: false,
-    isPaused: false
-  };
+  
+  // 组
+  private itemsSprites!: Phaser.GameObjects.Group;
+  private npcSprites!: Phaser.GameObjects.Group;
+
+  // 初始化数据
+  private initData: any = {};
 
   constructor() {
     super({ key: 'GameScene' });
   }
 
-  create(): void {
-    // 创建地图
-    this.createMap();
+  init(data: any): void {
+    this.initData = data;
+  }
 
-    // 创建角色
-    this.createPlayer();
-    this.createNPCs();
-    this.createItems();
+  create(): void {
+    const camera = this.cameras.main;
+    
+    // 获取英雄状态
+    const heroStatus = this.initData.heroStatus || {
+      position: { x: 20, y: 20 },
+      frame: 'hero_idle_down_01',
+      facingDirection: 'down',
+      health: 100,
+      maxHealth: 100,
+      coin: 0,
+      canPush: false,
+      haveSword: false
+    };
+
+    camera.fadeIn(GAME_CONSTANTS.GAMEPLAY.SCENE_FADE_TIME);
 
     // 设置输入控制
     this.setupInput();
 
-    // 设置GridEngine
-    this.setupGridEngine();
+    // 创建地图
+    this.createMap();
 
-    // 设置UI
-    this.setupUI();
+    // 创建英雄
+    this.createHero(heroStatus);
 
-    // 设置事件监听
-    this.setupEventListeners();
+    // 创建物品
+    this.createItems();
+
+    // 创建NPC
+    this.createNPCs();
 
     // 设置相机
     this.setupCamera();
 
-    // 添加淡入效果
-    this.cameras.main.fadeIn(500, 0, 0, 0);
+    // 设置GridEngine
+    this.setupGridEngine();
+
+    // 设置碰撞检测
+    this.setupCollisions();
+
+    // 设置动画
+    this.setupAnimations();
   }
 
   update(): void {
-    if (this.gameState.isPaused || this.gameState.isInDialog) {
+    this.isSpaceJustDown = Phaser.Input.Keyboard.JustDown(this.spaceKey);
+
+    if (this.isTeleporting || this.isAttacking || this.isShowingDialog) {
       return;
     }
 
-    this.handlePlayerMovement();
-    this.handlePlayerInteraction();
-  }
+    // 处理攻击
+    const gridEngine = this.plugins.get('gridEngine') as any;
+    if (gridEngine && !gridEngine.isMoving('hero') && this.isSpaceJustDown && this.heroSprite.haveSword) {
+      const facingDirection = gridEngine.getFacingDirection('hero');
+      this.heroSprite.anims.play(`hero_attack_${facingDirection}`);
+      this.isAttacking = true;
+      return;
+    }
 
-  private createMap(): void {
-    // 创建地图
-    this.map = this.make.tilemap({ key: 'map' });
-    
-    // 添加瓦片集
-    const mainTileset = this.map.addTilesetImage('main_tileset', 'main_tileset');
-
-    // 创建图层
-    const groundLayer = this.map.createLayer('ground', mainTileset!);
-    const objectsLayer = this.map.createLayer('objects', mainTileset!);
-    
-    if (groundLayer) this.groundLayer = groundLayer;
-    if (objectsLayer) this.objectsLayer = objectsLayer;
-
-    // 设置碰撞
-    this.objectsLayer.setCollisionByProperty({ collides: true });
-  }
-
-  private createPlayer(): void {
-    // 创建玩家精灵
-    this.player = this.add.sprite(320, 320, 'player', 'hero_idle_1');
-    this.player.setOrigin(0.5);
-    this.player.play('player_idle');
-
-    // 设置玩家物理属性
-    this.physics.add.existing(this.player);
-    (this.player.body as Phaser.Physics.Arcade.Body).setCollideWorldBounds(true);
-  }
-
-  private createNPCs(): void {
-    // 创建NPC位置配置
-    const npcConfigs = [
-      { key: 'npc_01', x: 400, y: 320, name: 'npc_01' },
-      { key: 'npc_02', x: 480, y: 400, name: 'npc_02' },
-      { key: 'npc_03', x: 320, y: 480, name: 'npc_03' },
-      { key: 'npc_04', x: 560, y: 320, name: 'npc_04' }
-    ];
-
-    npcConfigs.forEach(config => {
-      const npc = this.add.sprite(config.x, config.y, config.key, 'npc_01_idle_1');
-      npc.setOrigin(0.5);
-      npc.play(`${config.key}_idle`);
-      npc.setData('name', config.name);
-      npc.setData('dialog', DIALOG_CONFIG[config.name as keyof typeof DIALOG_CONFIG]);
-      
-      this.npcs.push(npc);
-    });
-  }
-
-  private createItems(): void {
-    // 创建物品
-    const itemConfigs = [
-      { key: 'sword', x: 640, y: 320, name: 'sword' },
-      { key: 'book', x: 400, y: 480, name: 'book_01' },
-      { key: 'sign', x: 480, y: 240, name: 'sign_01' }
-    ];
-
-    itemConfigs.forEach(config => {
-      const item = this.add.sprite(config.x, config.y, config.key);
-      item.setOrigin(0.5);
-      item.setData('name', config.name);
-      item.setData('dialog', DIALOG_CONFIG[config.name as keyof typeof DIALOG_CONFIG]);
-      
-      this.items.push(item);
-    });
+    // 处理移动
+    this.handleMovement();
   }
 
   private setupInput(): void {
-    // 设置键盘输入
-    this.cursors = this.input.keyboard!.createCursorKeys();
-    this.wasdKeys = this.input.keyboard!.addKeys('W,S,A,D');
-    this.spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-    this.escKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+    if (this.input.keyboard) {
+      this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+      this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+      this.cursors = this.input.keyboard.createCursorKeys();
+      this.wasd = this.input.keyboard.addKeys(['W', 'A', 'S', 'D']) as any;
+    }
   }
 
-  private setupGridEngine(): void {
-    // 这里将设置GridEngine插件
-    // 由于GridEngine需要特定的配置，我们将在后续实现
+  private createMap(): void {
+    this.map = this.make.tilemap({ key: 'map' });
+    const mainTileset = this.map.addTilesetImage('main_tileset', 'main_tileset');
+
+    if (mainTileset) {
+      const groundLayer = this.map.createLayer('ground', mainTileset);
+      const objectsLayer = this.map.createLayer('objects', mainTileset);
+      
+      if (groundLayer) this.groundLayer = groundLayer;
+      if (objectsLayer) this.objectsLayer = objectsLayer;
+
+      this.objectsLayer.setCollisionByProperty({ collides: true });
+    }
   }
 
-  private setupUI(): void {
-    // 更新UI显示
-    this.updateUI();
+  private createHero(heroStatus: any): void {
+    const { position, frame, health, maxHealth, coin, canPush, haveSword } = heroStatus;
+
+    this.heroSprite = this.physics.add.sprite(0, 0, 'player', frame) as any;
+    this.heroSprite.setDepth(1);
+    
+    // 设置英雄属性
+    this.heroSprite.health = health;
+    this.heroSprite.maxHealth = maxHealth;
+    this.heroSprite.coin = coin;
+    this.heroSprite.canPush = canPush;
+    this.heroSprite.haveSword = haveSword;
+
+    // 更新UI
+    this.updateHeroHealthUI(this.calculateHeroHealthStates());
+    this.updateHeroCoinUI(coin);
+
+    // 设置物理属性
+    if (this.heroSprite.body) {
+      this.heroSprite.body.setSize(14, 14);
+      this.heroSprite.body.setOffset(9, 13);
+    }
+
+    // 设置英雄方法
+    this.setupHeroMethods();
   }
 
-  private setupEventListeners(): void {
-    // 监听游戏事件
-    window.addEventListener(GAME_EVENTS.MENU_ITEM_SELECTED, this.handleMenuSelection.bind(this));
-    window.addEventListener(GAME_EVENTS.DIALOG_FINISHED, this.handleDialogFinished.bind(this));
+  private setupHeroMethods(): void {
+    // 恢复血量
+    this.heroSprite.restoreHealth = (restore: number) => {
+      this.heroSprite.health = Math.min(this.heroSprite.health + restore, this.heroSprite.maxHealth);
+      this.updateHeroHealthUI(this.calculateHeroHealthStates());
+    };
+
+    // 增加最大血量
+    this.heroSprite.increaseMaxHealth = (increase: number) => {
+      this.heroSprite.maxHealth += increase;
+      this.updateHeroHealthUI(this.calculateHeroHealthStates());
+    };
+
+    // 收集金币
+    this.heroSprite.collectCoin = (coinQuantity: number) => {
+      this.heroSprite.coin = Math.min(this.heroSprite.coin + coinQuantity, 999);
+      this.updateHeroCoinUI(this.heroSprite.coin);
+    };
+
+    // 受到伤害
+    this.heroSprite.takeDamage = (damage: number) => {
+      this.time.delayedCall(180, () => {
+        this.heroSprite.health -= damage;
+        if (this.heroSprite.health <= 0) {
+          this.cameras.main.fadeOut(GAME_CONSTANTS.GAMEPLAY.SCENE_FADE_TIME);
+          this.updateHeroHealthUI([]);
+          this.updateHeroCoinUI(null);
+          this.time.delayedCall(GAME_CONSTANTS.GAMEPLAY.SCENE_FADE_TIME, () => {
+            this.isTeleporting = false;
+            this.scene.start('GameOverScene');
+          });
+        } else {
+          this.updateHeroHealthUI(this.calculateHeroHealthStates());
+          this.tweens.add({
+            targets: this.heroSprite,
+            alpha: 0,
+            ease: Phaser.Math.Easing.Elastic.InOut,
+            duration: 70,
+            repeat: 1,
+            yoyo: true,
+          });
+        }
+      });
+    };
+  }
+
+  private createItems(): void {
+    this.itemsSprites = this.add.group();
+
+    // 创建一些测试物品
+    const testItems = [
+      { x: 400, y: 300, type: 'coin' },
+      { x: 450, y: 350, type: 'heart' },
+      { x: 500, y: 400, type: 'sword' }
+    ];
+
+    testItems.forEach(item => {
+      const sprite = this.physics.add.sprite(item.x, item.y, item.type);
+      sprite.setDepth(1);
+      sprite.setOrigin(0, 1);
+      (sprite as any).itemType = item.type;
+      this.itemsSprites.add(sprite);
+    });
+  }
+
+  private createNPCs(): void {
+    this.npcSprites = this.add.group();
+
+    // 创建NPC
+    const npcConfigs = [
+      { key: 'npc_01', x: 400, y: 320, name: 'npc_01' },
+      { key: 'npc_02', x: 480, y: 400, name: 'npc_02' }
+    ];
+
+    npcConfigs.forEach(config => {
+      const npc = this.physics.add.sprite(config.x, config.y, config.key, `${config.key}_idle_down_01`);
+      npc.body.setSize(14, 14);
+      npc.body.setOffset(9, 13);
+      npc.setData('name', config.name);
+      npc.setData('dialog', DIALOG_CONFIG[config.name as keyof typeof DIALOG_CONFIG]);
+      this.npcSprites.add(npc);
+    });
   }
 
   private setupCamera(): void {
-    // 设置相机跟随玩家
-    this.cameras.main.startFollow(this.player);
-    this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
+    const camera = this.cameras.main;
+    camera.startFollow(this.heroSprite, true);
+    camera.setFollowOffset(-this.heroSprite.width, -this.heroSprite.height);
+    
+    if (this.map) {
+      camera.setBounds(
+        0,
+        0,
+        Math.max(this.map.widthInPixels, this.game.scale.gameSize.width),
+        Math.max(this.map.heightInPixels, this.game.scale.gameSize.height)
+      );
+    }
   }
 
-  private handlePlayerMovement(): void {
-    const speed = GAME_CONSTANTS.PLAYER_SPEED;
-    const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
+  private setupGridEngine(): void {
+    if (!this.map) return;
 
-    // 重置速度
-    playerBody.setVelocity(0);
+    const gridEngineConfig = {
+      characters: [
+        {
+          id: 'hero',
+          sprite: this.heroSprite,
+          startPosition: this.initData.heroStatus?.position || { x: 20, y: 20 },
+          offsetY: 4,
+        },
+      ],
+    };
 
-    // 处理输入
-    let moving = false;
-    let direction = '';
-
-    if (this.cursors.left.isDown || this.wasdKeys.A.isDown) {
-      playerBody.setVelocityX(-speed);
-      direction = 'left';
-      moving = true;
-    } else if (this.cursors.right.isDown || this.wasdKeys.D.isDown) {
-      playerBody.setVelocityX(speed);
-      direction = 'right';
-      moving = true;
-    }
-
-    if (this.cursors.up.isDown || this.wasdKeys.W.isDown) {
-      playerBody.setVelocityY(-speed);
-      direction = 'up';
-      moving = true;
-    } else if (this.cursors.down.isDown || this.wasdKeys.S.isDown) {
-      playerBody.setVelocityY(speed);
-      direction = 'down';
-      moving = true;
-    }
-
-    // 播放动画
-    if (moving) {
-      this.player.play(`player_${direction}`);
+    // 使用GridEngine插件
+    const gridEngine = this.plugins.get('gridEngine') as any;
+    if (gridEngine) {
+      gridEngine.create(this.map, gridEngineConfig);
     } else {
-      this.player.play('player_idle');
+      console.warn('GridEngine plugin not available');
     }
   }
 
-  private handlePlayerInteraction(): void {
-    if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
-      this.interactWithNearbyObjects();
-    }
+  private setupCollisions(): void {
+    // 英雄与物品碰撞
+    this.physics.add.overlap(this.heroSprite, this.itemsSprites, (objA, objB) => {
+      const item = [objA, objB].find((obj) => obj !== this.heroSprite);
+      if (!item) return;
 
-    if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
-      this.togglePauseMenu();
+      this.handleItemCollection(item);
+    });
+
+    // 英雄与NPC碰撞
+    this.physics.add.overlap(this.heroSprite, this.npcSprites, (objA, objB) => {
+      if (this.isShowingDialog) return;
+
+      const npc = [objA, objB].find((obj) => obj !== this.heroSprite);
+      if (!npc) return;
+
+      if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
+        this.startDialog((npc as any).getData('name'));
+      }
+    });
+  }
+
+  private setupAnimations(): void {
+    // 设置动画完成事件
+    this.heroSprite.on('animationcomplete', (animation: any) => {
+      if (animation.key.includes('attack')) {
+        this.isAttacking = false;
+      }
+    });
+  }
+
+  private handleMovement(): void {
+    const gridEngine = this.plugins.get('gridEngine') as any;
+    if (!gridEngine) return;
+
+    if (this.cursors.left.isDown || this.wasd.A.isDown) {
+      gridEngine.move('hero', 'left');
+    } else if (this.cursors.right.isDown || this.wasd.D.isDown) {
+      gridEngine.move('hero', 'right');
+    } else if (this.cursors.up.isDown || this.wasd.W.isDown) {
+      gridEngine.move('hero', 'up');
+    } else if (this.cursors.down.isDown || this.wasd.S.isDown) {
+      gridEngine.move('hero', 'down');
     }
   }
 
-  private interactWithNearbyObjects(): void {
-    const interactionRange = 32;
-    const playerX = this.player.x;
-    const playerY = this.player.y;
+  private handleItemCollection(item: any): void {
+    switch (item.itemType) {
+      case 'heart':
+        this.heroSprite.restoreHealth(20);
+        break;
+      case 'coin':
+        this.heroSprite.collectCoin(1);
+        break;
+      case 'sword':
+        this.heroSprite.haveSword = true;
+        this.startDialog('sword');
+        break;
+    }
 
-    // 检查NPC交互
-    this.npcs.forEach(npc => {
-      const distance = Phaser.Math.Distance.Between(playerX, playerY, npc.x, npc.y);
-      if (distance <= interactionRange) {
-        this.startDialog(npc.getData('name'));
-        return;
-      }
-    });
-
-    // 检查物品交互
-    this.items.forEach(item => {
-      const distance = Phaser.Math.Distance.Between(playerX, playerY, item.x, item.y);
-      if (distance <= interactionRange) {
-        this.startDialog(item.getData('name'));
-        this.collectItem(item);
-        return;
-      }
-    });
+    item.setVisible(false);
+    item.destroy();
   }
 
   private startDialog(characterName: string): void {
-    if (this.gameState.isInDialog) return;
-
-    this.gameState.isInDialog = true;
-    this.gameState.currentDialog = characterName;
-
-    // 触发对话框事件
-    const event = new CustomEvent(GAME_EVENTS.NEW_DIALOG, {
+    const customEvent = new CustomEvent('new-dialog', {
       detail: { characterName }
     });
-    window.dispatchEvent(event);
-  }
+    window.dispatchEvent(customEvent);
+    this.isShowingDialog = true;
 
-  private collectItem(item: Phaser.GameObjects.Sprite): void {
-    const itemName = item.getData('name');
-    
-    switch (itemName) {
-      case 'sword':
-        this.gameState.hasSword = true;
-        break;
-      case 'push':
-        this.gameState.canPush = true;
-        break;
-      default:
-        this.gameState.coins++;
-        break;
-    }
-
-    // 移除物品
-    item.destroy();
-    this.items = this.items.filter(i => i !== item);
-
-    // 更新UI
-    this.updateUI();
-  }
-
-  private togglePauseMenu(): void {
-    this.gameState.isPaused = !this.gameState.isPaused;
-
-    if (this.gameState.isPaused) {
-      // 显示暂停菜单
-      const event = new CustomEvent(GAME_EVENTS.MENU_ITEMS, {
-        detail: {
-          menuItems: [
-            { id: 'resume', label: 'RESUME', action: 'resume_game' },
-            { id: 'settings', label: 'SETTINGS', action: 'open_settings' },
-            { id: 'main_menu', label: 'MAIN MENU', action: 'return_to_main' }
-          ],
-          menuPosition: 'center'
-        }
+    const dialogBoxFinishedEventListener = () => {
+      window.removeEventListener(`${characterName}-dialog-finished`, dialogBoxFinishedEventListener);
+      this.time.delayedCall(100, () => {
+        this.isShowingDialog = false;
       });
-      window.dispatchEvent(event);
-    }
+    };
+    window.addEventListener(`${characterName}-dialog-finished`, dialogBoxFinishedEventListener);
   }
 
-  private handleMenuSelection(event: any): void {
-    const { selectedItem } = event.detail;
-
-    switch (selectedItem.action) {
-      case 'resume_game':
-        this.gameState.isPaused = false;
-        break;
-      case 'return_to_main':
-        this.scene.start('MainMenuScene');
-        break;
-      default:
-        console.warn('Unknown menu action:', selectedItem.action);
-    }
+  private calculateHeroHealthStates(): any[] {
+    return [{
+      current: this.heroSprite.health,
+      max: this.heroSprite.maxHealth
+    }];
   }
 
-  private handleDialogFinished(): void {
-    this.gameState.isInDialog = false;
-    this.gameState.currentDialog = null;
-  }
-
-  private updateUI(): void {
-    // 更新血量显示
-    const healthEvent = new CustomEvent(GAME_EVENTS.HERO_HEALTH, {
-      detail: {
-        healthStates: [{
-          current: this.gameState.health,
-          max: this.gameState.maxHealth
-        }]
-      }
+  private updateHeroHealthUI(healthStates: any[]): void {
+    const customEvent = new CustomEvent('hero-health', {
+      detail: { healthStates }
     });
-    window.dispatchEvent(healthEvent);
+    window.dispatchEvent(customEvent);
+  }
 
-    // 更新金币显示
-    const coinEvent = new CustomEvent(GAME_EVENTS.HERO_COIN, {
-      detail: {
-        heroCoins: this.gameState.coins
-      }
+  private updateHeroCoinUI(coins: number | null): void {
+    const customEvent = new CustomEvent('hero-coin', {
+      detail: { heroCoins: coins }
     });
-    window.dispatchEvent(coinEvent);
+    window.dispatchEvent(customEvent);
   }
 }

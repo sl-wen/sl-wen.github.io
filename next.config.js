@@ -1,104 +1,37 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
-  skipWaiting: true,
-  runtimeCaching: [
-    {
-      urlPattern: /^https?.*/,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'offlineCache',
-        expiration: {
-          maxEntries: 200,
-          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-        },
-      },
-    },
-  ],
-});
-
 const nextConfig = {
-  // 暂时禁用静态导出，使用标准构建
-  // output: 'export',
-  trailingSlash: true,
-
-  // 图片配置
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**'
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost'
-      },
-      {
-        protocol: 'https',
-        hostname: 'gss0.bdstatic.com'
-      }
-    ],
-    // 图片优化配置
-    formats: ['image/webp', 'image/avif'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
-    dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-  },
-
-  eslint: {
-    // 在构建时忽略 ESLint 错误以加速构建
-    ignoreDuringBuilds: true
-  },
-  typescript: {
-    // 如果也有 TypeScript 错误，也可以忽略
-    ignoreBuildErrors: true
-  },
-
-  // 性能优化配置
-  compress: true,
-  poweredByHeader: false,
-  reactStrictMode: true,
-  swcMinify: true,
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-    // 移除 React 开发时的警告
-    reactRemoveProperties: process.env.NODE_ENV === 'production' ? { properties: ['^data-testid$'] } : false,
-  },
-
-  // 实验性功能
+  // 启用实验性功能
   experimental: {
-    // 启用服务器组件缓存
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
+    // 启用App Router
+    appDir: true,
   },
 
-  // Webpack 优化配置
-  webpack: (config, { dev, isServer }) => {
-    // 生产环境优化
-    if (!dev && !isServer) {
-      // 优化 Phaser 包
-      config.optimization.splitChunks.cacheGroups.phaser = {
-        test: /[\\/]node_modules[\\/]phaser[\\/]/,
-        name: 'phaser',
-        chunks: 'all',
-        priority: 10,
-      };
+  // 图片优化配置
+  images: {
+    // 禁用图片优化以支持游戏资源
+    unoptimized: true,
+  },
 
-      // 优化其他大型库
-      config.optimization.splitChunks.cacheGroups.vendors = {
-        test: /[\\/]node_modules[\\/]/,
-        name: 'vendors',
-        chunks: 'all',
-        priority: 5,
-      };
+  // 静态资源处理
+  async headers() {
+    return [
+      {
+        // 为游戏资源设置缓存头
+        source: '/game/assets/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
+  },
 
-      // 启用并行处理
-      config.optimization.minimize = true;
-
-      // 减少不必要的处理
+  // Webpack配置
+  webpack: (config, { isServer }) => {
+    // 处理Phaser.js的polyfill
+    if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
@@ -107,76 +40,26 @@ const nextConfig = {
       };
     }
 
-    // 排除不必要的模块
-    config.externals = config.externals || [];
-    if (!isServer) {
-      config.externals.push({
-        'canvas': 'canvas',
-      });
-    }
+    // 优化游戏资源加载
+    config.module.rules.push({
+      test: /\.(png|jpg|gif|svg|json)$/,
+      type: 'asset/resource',
+    });
 
     return config;
   },
 
-  env: {
-    CUSTOM_KEY: 'value'
-  },
+  // 输出配置
+  output: 'standalone',
 
-  // 忽略构建时的某些错误
-  onDemandEntries: {
-    // 页面在内存中保持的时间（毫秒）
-    maxInactiveAge: 25 * 1000,
-    // 同时保持的页面数量
-    pagesBufferLength: 2
-  },
+  // 压缩配置
+  compress: true,
 
-  // 安全头配置
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
-          },
-          // 缓存控制
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
-          }
-        ]
-      },
-      // 静态资源缓存
-      {
-        source: '/static/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
-          }
-        ]
-      },
-      // API 路由缓存
-      {
-        source: '/api/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=60, s-maxage=300'
-          }
-        ]
-      }
-    ];
-  }
+  // 生产环境优化
+  ...(process.env.NODE_ENV === 'production' && {
+    // 启用SWC压缩
+    swcMinify: true,
+  }),
 };
 
-module.exports = withPWA(nextConfig); 
+module.exports = nextConfig; 

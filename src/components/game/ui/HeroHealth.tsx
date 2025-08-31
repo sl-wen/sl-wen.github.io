@@ -39,10 +39,10 @@ export const HeroHealth: React.FC<HeroHealthProps> = ({
       }}
     >
       {/* 血量条背景 */}
-      <div className="w-full h-full bg-black bg-opacity-70 border border-white rounded">
+      <div className="w-full h-full bg-black bg-opacity-70 border border-white rounded shadow-lg">
         {/* 血量条填充 */}
         <div
-          className="h-full rounded transition-all duration-300"
+          className="h-full rounded transition-all duration-300 shadow-inner"
           style={{
             width: `${healthPercentage}%`,
             backgroundColor: healthColor
@@ -52,13 +52,13 @@ export const HeroHealth: React.FC<HeroHealthProps> = ({
 
       {/* 血量文本 */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-white text-xs font-bold">
+        <span className="text-white text-xs font-bold drop-shadow-lg">
           {healthState.current} / {healthState.max}
         </span>
       </div>
 
       {/* 血量图标 */}
-      <div className="absolute -left-6 top-0 w-5 h-5">
+      <div className="absolute -left-6 top-0 w-5 h-5 drop-shadow-lg">
         <img
           src="/game/assets/images/health.png"
           alt="Health"

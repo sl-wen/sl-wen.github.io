@@ -99,29 +99,30 @@ export const DialogBox: React.FC<DialogBoxProps> = ({
     >
       {/* 对话框背景 */}
       <div
-        className="w-full h-full bg-black bg-opacity-80 border-2 border-white rounded-lg p-4"
+        className="w-full h-full bg-black bg-opacity-80 border-2 border-white rounded-lg p-4 shadow-2xl"
         style={{
           backgroundImage: 'url(/game/assets/images/dialog_borderbox.png)',
           backgroundSize: 'cover',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
+          backdropFilter: 'blur(4px)'
         }}
       >
         {/* 角色名称 */}
-        <div className="text-yellow-400 font-bold text-sm mb-2">
+        <div className="text-yellow-400 font-bold text-sm mb-2 drop-shadow-lg">
           {characterName.toUpperCase()}
         </div>
 
         {/* 消息内容 */}
-        <div className="text-white text-base leading-relaxed mb-4">
+        <div className="text-white text-base leading-relaxed mb-4 drop-shadow-md">
           {displayedText}
           {isTyping && (
-            <span className="animate-pulse">|</span>
+            <span className="animate-pulse text-yellow-400">|</span>
           )}
         </div>
 
         {/* 继续提示 */}
         <div className="flex justify-end">
-          <div className="text-yellow-400 text-sm animate-pulse">
+          <div className="text-yellow-400 text-sm animate-pulse drop-shadow-lg">
             {isComplete ? '按空格键继续...' : '按空格键跳过...'}
           </div>
         </div>

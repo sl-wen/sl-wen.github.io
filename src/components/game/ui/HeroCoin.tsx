@@ -13,7 +13,7 @@ export const HeroCoin: React.FC<HeroCoinProps> = ({
 
   return (
     <div
-      className="fixed z-40 flex items-center"
+      className="fixed z-40 flex items-center bg-black bg-opacity-50 rounded-lg px-3 py-2 shadow-lg"
       style={{
         left: `${coinX}px`,
         top: `${coinY}px`
@@ -21,7 +21,7 @@ export const HeroCoin: React.FC<HeroCoinProps> = ({
     >
       {/* 金币图标 */}
       <div
-        className="mr-2"
+        className="mr-2 drop-shadow-lg"
         style={{
           width: `${coinIconSize}px`,
           height: `${coinIconSize}px`
@@ -35,7 +35,7 @@ export const HeroCoin: React.FC<HeroCoinProps> = ({
       </div>
 
       {/* 金币数量 */}
-      <div className="text-white text-lg font-bold">
+      <div className="text-yellow-400 text-lg font-bold drop-shadow-lg">
         {heroCoins}
       </div>
     </div>

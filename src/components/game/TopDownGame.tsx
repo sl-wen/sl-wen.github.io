@@ -1,31 +1,31 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import Phaser from 'phaser';
 import GridEngine from 'grid-engine';
-import { TopDownGameProps, GameState, DialogMessage, GameMenuItem, HealthState } from './types/GameTypes';
-import { GAME_CONSTANTS, DIALOG_CONFIG, GAME_EVENTS } from './constants/gameConstants';
-import { calculateGameSize, isMobileDevice, getGameSizeByDevice } from './utils/gameUtils';
-import { DialogBox } from './ui/DialogBox';
-import { GameMenu } from './ui/GameMenu';
-import { HeroHealth } from './ui/HeroHealth';
-import { HeroCoin } from './ui/HeroCoin';
-import { Message } from './ui/Message';
-import { PerformanceMonitor } from './ui/PerformanceMonitor';
-import { ErrorBoundary } from './ui/ErrorBoundary';
+import Phaser from 'phaser';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { DIALOG_CONFIG, GAME_CONSTANTS, GAME_EVENTS } from './constants/gameConstants';
+import { DialogMessage, GameMenuItem, GameState, TopDownGameProps } from './types/GameTypes';
 import { BrowserCompatibility } from './ui/BrowserCompatibility';
+import { DialogBox } from './ui/DialogBox';
+import { ErrorBoundary } from './ui/ErrorBoundary';
+import { GameMenu } from './ui/GameMenu';
+import { HeroCoin } from './ui/HeroCoin';
+import { HeroHealth } from './ui/HeroHealth';
+import { PerformanceMonitor } from './ui/PerformanceMonitor';
+import { getGameSizeByDevice, isMobileDevice } from './utils/gameUtils';
 
 // 导入游戏场景
 import BootScene from './scenes/BootScene';
-import MainMenuScene from './scenes/MainMenuScene';
-import GameScene from './scenes/GameScene';
 import GameOverScene from './scenes/GameOverScene';
+import GameScene from './scenes/GameScene';
+import MainMenuScene from './scenes/MainMenuScene';
 
 export const TopDownGame: React.FC<TopDownGameProps> = ({
   width: propWidth,
-  height: propHeight
+  height: propHeight,
+  skipCompatibility = false
 }) => {
   const gameRef = useRef<HTMLDivElement>(null);
   const gameInstanceRef = useRef<Phaser.Game | null>(null);
-  
+
   // 游戏状态
   const [gameState, setGameState] = useState<GameState>({
     isGameReady: false,
@@ -42,19 +42,42 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
 
   // 浏览器兼容性状态
-  const [showCompatibilityCheck, setShowCompatibilityCheck] = useState(true);
-  const [isCompatible, setIsCompatible] = useState(false);
+  const [showCompatibilityCheck, setShowCompatibilityCheck] = useState(!skipCompatibility);
+  const [isCompatible, setIsCompatible] = useState(skipCompatibility);
+
+  // 调试信息
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+
+  const addDebugInfo = (info: string) => {
+    console.log(`[TopDownGame Debug] ${info}`);
+    setDebugInfo(prev => [...prev, `${new Date().toLocaleTimeString()}: ${info}`]);
+  };
 
   // 计算游戏尺寸
-  const gameSize = propWidth && propHeight 
+  const gameSize = propWidth && propHeight
     ? { width: propWidth, height: propHeight, multiplier: 1 }
     : getGameSizeByDevice();
 
   // 初始化游戏
   const initializeGame = useCallback(() => {
-    if (!gameRef.current || gameInstanceRef.current) {
+    addDebugInfo('开始初始化游戏');
+
+    if (!gameRef.current) {
+      addDebugInfo('错误: gameRef.current 为空');
       return;
     }
+
+    if (gameInstanceRef.current) {
+      addDebugInfo('游戏实例已存在，跳过初始化');
+      return;
+    }
+
+    addDebugInfo('创建Phaser游戏配置');
+
+    // 在函数内部计算游戏尺寸，避免依赖外部变量
+    const currentGameSize = propWidth && propHeight
+      ? { width: propWidth, height: propHeight, multiplier: 1 }
+      : getGameSizeByDevice();
 
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
@@ -62,8 +85,8 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
       parent: gameRef.current,
       // orientation: Phaser.Scale.LANDSCAPE, // 移除不支持的配置
       // localStorageName: GAME_CONSTANTS.TITLE, // 移除不支持的配置
-      width: gameSize.width,
-      height: gameSize.height,
+      width: currentGameSize.width,
+      height: currentGameSize.height,
       autoRound: true,
       pixelArt: true,
       scale: {
@@ -96,18 +119,24 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     };
 
     try {
+      addDebugInfo('创建Phaser游戏实例');
       gameInstanceRef.current = new Phaser.Game(config);
+      addDebugInfo('Phaser游戏实例创建成功');
       setGameState(prev => ({ ...prev, isGameReady: true }));
+      addDebugInfo('游戏状态设置为就绪');
     } catch (error) {
+      addDebugInfo(`游戏初始化失败: ${error}`);
       console.error('Failed to initialize game:', error);
     }
-  }, [gameSize]);
+  }, [propWidth, propHeight]); // 只依赖props，不依赖gameSize
 
   // 检测移动设备
   useEffect(() => {
+    addDebugInfo('检测移动设备');
     const checkMobile = () => {
       const isMobile = isMobileDevice();
       setGameState(prev => ({ ...prev, isMobile }));
+      addDebugInfo(`移动设备检测结果: ${isMobile}`);
     };
 
     checkMobile();
@@ -118,34 +147,67 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
   // 初始化游戏
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      initializeGame();
-    }
+    addDebugInfo('TopDownGame useEffect 触发');
+    addDebugInfo(`游戏尺寸计算: ${gameSize.width}x${gameSize.height}`);
 
-    return () => {
-      if (gameInstanceRef.current) {
-        gameInstanceRef.current.destroy(true);
-        gameInstanceRef.current = null;
-      }
-    };
-  }, [initializeGame]);
+    if (typeof window !== 'undefined') {
+      addDebugInfo('在客户端环境中，等待DOM元素准备就绪');
+
+      // 使用 requestAnimationFrame 确保在下一帧渲染后执行
+      let retryCount = 0;
+      const maxRetries = 50; // 最大重试50次（约2.5秒）
+
+      const checkDOMReady = () => {
+        if (gameRef.current) {
+          addDebugInfo('DOM元素已准备就绪，开始初始化游戏');
+          initializeGame();
+        } else {
+          retryCount++;
+          addDebugInfo(`DOM元素仍未准备就绪，重试次数: ${retryCount}/${maxRetries}`);
+
+          if (retryCount >= maxRetries) {
+            addDebugInfo('错误: 达到最大重试次数，DOM元素仍未准备就绪');
+            return;
+          }
+
+          // 如果DOM元素还没有准备好，继续等待
+          requestAnimationFrame(checkDOMReady);
+        }
+      };
+
+      // 延迟一帧开始检查
+      requestAnimationFrame(() => {
+        requestAnimationFrame(checkDOMReady);
+      });
+
+      return () => {
+        addDebugInfo('TopDownGame 组件卸载，清理游戏实例');
+        if (gameInstanceRef.current) {
+          gameInstanceRef.current.destroy(true);
+          gameInstanceRef.current = null;
+        }
+      };
+    } else {
+      addDebugInfo('不在客户端环境中，跳过游戏初始化');
+    }
+  }, [propWidth, propHeight]); // 直接依赖props，避免依赖initializeGame
 
   // 设置事件监听器
   useEffect(() => {
     const handleDialogEvent = (event: CustomEvent) => {
       const { characterName } = event.detail;
       const messages = DIALOG_CONFIG[characterName as keyof typeof DIALOG_CONFIG] || [];
-      
-              setGameState(prev => ({
-          ...prev,
-          characterName,
-          messages: [...messages] as DialogMessage[]
-        }));
+
+      setGameState(prev => ({
+        ...prev,
+        characterName,
+        messages: [...messages] as DialogMessage[]
+      }));
     };
 
     const handleMenuEvent = (event: CustomEvent) => {
       const { menuItems, menuPosition } = event.detail;
-      
+
       setGameState(prev => ({
         ...prev,
         gameMenuItems: menuItems,
@@ -155,7 +217,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
     const handleHealthEvent = (event: CustomEvent) => {
       const { healthStates } = event.detail;
-      
+
       setGameState(prev => ({
         ...prev,
         heroHealthStates: healthStates
@@ -164,7 +226,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
     const handleCoinEvent = (event: CustomEvent) => {
       const { heroCoins } = event.detail;
-      
+
       setGameState(prev => ({
         ...prev,
         heroCoins
@@ -173,7 +235,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
     const handleMenuSelection = (event: CustomEvent) => {
       const { selectedItem } = event.detail;
-      
+
       // 处理菜单选择
       switch (selectedItem.action) {
         case 'resume_game':
@@ -244,7 +306,18 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
 
   if (showCompatibilityCheck) {
     return (
-      <BrowserCompatibility onCompatibilityResult={handleCompatibilityResult} />
+      <div>
+        <BrowserCompatibility onCompatibilityResult={handleCompatibilityResult} />
+        {/* 隐藏的游戏容器，确保DOM元素存在 */}
+        <div
+          ref={gameRef}
+          className="hidden"
+          style={{
+            width: `${gameSize.width * gameSize.multiplier}px`,
+            height: `${gameSize.height * gameSize.multiplier}px`,
+          }}
+        />
+      </div>
     );
   }
 
@@ -252,6 +325,15 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     return (
       <div className="flex items-center justify-center h-screen bg-gray-900">
         <div className="text-white text-xl">加载游戏中...</div>
+        {/* 隐藏的游戏容器，确保DOM元素存在 */}
+        <div
+          ref={gameRef}
+          className="hidden"
+          style={{
+            width: `${gameSize.width * gameSize.multiplier}px`,
+            height: `${gameSize.height * gameSize.multiplier}px`,
+          }}
+        />
       </div>
     );
   }

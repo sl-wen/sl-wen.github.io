@@ -2,8 +2,7 @@
 const nextConfig = {
   // 启用实验性功能
   experimental: {
-    // 启用App Router
-    appDir: true,
+    // App Router 在 Next.js 13+ 中默认启用，无需配置
   },
 
   // 图片优化配置
@@ -56,10 +55,7 @@ const nextConfig = {
   compress: true,
 
   // 生产环境优化
-  ...(process.env.NODE_ENV === 'production' && {
-    // 启用SWC压缩
-    swcMinify: true,
-  }),
+  // SWC压缩在 Next.js 13+ 中默认启用
 };
 
 module.exports = nextConfig; 

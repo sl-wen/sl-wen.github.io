@@ -29,8 +29,9 @@ const Header = dynamic(() => import('@/components/Header'), {
 
 // Footer现在通过ConditionalFooter组件按需加载
 
-const StatusMessages = dynamic(() => import('@/components/StatusMessages'), {
-  ssr: false, // 禁用服务端渲染，因为状态消息是客户端功能
+// 使用客户端组件包装StatusMessages，避免在Server Component中使用ssr: false
+const StatusMessages = dynamic(() => import('@/components/ClientStatusMessages'), {
+  ssr: true, // 在Server Component中启用SSR
   loading: () => null // 加载时不显示任何内容
 });
 

@@ -186,7 +186,7 @@ export interface HeroCoinConfig {
 }
 
 // 游戏事件类型
-export type GameEventType = 
+export type GameEventType =
   | 'new-dialog'
   | 'menu-items'
   | 'hero-health'
@@ -216,6 +216,7 @@ export interface GameState {
 export interface TopDownGameProps {
   width?: number;
   height?: number;
+  skipCompatibility?: boolean;
 }
 
 // 对话框组件Props

@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { GAME_ASSETS, GAME_CONSTANTS } from '../constants/gameConstants';
 
 export default class BootScene extends Phaser.Scene {
   constructor() {
@@ -73,7 +72,7 @@ export default class BootScene extends Phaser.Scene {
 
     // 加载图片资源
     this.load.image('dialog_border', '/game/assets/images/dialog_borderbox.png');
-    this.load.image('menu_background', '/game/assets/images/menu_background.png');
+    this.load.image('menu_background', '/game/assets/images/main_menu_background.png');
     this.load.image('game_over_background', '/game/assets/images/game_over_background.png');
     this.load.image('main_menu_background', '/game/assets/images/main_menu_background.png');
 
@@ -83,7 +82,7 @@ export default class BootScene extends Phaser.Scene {
     this.load.atlas('npc_02', '/game/assets/sprites/atlas/npc_01.png', '/game/assets/sprites/atlas/npc_01.json'); // 暂时使用npc_01
     this.load.atlas('npc_03', '/game/assets/sprites/atlas/npc_01.png', '/game/assets/sprites/atlas/npc_01.json'); // 暂时使用npc_01
     this.load.atlas('npc_04', '/game/assets/sprites/atlas/npc_01.png', '/game/assets/sprites/atlas/npc_01.json'); // 暂时使用npc_01
-    
+
     this.load.image('sword', '/game/assets/images/sword.png');
     this.load.image('coin', '/game/assets/images/coin.png');
     this.load.image('heart', '/game/assets/images/health.png');
@@ -122,11 +121,11 @@ export default class BootScene extends Phaser.Scene {
     // 玩家向下行走动画
     this.anims.create({
       key: 'player_down',
-      frames: this.anims.generateFrameNames('player', { 
-        prefix: 'hero_walk_down_',
+      frames: this.anims.generateFrameNames('player', {
+        prefix: 'hero_walking_down_',
         start: 1,
-        end: 4,
-        zeroPad: 1
+        end: 2,
+        zeroPad: 2
       }),
       frameRate: 8,
       repeat: -1
@@ -135,11 +134,11 @@ export default class BootScene extends Phaser.Scene {
     // 玩家向上行走动画
     this.anims.create({
       key: 'player_up',
-      frames: this.anims.generateFrameNames('player', { 
-        prefix: 'hero_walk_up_',
+      frames: this.anims.generateFrameNames('player', {
+        prefix: 'hero_walking_up_',
         start: 1,
-        end: 4,
-        zeroPad: 1
+        end: 2,
+        zeroPad: 2
       }),
       frameRate: 8,
       repeat: -1
@@ -148,11 +147,11 @@ export default class BootScene extends Phaser.Scene {
     // 玩家向左行走动画
     this.anims.create({
       key: 'player_left',
-      frames: this.anims.generateFrameNames('player', { 
-        prefix: 'hero_walk_left_',
+      frames: this.anims.generateFrameNames('player', {
+        prefix: 'hero_walking_left_',
         start: 1,
-        end: 4,
-        zeroPad: 1
+        end: 2,
+        zeroPad: 2
       }),
       frameRate: 8,
       repeat: -1
@@ -161,11 +160,11 @@ export default class BootScene extends Phaser.Scene {
     // 玩家向右行走动画
     this.anims.create({
       key: 'player_right',
-      frames: this.anims.generateFrameNames('player', { 
-        prefix: 'hero_walk_right_',
+      frames: this.anims.generateFrameNames('player', {
+        prefix: 'hero_walking_right_',
         start: 1,
-        end: 4,
-        zeroPad: 1
+        end: 2,
+        zeroPad: 2
       }),
       frameRate: 8,
       repeat: -1
@@ -174,23 +173,23 @@ export default class BootScene extends Phaser.Scene {
     // 玩家站立动画
     this.anims.create({
       key: 'player_idle',
-      frames: [{ key: 'player', frame: 'hero_idle_1' }],
+      frames: [{ key: 'player', frame: 'hero_idle_down_01' }],
       frameRate: 1
     });
   }
 
   private createNPCAnimations(): void {
     const npcs = ['npc_01', 'npc_02', 'npc_03', 'npc_04'];
-    
+
     npcs.forEach(npc => {
       // NPC向下行走动画
       this.anims.create({
         key: `${npc}_down`,
-        frames: this.anims.generateFrameNames(npc, { 
-          prefix: 'npc_01_walk_down_',
+        frames: this.anims.generateFrameNames(npc, {
+          prefix: 'npc_01_walking_down_',
           start: 1,
-          end: 4,
-          zeroPad: 1
+          end: 2,
+          zeroPad: 2
         }),
         frameRate: 6,
         repeat: -1
@@ -199,11 +198,11 @@ export default class BootScene extends Phaser.Scene {
       // NPC向上行走动画
       this.anims.create({
         key: `${npc}_up`,
-        frames: this.anims.generateFrameNames(npc, { 
-          prefix: 'npc_01_walk_up_',
+        frames: this.anims.generateFrameNames(npc, {
+          prefix: 'npc_01_walking_up_',
           start: 1,
-          end: 4,
-          zeroPad: 1
+          end: 2,
+          zeroPad: 2
         }),
         frameRate: 6,
         repeat: -1
@@ -212,11 +211,11 @@ export default class BootScene extends Phaser.Scene {
       // NPC向左行走动画
       this.anims.create({
         key: `${npc}_left`,
-        frames: this.anims.generateFrameNames(npc, { 
-          prefix: 'npc_01_walk_left_',
+        frames: this.anims.generateFrameNames(npc, {
+          prefix: 'npc_01_walking_left_',
           start: 1,
-          end: 4,
-          zeroPad: 1
+          end: 2,
+          zeroPad: 2
         }),
         frameRate: 6,
         repeat: -1
@@ -225,11 +224,11 @@ export default class BootScene extends Phaser.Scene {
       // NPC向右行走动画
       this.anims.create({
         key: `${npc}_right`,
-        frames: this.anims.generateFrameNames(npc, { 
-          prefix: 'npc_01_walk_right_',
+        frames: this.anims.generateFrameNames(npc, {
+          prefix: 'npc_01_walking_right_',
           start: 1,
-          end: 4,
-          zeroPad: 1
+          end: 2,
+          zeroPad: 2
         }),
         frameRate: 6,
         repeat: -1
@@ -238,7 +237,7 @@ export default class BootScene extends Phaser.Scene {
       // NPC站立动画
       this.anims.create({
         key: `${npc}_idle`,
-        frames: [{ key: npc, frame: 'npc_01_idle_1' }],
+        frames: [{ key: npc, frame: 'npc_01_idle_down_01' }],
         frameRate: 1
       });
     });

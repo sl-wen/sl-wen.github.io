@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface CompatibilityCheck {
   name: string;
@@ -15,9 +15,19 @@ export const BrowserCompatibility: React.FC<BrowserCompatibilityProps> = ({
 }) => {
   const [checks, setChecks] = useState<CompatibilityCheck[]>([]);
   const [isChecking, setIsChecking] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+
+  const addDebugInfo = (info: string) => {
+    console.log(`[BrowserCompatibility Debug] ${info}`);
+    setDebugInfo(prev => [...prev, `${new Date().toLocaleTimeString()}: ${info}`]);
+  };
 
   useEffect(() => {
+    addDebugInfo('开始浏览器兼容性检查');
+
     const performChecks = () => {
+      addDebugInfo('执行兼容性检查');
+
       const compatibilityChecks: CompatibilityCheck[] = [
         {
           name: 'Canvas API',
@@ -68,14 +78,33 @@ export const BrowserCompatibility: React.FC<BrowserCompatibilityProps> = ({
         }
       ];
 
+      addDebugInfo(`兼容性检查完成，共${compatibilityChecks.length}项`);
+
       setChecks(compatibilityChecks);
       setIsChecking(false);
 
       const isCompatible = compatibilityChecks.every(check => check.supported);
-      onCompatibilityResult(isCompatible);
+      addDebugInfo(`兼容性结果: ${isCompatible ? '通过' : '不通过'}`);
+
+      // 延迟一点时间再调用回调，确保UI更新
+      setTimeout(() => {
+        addDebugInfo('调用兼容性结果回调');
+        onCompatibilityResult(isCompatible);
+      }, 100);
     };
 
+    // 添加超时保护
+    const timeoutId = setTimeout(() => {
+      addDebugInfo('兼容性检查超时，强制通过');
+      setIsChecking(false);
+      onCompatibilityResult(true);
+    }, 5000); // 5秒超时
+
     performChecks();
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
   }, [onCompatibilityResult]);
 
   if (isChecking) {
@@ -87,8 +116,15 @@ export const BrowserCompatibility: React.FC<BrowserCompatibilityProps> = ({
             <div className="text-white text-lg font-semibold mb-2">
               检查浏览器兼容性
             </div>
-            <div className="text-gray-400 text-sm">
+            <div className="text-gray-400 text-sm mb-4">
               正在检测您的浏览器是否支持游戏运行...
+            </div>
+
+            {/* 调试信息 */}
+            <div className="text-left text-xs text-gray-500 max-h-20 overflow-y-auto">
+              {debugInfo.map((info, index) => (
+                <div key={index}>{info}</div>
+              ))}
             </div>
           </div>
         </div>

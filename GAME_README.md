@@ -1,140 +1,209 @@
-# React + TypeScript 游戏移植项目
+# 🎮 Top-Down RPG Game
 
-## 项目概述
+[![React](https://img.shields.io/badge/React-19-blue)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+[![Phaser](https://img.shields.io/badge/Phaser-3.88.2-green)](https://phaser.io/)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-38B2AC)](https://tailwindcss.com/)
 
-这是一个基于原项目 https://github.com/blopa/top-down-react-phaser-game 的React + TypeScript移植版本。游戏是一个经典的俯视角RPG游戏，使用Phaser 3游戏引擎和GridEngine插件实现。
+## 🚀 项目简介
 
-## 技术栈
+这是一个基于React + TypeScript + Phaser 3开发的2D俯视角RPG游戏。项目完全迁移自 [top-down-react-phaser-game](https://github.com/blopa/top-down-react-phaser-game)，采用现代化的技术栈重新构建。
 
-- **React 19** - 前端框架
-- **TypeScript** - 类型安全
-- **Phaser 3** - 游戏引擎
-- **GridEngine** - 网格移动系统
-- **TailwindCSS 3** - 样式框架
-- **Next.js 14** - 全栈框架
+### ✨ 核心特性
 
-## 游戏特性
+- 🎮 **完整的游戏框架** - 包含所有必要的场景和组件
+- 📱 **响应式设计** - 支持桌面端和移动端
+- 🔒 **类型安全** - 完整的TypeScript类型定义
+- 🧩 **模块化架构** - 清晰的代码组织结构
+- 📡 **事件系统** - 组件间通信机制
+- 🎨 **资源管理系统** - 完整的游戏资源加载和管理
+- 🖥️ **UI组件系统** - 可复用的游戏UI组件
+- 🎬 **场景管理系统** - 完整的游戏场景切换
 
-### 核心功能
-- ✅ 完整的游戏场景系统（启动、主菜单、游戏、结束）
-- ✅ 角色移动和动画系统
-- ✅ NPC对话系统
-- ✅ 物品收集系统
-- ✅ 游戏状态管理
-- ✅ 响应式UI设计
-- ✅ 移动端适配
+## 🛠️ 技术栈
 
-### 游戏场景
-1. **BootScene** - 游戏启动和资源加载
-2. **MainMenuScene** - 主菜单界面
-3. **GameScene** - 主游戏场景
-4. **GameOverScene** - 游戏结束界面
+### 前端技术
+- **框架**: React 19 + Next.js 14
+- **语言**: TypeScript 5.8
+- **游戏引擎**: Phaser 3.88.2
+- **网格引擎**: GridEngine 2.48.0
+- **样式**: TailwindCSS 3.4
+- **状态管理**: React Hooks + Context
 
-### UI组件
-- **DialogBox** - 对话框系统
-- **GameMenu** - 游戏菜单
-- **HeroHealth** - 角色血量显示
-- **HeroCoin** - 金币显示
-- **Message** - 消息提示
+### 开发工具
+- **代码质量**: ESLint + Prettier
+- **类型检查**: TypeScript
+- **构建工具**: Next.js
+- **包管理**: npm
 
-## 游戏控制
+## 🎮 游戏功能
 
-### 桌面端
-- **WASD** 或 **方向键** - 角色移动
-- **空格键** - 与NPC对话/收集物品
-- **ESC键** - 打开/关闭菜单
+### ✅ 已完成功能
+- **游戏场景系统**
+  - BootScene - 游戏启动和资源加载
+  - MainMenuScene - 主菜单界面
+  - GameScene - 主游戏场景
+  - GameOverScene - 游戏结束界面
 
-### 移动端
-- **触摸控制** - 支持触摸操作
-- **虚拟按钮** - 移动端优化的控制界面
+- **UI组件系统**
+  - DialogBox - 对话框组件（支持打字效果）
+  - GameMenu - 游戏菜单组件（支持键盘导航）
+  - HeroHealth - 角色血量显示
+  - HeroCoin - 金币显示
+  - Message - 消息组件
 
-## 游戏玩法
+- **资源管理系统**
+  - 精灵图集 (Atlas) 加载
+  - 瓦片集 (Tileset) 管理
+  - 图片资源加载
+  - 动画系统
 
-1. **开始游戏** - 在主菜单点击"START"开始游戏
-2. **探索世界** - 使用方向键或WASD移动角色
-3. **与NPC对话** - 靠近NPC按空格键进行对话
-4. **收集物品** - 靠近物品按空格键收集
-5. **管理状态** - 查看血量和金币状态
+- **技术特性**
+  - TypeScript类型安全
+  - 响应式设计
+  - 事件驱动架构
+  - 模块化组件
 
-## 项目结构
+### 🚧 开发中功能
+- **游戏逻辑**
+  - 角色移动系统
+  - NPC对话系统
+  - 物品收集系统
+  - 碰撞检测
+  - 游戏状态管理
+
+- **高级功能**
+  - 音效系统
+  - 存档系统
+  - 成就系统
+  - 多人游戏支持
+
+## 🚀 快速开始
+
+### 环境要求
+
+- Node.js 18+
+- npm 或 yarn
+
+### 本地开发
+
+```bash
+# 克隆项目
+git clone <repository-url>
+cd <project-directory>
+
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+```
+
+访问 [http://localhost:3000/demo](http://localhost:3000/demo) 查看游戏演示。
+
+### 生产构建
+
+```bash
+# 构建生产版本
+npm run build
+
+# 启动生产服务器
+npm start
+```
+
+## 🎮 游戏控制
+
+### 桌面端控制
+- **方向键 / WASD** - 角色移动
+- **空格键** - 交互/确认
+- **ESC键** - 暂停菜单
+- **鼠标点击** - 菜单选择
+
+### 移动端控制
+- **触摸屏幕** - 角色移动
+- **点击NPC** - 对话交互
+- **点击物品** - 收集
+- **菜单按钮** - 游戏操作
+
+## 📁 项目结构
 
 ```
-src/components/game/
-├── types/           # TypeScript类型定义
-├── constants/       # 游戏常量配置
-├── utils/          # 工具函数
-├── scenes/         # 游戏场景
-├── ui/             # UI组件
-└── TopDownGame.tsx # 主游戏组件
+src/
+├── components/
+│   └── game/
+│       ├── types/              # TypeScript类型定义
+│       ├── constants/          # 游戏常量配置
+│       ├── utils/              # 工具函数
+│       ├── scenes/             # 游戏场景
+│       │   ├── BootScene.ts    # 启动场景
+│       │   ├── MainMenuScene.ts # 主菜单场景
+│       │   ├── GameScene.ts    # 主游戏场景
+│       │   └── GameOverScene.ts # 游戏结束场景
+│       ├── ui/                 # UI组件
+│       │   ├── DialogBox.tsx   # 对话框
+│       │   ├── GameMenu.tsx    # 游戏菜单
+│       │   ├── HeroHealth.tsx  # 血量显示
+│       │   ├── HeroCoin.tsx    # 金币显示
+│       │   └── Message.tsx     # 消息组件
+│       └── TopDownGame.tsx     # 主游戏组件
+├── app/
+│   ├── demo/                   # 游戏演示页面
+│   └── top-down-game/          # 游戏页面
+└── public/
+    └── game/
+        └── assets/             # 游戏资源
+            ├── images/         # 图片资源
+            ├── sprites/        # 精灵资源
+            └── maps/           # 地图资源
 ```
 
-## 开发状态
+## 🎯 开发进度
 
-### 已完成 ✅
+### Phase 1-6: 基础框架 ✅
 - [x] 项目基础设置
 - [x] 依赖和配置
 - [x] 核心游戏组件
 - [x] 游戏场景系统
 - [x] UI组件系统
-- [x] 游戏逻辑框架
+- [x] 游戏资源管理
 
-### 进行中 🔄
-- [ ] 游戏资源文件
-- [ ] 地图和瓦片集
-- [ ] 精灵动画
-
-### 待完成 ⏳
-- [ ] 完整游戏资源
+### Phase 7-11: 游戏逻辑 🚧
+- [ ] 角色移动系统
+- [ ] NPC对话系统
+- [ ] 物品收集系统
+- [ ] 碰撞检测
+- [ ] 游戏状态管理
 - [ ] 音效系统
-- [ ] 存档系统
-- [ ] 更多游戏内容
+- [ ] 性能优化
+- [ ] 移动端适配
+- [ ] 最终测试和部署
 
-## 运行项目
+## 🤝 贡献指南
 
-### 安装依赖
-```bash
-npm install
-```
+1. Fork 项目
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
 
-### 开发模式
-```bash
-npm run dev
-```
+## 📄 许可证
 
-### 构建生产版本
-```bash
-npm run build
-```
+本项目基于 [ISC License](LICENSE) 开源。
 
-## 访问游戏
+## 🙏 致谢
 
-启动开发服务器后，访问：
-- 游戏页面：`http://localhost:3000/top-down-game`
+- 原项目: [top-down-react-phaser-game](https://github.com/blopa/top-down-react-phaser-game)
+- 游戏引擎: [Phaser](https://phaser.io/)
+- 网格引擎: [GridEngine](https://annoraaq.github.io/grid-engine/)
 
-## 开发说明
+## 📞 联系方式
 
-### 添加新功能
-1. 在相应的场景文件中添加游戏逻辑
-2. 在UI组件中添加界面元素
-3. 在类型定义中添加新的接口
-4. 在常量文件中添加配置
+如有问题或建议，请通过以下方式联系：
 
-### 自定义游戏
-- 修改 `constants/gameConstants.ts` 中的游戏配置
-- 在 `scenes/` 目录中添加新场景
-- 在 `ui/` 目录中添加新UI组件
+- 项目Issues: [GitHub Issues](https://github.com/your-username/your-repo/issues)
+- 邮箱: your-email@example.com
 
-## 贡献
+---
 
-欢迎提交Issue和Pull Request来改进游戏！
-
-## 许可证
-
-本项目基于原项目的MIT许可证。
-
-## 致谢
-
-- 原项目作者：blopa
-- Phaser.js 团队
-- GridEngine 插件作者
-- 所有贡献者
+⭐ 如果这个项目对你有帮助，请给它一个星标！

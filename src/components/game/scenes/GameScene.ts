@@ -71,11 +71,13 @@ export default class GameScene extends Phaser.Scene {
     
     // 添加瓦片集
     const mainTileset = this.map.addTilesetImage('main_tileset', 'main_tileset');
-    const objectsTileset = this.map.addTilesetImage('objects_tileset', 'objects_tileset');
 
     // 创建图层
-    this.groundLayer = this.map.createLayer('ground', mainTileset!);
-    this.objectsLayer = this.map.createLayer('objects', objectsTileset!);
+    const groundLayer = this.map.createLayer('ground', mainTileset!);
+    const objectsLayer = this.map.createLayer('objects', mainTileset!);
+    
+    if (groundLayer) this.groundLayer = groundLayer;
+    if (objectsLayer) this.objectsLayer = objectsLayer;
 
     // 设置碰撞
     this.objectsLayer.setCollisionByProperty({ collides: true });
@@ -83,7 +85,7 @@ export default class GameScene extends Phaser.Scene {
 
   private createPlayer(): void {
     // 创建玩家精灵
-    this.player = this.add.sprite(320, 320, 'player');
+    this.player = this.add.sprite(320, 320, 'player', 'hero_idle_1');
     this.player.setOrigin(0.5);
     this.player.play('player_idle');
 
@@ -102,7 +104,7 @@ export default class GameScene extends Phaser.Scene {
     ];
 
     npcConfigs.forEach(config => {
-      const npc = this.add.sprite(config.x, config.y, config.key);
+      const npc = this.add.sprite(config.x, config.y, config.key, 'npc_01_idle_1');
       npc.setOrigin(0.5);
       npc.play(`${config.key}_idle`);
       npc.setData('name', config.name);

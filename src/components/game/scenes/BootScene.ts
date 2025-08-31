@@ -68,45 +68,31 @@ export default class BootScene extends Phaser.Scene {
       assetText.destroy();
     });
 
-    // 加载字体
-    this.load.webfont('Press Start 2P', 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    // 加载字体 - 使用CSS加载而不是Phaser
+    // this.load.webfont('Press Start 2P', 'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
     // 加载图片资源
-    this.load.image('dialog_border', GAME_ASSETS.IMAGES.DIALOG_BORDER);
-    this.load.image('menu_background', GAME_ASSETS.IMAGES.MENU_BACKGROUND);
-    this.load.image('game_over_background', GAME_ASSETS.IMAGES.GAME_OVER_BACKGROUND);
-    this.load.image('main_menu_background', GAME_ASSETS.IMAGES.MAIN_MENU_BACKGROUND);
+    this.load.image('dialog_border', '/game/assets/images/dialog_borderbox.png');
+    this.load.image('menu_background', '/game/assets/images/menu_background.png');
+    this.load.image('game_over_background', '/game/assets/images/game_over_background.png');
+    this.load.image('main_menu_background', '/game/assets/images/main_menu_background.png');
 
-    // 加载精灵资源
-    this.load.spritesheet('player', GAME_ASSETS.SPRITES.PLAYER, { 
-      frameWidth: 32, 
-      frameHeight: 32 
-    });
-    this.load.spritesheet('npc_01', GAME_ASSETS.SPRITES.NPC_01, { 
-      frameWidth: 32, 
-      frameHeight: 32 
-    });
-    this.load.spritesheet('npc_02', GAME_ASSETS.SPRITES.NPC_02, { 
-      frameWidth: 32, 
-      frameHeight: 32 
-    });
-    this.load.spritesheet('npc_03', GAME_ASSETS.SPRITES.NPC_03, { 
-      frameWidth: 32, 
-      frameHeight: 32 
-    });
-    this.load.spritesheet('npc_04', GAME_ASSETS.SPRITES.NPC_04, { 
-      frameWidth: 32, 
-      frameHeight: 32 
-    });
-    this.load.image('sword', GAME_ASSETS.SPRITES.SWORD);
-    this.load.image('coin', GAME_ASSETS.SPRITES.COIN);
-    this.load.image('heart', GAME_ASSETS.SPRITES.HEART);
-    this.load.image('book', GAME_ASSETS.SPRITES.BOOK);
-    this.load.image('sign', GAME_ASSETS.SPRITES.SIGN);
+    // 加载精灵资源 - 使用atlas格式
+    this.load.atlas('player', '/game/assets/sprites/atlas/hero.png', '/game/assets/sprites/atlas/hero.json');
+    this.load.atlas('npc_01', '/game/assets/sprites/atlas/npc_01.png', '/game/assets/sprites/atlas/npc_01.json');
+    this.load.atlas('npc_02', '/game/assets/sprites/atlas/npc_01.png', '/game/assets/sprites/atlas/npc_01.json'); // 暂时使用npc_01
+    this.load.atlas('npc_03', '/game/assets/sprites/atlas/npc_01.png', '/game/assets/sprites/atlas/npc_01.json'); // 暂时使用npc_01
+    this.load.atlas('npc_04', '/game/assets/sprites/atlas/npc_01.png', '/game/assets/sprites/atlas/npc_01.json'); // 暂时使用npc_01
+    
+    this.load.image('sword', '/game/assets/images/sword.png');
+    this.load.image('coin', '/game/assets/images/coin.png');
+    this.load.image('heart', '/game/assets/images/health.png');
+    this.load.image('book', '/game/assets/images/push.png'); // 暂时使用push图标
+    this.load.image('sign', '/game/assets/images/push.png'); // 暂时使用push图标
 
     // 加载瓦片集
-    this.load.image('main_tileset', GAME_ASSETS.TILESETS.MAIN_TILESET);
-    this.load.image('objects_tileset', GAME_ASSETS.TILESETS.OBJECTS_TILESET);
+    this.load.image('main_tileset', '/game/assets/sprites/maps/tilesets/tileset.png');
+    this.load.image('objects_tileset', '/game/assets/sprites/maps/tilesets/tileset.png'); // 暂时使用主瓦片集
 
     // 加载地图数据
     this.load.tilemapTiledJSON('map', '/game/assets/maps/main_map.json');
@@ -118,14 +104,15 @@ export default class BootScene extends Phaser.Scene {
     this.createNPCAnimations();
 
     // 设置全局字体
-    this.cache.bitmapFont.add('PressStart2P', Phaser.GameObjects.RetroFont.Parse(this, {
-      image: 'font',
-      width: 8,
-      height: 8,
-      chars: Phaser.GameObjects.RetroFont.TEXT_SET6,
-      charsPerRow: 10,
-      spacing: { x: 0, y: 0 }
-    }));
+    // 暂时注释掉字体配置，使用默认字体
+    // this.cache.bitmapFont.add('PressStart2P', Phaser.GameObjects.RetroFont.Parse(this, {
+    //   image: 'font',
+    //   width: 8,
+    //   height: 8,
+    //   chars: Phaser.GameObjects.RetroFont.TEXT_SET6,
+    //   charsPerRow: 10,
+    //   spacing: { x: 0, y: 0 }
+    // }));
 
     // 启动主菜单场景
     this.scene.start('MainMenuScene');
@@ -135,7 +122,12 @@ export default class BootScene extends Phaser.Scene {
     // 玩家向下行走动画
     this.anims.create({
       key: 'player_down',
-      frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
+      frames: this.anims.generateFrameNames('player', { 
+        prefix: 'hero_walk_down_',
+        start: 1,
+        end: 4,
+        zeroPad: 1
+      }),
       frameRate: 8,
       repeat: -1
     });
@@ -143,7 +135,12 @@ export default class BootScene extends Phaser.Scene {
     // 玩家向上行走动画
     this.anims.create({
       key: 'player_up',
-      frames: this.anims.generateFrameNumbers('player', { start: 4, end: 7 }),
+      frames: this.anims.generateFrameNames('player', { 
+        prefix: 'hero_walk_up_',
+        start: 1,
+        end: 4,
+        zeroPad: 1
+      }),
       frameRate: 8,
       repeat: -1
     });
@@ -151,7 +148,12 @@ export default class BootScene extends Phaser.Scene {
     // 玩家向左行走动画
     this.anims.create({
       key: 'player_left',
-      frames: this.anims.generateFrameNumbers('player', { start: 8, end: 11 }),
+      frames: this.anims.generateFrameNames('player', { 
+        prefix: 'hero_walk_left_',
+        start: 1,
+        end: 4,
+        zeroPad: 1
+      }),
       frameRate: 8,
       repeat: -1
     });
@@ -159,7 +161,12 @@ export default class BootScene extends Phaser.Scene {
     // 玩家向右行走动画
     this.anims.create({
       key: 'player_right',
-      frames: this.anims.generateFrameNumbers('player', { start: 12, end: 15 }),
+      frames: this.anims.generateFrameNames('player', { 
+        prefix: 'hero_walk_right_',
+        start: 1,
+        end: 4,
+        zeroPad: 1
+      }),
       frameRate: 8,
       repeat: -1
     });
@@ -167,7 +174,7 @@ export default class BootScene extends Phaser.Scene {
     // 玩家站立动画
     this.anims.create({
       key: 'player_idle',
-      frames: [{ key: 'player', frame: 0 }],
+      frames: [{ key: 'player', frame: 'hero_idle_1' }],
       frameRate: 1
     });
   }
@@ -179,7 +186,12 @@ export default class BootScene extends Phaser.Scene {
       // NPC向下行走动画
       this.anims.create({
         key: `${npc}_down`,
-        frames: this.anims.generateFrameNumbers(npc, { start: 0, end: 3 }),
+        frames: this.anims.generateFrameNames(npc, { 
+          prefix: 'npc_01_walk_down_',
+          start: 1,
+          end: 4,
+          zeroPad: 1
+        }),
         frameRate: 6,
         repeat: -1
       });
@@ -187,7 +199,12 @@ export default class BootScene extends Phaser.Scene {
       // NPC向上行走动画
       this.anims.create({
         key: `${npc}_up`,
-        frames: this.anims.generateFrameNumbers(npc, { start: 4, end: 7 }),
+        frames: this.anims.generateFrameNames(npc, { 
+          prefix: 'npc_01_walk_up_',
+          start: 1,
+          end: 4,
+          zeroPad: 1
+        }),
         frameRate: 6,
         repeat: -1
       });
@@ -195,7 +212,12 @@ export default class BootScene extends Phaser.Scene {
       // NPC向左行走动画
       this.anims.create({
         key: `${npc}_left`,
-        frames: this.anims.generateFrameNumbers(npc, { start: 8, end: 11 }),
+        frames: this.anims.generateFrameNames(npc, { 
+          prefix: 'npc_01_walk_left_',
+          start: 1,
+          end: 4,
+          zeroPad: 1
+        }),
         frameRate: 6,
         repeat: -1
       });
@@ -203,7 +225,12 @@ export default class BootScene extends Phaser.Scene {
       // NPC向右行走动画
       this.anims.create({
         key: `${npc}_right`,
-        frames: this.anims.generateFrameNumbers(npc, { start: 12, end: 15 }),
+        frames: this.anims.generateFrameNames(npc, { 
+          prefix: 'npc_01_walk_right_',
+          start: 1,
+          end: 4,
+          zeroPad: 1
+        }),
         frameRate: 6,
         repeat: -1
       });
@@ -211,7 +238,7 @@ export default class BootScene extends Phaser.Scene {
       // NPC站立动画
       this.anims.create({
         key: `${npc}_idle`,
-        frames: [{ key: npc, frame: 0 }],
+        frames: [{ key: npc, frame: 'npc_01_idle_1' }],
         frameRate: 1
       });
     });

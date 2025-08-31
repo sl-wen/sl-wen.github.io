@@ -50,8 +50,8 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
       type: Phaser.AUTO,
       title: GAME_CONSTANTS.TITLE,
       parent: gameRef.current,
-      orientation: Phaser.Scale.LANDSCAPE,
-      localStorageName: GAME_CONSTANTS.TITLE,
+      // orientation: Phaser.Scale.LANDSCAPE, // 移除不支持的配置
+      // localStorageName: GAME_CONSTANTS.TITLE, // 移除不支持的配置
       width: gameSize.width,
       height: gameSize.height,
       autoRound: true,
@@ -122,11 +122,11 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
       const { characterName } = event.detail;
       const messages = DIALOG_CONFIG[characterName as keyof typeof DIALOG_CONFIG] || [];
       
-      setGameState(prev => ({
-        ...prev,
-        characterName,
-        messages
-      }));
+              setGameState(prev => ({
+          ...prev,
+          characterName,
+          messages: [...messages] as DialogMessage[]
+        }));
     };
 
     const handleMenuEvent = (event: CustomEvent) => {

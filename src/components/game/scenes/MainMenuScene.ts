@@ -54,7 +54,7 @@ export default class MainMenuScene extends Phaser.Scene {
     const authorText = this.add.text(
       20,
       this.cameras.main.height - 20,
-      `By ${GAME_CONSTANTS.AUTHOR}`,
+      `By Game Developer`,
       {
         fontFamily: GAME_CONSTANTS.FONTS.SECONDARY,
         fontSize: '12px',

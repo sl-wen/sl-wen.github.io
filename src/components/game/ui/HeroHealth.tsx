@@ -60,7 +60,7 @@ export const HeroHealth: React.FC<HeroHealthProps> = ({
       {/* 血量图标 */}
       <div className="absolute -left-6 top-0 w-5 h-5">
         <img
-          src="/game/assets/sprites/heart.png"
+          src="/game/assets/images/health.png"
           alt="Health"
           className="w-full h-full"
           style={{

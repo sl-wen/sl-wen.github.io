@@ -28,7 +28,7 @@ export const HeroCoin: React.FC<HeroCoinProps> = ({
         }}
       >
         <img
-          src="/game/assets/sprites/coin.png"
+          src="/game/assets/images/coin.png"
           alt="Coin"
           className="w-full h-full"
         />

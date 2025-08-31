@@ -13,24 +13,7 @@ export default class BootScene extends Phaser.Scene {
     super('BootScene');
   }
 
-  preload() {
-    console.log('🎮 BootScene: 预加载阶段');
 
-    // 在 preload 阶段只创建资源加载器，不开始加载
-    this.resourceLoader = createResourceLoader(this.game, {
-      maxConcurrent: 3,
-      retryDelay: 2000,
-      timeout: 30000,
-      enableCache: true,
-      enableCompression: true
-    });
-
-    // 设置场景
-    this.resourceLoader.setScene(this);
-
-    // 添加自定义资源
-    this.addCustomResources();
-  }
 
   private setupLoadingUI() {
     // 此时相机已经确保初始化完成
@@ -99,7 +82,41 @@ export default class BootScene extends Phaser.Scene {
     console.log('🎮 BootScene: 使用预定义的资源列表');
   }
 
+  private setupResourceLoadingListeners() {
+    console.log('🎮 BootScene: 设置资源加载监听器');
+
+    // 监听加载进度
+    this.resourceLoader.on('progress', (event) => {
+      console.log('📊 BootScene: 加载进度更新:', event.progress);
+      this.updateLoadingProgress(event.progress!);
+      // 发送进度事件到游戏引擎
+      this.game.events.emit('load-progress', event.progress);
+    });
+
+    // 监听加载完成
+    this.resourceLoader.on('complete', (event) => {
+      console.log('✅ BootScene: 资源加载完成:', event.progress);
+      // 发送完成事件到游戏引擎
+      this.game.events.emit('load-complete', event.progress);
+      this.onLoadingComplete();
+    });
+
+    // 监听加载错误
+    this.resourceLoader.on('error', (event) => {
+      console.error('❌ BootScene: 资源加载错误:', event.error);
+      this.onLoadingError(event.error!);
+    });
+
+    // 监听重试
+    this.resourceLoader.on('retry', (event) => {
+      console.log('🔄 BootScene: 重试加载资源:', event.item?.key);
+      this.updateLoadingProgress(event.progress!);
+    });
+  }
+
   private ensureCameraReady() {
+    console.log('🔍 BootScene: 检查相机状态...');
+
     // 检查相机是否已初始化
     if (!this.cameras.main) {
       console.log('⏳ BootScene: 等待相机初始化...');
@@ -114,54 +131,13 @@ export default class BootScene extends Phaser.Scene {
       return;
     }
 
-    console.log('✅ BootScene: 相机已就绪，开始设置UI');
-
-    // 相机已就绪，设置UI
-    this.setupLoadingUI();
-
-    // 延迟一帧后开始加载，确保UI完全设置
-    this.time.delayedCall(16, () => this.startResourceLoading());
+    console.log('✅ BootScene: 相机已就绪');
+    console.log('📷 相机尺寸:', this.cameras.main.width, 'x', this.cameras.main.height);
   }
 
 
 
-  private async startResourceLoading() {
-    try {
-      // 监听加载进度
-      this.resourceLoader.on('progress', (event) => {
-        this.updateLoadingProgress(event.progress!);
-        // 发送进度事件到游戏引擎
-        this.game.events.emit('load-progress', event.progress);
-      });
 
-      // 监听加载完成
-      this.resourceLoader.on('complete', (event) => {
-        console.log('✅ 资源加载完成:', event.progress);
-        // 发送完成事件到游戏引擎
-        this.game.events.emit('load-complete', event.progress);
-        this.onLoadingComplete();
-      });
-
-      // 监听加载错误
-      this.resourceLoader.on('error', (event) => {
-        console.error('❌ 资源加载错误:', event.error);
-        this.onLoadingError(event.error!);
-      });
-
-      // 监听重试
-      this.resourceLoader.on('retry', (event) => {
-        console.log('🔄 重试加载资源:', event.item?.key);
-        this.updateLoadingProgress(event.progress!);
-      });
-
-      // 开始加载
-      await this.resourceLoader.startLoading();
-
-    } catch (error) {
-      console.error('❌ 资源加载器启动失败:', error);
-      this.onLoadingError(error instanceof Error ? error.message : 'Unknown error');
-    }
-  }
 
   private updateLoadingProgress(progress: any) {
     // 安全检查：确保相机和UI元素都已初始化
@@ -234,11 +210,11 @@ export default class BootScene extends Phaser.Scene {
       // 清理加载UI
       this.cleanupLoadingUI();
 
-      // 直接启动游戏场景，跳过菜单
+      // 直接启动游戏场景
       this.scene.start('CompleteGameScene');
     } catch (error) {
       console.error('❌ BootScene: 加载完成处理时出错:', error);
-      // 如果出错，尝试直接启动游戏场景
+      // 如果出错，尝试启动游戏场景
       try {
         this.scene.start('CompleteGameScene');
       } catch (sceneError) {
@@ -286,8 +262,37 @@ export default class BootScene extends Phaser.Scene {
   create() {
     console.log('🎮 BootScene: 场景创建完成');
 
-    // 确保相机完全初始化后再设置UI
-    this.ensureCameraReady();
+    // 资源已经在 preload 阶段加载完成，直接设置UI
+    this.setupLoadingUI();
+
+    // 设置资源加载进度监听
+    this.setupResourceLoadingListeners();
+  }
+
+  preload() {
+    console.log('🎮 BootScene: 预加载阶段开始');
+
+    // 在 preload 阶段创建资源加载器并添加所有资源
+    this.resourceLoader = createResourceLoader(this.game, {
+      maxConcurrent: 3,
+      retryDelay: 2000,
+      timeout: 30000,
+      enableCache: true,
+      enableCompression: true
+    });
+
+    // 设置场景
+    console.log('🎮 BootScene: 设置资源加载器场景');
+    this.resourceLoader.setScene(this);
+    console.log('🎮 BootScene: 资源加载器场景设置完成');
+
+    // 添加自定义资源
+    this.addCustomResources();
+
+    // 在 preload 阶段直接添加所有资源到 Phaser 加载队列
+    console.log('🎮 BootScene: 开始添加资源到 Phaser 加载队列');
+    this.resourceLoader.startLoading();
+    console.log('🎮 BootScene: 预加载阶段完成');
   }
 
   destroy() {

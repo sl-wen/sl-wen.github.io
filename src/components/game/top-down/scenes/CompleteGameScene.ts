@@ -79,6 +79,7 @@ export class CompleteGameScene extends Phaser.Scene {
     private mapCenterX: number = 0;
     private mapCenterY: number = 0;
     private _coordinateDebugShown: boolean = false;
+    private _needInitialCameraSetup: boolean = false;
 
     // 输入控制
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys | null;
@@ -103,6 +104,8 @@ export class CompleteGameScene extends Phaser.Scene {
 
     constructor() {
         super('CompleteGameScene');
+        console.log('🎮 CompleteGameScene: 构造函数被调用');
+        console.trace('🔍 CompleteGameScene: 调用堆栈');
     }
 
     // 工具方法 - 移植自原项目
@@ -530,6 +533,9 @@ export class CompleteGameScene extends Phaser.Scene {
 
         // 播放背景音乐 - 暂时注释掉，因为音频文件不存在
         // this.soundManager.playBackgroundMusic('village');
+
+        // 在最后设置相机，确保所有其他设置都完成
+        this.setupCamera();
     }
 
     private initializeGameSystems() {
@@ -761,18 +767,28 @@ export class CompleteGameScene extends Phaser.Scene {
 
         // 创建图层并应用缩放和位置
         for (let i = 0; i < this.map.layers.length; i++) {
-            const layer = this.map.createLayer(i, 'tileset', this.mapCenterX, this.mapCenterY);
+            const layer = this.map.createLayer(i, 'tileset', 0, 0);
             if (layer) {
+                // 先设置缩放，再设置位置
                 layer.setScale(this.mapScale);
+                layer.setPosition(this.mapCenterX, this.mapCenterY);
+
+                // 添加调试信息
                 console.log(`🗺️ 图层 ${i} 创建完成: 位置(${layer.x}, ${layer.y}), 缩放(${layer.scaleX}, ${layer.scaleY}), 尺寸(${layer.width}, ${layer.height})`);
+                console.log(`   📍 图层实际显示区域: 从(${layer.x}, ${layer.y}) 到(${layer.x + layer.width * layer.scaleX}, ${layer.y + layer.height * layer.scaleY})`);
             }
         }
 
         // 设置世界边界
         this.physics.world.setBounds(this.mapCenterX, this.mapCenterY, mapWidth * this.mapScale, mapHeight * this.mapScale);
 
-        // 设置相机边界
-        this.cameras.main.setBounds(this.mapCenterX, this.mapCenterY, mapWidth * this.mapScale, mapHeight * this.mapScale);
+        // 添加物理世界边界调试信息
+        console.log('🎯 [DEBUG] 物理世界边界设置:');
+        console.log(`   📍 边界位置: (${this.mapCenterX.toFixed(1)}, ${this.mapCenterY.toFixed(1)})`);
+        console.log(`   📏 边界尺寸: ${(mapWidth * this.mapScale).toFixed(1)} x ${(mapHeight * this.mapScale).toFixed(1)}`);
+        console.log(`   🎮 可移动范围: 从 (${this.mapCenterX.toFixed(1)}, ${this.mapCenterY.toFixed(1)}) 到 (${(this.mapCenterX + mapWidth * this.mapScale).toFixed(1)}, ${(this.mapCenterY + mapHeight * this.mapScale).toFixed(1)})`);
+
+        // 注意：相机边界将在setupCamera()中设置
     }
 
     private createSimpleDefaultMap() {
@@ -813,6 +829,8 @@ export class CompleteGameScene extends Phaser.Scene {
      */
     private tileToWorldPosition(tileX: number, tileY: number): { x: number, y: number } {
         const tileSize = 16; // 瓦片大小
+
+        // 直接使用地图中心位置，因为图层位置就是地图中心
         const worldX = this.mapCenterX + tileX * tileSize * this.mapScale;
         const worldY = this.mapCenterY + tileY * tileSize * this.mapScale;
 
@@ -858,20 +876,19 @@ export class CompleteGameScene extends Phaser.Scene {
             haveSword: heroHaveSword,
         } = this.heroStatus;
 
-        // 使用地图配置的生成点
-        const initialPosition = currentMap.spawnPoint;
+        // 将英雄放在原始配置的位置 (4, 3) - 按照原始配置
+        const heroTileX = 4;
+        const heroTileY = 3;
+        const heroPosition = this.tileToWorldPosition(heroTileX, heroTileY);
+        const roomCenterX = heroPosition.x;
+        const roomCenterY = heroPosition.y;
 
-        // 计算英雄在世界中的位置
-        const worldPosition = this.tileToWorldPosition(initialPosition.x, initialPosition.y);
-
-        // 创建英雄精灵
         this.heroSprite = this.physics.add
-            .sprite(worldPosition.x, worldPosition.y, 'hero', initialFrame || 'hero_idle_down_01')
+            .sprite(roomCenterX, roomCenterY, 'hero', initialFrame || 'hero_idle_down_01')
             .setDepth(1);
 
-        console.log('✅ 英雄创建成功');
-        console.log(`   🎯 初始位置: (${initialPosition.x}, ${initialPosition.y})`);
-        console.log(`   🌍 世界位置: (${worldPosition.x.toFixed(1)}, ${worldPosition.y.toFixed(1)})`);
+        console.log('✅ 英雄创建成功（房间中心）');
+        console.log(`   🎯 房间中心位置: (${roomCenterX.toFixed(1)}, ${roomCenterY.toFixed(1)})`);
         console.log(`   📍 面向方向: ${initialFacingDirection}`);
         console.log(`   🎮 英雄精灵:`, this.heroSprite);
         console.log(`   👁️ 英雄可见性:`, this.heroSprite.visible);
@@ -889,9 +906,17 @@ export class CompleteGameScene extends Phaser.Scene {
         (this.heroSprite as any).canPush = heroCanPush;
         (this.heroSprite as any).haveSword = heroHaveSword;
 
-        // 设置碰撞体
-        (this.heroSprite.body as Phaser.Physics.Arcade.Body).setSize(14, 14);
-        (this.heroSprite.body as Phaser.Physics.Arcade.Body).setOffset(9, 13);
+        // 设置碰撞体 - 考虑缩放
+        const collisionSize = 14 * this.mapScale;
+        const collisionOffsetX = 9 * this.mapScale;
+        const collisionOffsetY = 13 * this.mapScale;
+
+        (this.heroSprite.body as Phaser.Physics.Arcade.Body).setSize(collisionSize, collisionSize);
+        (this.heroSprite.body as Phaser.Physics.Arcade.Body).setOffset(collisionOffsetX, collisionOffsetY);
+
+        console.log('🎯 [DEBUG] 英雄碰撞体设置:');
+        console.log(`   📏 碰撞体尺寸: ${collisionSize.toFixed(1)} x ${collisionSize.toFixed(1)}`);
+        console.log(`   📍 碰撞体偏移: (${collisionOffsetX.toFixed(1)}, ${collisionOffsetY.toFixed(1)})`);
 
         // 创建交互碰撞器
         this.heroActionCollider = createInteractiveGameObject(
@@ -930,9 +955,6 @@ export class CompleteGameScene extends Phaser.Scene {
 
         // 创建动画
         this.createHeroAnimations();
-
-        // 设置相机 - 在英雄创建完成后
-        this.setupCamera();
     }
 
     private addHeroMethods() {
@@ -1396,31 +1418,23 @@ export class CompleteGameScene extends Phaser.Scene {
     }
 
     private setupCamera() {
+        // 按照原项目的方式设置相机
         const camera = this.cameras.main;
 
-        // 先设置相机边界
-        if (this.map) {
-            camera.setBounds(this.mapCenterX, this.mapCenterY, this.map.widthInPixels * this.mapScale, this.map.heightInPixels * this.mapScale);
-        }
-
-        // 计算地图中心位置
-        const mapCenterX = this.mapCenterX + (this.map.widthInPixels * this.mapScale) / 2;
-        const mapCenterY = this.mapCenterY + (this.map.heightInPixels * this.mapScale) / 2;
-
-        // 设置相机初始位置到地图中心
-        camera.setScroll(mapCenterX - this.cameras.main.width / 2, mapCenterY - this.cameras.main.height / 2);
-
-        // 设置相机跟随，使用默认偏移（英雄在屏幕中央）
+        // 设置相机跟随英雄
         camera.startFollow(this.heroSprite, true, 0.1, 0.1);
 
-        console.log('📷 相机设置完成:');
+        // 设置相机边界 - 使用固定边界，参考原项目
+        camera.setBounds(0, 0, 1600, 1200);
+
+        console.log('📷 相机设置完成（原项目方式）:');
         console.log(`   📍 跟随目标: 英雄精灵`);
         console.log(`   📍 屏幕尺寸: ${this.cameras.main.width}x${this.cameras.main.height}`);
-        console.log(`   📍 地图中心: (${mapCenterX.toFixed(1)}, ${mapCenterY.toFixed(1)})`);
         console.log(`   📍 英雄位置: (${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)})`);
-        console.log(`   📍 相机初始滚动: (${(mapCenterX - this.cameras.main.width / 2).toFixed(1)}, ${(mapCenterY - this.cameras.main.height / 2).toFixed(1)})`);
-        console.log(`   📍 相机边界: (${this.mapCenterX.toFixed(1)}, ${this.mapCenterY.toFixed(1)}, ${(this.map.widthInPixels * this.mapScale).toFixed(1)}, ${(this.map.heightInPixels * this.mapScale).toFixed(1)})`);
+        console.log(`   📍 相机边界: (0, 0, 1600, 1200)`);
     }
+
+
 
     private setupGridEngine() {
         // 检查地图是否已创建
@@ -1435,17 +1449,16 @@ export class CompleteGameScene extends Phaser.Scene {
             return;
         }
 
-        // 使用地图配置的生成点
-        const spawnPoint = currentMap.spawnPoint;
-        const worldPosition = this.tileToWorldPosition(spawnPoint.x, spawnPoint.y);
+        // 安全地计算英雄的世界坐标对应的瓦片坐标
+        const heroTileX = Math.floor((this.heroSprite.x - (this.mapCenterX || 0)) / (16 * (this.mapScale || 1)));
+        const heroTileY = Math.floor((this.heroSprite.y - (this.mapCenterY || 0)) / (16 * (this.mapScale || 1)));
 
-        // 设置英雄位置
-        this.heroSprite.setPosition(worldPosition.x, worldPosition.y);
+        console.log(`🎯 英雄瓦片坐标计算: 世界坐标(${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)}) -> 瓦片坐标(${heroTileX}, ${heroTileY})`);
+        console.log(`   📍 地图中心: (${this.mapCenterX || 0}, ${this.mapCenterY || 0}), 缩放: ${this.mapScale || 1}`);
 
         // 添加英雄位置调试信息
         console.log('👤 [DEBUG] 英雄生成位置:');
-        console.log(`   🎯 瓦片坐标: (${spawnPoint.x}, ${spawnPoint.y})`);
-        console.log(`   🌍 世界坐标: (${worldPosition.x.toFixed(1)}, ${worldPosition.y.toFixed(1)})`);
+        console.log(`   🎯 计算瓦片坐标: (${heroTileX}, ${heroTileY})`);
         console.log(`   📍 英雄精灵位置: (${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)})`);
 
         // 创建GridEngine配置
@@ -1454,7 +1467,7 @@ export class CompleteGameScene extends Phaser.Scene {
                 {
                     id: 'hero',
                     sprite: this.heroSprite,
-                    startPosition: spawnPoint,
+                    startPosition: { x: heroTileX, y: heroTileY },
                     facingDirection: this.heroStatus.facingDirection,
                     offsetY: 4,
                     speed: 4 as const, // 降低速度，参考原项目设置
@@ -1545,6 +1558,45 @@ export class CompleteGameScene extends Phaser.Scene {
 
         // 创建GridEngine
         this.gridEngine.create(this.map, gridEngineConfig);
+
+        // 检查GridEngine创建后的英雄位置
+        const heroPosition = this.gridEngine.getPosition('hero');
+        console.log('🎯 [DEBUG] GridEngine创建后的英雄位置:');
+        console.log(`   📍 GridEngine瓦片坐标: (${heroPosition.x}, ${heroPosition.y})`);
+        console.log(`   📍 英雄精灵世界坐标: (${this.heroSprite.x.toFixed(1)}, ${this.heroSprite.y.toFixed(1)})`);
+
+        // 修复英雄位置和缩放 - GridEngine使用原始瓦片大小，需要重新计算
+        const correctWorldX = this.mapCenterX + heroPosition.x * 16 * this.mapScale;
+        const correctWorldY = this.mapCenterY + heroPosition.y * 16 * this.mapScale;
+
+        this.heroSprite.setPosition(correctWorldX, correctWorldY);
+        this.heroSprite.setScale(this.mapScale);
+
+        console.log('🔧 [DEBUG] 英雄位置修复:');
+        console.log(`   📍 修复前位置: (${heroPosition.x * 16}, ${heroPosition.y * 16})`);
+        console.log(`   📍 修复后位置: (${correctWorldX.toFixed(1)}, ${correctWorldY.toFixed(1)})`);
+        console.log(`   📏 英雄缩放: ${this.mapScale}`);
+
+        // 检查英雄是否在地图范围内
+        const mapLeft = this.mapCenterX;
+        const mapTop = this.mapCenterY;
+        const mapRight = this.mapCenterX + this.map.widthInPixels * this.mapScale;
+        const mapBottom = this.mapCenterY + this.map.heightInPixels * this.mapScale;
+
+        const isInMap = correctWorldX >= mapLeft && correctWorldX <= mapRight &&
+            correctWorldY >= mapTop && correctWorldY <= mapBottom;
+
+        console.log('🗺️ [DEBUG] 地图范围检查:');
+        console.log(`   📍 地图边界: 左(${mapLeft.toFixed(1)}) 上(${mapTop.toFixed(1)}) 右(${mapRight.toFixed(1)}) 下(${mapBottom.toFixed(1)})`);
+        console.log(`   📍 英雄位置: (${correctWorldX.toFixed(1)}, ${correctWorldY.toFixed(1)})`);
+        console.log(`   ✅ 英雄在地图内: ${isInMap}`);
+
+        // 添加可视化调试信息
+        console.log('🎯 [DEBUG] 位置关系可视化:');
+        console.log(`   🗺️ 地图区域: [${mapLeft.toFixed(0)}, ${mapTop.toFixed(0)}] 到 [${mapRight.toFixed(0)}, ${mapBottom.toFixed(0)}]`);
+        console.log(`   👤 英雄位置: [${correctWorldX.toFixed(0)}, ${correctWorldY.toFixed(0)}]`);
+        console.log(`   📐 英雄相对位置: X偏移(${(correctWorldX - mapLeft).toFixed(0)}), Y偏移(${(correctWorldY - mapTop).toFixed(0)})`);
+        console.log(`   📊 英雄在地图中的百分比: X(${((correctWorldX - mapLeft) / (mapRight - mapLeft) * 100).toFixed(1)}%), Y(${((correctWorldY - mapTop) / (mapBottom - mapTop) * 100).toFixed(1)}%)`);
 
         // 设置移动事件
         this.setupGridEngineEvents();

@@ -5,8 +5,6 @@ import * as Phaser from 'phaser';
 import BootScene from './scenes/BootScene';
 import CompleteGameScene from './scenes/CompleteGameScene';
 import GameOverScene from './scenes/GameOverScene';
-import MainMenuScene from './scenes/MainMenuScene';
-import SimpleTestScene from './scenes/SimpleTestScene';
 
 interface GameConfig {
   width: number;
@@ -50,13 +48,7 @@ export class TopDownGameEngine {
           debug: false
         }
       },
-      scene: [
-        SimpleTestScene,
-        BootScene,
-        MainMenuScene,
-        CompleteGameScene,
-        GameOverScene
-      ],
+      scene: [], // 初始化时不加载任何场景，等待用户点击start按钮
       scale: {
         mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -101,6 +93,15 @@ export class TopDownGameEngine {
 
     this.game = new Phaser.Game(gameConfig);
 
+    // 添加场景事件监听
+    this.game.events.on('boot', () => {
+      console.log('🎮 Phaser游戏启动完成');
+    });
+
+    this.game.events.on('ready', () => {
+      console.log('🎮 Phaser游戏准备完成');
+    });
+
     console.log('🎯 [DEBUG] Phaser游戏创建完成:', {
       game: this.game,
       canvas: this.game.canvas,
@@ -135,11 +136,18 @@ export class TopDownGameEngine {
 
     // 监听游戏事件
     this.game.events.on('start', (scene: Phaser.Scene) => {
-      console.log(`场景启动: ${scene.scene.key}`);
+      console.log(`🎬 场景启动: ${scene.scene.key}`);
     });
 
     this.game.events.on('create', (scene: Phaser.Scene) => {
-      console.log(`场景创建: ${scene.scene.key}`);
+      console.log(`🎬 场景创建: ${scene.scene.key}`);
+    });
+
+    // 检查当前场景管理器状态
+    console.log('🎬 当前场景管理器状态:', {
+      scenes: this.game.scene.scenes.map(s => s.scene.key),
+      activeScenes: this.game.scene.getScenes(true).map(s => s.scene.key),
+      visibleScenes: this.game.scene.getScenes().map(s => s.scene.key)
     });
 
     // 不自动启动任何场景，等待用户点击start按钮
@@ -179,7 +187,20 @@ export class TopDownGameEngine {
   startGame(): void {
     if (this.game) {
       console.log('🎮 用户点击start按钮，开始启动游戏');
+
+      // 动态添加所有场景
+      console.log('📋 添加场景: BootScene');
+      this.game.scene.add('BootScene', BootScene, false);
+      console.log('📋 添加场景: CompleteGameScene');
+      this.game.scene.add('CompleteGameScene', CompleteGameScene, false);
+      console.log('📋 添加场景: GameOverScene');
+      this.game.scene.add('GameOverScene', GameOverScene, false);
+
+      // 启动BootScene开始资源加载
+      console.log('🚀 启动BootScene开始资源加载');
       this.game.scene.start('BootScene');
+    } else {
+      console.error('❌ 游戏实例不存在，无法启动游戏');
     }
   }
 

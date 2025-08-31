@@ -28,13 +28,13 @@ export default function TopDownGamePage() {
             const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
             setIsMobile(isMobileDevice || isTouchDevice);
         };
-        
+
         checkMobile();
         window.addEventListener('resize', checkMobile);
-        
+
         // 确保在客户端渲染
         setIsGameReady(true);
-        
+
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
@@ -50,7 +50,7 @@ export default function TopDownGamePage() {
         <div className="min-h-screen bg-gray-900">
             <div className="container mx-auto px-2 py-2 md:px-4 md:py-4">
                 <div className="text-center mb-2 md:mb-4">
-                    <h1 className="text-2xl md:text-4xl font-bold text-white mb-1 md:mb-2">俯视角RPG游戏</h1>
+                    <h1 className="text-2xl md:text-4xl font-bold text-white mb-1 md:mb-2">RPG游戏</h1>
                     <p className="text-gray-300 text-sm md:text-lg">
                         基于Phaser 3 + React的俯视角游戏演示
                     </p>
@@ -66,9 +66,9 @@ export default function TopDownGamePage() {
                 <div className="flex justify-center">
                     <div className="relative w-full">
                         {/* 增加游戏画面大小，特别是在移动设备上 */}
-                        <TopDownGameWrapper 
-                            width={isMobile ? 400 : 800} 
-                            height={isMobile ? 600 : 600} 
+                        <TopDownGameWrapper
+                            width={isMobile ? 400 : 800}
+                            height={isMobile ? 600 : 600}
                         />
 
                         {/* 游戏控制说明 - 移到游戏画面下方 */}

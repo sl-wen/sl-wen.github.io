@@ -1,5 +1,5 @@
-import * as Phaser from 'phaser';
 import { GridEngine } from 'grid-engine';
+import * as Phaser from 'phaser';
 
 // 地图类型枚举
 export enum MapType {
@@ -117,18 +117,18 @@ export class MapSystem {
         key: 'home_page_city_house_01',
         type: MapType.HOUSE,
         tileset: 'tileset',
-        width: 20,
-        height: 20,
+        width: 10,
+        height: 12,
         tileWidth: 16,
         tileHeight: 16,
         layers: ['ground', 'walls', 'objects', 'collisions'],
         spawnPoints: {
-          default: { x: 10, y: 10 },
-          from_city: { x: 5, y: 5, direction: 'up' }
+          default: { x: 5, y: 6 },
+          from_city: { x: 4, y: 3, direction: 'up' }
         },
         transitions: [
           {
-            from: { x: 5, y: 5, width: 2, height: 2 },
+            from: { x: 4, y: 3, width: 2, height: 2 },
             to: { mapKey: 'home_page_city', x: 15, y: 15, direction: 'down' },
             trigger: 'position'
           }
@@ -141,18 +141,18 @@ export class MapSystem {
         key: 'home_page_city_house_02',
         type: MapType.HOUSE,
         tileset: 'tileset',
-        width: 20,
-        height: 20,
+        width: 10,
+        height: 12,
         tileWidth: 16,
         tileHeight: 16,
         layers: ['ground', 'walls', 'objects', 'collisions'],
         spawnPoints: {
-          default: { x: 10, y: 10 },
-          from_city: { x: 5, y: 5, direction: 'up' }
+          default: { x: 5, y: 6 },
+          from_city: { x: 4, y: 3, direction: 'up' }
         },
         transitions: [
           {
-            from: { x: 5, y: 5, width: 2, height: 2 },
+            from: { x: 4, y: 3, width: 2, height: 2 },
             to: { mapKey: 'home_page_city', x: 35, y: 15, direction: 'down' },
             trigger: 'position'
           }
@@ -165,19 +165,19 @@ export class MapSystem {
         key: 'home_page_city_house_03',
         type: MapType.HOUSE,
         tileset: 'tileset',
-        width: 20,
-        height: 20,
+        width: 10,
+        height: 12,
         tileWidth: 16,
         tileHeight: 16,
         layers: ['ground', 'walls', 'objects', 'collisions'],
         spawnPoints: {
-          default: { x: 10, y: 10 },
-          from_city: { x: 5, y: 5, direction: 'down' }
+          default: { x: 5, y: 6 },
+          from_city: { x: 4, y: 3, direction: 'up' }
         },
         transitions: [
           {
-            from: { x: 5, y: 5, width: 2, height: 2 },
-            to: { mapKey: 'home_page_city', x: 25, y: 35, direction: 'up' },
+            from: { x: 4, y: 3, width: 2, height: 2 },
+            to: { mapKey: 'home_page_city', x: 25, y: 35, direction: 'down' },
             trigger: 'position'
           }
         ],
@@ -221,10 +221,10 @@ export class MapSystem {
 
       // 加载新地图
       await this.loadMapData(config);
-      
+
       // 设置网格引擎
       await this.setupGridEngine(config, spawnPoint);
-      
+
       // 设置地图块
       if (config.chunked) {
         this.setupChunks(config);
@@ -236,15 +236,15 @@ export class MapSystem {
 
       this.emitEvent('loaded', { type: 'loaded', mapKey });
       console.log(`Map ${mapKey} loaded successfully`);
-      
+
       return true;
 
     } catch (error) {
       console.error(`Failed to load map ${mapKey}:`, error);
-      this.emitEvent('error', { 
-        type: 'error', 
-        mapKey, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      this.emitEvent('error', {
+        type: 'error',
+        mapKey,
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
       return false;
     } finally {
@@ -258,10 +258,10 @@ export class MapSystem {
       try {
         // 创建瓦片地图
         this.tilemap = this.scene.make.tilemap({ key: config.key });
-        
+
         // 添加瓦片集
         this.tilemap.addTilesetImage(config.tileset);
-        
+
         // 创建图层
         config.layers.forEach(layerName => {
           if (this.tilemap) {
@@ -304,7 +304,7 @@ export class MapSystem {
         if (this.tilemap) {
           this.gridEngine.create(this.tilemap, gridEngineConfig);
         }
-        
+
         resolve();
       } catch (error) {
         reject(error);
@@ -315,7 +315,7 @@ export class MapSystem {
   // 设置地图块
   private setupChunks(config: MapConfig): void {
     this.chunks.clear();
-    
+
     const chunkSize = config.chunkSize;
     const chunksX = Math.ceil(config.width / chunkSize);
     const chunksY = Math.ceil(config.height / chunkSize);
@@ -344,7 +344,7 @@ export class MapSystem {
 
     // 停止网格引擎
     this.gridEngine.stopMovement('player');
-    
+
     // 销毁瓦片地图
     if (this.tilemap) {
       this.tilemap.destroy();
@@ -405,10 +405,10 @@ export class MapSystem {
 
   // 检查是否在转换区域内
   private isInTransitionArea(position: { x: number; y: number }, area: { x: number; y: number; width: number; height: number }): boolean {
-    return position.x >= area.x && 
-           position.x < area.x + area.width &&
-           position.y >= area.y && 
-           position.y < area.y + area.height;
+    return position.x >= area.x &&
+      position.x < area.x + area.width &&
+      position.y >= area.y &&
+      position.y < area.y + area.height;
   }
 
   // 转换到新地图
@@ -505,7 +505,7 @@ export class MapSystem {
     this.chunks.forEach((chunk, key) => {
       const chunkX = parseInt(key.split('_')[0]);
       const chunkY = parseInt(key.split('_')[1]);
-      
+
       const distance = Math.max(Math.abs(chunkX - playerChunkX), Math.abs(chunkY - playerChunkY));
       const shouldBeVisible = distance <= viewDistance;
 

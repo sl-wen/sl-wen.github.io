@@ -3,10 +3,6 @@
 import * as Phaser from 'phaser';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { mobileTestHelper } from './MobileTestHelper';
-import BootScene from './scenes/BootScene';
-import { CompleteGameScene } from './scenes/CompleteGameScene';
-import GameOverScene from './scenes/GameOverScene';
-import MainMenuScene from './scenes/MainMenuScene';
 import { CombatSystem } from './systems/CombatSystem';
 import { CraftingSystem } from './systems/CraftingSystem';
 import { GameDataManager } from './systems/GameDataManager';
@@ -178,7 +174,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
             debug: false
           }
         },
-        scene: [BootScene, MainMenuScene, CompleteGameScene, GameOverScene]
+        scene: [] // 初始化时不加载任何场景，等待用户点击start按钮
       });
 
       console.log('✅ 游戏引擎创建成功');
@@ -205,10 +201,6 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
           console.log('🎮 场景启动:', scene.scene.key);
           if (scene.scene.key === 'BootScene') {
             setDebugInfo('资源加载中...');
-          } else if (scene.scene.key === 'MainMenuScene') {
-            setDebugInfo('主菜单已加载');
-            setIsLoading(false);
-            setIsGameReady(true);
           }
         });
 
@@ -238,7 +230,9 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
         setDebugInfo('游戏实例创建失败');
       }
 
-      setDebugInfo('游戏引擎创建完成，等待场景启动...');
+      setDebugInfo('游戏引擎创建完成，等待用户点击start按钮');
+      setIsLoading(false);
+      setIsGameReady(true);
 
     } catch (error) {
       console.error('❌ 游戏引擎初始化失败:', error);

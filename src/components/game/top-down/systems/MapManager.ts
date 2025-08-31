@@ -87,7 +87,7 @@ export class MapManager {
       tilesetKey: 'tileset',
       tilemapKey: 'home_page_city_house_01',
       musicKey: 'village',
-      spawnPoint: { x: 5, y: 6 }, // 修复：使用地图范围内的位置
+      spawnPoint: { x: 5, y: 6 }, // 使用固定坐标，参考原项目
       background: '#87CEEB',
       lighting: 'day',
       teleportPoints: [

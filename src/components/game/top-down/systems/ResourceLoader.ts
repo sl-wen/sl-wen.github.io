@@ -3,6 +3,7 @@ import * as Phaser from 'phaser';
 // 资源加载状态枚举
 export enum LoadStatus {
   PENDING = 'pending',
+  QUEUED = 'queued',
   LOADING = 'loading',
   SUCCESS = 'success',
   FAILED = 'failed',
@@ -104,7 +105,9 @@ export class ResourceLoader {
 
   // 设置场景实例
   public setScene(scene: Phaser.Scene): void {
+    console.log('🎮 ResourceLoader: 设置场景实例');
     this.scene = scene;
+    console.log('🎮 ResourceLoader: 场景实例设置完成');
   }
 
   // 添加资源
@@ -179,35 +182,46 @@ export class ResourceLoader {
     console.log('🔄 ResourceLoader: 开始处理加载队列');
     console.log('📊 队列长度:', this.loadQueue.length);
 
-    while (this.loadQueue.length > 0 || this.loadingItems.size > 0) {
-      // 启动新的加载任务
-      while (this.loadingItems.size < this.config.maxConcurrent && this.loadQueue.length > 0) {
-        const item = this.loadQueue.shift()!;
-        console.log('📥 开始加载资源:', item.key, item.url);
-        this.loadResource(item);
-      }
-
-      // 等待一段时间再检查
-      await new Promise(resolve => setTimeout(resolve, 100));
+    // 将所有资源添加到Phaser的加载队列
+    while (this.loadQueue.length > 0) {
+      const item = this.loadQueue.shift()!;
+      console.log('📥 添加资源到Phaser队列:', item.key, item.url);
+      await this.loadResourceByType(item);
     }
 
-    console.log('✅ ResourceLoader: 队列处理完成');
+    console.log('✅ ResourceLoader: 所有资源已添加到Phaser队列');
 
-    // 检查是否所有资源都加载成功
-    const failedItems = Array.from(this.resources.values()).filter(
-      item => item.status === LoadStatus.FAILED
-    );
-
-    if (failedItems.length > 0) {
-      console.error('❌ ResourceLoader: 加载失败的资源:', failedItems.map(item => item.key));
-      this.emitEvent('error', {
-        error: `${failedItems.length} resources failed to load`,
-        item: failedItems[0]
+    // 设置Phaser加载事件监听器
+    if (this.scene) {
+      this.scene.load.on('progress', (value: number) => {
+        console.log('📊 Phaser加载进度:', Math.round(value * 100) + '%');
+        this.emitEvent('progress', { progress: this.getProgress() });
       });
-    } else {
-      console.log('🎉 ResourceLoader: 所有资源加载成功');
-      this.emitEvent('complete', { progress: this.getProgress() });
+
+      this.scene.load.on('complete', () => {
+        console.log('🎉 Phaser加载完成');
+        // 更新所有资源状态为成功
+        Array.from(this.resources.values()).forEach(item => {
+          if (item.status === LoadStatus.QUEUED) {
+            item.status = LoadStatus.SUCCESS;
+          }
+        });
+        this.emitEvent('complete', { progress: this.getProgress() });
+      });
+
+      this.scene.load.on('loaderror', (file: any) => {
+        console.error('❌ Phaser加载错误:', file.key);
+        const item = this.resources.get(file.key);
+        if (item) {
+          item.status = LoadStatus.FAILED;
+          item.error = `Failed to load ${file.key}`;
+        }
+        this.emitEvent('error', { error: `Failed to load ${file.key}`, item });
+      });
     }
+
+    console.log('🎉 ResourceLoader: 所有资源加载成功');
+    this.emitEvent('complete', { progress: this.getProgress() });
   }
 
   // 加载单个资源
@@ -264,6 +278,8 @@ export class ResourceLoader {
   private async loadResourceByType(item: ResourceItem): Promise<void> {
     if (!this.scene) return;
 
+    console.log('📥 ResourceLoader: 添加资源到Phaser加载队列:', item.key, item.type);
+
     switch (item.type) {
       case ResourceType.IMAGE:
         this.scene.load.image(item.key, item.url);
@@ -307,24 +323,9 @@ export class ResourceLoader {
         throw new Error(`Unsupported resource type: ${item.type}`);
     }
 
-    // 等待加载完成
-    return new Promise((resolve, reject) => {
-      const onComplete = () => {
-        this.scene!.load.off('complete', onComplete);
-        this.scene!.load.off('loaderror', onError);
-        resolve();
-      };
-
-      const onError = (file: any) => {
-        this.scene!.load.off('complete', onComplete);
-        this.scene!.load.off('loaderror', onError);
-        reject(new Error(`Failed to load ${file.key}`));
-      };
-
-      this.scene!.load.once('complete', onComplete);
-      this.scene!.load.once('loaderror', onError);
-      this.scene!.load.start();
-    });
+    // 标记为已添加到Phaser队列
+    item.status = LoadStatus.QUEUED;
+    console.log('✅ ResourceLoader: 资源已添加到Phaser队列:', item.key);
   }
 
   // 从缓存加载
@@ -383,11 +384,17 @@ export class ResourceLoader {
     const retrying = Array.from(this.resources.values()).filter(
       item => item.status === LoadStatus.RETRYING
     ).length;
+    const queued = Array.from(this.resources.values()).filter(
+      item => item.status === LoadStatus.QUEUED
+    ).length;
 
-    const percentage = total > 0 ? Math.round((loaded / total) * 100) : 0;
+    // 计算百分比：已加载的 + 已排队的都算作进度
+    const progressItems = loaded + queued;
+    const percentage = total > 0 ? Math.round((progressItems / total) * 100) : 0;
 
     const currentItem = this.loadQueue[0] ||
-      Array.from(this.resources.values()).find(item => item.status === LoadStatus.LOADING);
+      Array.from(this.resources.values()).find(item => item.status === LoadStatus.LOADING) ||
+      Array.from(this.resources.values()).find(item => item.status === LoadStatus.QUEUED);
 
     let estimatedTime: number | undefined;
     if (loaded > 0 && this.startTime > 0) {
@@ -504,7 +511,10 @@ export const RESOURCE_LOAD_ORDER = {
   // 3. 物品资源 (优先级: 60)
   ITEMS: [
     { key: 'heart', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/heart.png', priority: 60, config: { atlasURL: '/assets/topdown/sprites/atlas/heart.json' } },
-    { key: 'coin', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/coin.png', priority: 60, config: { atlasURL: '/assets/topdown/sprites/atlas/coin.json' } }
+    { key: 'coin', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/coin.png', priority: 60, config: { atlasURL: '/assets/topdown/sprites/atlas/coin.json' } },
+    { key: 'heart_container', type: ResourceType.IMAGE, url: '/assets/topdown/images/heart_container.png', priority: 60 },
+    { key: 'sword', type: ResourceType.IMAGE, url: '/assets/topdown/images/sword.png', priority: 60 },
+    { key: 'push', type: ResourceType.IMAGE, url: '/assets/topdown/images/push.png', priority: 60 }
   ],
 
   // 4. UI资源 (优先级: 90)
@@ -513,15 +523,6 @@ export const RESOURCE_LOAD_ORDER = {
     { key: 'game_over_background', type: ResourceType.IMAGE, url: '/assets/topdown/images/game_over_background.png', priority: 90 },
     { key: 'game_logo', type: ResourceType.IMAGE, url: '/assets/topdown/images/game_logo.png', priority: 90 },
     { key: 'dialog_borderbox', type: ResourceType.IMAGE, url: '/assets/topdown/images/dialog_borderbox.png', priority: 90 }
-  ],
-
-  // 3. 物品资源 (优先级: 60)
-  ITEMS: [
-    { key: 'heart', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/heart.png', priority: 60, config: { atlasURL: '/assets/topdown/sprites/atlas/heart.json' } },
-    { key: 'coin', type: ResourceType.ATLAS, url: '/assets/topdown/sprites/atlas/coin.png', priority: 60, config: { atlasURL: '/assets/topdown/sprites/atlas/coin.json' } },
-    { key: 'heart_container', type: ResourceType.IMAGE, url: '/assets/topdown/images/heart_container.png', priority: 60 },
-    { key: 'sword', type: ResourceType.IMAGE, url: '/assets/topdown/images/sword.png', priority: 60 },
-    { key: 'push', type: ResourceType.IMAGE, url: '/assets/topdown/images/push.png', priority: 60 }
   ]
 };
 

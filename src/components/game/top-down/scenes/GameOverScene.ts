@@ -79,11 +79,6 @@ export default class GameOverScene extends Phaser.Scene {
           break;
         }
 
-        case '返回主菜单': {
-          this.soundManager.playSoundEffect('ui_click');
-          this.scene.start('MainMenuScene');
-          break;
-        }
 
         case '退出游戏': {
           this.soundManager.playSoundEffect('ui_click');

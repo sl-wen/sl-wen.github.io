@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { GameScene } from '../scenes/GameScene';
+import GameScene from '../scenes/GameScene';
 import { UIScene } from '../scenes/UIScene';
 import { PreloadScene } from '../scenes/PreloadScene';
 

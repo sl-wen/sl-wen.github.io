@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 
 // 动态导入游戏组件，避免SSR问题
 const TopDownGameWrapper = dynamic(
-    () => import('@/components/game/top-down/TopDownGame').then(mod => ({ default: mod.TopDownGame })),
+    () => import('@/components/game/TopDownGame').then(mod => ({ default: mod.TopDownGame })),
     {
         ssr: false,
         loading: () => (

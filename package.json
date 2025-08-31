@@ -15,7 +15,17 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
     "test:task": "node scripts/test-task-system.js",
     "clean": "rimraf .next out",
-    "build:clean": "npm run clean && npm run build"
+    "build:clean": "npm run clean && npm run build",
+    "test:assets": "node scripts/test-game-assets.js",
+    "test:types": "tsc --noEmit",
+    "test": "npm run test:assets && npm run test:types",
+    "deploy": "./scripts/deploy.sh",
+    "deploy:docker": "DEPLOY_METHOD=docker ./scripts/deploy.sh",
+    "deploy:pm2": "DEPLOY_METHOD=pm2 ./scripts/deploy.sh",
+    "docker:build": "docker build -t game-app .",
+    "docker:run": "docker run -p 3000:3000 game-app",
+    "docker:dev": "docker-compose --profile dev up",
+    "docker:prod": "docker-compose up -d"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
@@ -29,9 +39,10 @@
     "next": "^14.0.4",
     "next-pwa": "^5.6.0",
     "phaser": "^3.88.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "sharp": "^0.34.2"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sharp": "^0.34.2",
+    "classnames": "^2.3.1"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",
@@ -39,8 +50,8 @@
     "@tailwindcss/typography": "^0.5.10",
     "@types/lodash": "^4.14.202",
     "@types/node": "^22.15.29",
-    "@types/react": "^18.2.66",
-    "@types/react-dom": "^18.2.22",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "autoprefixer": "^10.4.16",

@@ -109,12 +109,145 @@ export interface FarmPlot {
   soilQuality: number; // 土壤质量等级（影响作物生长）
 }
 
-// 游戏配置接口 - 定义游戏画面和显示相关的配置参数
+// 游戏尺寸配置
+export interface GameSize {
+  width: number;
+  height: number;
+  multiplier: number;
+}
+
+// 游戏配置
 export interface GameConfig {
-  width: number; // 游戏画面宽度
-  height: number; // 游戏画面高度
-  minWidth?: number; // 最小宽度限制（可选）
-  minHeight?: number; // 最小高度限制（可选）
-  maxWidth?: number; // 最大宽度限制（可选）
-  maxHeight?: number; // 最大高度限制（可选）
+  type: number;
+  title: string;
+  parent: string;
+  orientation: number;
+  localStorageName: string;
+  width: number;
+  height: number;
+  autoRound: boolean;
+  pixelArt: boolean;
+  scale: {
+    autoCenter: number;
+    mode: number;
+  };
+  scene: any[];
+  physics: {
+    default: string;
+  };
+  plugins: {
+    scene: Array<{
+      key: string;
+      plugin: any;
+      mapping: string;
+    }>;
+  };
+  backgroundColor: string;
+}
+
+// 对话框消息
+export interface DialogMessage {
+  message: string;
+}
+
+// 对话框配置
+export interface DialogConfig {
+  characterName: string;
+  messages: DialogMessage[];
+}
+
+// 游戏菜单项
+export interface GameMenuItem {
+  id: string;
+  label: string;
+  action?: string;
+}
+
+// 游戏菜单配置
+export interface GameMenuConfig {
+  menuItems: GameMenuItem[];
+  menuPosition: string;
+}
+
+// 角色血量状态
+export interface HealthState {
+  current: number;
+  max: number;
+}
+
+// 角色血量配置
+export interface HeroHealthConfig {
+  healthStates: HealthState[];
+}
+
+// 金币配置
+export interface HeroCoinConfig {
+  heroCoins: number;
+}
+
+// 游戏事件类型
+export type GameEventType = 
+  | 'new-dialog'
+  | 'menu-items'
+  | 'hero-health'
+  | 'hero-coin'
+  | 'menu-item-selected'
+  | 'dialog-finished';
+
+// 游戏事件
+export interface GameEvent {
+  type: GameEventType;
+  detail: any;
+}
+
+// 游戏状态
+export interface GameState {
+  isGameReady: boolean;
+  isMobile: boolean;
+  messages: DialogMessage[];
+  characterName: string;
+  gameMenuItems: GameMenuItem[];
+  gameMenuPosition: string;
+  heroHealthStates: HealthState[];
+  heroCoins: number | null;
+}
+
+// 游戏组件Props
+export interface TopDownGameProps {
+  width?: number;
+  height?: number;
+}
+
+// 对话框组件Props
+export interface DialogBoxProps {
+  onDone: () => void;
+  characterName: string;
+  messages: DialogMessage[];
+  gameSize: GameSize;
+}
+
+// 游戏菜单组件Props
+export interface GameMenuProps {
+  items: GameMenuItem[];
+  gameSize: GameSize;
+  position: string;
+  onSelected: (selectedItem: GameMenuItem) => void;
+}
+
+// 角色血量组件Props
+export interface HeroHealthProps {
+  gameSize: GameSize;
+  healthStates: HealthState[];
+}
+
+// 金币组件Props
+export interface HeroCoinProps {
+  gameSize: GameSize;
+  heroCoins: number;
+}
+
+// 消息组件Props
+export interface MessageProps {
+  text: string;
+  onComplete?: () => void;
 }

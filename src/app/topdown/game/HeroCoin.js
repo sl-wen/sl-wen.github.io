@@ -2,7 +2,7 @@ import { styled } from '@mui/material/styles';
 import classNames from 'classnames';
 
 // Images
-import coinImage from './assets/images/coin.png';
+// Note: coin.png is now served from public/game/assets/images/coin.png
 
 const CoinContainer = styled('div')(({ multiplier, width }) => {
     const left = window.innerWidth - (width * multiplier);
@@ -22,7 +22,7 @@ const CoinContainer = styled('div')(({ multiplier, width }) => {
 
 const Coin = styled('div')(({ multiplier }) => ({
     backgroundSize: `${16 * multiplier}px ${16 * multiplier}px`,
-    background: `url("${coinImage}") no-repeat 0 0`,
+    background: `url("/game/assets/images/coin.png") no-repeat 0 0`,
     width: `${16 * multiplier}px`,
     height: `${16 * multiplier}px`,
 }));

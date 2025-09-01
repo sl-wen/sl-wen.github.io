@@ -1,43 +1,8 @@
 import { Scene } from 'phaser';
 
-// Houses files
-import homePageHouse01Map from '../assets/sprites/maps/houses/home_page_city_house_01.json';
-import homePageHouse02Map from '../assets/sprites/maps/houses/home_page_city_house_02.json';
-import homePageHouse03Map from '../assets/sprites/maps/houses/home_page_city_house_03.json';
+// JSON files - now served from public/game/assets/
 
-// Cities files
-import homePageCity from '../assets/sprites/maps/cities/home_page_city.json';
-
-// Characters files
-import heroJson from '../assets/sprites/atlas/hero.json';
-import slimeJson from '../assets/sprites/atlas/slime.json';
-import heartJson from '../assets/sprites/atlas/heart.json';
-import coinJson from '../assets/sprites/atlas/coin.json';
-
-// NPC jsons
-import npc01Json from '../assets/sprites/atlas/npc_01.json';
-import npc02Json from '../assets/sprites/atlas/npc_02.json';
-import npc03Json from '../assets/sprites/atlas/npc_03.json';
-import npc04Json from '../assets/sprites/atlas/npc_04.json';
-
-// Images
-import heroImage from '../assets/sprites/atlas/hero.png';
-import slimeImage from '../assets/sprites/atlas/slime.png';
-import heartImage from '../assets/sprites/atlas/heart.png';
-import coinImage from '../assets/sprites/atlas/coin.png';
-import tilesetImage from '../assets/sprites/maps/tilesets/tileset.png';
-import mainMenuBackgroundImage from '../assets/images/main_menu_background.png';
-import gameOverBackgroundImage from '../assets/images/game_over_background.png';
-import gameLogoImage from '../assets/images/game_logo.png';
-import heartContainerImage from '../assets/images/heart_container.png';
-import swordImage from '../assets/images/sword.png';
-import pushImage from '../assets/images/push.png';
-
-// NPC images
-import npc01Image from '../assets/sprites/atlas/npc_01.png';
-import npc02Image from '../assets/sprites/atlas/npc_02.png';
-import npc03Image from '../assets/sprites/atlas/npc_03.png';
-import npc04Image from '../assets/sprites/atlas/npc_04.png';
+// Images - now served from public/game/assets/
 
 export default class BootScene extends Scene {
     constructor() {
@@ -133,33 +98,33 @@ export default class BootScene extends Scene {
         });
 
         // Maps
-        this.load.tilemapTiledJSON('home_page_city', homePageCity);
-        this.load.tilemapTiledJSON('home_page_city_house_01', homePageHouse01Map);
-        this.load.tilemapTiledJSON('home_page_city_house_02', homePageHouse02Map);
-        this.load.tilemapTiledJSON('home_page_city_house_03', homePageHouse03Map);
+        this.load.tilemapTiledJSON('home_page_city', '/game/assets/sprites/maps/cities/home_page_city.json');
+        this.load.tilemapTiledJSON('home_page_city_house_01', '/game/assets/sprites/maps/houses/home_page_city_house_01.json');
+        this.load.tilemapTiledJSON('home_page_city_house_02', '/game/assets/sprites/maps/houses/home_page_city_house_02.json');
+        this.load.tilemapTiledJSON('home_page_city_house_03', '/game/assets/sprites/maps/houses/home_page_city_house_03.json');
 
         // Atlas
-        this.load.atlas('hero', heroImage, heroJson);
-        this.load.atlas('slime', slimeImage, slimeJson);
-        this.load.atlas('heart', heartImage, heartJson);
-        this.load.atlas('coin', coinImage, coinJson);
+        this.load.atlas('hero', '/game/assets/sprites/atlas/hero.png', '/game/assets/sprites/atlas/hero.json');
+        this.load.atlas('slime', '/game/assets/sprites/atlas/slime.png', '/game/assets/sprites/atlas/slime.json');
+        this.load.atlas('heart', '/game/assets/sprites/atlas/heart.png', '/game/assets/sprites/atlas/heart.json');
+        this.load.atlas('coin', '/game/assets/sprites/atlas/coin.png', '/game/assets/sprites/atlas/coin.json');
 
         // NPCs
-        this.load.atlas('npc_01', npc01Image, npc01Json);
-        this.load.atlas('npc_02', npc02Image, npc02Json);
-        this.load.atlas('npc_03', npc03Image, npc03Json);
-        this.load.atlas('npc_04', npc04Image, npc04Json);
+        this.load.atlas('npc_01', '/game/assets/sprites/atlas/npc_01.png', '/game/assets/sprites/atlas/npc_01.json');
+        this.load.atlas('npc_02', '/game/assets/sprites/atlas/npc_02.png', '/game/assets/sprites/atlas/npc_02.json');
+        this.load.atlas('npc_03', '/game/assets/sprites/atlas/npc_03.png', '/game/assets/sprites/atlas/npc_03.json');
+        this.load.atlas('npc_04', '/game/assets/sprites/atlas/npc_04.png', '/game/assets/sprites/atlas/npc_04.json');
 
         // Tilesets
-        this.load.image('tileset', tilesetImage);
+        this.load.image('tileset', '/game/assets/sprites/maps/tilesets/tileset.png');
 
         // Images
-        this.load.image('main_menu_background', mainMenuBackgroundImage);
-        this.load.image('game_over_background', gameOverBackgroundImage);
-        this.load.image('game_logo', gameLogoImage);
-        this.load.image('heart_container', heartContainerImage);
-        this.load.image('sword', swordImage);
-        this.load.image('push', pushImage);
+        this.load.image('main_menu_background', '/game/assets/images/main_menu_background.png');
+        this.load.image('game_over_background', '/game/assets/images/game_over_background.png');
+        this.load.image('game_logo', '/game/assets/images/game_logo.png');
+        this.load.image('heart_container', '/game/assets/images/heart_container.png');
+        this.load.image('sword', '/game/assets/images/sword.png');
+        this.load.image('push', '/game/assets/images/push.png');
     }
 
     create() {

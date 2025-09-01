@@ -9,6 +9,8 @@
     "build:static": "next build && next export",
     "start": "next start",
     "lint": "next lint",
+    "lint:fast": "eslint src --ext .ts,.tsx,.js,.jsx --max-warnings 50",
+    "lint:check": "eslint src --ext .ts,.tsx,.js,.jsx --quiet",
     "export": "next export",
     "tsc": "tsc --noEmit",
     "validate:css": "node --experimental-modules scripts/css-path-validator.js",

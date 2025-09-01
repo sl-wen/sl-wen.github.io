@@ -7,9 +7,6 @@ const nextConfig = {
     optimizePackageImports: ['lodash', 'react-icons'],
   },
 
-  // 启用 SWC 压缩
-  swcMinify: true,
-
   // 图片优化配置
   images: {
     // 禁用图片优化以支持游戏资源

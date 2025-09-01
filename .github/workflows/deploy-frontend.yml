@@ -61,7 +61,7 @@ jobs:
           echo "快速清理和安装依赖..."
           rm -rf .next
           rm -rf package-lock.json
-          rm -rf node_modules
+          rm -rf node_modules/.cache
           
           # 重新安装依赖
           echo "安装依赖..."

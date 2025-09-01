@@ -3,8 +3,8 @@ const nextConfig = {
   eslint:{
     ignoreDuringBuilds: true,
   },
-  // 转译Material-UI包以解决兼容性问题
-  transpilePackages: ['@material-ui/core', '@material-ui/styles', '@material-ui/lab'],
+  // 转译MUI v5包以解决兼容性问题
+  transpilePackages: ['@mui/material', '@mui/styles', '@mui/lab', '@emotion/react', '@emotion/styled'],
   // 启用实验性功能（谨慎使用）
   experimental: {
     // 禁用可能导致构建缓慢的功能

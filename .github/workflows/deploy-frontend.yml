@@ -11,7 +11,7 @@ on:
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 10
     
     steps:
     - name: Deploy Frontend to Server
@@ -21,8 +21,8 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH }}
         port: 22
-        timeout: 30s
-        command_timeout: 3m
+        timeout: 60s
+        command_timeout: 8m
         script: |
           echo "=== 开始部署前端应用 ==="
           echo "时间: $(date)"
@@ -62,14 +62,14 @@ jobs:
           rm -rf .next
           rm -rf node_modules/.cache
           
-          # 使用标准构建命令，跳过 lint
-          echo "开始构建（跳过 lint）..."
-          if timeout 300 npm run build; then
+          # 使用快速构建命令（禁用遥测，尽量减少额外检查）
+          echo "开始快速构建（跳过 lint）..."
+          if timeout 480 npm run build:fast; then
             echo "✅ 前端构建完成"
           else
             echo "❌ 前端构建超时或失败"
             echo "构建日志:"
-            npm run build 2>&1 | tail -100
+            npm run build:fast 2>&1 | tail -100
             exit 1
           fi
           

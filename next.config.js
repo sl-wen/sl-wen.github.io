@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 在构建时跳过 ESLint（避免 CI 卡在 lint）
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // 启用实验性功能（谨慎使用）
   experimental: {
     // 禁用可能导致构建缓慢的功能

@@ -97,13 +97,6 @@ jobs:
             npm install --production=false --prefer-offline=true --no-audit
           fi
           
-          # 检查关键依赖
-          echo "检查关键依赖..."
-          if ! npm list @next/swc > /dev/null 2>&1; then
-            echo "安装 @next/swc..."
-            npm install @next/swc --force --no-audit
-          fi
-          
           # 快速构建前端应用
           echo "快速构建前端应用..."
           export NODE_OPTIONS="--max-old-space-size=1024"

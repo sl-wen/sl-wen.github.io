@@ -16,6 +16,10 @@ const nextConfig = {
   images: {
     // 禁用图片优化以支持游戏资源
     unoptimized: true,
+    // 禁用Sharp以解决Linux兼容性问题
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
   // 静态资源处理

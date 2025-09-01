@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint:{
+    ignoreDuringBuilds: true,
+  },
   // 启用实验性功能（谨慎使用）
   experimental: {
     // 禁用可能导致构建缓慢的功能

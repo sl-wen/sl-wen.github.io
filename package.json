@@ -30,10 +30,12 @@
     "docker:prod": "docker-compose up -d"
   },
   "dependencies": {
-    "@material-ui/core": "^4.12.3",
-    "@material-ui/icons": "^4.11.2",
-    "@material-ui/lab": "^4.0.0-alpha.60",
-    "@material-ui/styles": "^4.11.4",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.15.10",
+    "@mui/icons-material": "^5.15.10",
+    "@mui/lab": "^5.0.0-alpha.162",
+    "@mui/styles": "^5.15.10",
     "@supabase/supabase-js": "^2.49.4",
     "framer-motion": "^11.0.0",
     "buffer": "^6.0.3",
@@ -72,7 +74,7 @@
     "tailwindcss": "^3.4.0",
     "typescript": "^5.9.2"
   },
-  "description": "[![Language](https://img.shields.io/badge/Jekyll-Theme-blue)](https://github.com/sl-wen/slwen)\r [![license](https://img.shields.io/github/license/slwen/slwen)](https://github.com/sl-wen/slwen)\r [![GitHub stars](https://img.shields.io/github/stars/slwen/?style=social)](https://github.com/sl-wen/)",
+  "description": "[![Language](https://img.shields.io/badge/Jekyll-Theme-blue)](https://github.com/sl-wen/slwen)\r [![license](https://img.shields.io/github/license/slwen/slwen)](https://github.com/sl-wen/)\r [![GitHub stars](https://img.shields.io/github/stars/slwen/?style=social)](https://github.com/sl-wen/)",
   "keywords": [
     "blog",
     "next.js",

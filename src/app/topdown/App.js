@@ -5,9 +5,9 @@ import BootScene from './game/scenes/BootScene';
 import MainMenuScene from './game/scenes/MainMenuScene';
 import GameOverScene from './game/scenes/GameOverScene';
 import GameScene from './game/scenes/GameScene';
-import { makeStyles } from '@material-ui/core/styles';
+import { styled } from '@mui/material/styles';
 import classNames from 'classnames';
-import { Backdrop, Fade, Modal, Typography } from '@material-ui/core';
+import { Backdrop, Fade, Modal, Typography } from '@mui/material';
 import dialogBorderBox from './game/assets/images/dialog_borderbox.png';
 import GameMenu from "./game/GameMenu";
 import DialogBox from "./game/DialogBox";
@@ -18,59 +18,21 @@ import { calculateGameSize } from "./game/utils";
 
 const { width, height, multiplier } = calculateGameSize();
 
-const useStyles = makeStyles((theme) => ({
-  modal: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  paper: {
-    backgroundColor: theme.palette.background.paper,
-    border: '2px solid #000',
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 3),
-    overflow: 'auto',
-  },
-  postContainer: {
-    maxWidth: '90%',
-    maxHeight: '90%',
-  },
-  gameContentWrapper: {
-    width: `${width * multiplier}px`,
-    height: `${height * multiplier}px`,
-    margin: 'auto',
-    padding: 0,
-    overflow: 'hidden',
-    '& canvas': {
-      imageRendering: 'pixelated',
-      '-ms-interpolation-mode': 'nearest-neighbor',
-      boxShadow: '0px 0px 0px 3px rgba(0,0,0,0.75)',
-    },
-  },
-  pageWrapper: {
-    background: theme.palette.background.paper,
-    padding: 0,
-    margin: 0,
-  },
-  loadingText: {
-    fontFamily: '"Press Start 2P"',
-    marginTop: '30px',
-    marginLeft: '30px',
-  },
-  preLoadDialogImage: {
-    backgroundImage: `url("${dialogBorderBox}")`,
-    backgroundSize: '1px',
-    backgroundRepeat: 'no-repeat',
-  },
-  gameWrapper: {
-    color: '#FFFFFF',
-  },
-  gameGif: {
-    width: '100%',
-    position: 'absolute',
+const GameContentWrapper = styled('div')(({ theme }) => ({
+  width: `${width * multiplier}px`,
+  height: `${height * multiplier}px`,
+  margin: 'auto',
+  padding: 0,
+  overflow: 'hidden',
+  '& canvas': {
     imageRendering: 'pixelated',
-    top: 0,
+    '-ms-interpolation-mode': 'nearest-neighbor',
+    boxShadow: '0px 0px 0px 3px rgba(0,0,0,0.75)',
   },
+}));
+
+const GameWrapper = styled('div')(({ theme }) => ({
+  color: '#FFFFFF',
 }));
 
 const dialogs = {
@@ -105,7 +67,6 @@ const dialogs = {
 };
 
 function App() {
-  const classes = useStyles();
   const [messages, setMessages] = useState([]);
   const [characterName, setCharacterName] = useState('');
   const [gameMenuItems, setGameMenuItems] = useState([]);
@@ -209,13 +170,12 @@ function App() {
 
   return (
       <div>
-        <div className={classes.gameWrapper}>
-          <div
+        <GameWrapper>
+          <GameContentWrapper
               id="game-content"
-              className={classes.gameContentWrapper}
           >
             {/* this is where the game canvas will be rendered */}
-          </div>
+          </GameContentWrapper>
           {heroHealthStates.length > 0 && (
               <HeroHealth
                   gameSize={{
@@ -260,7 +220,7 @@ function App() {
                   onSelected={handleMenuItemSelected}
               />
           )}
-        </div>
+        </GameWrapper>
       </div>
   );
 }

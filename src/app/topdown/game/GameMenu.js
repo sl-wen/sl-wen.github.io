@@ -1,49 +1,49 @@
 import { useEffect, useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import { styled } from '@mui/material/styles';
 import classNames from 'classnames';
 
-const useStyles = makeStyles((theme) => ({
-    menuWrapper: ({ multiplier }) => ({
+const MenuWrapper = styled('div')(({ multiplier, position, width, height }) => {
+    const left = window.innerWidth - (width * multiplier);
+    const menuWidth = 160 * multiplier;
+    
+    let positionStyles = {};
+    if (position === 'center') {
+        positionStyles = {
+            minWidth: `${menuWidth}px`,
+            left: '50%',
+            top: `${(height * multiplier) / 2}px`,
+        };
+    } else if (position === 'left') {
+        positionStyles = {
+            minWidth: `${menuWidth}px`,
+            left: `${(95 * multiplier) + left / 2}px`,
+            top: `${50 * multiplier}px`,
+        };
+    }
+
+    return {
         fontFamily: '"Press Start 2P"',
         fontSize: `${10 * multiplier}px`,
         textTransform: 'uppercase',
         position: 'absolute',
         transform: 'translate(-50%, 0%)',
-    }),
-    menuPositionWrapper: ({ multiplier, position, width, height }) => {
-        const left = window.innerWidth - (width * multiplier);
-        const menuWidth = 160 * multiplier;
-        if (position === 'center') {
-            return {
-                minWidth: `${menuWidth}px`,
-                left: '50%',
-                top: `${(height * multiplier) / 2}px`,
-            };
-        }
+        ...positionStyles,
+    };
+});
 
-        if (position === 'left') {
-            return {
-                minWidth: `${menuWidth}px`,
-                left: `${(95 * multiplier) + left / 2}px`,
-                top: `${50 * multiplier}px`,
-            };
-        }
+const MenuItemsWrapper = styled('ul')({
+    textAlign: 'center',
+    padding: 0,
+});
 
-        return {};
-    },
-    menuItemsWrapper: {
-        textAlign: 'center',
-        padding: 0,
-    },
-    menuItem: ({ multiplier }) => ({
-        cursor: 'pointer',
-        listStyle: 'none',
-        padding: `${5 * multiplier}px`,
-        marginBottom: `${5 * multiplier}px`,
-        backgroundColor: '#94785c',
-        border: `${multiplier}px solid #79584f`,
-    }),
-    selectedMenuItem: ({ multiplier }) => ({
+const MenuItem = styled('li')(({ multiplier, isSelected }) => ({
+    cursor: 'pointer',
+    listStyle: 'none',
+    padding: `${5 * multiplier}px`,
+    marginBottom: `${5 * multiplier}px`,
+    backgroundColor: '#94785c',
+    border: `${multiplier}px solid #79584f`,
+    ...(isSelected && {
         fontSize: `${11 * multiplier}px`,
         border: `${multiplier}px solid #ddd`,
     }),
@@ -61,12 +61,7 @@ const GameMenu = ({
         multiplier,
     } = gameSize;
 
-    const classes = useStyles({
-        width,
-        height,
-        multiplier,
-        position,
-    });
+
 
     const [selectedItemIndex, setSelectedItemIndex] = useState(0);
 
@@ -109,14 +104,13 @@ const GameMenu = ({
     }, [items, onSelected, selectedItemIndex]);
 
     return (
-        <div className={classNames(classes.menuWrapper, classes.menuPositionWrapper)}>
-            <ul className={classes.menuItemsWrapper}>
+        <MenuWrapper multiplier={multiplier} position={position} width={width} height={height}>
+            <MenuItemsWrapper>
                 {items.map((item, index) => (
-                    <li
+                    <MenuItem
                         key={index}
-                        className={classNames(classes.menuItem, {
-                            [classes.selectedMenuItem]: selectedItemIndex === index,
-                        })}
+                        multiplier={multiplier}
+                        isSelected={selectedItemIndex === index}
                         onMouseEnter={() => {
                             setSelectedItemIndex(index);
                         }}
@@ -125,10 +119,10 @@ const GameMenu = ({
                         }}
                     >
                         {item}
-                    </li>
+                    </MenuItem>
                 ))}
-            </ul>
-        </div>
+            </MenuItemsWrapper>
+        </MenuWrapper>
     );
 };
 

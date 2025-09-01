@@ -1,13 +1,11 @@
 import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { makeStyles } from '@material-ui/core/styles';
+import { styled } from '@mui/material/styles';
 
-const useStyles = makeStyles((theme) => ({
-    dialogMessage: ({ multiplier }) => ({
-        fontFamily: '"Press Start 2P"',
-        fontSize: `${6 * multiplier}px`,
-        textTransform: 'uppercase',
-    }),
+const DialogMessage = styled('div')(({ multiplier }) => ({
+    fontFamily: '"Press Start 2P"',
+    fontSize: `${6 * multiplier}px`,
+    textTransform: 'uppercase',
 }));
 
 const Message = ({
@@ -17,7 +15,7 @@ const Message = ({
     onMessageEnded = () => {},
     forceShowFullMessage = false,
 }) => {
-    const classes = useStyles({ multiplier });
+
     const [visibleLetters, setVisibleLetters] = useState(0);
     
     const items = useMemo(
@@ -49,7 +47,7 @@ const Message = ({
     }, [visibleLetters, items.length, forceShowFullMessage, trail, onMessageEnded]);
 
     return (
-        <div className={classes.dialogMessage}>
+        <DialogMessage multiplier={multiplier}>
             {forceShowFullMessage && (
                 <span>{message}</span>
             )}
@@ -68,7 +66,7 @@ const Message = ({
                     ))}
                 </AnimatePresence>
             )}
-        </div>
+        </DialogMessage>
     );
 };
 

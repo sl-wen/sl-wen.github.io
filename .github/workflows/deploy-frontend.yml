@@ -11,7 +11,7 @@ on:
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     
     steps:
     - name: Deploy Frontend to Server
@@ -22,7 +22,7 @@ jobs:
         key: ${{ secrets.SERVER_SSH }}
         port: 22
         timeout: 30s
-        command_timeout: 3m
+        command_timeout: 5m
         script: |
           echo "=== 开始部署前端应用 ==="
           echo "时间: $(date)"

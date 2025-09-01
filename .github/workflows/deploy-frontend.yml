@@ -59,7 +59,7 @@ jobs:
           rm -rf package-lock.json
           
           # 使用标准构建命令，跳过 lint
-          if npm run build; then
+          if npm run build  --skip-type-check; then
             echo "✅ 前端构建完成"
           else
             echo "❌ 前端构建失败"

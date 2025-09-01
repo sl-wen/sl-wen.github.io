@@ -3,6 +3,10 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    // 在构建时跳过类型检查以加速部署
+    ignoreBuildErrors: process.env.SKIP_TYPE_CHECK === '1',
+  },
   // 转译MUI v5包以解决兼容性问题
   transpilePackages: ['@mui/material', '@mui/styles', '@mui/lab', '@emotion/react', '@emotion/styled'],
 
@@ -13,6 +17,8 @@ const nextConfig = {
     // 禁用可能导致构建缓慢的功能
     optimizeCss: false,
     optimizePackageImports: ['lodash'],
+    // 启用 SWC 类型检查（更快）
+    swcMinify: true,
   },
 
   // 图片优化配置

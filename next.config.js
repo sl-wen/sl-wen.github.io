@@ -3,6 +3,8 @@ const nextConfig = {
   eslint:{
     ignoreDuringBuilds: true,
   },
+  // 转译Material-UI包以解决兼容性问题
+  transpilePackages: ['@material-ui/core', '@material-ui/styles', '@material-ui/lab'],
   // 启用实验性功能（谨慎使用）
   experimental: {
     // 禁用可能导致构建缓慢的功能
@@ -64,6 +66,11 @@ const nextConfig = {
       test: /\.(png|jpg|gif|svg|json)$/,
       type: 'asset/resource',
     });
+
+    // 忽略Material-UI v4与React 19的兼容性警告
+    config.ignoreWarnings = [
+      /Attempted import error: 'findDOMNode' is not exported from 'react-dom'/,
+    ];
 
     return config;
   },

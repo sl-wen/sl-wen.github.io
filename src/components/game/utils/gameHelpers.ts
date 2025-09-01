@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 // 创建交互式游戏对象
 export const createInteractiveGameObject = (

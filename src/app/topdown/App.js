@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import GridEngine from 'grid-engine';
 import BootScene from './game/scenes/BootScene';
 import MainMenuScene from './game/scenes/MainMenuScene';

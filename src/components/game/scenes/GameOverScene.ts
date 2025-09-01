@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { GAME_CONSTANTS, MENU_CONFIG } from '../constants/gameConstants';
 
 export default class GameOverScene extends Phaser.Scene {

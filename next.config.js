@@ -3,7 +3,12 @@ const nextConfig = {
   // 启用实验性功能
   experimental: {
     // App Router 在 Next.js 13+ 中默认启用，无需配置
+    optimizeCss: true,
+    optimizePackageImports: ['lodash', 'react-icons'],
   },
+
+  // 启用 SWC 压缩
+  swcMinify: true,
 
   // 图片优化配置
   images: {
@@ -36,6 +41,25 @@ const nextConfig = {
         fs: false,
         net: false,
         tls: false,
+      };
+      
+      // 优化代码分割
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+            priority: 10,
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            priority: 5,
+          },
+        },
       };
     }
 

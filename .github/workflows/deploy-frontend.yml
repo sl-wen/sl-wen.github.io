@@ -65,7 +65,7 @@ jobs:
             
           # 重新安装依赖（使用生产模式）
           echo "安装依赖..."
-          npm install 
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund 
           
           # 使用标准构建命令，跳过 lint
            if timeout 600 npm run build; then

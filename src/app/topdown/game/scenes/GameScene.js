@@ -82,7 +82,7 @@ export default class GameScene extends Scene {
     }
 
     createPlayerWalkingAnimation(assetKey, animationName) {
-        185        const animationKey = `${assetKey}_${animationName}`;
+        const animationKey = `${assetKey}_${animationName}`;
         if (!this.anims.exists(animationKey)) {
             this.anims.create({
                 key: animationKey,

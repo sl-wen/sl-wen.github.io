@@ -11,7 +11,7 @@ on:
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 3
     
     steps:
     - name: Deploy Frontend to Server
@@ -22,7 +22,7 @@ jobs:
         key: ${{ secrets.SERVER_SSH }}
         port: 22
         timeout: 30s
-        command_timeout: 8m
+        command_timeout: 3m
         script: |
           echo "=== 开始部署前端应用 ==="
           echo "时间: $(date)"
@@ -38,31 +38,6 @@ jobs:
           # 停止前端服务
           echo "停止blog服务..."
           sudo systemctl stop blog || echo "服务已停止"
-          
-          # 检查SSH环境
-          echo "检查SSH环境..."
-          export HOME=/root
-          export SSH_AUTH_SOCK=""
-          
-          # 检查SSH密钥
-          SSH_KEY=""
-          if [ -f /root/.ssh/id_ed25519 ]; then
-            SSH_KEY="/root/.ssh/id_ed25519"
-          elif [ -f /root/.ssh/id_rsa ]; then
-            SSH_KEY="/root/.ssh/id_rsa"
-          fi
-          
-          if [ -n "$SSH_KEY" ]; then
-            eval "$(ssh-agent -s)"
-            chmod 600 "$SSH_KEY" 2>/dev/null
-            ssh-add "$SSH_KEY" 2>/dev/null && echo "✅ SSH密钥已加载"
-          fi
-          
-          # 修复GitHub SSH域名
-          CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
-          if [[ "$CURRENT_REMOTE" == *"ssh.github.com"* ]]; then
-            git remote set-url origin git@github.com:sl-wen/sl-wen.github.io.git
-          fi
           
           # 拉取最新代码
           echo "拉取最新前端代码..."
@@ -86,23 +61,6 @@ jobs:
           echo "快速清理和安装依赖..."
           rm -rf .next
           rm -rf node_modules/.cache
-          
-          # 使用缓存优化安装
-          if [ -f package-lock.json ]; then
-            echo "使用现有 package-lock.json 快速安装..."
-            npm ci --production=false --prefer-offline=true --no-audit --silent
-          else
-            echo "重新生成 package-lock.json..."
-            rm -f package-lock.json
-            npm install --production=false --prefer-offline=true --no-audit --silent
-          fi
-          
-          # 跳过 lint 检查，直接构建
-          echo "跳过 lint 检查，直接构建前端应用..."
-          export NODE_OPTIONS="--max-old-space-size=2048"
-          export NODE_ENV=production
-          export NEXT_TELEMETRY_DISABLED=1
-          export NEXT_SKIP_LINT=1
           
           # 使用标准构建命令，跳过 lint
           echo "开始构建（跳过 lint）..."

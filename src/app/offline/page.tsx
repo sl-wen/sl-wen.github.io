@@ -1,6 +1,6 @@
 'use client';
 
-
+import Link from 'next/link';
 
 export default function OfflinePage() {
   return (
@@ -36,12 +36,12 @@ export default function OfflinePage() {
           </button>
 
           <div className="mt-8">
-            <a
+            <Link
               href="/"
               className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
             >
               返回首页
-            </a>
+            </Link>
           </div>
         </div>
       </div>

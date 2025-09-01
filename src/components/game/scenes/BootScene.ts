@@ -55,7 +55,7 @@ export default class BootScene extends Phaser.Scene {
       percentText.setText(Math.floor(value * 100) + '%');
     });
 
-    this.load.on('fileprogress', (file: any) => {
+    this.load.on('fileprogress', (file: { key: string }) => {
       assetText.setText('Loading asset: ' + file.key);
     });
 

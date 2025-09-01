@@ -1,13 +1,12 @@
 import * as Phaser from 'phaser';
-import GridEngine from 'grid-engine';
 
 export default class GameScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: any;
   private player!: Phaser.Physics.Arcade.Sprite;
   private map!: Phaser.Tilemaps.Tilemap;
-  private groundLayer!: Phaser.Tilemaps.TilemapLayer;
-  private objectsLayer!: Phaser.Tilemaps.TilemapLayer;
+  private groundLayer!: Phaser.Tilemaps.TilemapLayer | null;
+  private objectsLayer!: Phaser.Tilemaps.TilemapLayer | null;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -146,7 +145,7 @@ export default class GameScene extends Phaser.Scene {
 
   private setupGridEngine(): void {
     // 初始化GridEngine
-    const gridEngine = this.plugins.get('gridEngine') as GridEngine;
+    const gridEngine = this.plugins.get('gridEngine') as any;
     
     gridEngine.create(this.map, {
       characters: [

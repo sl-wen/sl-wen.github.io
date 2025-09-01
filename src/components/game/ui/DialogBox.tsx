@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { DialogBoxProps, DialogMessage } from '../types/GameTypes';
+import { DialogBoxProps } from '../types/GameTypes';
 import { GAME_CONSTANTS } from '../constants/gameConstants';
 
 export const DialogBox: React.FC<DialogBoxProps> = ({

@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 启用实验性功能
+  // 启用实验性功能（谨慎使用）
   experimental: {
-    // App Router 在 Next.js 13+ 中默认启用，无需配置
-    optimizeCss: true,
-    optimizePackageImports: ['lodash', 'react-icons'],
+    // 禁用可能导致构建缓慢的功能
+    optimizeCss: false,
+    optimizePackageImports: ['lodash'],
   },
 
   // 图片优化配置
@@ -30,7 +30,7 @@ const nextConfig = {
   },
 
   // Webpack配置
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
     // 处理Phaser.js的polyfill
     if (!isServer) {
       config.resolve.fallback = {
@@ -40,24 +40,20 @@ const nextConfig = {
         tls: false,
       };
       
-      // 优化代码分割
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-            priority: 10,
+      // 优化代码分割（仅在生产环境）
+      if (!dev) {
+        config.optimization.splitChunks = {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+              priority: 10,
+            },
           },
-          common: {
-            name: 'common',
-            minChunks: 2,
-            chunks: 'all',
-            priority: 5,
-          },
-        },
-      };
+        };
+      }
     }
 
     // 优化游戏资源加载

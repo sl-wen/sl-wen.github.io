@@ -11,7 +11,7 @@ on:
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 10
     
     steps:
     - name: Deploy Frontend to Server
@@ -22,7 +22,7 @@ jobs:
         key: ${{ secrets.SERVER_SSH }}
         port: 22
         timeout: 30s
-        command_timeout: 2m
+        command_timeout: 8m
         script: |
           echo "=== 开始部署前端应用 ==="
           echo "时间: $(date)"
@@ -90,30 +90,28 @@ jobs:
           # 使用缓存优化安装
           if [ -f package-lock.json ]; then
             echo "使用现有 package-lock.json 快速安装..."
-            npm ci --production=false --prefer-offline=true --no-audit
+            npm ci --production=false --prefer-offline=true --no-audit --silent
           else
             echo "重新生成 package-lock.json..."
             rm -f package-lock.json
-            npm install --production=false --prefer-offline=true --no-audit
+            npm install --production=false --prefer-offline=true --no-audit --silent
           fi
           
           # 快速构建前端应用
           echo "快速构建前端应用..."
-          export NODE_OPTIONS="--max-old-space-size=1024"
+          export NODE_OPTIONS="--max-old-space-size=2048"
           export NODE_ENV=production
           export NEXT_TELEMETRY_DISABLED=1
           
-          # 使用快速构建命令
-          if timeout 60 npm run build:fast; then
+          # 使用标准构建命令，增加超时时间
+          echo "开始构建..."
+          if timeout 300 npm run build; then
             echo "✅ 前端构建完成"
           else
-            echo "❌ 快速构建超时，尝试标准构建..."
-            if timeout 90 npm run build; then
-              echo "✅ 标准构建完成"
-            else
-              echo "❌ 前端构建失败"
-              exit 1
-            fi
+            echo "❌ 前端构建超时或失败"
+            echo "构建日志:"
+            npm run build 2>&1 | tail -100
+            exit 1
           fi
           
           # 启动前端服务

@@ -1,10 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint:{
+  eslint: {
     ignoreDuringBuilds: true,
   },
   // 转译MUI v5包以解决兼容性问题
   transpilePackages: ['@mui/material', '@mui/styles', '@mui/lab', '@emotion/react', '@emotion/styled'],
+
+  // 优化构建以减少内存使用
+  swcMinify: true,
+  compress: true,
   // 启用实验性功能（谨慎使用）
   experimental: {
     // 禁用可能导致构建缓慢的功能
@@ -48,7 +52,7 @@ const nextConfig = {
         net: false,
         tls: false,
       };
-      
+
       // 优化代码分割（仅在生产环境）
       if (!dev) {
         config.optimization.splitChunks = {

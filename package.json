@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:fast": "cross-env NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 next build",
+    "build:light": "cross-env NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS='--max-old-space-size=1024' next build",
     "build:static": "next build && next export",
     "start": "next start",
     "lint": "next lint",

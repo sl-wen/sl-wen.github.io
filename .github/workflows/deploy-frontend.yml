@@ -57,29 +57,17 @@ jobs:
             echo "❌ 前端代码拉取失败，使用本地版本"
           fi
           
-                     # 快速清理和安装
-           echo "快速清理和安装依赖..."
-           rm -rf .next
-           rm -rf package-lock.json
+          # 快速清理和安装
+          echo "快速清理和安装依赖..."
+          rm -rf .next
+          rm -rf package-lock.json
            
-           # 检查npm版本
-           echo "检查npm版本..."
-           npm --version
-           node --version
-           
-           # 清理npm缓存
-           echo "清理npm缓存..."
-           npm cache clean --force
-           
-           # 重新安装依赖（使用生产模式）
-           echo "安装依赖..."
-           npm install
+            
+          # 重新安装依赖（使用生产模式）
+          echo "安装依赖..."
+          npm install 
           
-           # 使用标准构建命令，跳过 lint
-           echo "开始构建..."
-           
-
-           # 构建
+          # 使用标准构建命令，跳过 lint
            if timeout 600 npm run build; then
              echo "✅ 前端构建完成"
            else

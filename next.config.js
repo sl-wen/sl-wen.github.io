@@ -7,7 +7,6 @@ const nextConfig = {
   transpilePackages: ['@mui/material', '@mui/styles', '@mui/lab', '@emotion/react', '@emotion/styled'],
 
   // 优化构建以减少内存使用
-  swcMinify: true,
   compress: true,
   // 启用实验性功能（谨慎使用）
   experimental: {
@@ -85,9 +84,6 @@ const nextConfig = {
 
   // 输出配置
   output: 'standalone',
-
-  // 压缩配置
-  compress: true,
 
   // 生产环境优化
   // SWC压缩在 Next.js 13+ 中默认启用

@@ -63,6 +63,10 @@ jobs:
           rm -rf package-lock.json
           rm -rf node_modules
           
+          # 重新安装依赖
+          echo "安装依赖..."
+          npm install
+          
           # 使用标准构建命令，跳过 lint
           echo "开始构建..."
           if timeout 300 npm run build; then

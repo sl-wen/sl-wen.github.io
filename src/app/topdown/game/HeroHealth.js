@@ -2,7 +2,7 @@ import { styled } from '@mui/material/styles';
 import classNames from 'classnames';
 
 // Images
-import healthImage from './assets/images/health.png';
+// Note: health.png is now served from public/game/assets/images/health.png
 
 const HealthContainer = styled('div')(({ multiplier, width }) => {
     const left = window.innerWidth - (width * multiplier);
@@ -19,7 +19,7 @@ const Health = styled('div')(({ multiplier, healthState }) => ({
     width: `${16 * multiplier}px`,
     height: `${16 * multiplier}px`,
     backgroundSize: `${48 * multiplier}px ${16 * multiplier}px`,
-    background: `url("${healthImage}") no-repeat ${
+    background: `url("/game/assets/images/health.png") no-repeat ${
         healthState === 'full' ? '0 0' :
         healthState === 'half' ? `-${16 * multiplier}px 0` :
         `-${32 * multiplier}px 0`

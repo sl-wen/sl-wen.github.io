@@ -8,7 +8,7 @@ import GameScene from './game/scenes/GameScene';
 import { styled } from '@mui/material/styles';
 import classNames from 'classnames';
 import { Backdrop, Fade, Modal, Typography } from '@mui/material';
-import dialogBorderBox from './game/assets/images/dialog_borderbox.png';
+// Note: dialog_borderbox.png is now served from public/game/assets/images/dialog_borderbox.png
 import GameMenu from "./game/GameMenu";
 import DialogBox from "./game/DialogBox";
 import HeroCoin from "./game/HeroCoin";

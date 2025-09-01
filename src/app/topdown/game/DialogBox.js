@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { styled } from '@mui/material/styles';
 
 // Images
-import dialogBorderBox from './assets/images/dialog_borderbox.png';
+// Note: dialog_borderbox.png is now served from public/game/assets/images/dialog_borderbox.png
 
 // Components
 import Message from './Message';
@@ -15,7 +15,7 @@ const DialogWindow = styled('div')(({ width, height, multiplier }) => {
         textTransform: 'uppercase',
         backgroundColor: '#e2b27e',
         border: 'solid',
-        borderImage: `url("${dialogBorderBox}") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px stretch`,
+        borderImage: `url("/game/assets/images/dialog_borderbox.png") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px stretch`,
         padding: `${8 * multiplier}px`,
         position: 'absolute',
         top: `${Math.ceil((height * multiplier) - (messageBoxHeight + messageBoxHeight * 0.1))}px`,

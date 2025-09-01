@@ -78,7 +78,7 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5.9.2"
   },
-  "description": "[![Language](https://img.shields.io/badge/Jekyll-Theme-blue)](https://github.com/sl-wen/slwen)\r [![license](https://img.shields.io/github/license/slwen/slwen)](https://github.com/sl-wen/)\r [![GitHub stars](https://img.shields.io/github/stars/slwen/?style=social)](https://github.com/sl-wen/)",
+  "description": "Modern React blog with Next.js, TypeScript, and Tailwind CSS",
   "keywords": [
     "blog",
     "next.js",

@@ -58,7 +58,7 @@ export default function TopDownGamePage() {
                 </div>
 
                 <div className="flex justify-center">
-                    <div className="relative">
+                    <div className="relative" style={{ minHeight: `${isMobile ? 600 : 600}px` }}>
                         <TopDownGameWrapper
                             width={isMobile ? 400 : 800}
                             height={isMobile ? 600 : 600}

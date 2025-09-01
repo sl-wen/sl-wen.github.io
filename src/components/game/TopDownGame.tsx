@@ -31,20 +31,13 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
       return;
     }
 
-    // 检查容器是否在DOM中且可见
-    if (!gameRef.current.offsetParent) {
-      console.error('错误: 游戏容器不可见或未挂载到DOM');
-      setError('游戏容器未正确挂载');
-      return;
-    }
-
     if (gameInstanceRef.current) {
       console.log('游戏实例已存在，跳过初始化');
       return;
     }
 
     console.log('创建Phaser游戏配置');
-    console.log('容器尺寸:', gameRef.current.clientWidth, 'x', gameRef.current.clientHeight);
+    console.log('容器尺寸:', width, 'x', height);
 
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
@@ -98,64 +91,22 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     console.log('TopDownGame useEffect 触发');
 
     if (typeof window !== 'undefined') {
-      console.log('在客户端环境中，等待DOM元素准备就绪');
-
-      // 使用 requestAnimationFrame 确保在下一帧渲染后执行
-      let retryCount = 0;
-      const maxRetries = 100; // 增加最大重试次数到100次（约5秒）
-      let timeoutId: NodeJS.Timeout;
-
-      const checkDOMReady = () => {
-        if (gameRef.current && gameRef.current.offsetParent !== null) {
+      console.log('在客户端环境中，开始初始化游戏');
+      
+      // 简单延迟确保DOM渲染完成
+      const timer = setTimeout(() => {
+        if (gameRef.current) {
           console.log('DOM元素已准备就绪，开始初始化游戏');
-          clearTimeout(timeoutId);
-          
-          // 额外延迟确保容器完全渲染
-          setTimeout(() => {
-            if (gameRef.current) {
-              initializeGame();
-            }
-          }, 100);
+          initializeGame();
         } else {
-          retryCount++;
-          console.log(`DOM元素仍未准备就绪，重试次数: ${retryCount}/${maxRetries}`);
-
-          if (retryCount >= maxRetries) {
-            console.error('错误: 达到最大重试次数，DOM元素仍未准备就绪');
-            setError('游戏容器初始化超时 游戏容器未找到');
-            return;
-          }
-
-          // 如果DOM元素还没有准备好，继续等待
-          timeoutId = setTimeout(checkDOMReady, 50);
+          console.error('错误: gameRef.current 为空');
+          setError('游戏容器未找到');
         }
-      };
-
-      // 使用 MutationObserver 监听DOM变化
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'childList' && gameRef.current) {
-            console.log('检测到DOM变化，检查容器状态');
-            checkDOMReady();
-          }
-        });
-      });
-
-      // 开始观察DOM变化
-      if (gameRef.current?.parentNode) {
-        observer.observe(gameRef.current.parentNode, {
-          childList: true,
-          subtree: true
-        });
-      }
-
-      // 延迟开始检查
-      setTimeout(checkDOMReady, 100);
+      }, 100);
 
       return () => {
         console.log('TopDownGame 组件卸载，清理游戏实例');
-        clearTimeout(timeoutId);
-        observer.disconnect();
+        clearTimeout(timer);
         if (gameInstanceRef.current) {
           gameInstanceRef.current.destroy(true);
           gameInstanceRef.current = null;
@@ -196,15 +147,14 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative" style={{ width: `${width}px`, height: `${height}px` }}>
       {/* 游戏画布容器 */}
       <div
         ref={gameRef}
-        className="w-full h-full"
         style={{
-          width: `${width}px`,
-          height: `${height}px`,
-          margin: 'auto',
+          width: '100%',
+          height: '100%',
+          margin: 0,
           padding: 0,
           overflow: 'hidden',
         }}

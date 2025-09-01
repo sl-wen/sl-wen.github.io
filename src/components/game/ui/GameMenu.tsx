@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { GameMenuProps, GameMenuItem } from '../types/GameTypes';
-import { GAME_CONSTANTS } from '../constants/gameConstants';
 
 export const GameMenu: React.FC<GameMenuProps> = ({
   items,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 interface MobileControlsProps {
   onMove: (direction: 'up' | 'down' | 'left' | 'right') => void;
@@ -19,7 +19,6 @@ const MobileControls: React.FC<MobileControlsProps> = ({
   onAction,
   onToolSelect,
   onMenuToggle,
-  currentTool,
   tools,
   isVisible
 }) => {

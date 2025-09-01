@@ -1,9 +1,8 @@
 import React from 'react';
-import { HeroHealthProps, HealthState } from '../types/GameTypes';
+import { HeroHealthProps } from '../types/GameTypes';
 import { GAME_CONSTANTS } from '../constants/gameConstants';
 
 export const HeroHealth: React.FC<HeroHealthProps> = ({
-  gameSize,
   healthStates
 }) => {
   if (!healthStates || healthStates.length === 0) {

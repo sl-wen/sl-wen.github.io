@@ -183,7 +183,7 @@ export class VirtualJoystick {
       );
 
       // 详细的坐标对比调试信息
-      const phaserCoords = this.getPhaserScreenCoordinates(pointer, camera);
+      const phaserCoords = this.getPhaserScreenCoordinates(pointer);
       console.debug(`🎮 Touch coordinates comparison:
         - Pointer world: (${pointer.x.toFixed(1)}, ${pointer.y.toFixed(1)})
         - Touch screen (used): (${touchCoords.x.toFixed(1)}, ${touchCoords.y.toFixed(1)})
@@ -524,8 +524,6 @@ export class VirtualJoystick {
     // 由于摇杆使用了setScrollFactor(0)，它在屏幕上的位置应该是固定的
     // 但是container.x和container.y可能受到初始设置时相机位置的影响
     
-    const camera = this.scene.cameras.main;
-    
     // 方法1：直接使用容器坐标（如果摇杆是在相机滚动为0时创建的）
     let screenX = this.container.x;
     let screenY = this.container.y;
@@ -673,7 +671,7 @@ export class VirtualJoystick {
    * @param screenWidth 屏幕宽度
    * @param screenHeight 屏幕高度
    */
-  public updateLayout(screenWidth: number, screenHeight: number) {
+  public updateLayout() {
     // 委托给场景中的UILayoutManager进行位置计算
     // 这样避免了重复的位置计算逻辑
     if (this.isFullscreen) {
@@ -691,7 +689,7 @@ export class VirtualJoystick {
    * @param x 触摸X坐标
    * @param y 触摸Y坐标
    */
-  private createDebugTouchIndicator(x: number, y: number) {
+  private createDebugTouchIndicator() {
     // 调试红点禁用：保持空实现以避免创建任何可视元素
     return;
   }
@@ -829,7 +827,7 @@ export class VirtualJoystick {
       const screenHeight = window.innerHeight;
 
       // 更新布局
-      this.updateLayout(screenWidth, screenHeight);
+      this.updateLayout();
 
       // 如果摇杆处于激活状态，执行紧急重置以避免位置错误
       if (this.isActive) {
@@ -1223,7 +1221,6 @@ export class VirtualJoystick {
    * @returns 转换后的坐标（屏幕坐标系）
    */
   private getTouchCoordinates(pointer: Phaser.Input.Pointer): { x: number; y: number } {
-    const camera = this.scene.cameras.main;
     const canvas = this.scene.game.canvas;
     
     // 方法1：尝试使用DOM事件的原始坐标（最准确）
@@ -1241,7 +1238,7 @@ export class VirtualJoystick {
         clientY = touch.clientY;
       } else {
         // 回退到Phaser坐标
-        return this.getPhaserScreenCoordinates(pointer, camera);
+        return this.getPhaserScreenCoordinates(pointer);
       }
       
       // 将DOM坐标转换为游戏屏幕坐标
@@ -1263,7 +1260,7 @@ export class VirtualJoystick {
     }
     
     // 方法2：回退到Phaser坐标转换
-    return this.getPhaserScreenCoordinates(pointer, camera);
+    return this.getPhaserScreenCoordinates(pointer);
   }
 
   /**
@@ -1272,7 +1269,7 @@ export class VirtualJoystick {
    * @param camera 相机对象
    * @returns 屏幕坐标
    */
-  private getPhaserScreenCoordinates(pointer: Phaser.Input.Pointer, camera: Phaser.Cameras.Scene2D.Camera): { x: number; y: number } {
+  private getPhaserScreenCoordinates(pointer: Phaser.Input.Pointer): { x: number; y: number } {
     // 对于固定在屏幕上的UI，直接使用指针的屏幕坐标
     const screenX = pointer.x;
     const screenY = pointer.y;

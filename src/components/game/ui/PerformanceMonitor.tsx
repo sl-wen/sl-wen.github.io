@@ -10,12 +10,10 @@ interface PerformanceData {
 }
 
 interface PerformanceMonitorProps {
-  gameSize: { width: number; height: number };
   isVisible?: boolean;
 }
 
 export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
-  gameSize,
   isVisible = false
 }) => {
   const [performanceData, setPerformanceData] = useState<PerformanceData>({

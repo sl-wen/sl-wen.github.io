@@ -11,7 +11,7 @@ on:
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     
     steps:
     - name: Deploy Frontend to Server
@@ -22,7 +22,7 @@ jobs:
         key: ${{ secrets.SERVER_SSH }}
         port: 22
         timeout: 30s
-        command_timeout: 10m
+        command_timeout: 15m
         script: |
           echo "=== 开始部署前端应用 ==="
           echo "时间: $(date)"
@@ -82,13 +82,29 @@ jobs:
             echo "❌ 前端代码拉取失败，使用本地版本"
           fi
           
-          # 检查依赖更新
-          if git diff HEAD~1 --name-only | grep -q "package.json"; then
-            echo "更新前端依赖..."
-            npm install --production
+          # 清理旧的构建缓存
+          echo "清理构建缓存..."
+          rm -rf .next
+          rm -rf node_modules/.cache
+          
+          # 强制重新安装依赖以解决SWC问题
+          echo "重新安装依赖..."
+          rm -f package-lock.json
+          npm cache clean --force
+          
+          # 安装生产依赖
+          echo "安装生产依赖..."
+          npm install --production=false --prefer-offline=false
+          
+          # 检查SWC依赖
+          echo "检查SWC依赖..."
+          if ! npm list @next/swc > /dev/null 2>&1; then
+            echo "⚠️  SWC依赖缺失，强制重新安装..."
+            npm install @next/swc --force
           fi
           
-          # 检查ESLint依赖
+          # 检查其他关键依赖
+          echo "检查关键依赖..."
           MISSING_DEPS=""
           if ! npm list eslint-plugin-react-hooks > /dev/null 2>&1; then
             MISSING_DEPS="$MISSING_DEPS eslint-plugin-react-hooks"
@@ -105,18 +121,29 @@ jobs:
             npm install --save-dev $MISSING_DEPS
           fi
           
+          # 验证依赖完整性
+          echo "验证依赖完整性..."
+          npm audit --audit-level=moderate || echo "⚠️  发现依赖安全问题，但继续构建"
+          
           # 构建前端应用
           echo "构建前端应用..."
-          export NODE_OPTIONS="--max-old-space-size=512"
+          export NODE_OPTIONS="--max-old-space-size=1024"
           export NODE_ENV=production
+          export NEXT_TELEMETRY_DISABLED=1
           
-          rm -rf .next
-          
-          if npm run build; then
+          # 使用更快的构建命令
+          if npm run build:fast; then
             echo "✅ 前端构建完成"
           else
-            echo "❌ 前端构建失败"
-            exit 1
+            echo "❌ 快速构建失败，尝试标准构建..."
+            if npm run build; then
+              echo "✅ 标准构建完成"
+            else
+              echo "❌ 前端构建失败"
+              echo "构建日志:"
+              npm run build 2>&1 | tail -50
+              exit 1
+            fi
           fi
           
           # 启动前端服务
@@ -124,21 +151,32 @@ jobs:
           sudo systemctl start blog
           
           # 等待服务启动
-          sleep 10
+          echo "等待服务启动..."
+          for i in {1..30}; do
+            if sudo systemctl is-active --quiet blog; then
+              echo "✅ 前端服务启动成功 (${i}s)"
+              break
+            fi
+            sleep 1
+          done
           
-          if sudo systemctl is-active --quiet blog; then
-            echo "✅ 前端服务启动成功"
-          else
+          if ! sudo systemctl is-active --quiet blog; then
             echo "❌ 前端服务启动失败"
             sudo systemctl status blog --no-pager
             exit 1
           fi
           
           # 测试前端应用
-          sleep 5
-          if curl -f --connect-timeout 10 http://localhost:3000 > /dev/null 2>&1; then
-            echo "✅ 前端应用响应正常"
-          else
+          echo "测试前端应用..."
+          for i in {1..10}; do
+            if curl -f --connect-timeout 10 http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ 前端应用响应正常 (${i}s)"
+              break
+            fi
+            sleep 2
+          done
+          
+          if ! curl -f --connect-timeout 10 http://localhost:3000 > /dev/null 2>&1; then
             echo "❌ 前端应用无响应"
             exit 1
           fi

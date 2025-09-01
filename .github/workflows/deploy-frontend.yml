@@ -22,7 +22,7 @@ jobs:
         key: ${{ secrets.SERVER_SSH }}
         port: 22
         timeout: 30s
-        command_timeout: 5m
+        command_timeout: 10m
         script: |
           echo "=== 开始部署前端应用 ==="
           echo "时间: $(date)"
@@ -57,13 +57,14 @@ jobs:
           echo "快速清理和安装依赖..."
           rm -rf .next
           rm -rf package-lock.json
+          
           # 使用标准构建命令，跳过 lint
-           if timeout 600 npm run build; then
-             echo "✅ 前端构建完成"
-           else
-             echo "❌ 前端构建失败"
-             exit 1
-           fi
+          if npm run build; then
+            echo "✅ 前端构建完成"
+          else
+            echo "❌ 前端构建失败"
+            exit 1
+          fi
           
           # 启动前端服务
           echo "启动前端服务..."

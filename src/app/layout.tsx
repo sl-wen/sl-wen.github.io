@@ -1,15 +1,11 @@
-import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
-import dynamic from 'next/dynamic';
-import './globals.css';
-import { AuthProvider } from '@/utils/auth-context';
-import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
-import PerformanceMonitor from '@/components/PerformanceMonitor';
-import NetworkStatus from '@/components/NetworkStatus';
-import ResourcePreloader from '@/components/ResourcePreloader';
-import InstallPrompt from '@/components/InstallPrompt';
-import PWAStatus from '@/components/PWAStatus';
 import ConditionalFooter from '@/components/ConditionalFooter';
+import ResourcePreloader from '@/components/ResourcePreloader';
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import { AuthProvider } from '@/utils/auth-context';
+import type { Metadata, Viewport } from 'next';
+import dynamic from 'next/dynamic';
+import { Inter } from 'next/font/google';
+import './globals.css';
 
 // 优化字体加载 - 配置Inter字体，提升加载性能
 const inter = Inter({
@@ -67,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* PWA清单文件 - 定义渐进式Web应用的配置 */}
         <link rel="manifest" href="/manifest.json" />
-        
+
         {/* 网站图标配置 - 为不同设备和场景提供合适的图标 */}
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -80,39 +76,39 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png" />
         <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        
+
         {/* iOS PWA元标签 - 配置iOS设备上的PWA行为 */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="鱼鱼博客" />
         <meta name="mobile-web-app-capable" content="yes" />
-        
+
         {/* PWA主题颜色配置 - 定义应用的主题色 */}
         <meta name="theme-color" content="#24292e" />
         <meta name="msapplication-navbutton-color" content="#24292e" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        
+
         {/* PWA显示模式 - 设置应用的显示方式 */}
         <meta name="display-mode" content="standalone" />
-        
+
         {/* iOS启动画面配置 - 为不同iOS设备提供启动画面 */}
         <link rel="apple-touch-startup-image" href="/apple-splash-2048-2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" />
         <link rel="apple-touch-startup-image" href="/apple-splash-1668-2224.png" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)" />
         <link rel="apple-touch-startup-image" href="/apple-splash-1536-2048.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" />
         <link rel="apple-touch-startup-image" href="/apple-splash-1125-2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" />
         <link rel="apple-touch-startup-image" href="/pwa-512x512.png" />
-        
+
         {/* 移动设备优化元标签 - 禁用自动格式检测和优化移动体验 */}
         <meta name="format-detection" content="telephone=no" />
         <meta name="format-detection" content="email=no" />
         <meta name="format-detection" content="address=no" />
-        
+
         {/* 移动设备兼容性配置 */}
         <meta name="HandheldFriendly" content="true" />
         <meta name="MobileOptimized" content="320" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
-        
+
         {/* Android设备触摸图标 */}
         <link rel="icon" sizes="192x192" href="/pwa-192x192.png" />
         <link rel="icon" sizes="512x512" href="/pwa-512x512.png" />
@@ -163,20 +159,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Service Worker注册 - 启用离线功能和缓存 */}
         <ServiceWorkerRegistration />
 
-        {/* 性能监控 - 监控应用性能指标 */}
-        <PerformanceMonitor />
-
-        {/* 网络状态监控 - 监控网络连接状态 */}
-        <NetworkStatus />
 
         {/* 资源预加载器 - 预加载重要资源以提升性能 */}
         <ResourcePreloader />
 
-        {/* PWA安装提示 - 引导用户安装应用到设备 */}
-        <InstallPrompt />
-
-        {/* PWA状态显示 - 显示PWA相关状态信息 */}
-        <PWAStatus />
 
         {/* 深色模式脚本 - 根据系统偏好设置初始主题 */}
         <script

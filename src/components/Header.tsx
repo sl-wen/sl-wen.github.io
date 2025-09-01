@@ -78,8 +78,7 @@ const Header: React.FC = () => {
     { href: '/search', label: '搜索', icon: '🔍' },
     { href: '/about', label: '关于', icon: 'ℹ️' },
     { href: '/tools', label: '工具', icon: '🛠️' },
-    { href: '/game', label: '小猫农场', icon: '🐱' },
-            { href: '/topdown', label: 'topdown', icon: '🎮' }
+    { href: '/topdown', label: 'topdown', icon: '🎮' }
   ];
 
   // 用户专属导航项 - 仅登录用户可见的功能

@@ -1,5 +1,4 @@
 import { Input, Math as PhaserMath, Scene } from 'phaser';
-import { createInteractiveGameObject } from '../utils';
 import {
     ATTACK_DELAY_TIME,
     BOX_INDEX,
@@ -8,6 +7,7 @@ import {
     NPC_MOVEMENT_RANDOM,
     SCENE_FADE_TIME,
 } from '../constants';
+import { createInteractiveGameObject } from '../utils';
 
 export default class GameScene extends Scene {
     constructor() {
@@ -82,33 +82,39 @@ export default class GameScene extends Scene {
     }
 
     createPlayerWalkingAnimation(assetKey, animationName) {
-        this.anims.create({
-            key: `${assetKey}_${animationName}`,
-            frames: [
-                { key: assetKey, frame: `${assetKey}_${animationName}_01` },
-                { key: assetKey, frame: `${assetKey}_${animationName.replace('walking', 'idle')}_01` },
-                { key: assetKey, frame: `${assetKey}_${animationName}_02` },
-            ],
-            frameRate: 4,
-            repeat: -1,
-            yoyo: true,
-        });
+        185        const animationKey = `${assetKey}_${animationName}`;
+        if (!this.anims.exists(animationKey)) {
+            this.anims.create({
+                key: animationKey,
+                frames: [
+                    { key: assetKey, frame: `${assetKey}_${animationName}_01` },
+                    { key: assetKey, frame: `${assetKey}_${animationName.replace('walking', 'idle')}_01` },
+                    { key: assetKey, frame: `${assetKey}_${animationName}_02` },
+                ],
+                frameRate: 4,
+                repeat: -1,
+                yoyo: true,
+            });
+        }
     }
 
     createPlayerAttackAnimation(assetKey, animationName) {
-        this.anims.create({
-            key: `${assetKey}_${animationName}`,
-            frames: [
-                { key: assetKey, frame: `${assetKey}_${animationName}_01` },
-                { key: assetKey, frame: `${assetKey}_${animationName}_02` },
-                { key: assetKey, frame: `${assetKey}_${animationName}_03` },
-                { key: assetKey, frame: `${assetKey}_${animationName}_04` },
-                { key: assetKey, frame: `${assetKey}_${animationName.replace('attack', 'idle')}_01` },
-            ],
-            frameRate: 16,
-            repeat: 0,
-            yoyo: false,
-        });
+        const animationKey = `${assetKey}_${animationName}`;
+        if (!this.anims.exists(animationKey)) {
+            this.anims.create({
+                key: animationKey,
+                frames: [
+                    { key: assetKey, frame: `${assetKey}_${animationName}_01` },
+                    { key: assetKey, frame: `${assetKey}_${animationName}_02` },
+                    { key: assetKey, frame: `${assetKey}_${animationName}_03` },
+                    { key: assetKey, frame: `${assetKey}_${animationName}_04` },
+                    { key: assetKey, frame: `${assetKey}_${animationName.replace('attack', 'idle')}_01` },
+                ],
+                frameRate: 16,
+                repeat: 0,
+                yoyo: false,
+            });
+        }
     }
 
     getStopFrame(direction, spriteKey) {

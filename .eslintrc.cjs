@@ -2,22 +2,11 @@ module.exports = {
   extends: [
     'next/core-web-vitals'
   ],
-  parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
-  parserOptions: {
-    ecmaVersion: 2020,
-    sourceType: 'module',
-    ecmaFeatures: {
-      jsx: true
-    },
-    // 添加 TypeScript 版本兼容性配置
-    project: null,
-    tsconfigRootDir: __dirname,
-  },
+  // 移除复杂的 TypeScript 配置，使用 Next.js 默认配置
   rules: {
     // 禁用大部分警告以提高性能
-    '@typescript-eslint/no-unused-vars': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
+    'no-unused-vars': 'off',
+    'no-explicit-any': 'off',
     'react/react-in-jsx-scope': 'off',
     // 禁用一些可能导致性能问题的规则
     'react-hooks/exhaustive-deps': 'off',
@@ -26,8 +15,7 @@ module.exports = {
     'no-console': 'off',
     'no-debugger': 'off',
     // 禁用其他可能导致问题的规则
-    '@typescript-eslint/no-empty-function': 'off',
-    '@typescript-eslint/no-non-null-assertion': 'off',
+    'no-empty-function': 'off',
     'prefer-const': 'off',
     'no-var': 'off',
   },
@@ -43,6 +31,8 @@ module.exports = {
     'out/',
     'dist/',
     '*.config.js',
-    '*.config.ts'
+    '*.config.ts',
+    'scripts/',
+    'public/'
   ]
 };

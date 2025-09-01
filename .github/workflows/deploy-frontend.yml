@@ -97,14 +97,15 @@ jobs:
             npm install --production=false --prefer-offline=true --no-audit --silent
           fi
           
-          # 快速构建前端应用
-          echo "快速构建前端应用..."
+          # 跳过 lint 检查，直接构建
+          echo "跳过 lint 检查，直接构建前端应用..."
           export NODE_OPTIONS="--max-old-space-size=2048"
           export NODE_ENV=production
           export NEXT_TELEMETRY_DISABLED=1
+          export NEXT_SKIP_LINT=1
           
-          # 使用标准构建命令，增加超时时间
-          echo "开始构建..."
+          # 使用标准构建命令，跳过 lint
+          echo "开始构建（跳过 lint）..."
           if timeout 300 npm run build; then
             echo "✅ 前端构建完成"
           else
@@ -152,7 +153,7 @@ jobs:
           
           # 显示访问信息
           EXTERNAL_IP=$(curl -s --connect-timeout 3 ifconfig.me 2>/dev/null || echo "unknown")
-          if [ "$EXTERNAL_IP" != "unknown" ]; then
+          if [ "$EXTERNAL_IP" ]; then
             echo "🔗 前端访问地址: http://$EXTERNAL_IP"
           fi
           

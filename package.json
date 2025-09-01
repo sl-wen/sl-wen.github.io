@@ -27,7 +27,10 @@
     "docker:build": "docker build -t game-app .",
     "docker:run": "docker run -p 3000:3000 game-app",
     "docker:dev": "docker-compose --profile dev up",
-    "docker:prod": "docker-compose up -d"
+    "docker:prod": "docker-compose up -d",
+    "postinstall": "npm run sharp:rebuild",
+    "sharp:rebuild": "npm rebuild sharp",
+    "sharp:install": "npm install --platform=linux --arch=x64 sharp"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

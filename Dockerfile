@@ -9,13 +9,26 @@ WORKDIR /app
 
 # 复制package文件
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+
+# 设置环境变量以确保Sharp正确安装
+ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
+ENV npm_config_platform=linux
+ENV npm_config_arch=x64
+
+# 安装依赖并重建Sharp
+RUN npm ci --only=production && \
+    npm rebuild sharp --platform=linux --arch=x64
 
 # 构建阶段
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# 设置环境变量
+ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
+ENV npm_config_platform=linux
+ENV npm_config_arch=x64
 
 # 构建应用
 RUN npm run build
@@ -25,6 +38,7 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
+ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
 
 # 创建非root用户
 RUN addgroup --system --gid 1001 nodejs

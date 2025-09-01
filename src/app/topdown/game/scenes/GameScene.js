@@ -8,16 +8,14 @@ import {
     SCENE_FADE_TIME,
 } from '../constants';
 import { createInteractiveGameObject } from '../utils';
+import InputManager from '../InputManager';
 
 export default class GameScene extends Scene {
     constructor() {
         super('GameScene');
     }
 
-    enterKey = {};
-    spaceKey = {};
-    cursors = {};
-    wasd = {};
+    inputManager = null;
     isShowingDialog = false;
     isTeleporting = false;
     isAttacking = false;
@@ -361,15 +359,8 @@ export default class GameScene extends Scene {
 
         camera.fadeIn(SCENE_FADE_TIME);
 
-        this.enterKey = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.ENTER);
-        this.spaceKey = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.SPACE);
-        this.cursors = this.input.keyboard.createCursorKeys();
-        this.wasd = this.input.keyboard.addKeys({
-            up: Input.Keyboard.KeyCodes.W,
-            down: Input.Keyboard.KeyCodes.S,
-            left: Input.Keyboard.KeyCodes.A,
-            right: Input.Keyboard.KeyCodes.D,
-        });
+        // 初始化输入管理器
+        this.inputManager = new InputManager(this);
 
         // Map
         const map = this.make.tilemap({ key: mapKey });
@@ -531,7 +522,7 @@ export default class GameScene extends Scene {
                                 return;
                             }
 
-                            if (Input.Keyboard.JustDown(this.enterKey)) {
+                            if (this.inputManager.isEnterJustDown()) {
                                 const characterName = value;
                                 const customEvent = new CustomEvent('new-dialog', {
                                     detail: {
@@ -547,8 +538,8 @@ export default class GameScene extends Scene {
                                     );
 
                                     // just to consume the JustDown
-                                    Input.Keyboard.JustDown(this.enterKey);
-                                    Input.Keyboard.JustDown(this.spaceKey);
+                                    this.inputManager.isEnterJustDown();
+                                    this.inputManager.isSpaceJustDown();
 
                                     this.time.delayedCall(100, () => {
                                         this.isShowingDialog = false;
@@ -1192,7 +1183,7 @@ export default class GameScene extends Scene {
 
             const npc = [objA, objB].find((obj) => obj !== this.heroActionCollider);
 
-            if (Input.Keyboard.JustDown(this.enterKey)) {
+            if (this.inputManager.isEnterJustDown()) {
                 if (this.gridEngine.isMoving(npc.texture.key)) {
                     return;
                 }
@@ -1210,8 +1201,8 @@ export default class GameScene extends Scene {
                     this.gridEngine.moveRandomly(characterName);
 
                     // just to consume the JustDown
-                    Input.Keyboard.JustDown(this.enterKey);
-                    Input.Keyboard.JustDown(this.spaceKey);
+                    this.inputManager.isEnterJustDown();
+                    this.inputManager.isSpaceJustDown();
 
                     this.time.delayedCall(100, () => {
                         this.isShowingDialog = false;
@@ -1320,7 +1311,7 @@ export default class GameScene extends Scene {
     }
 
     update() {
-        this.isSpaceJustDown = Input.Keyboard.JustDown(this.spaceKey);
+        // 移除这行，因为现在由输入管理器处理
 
         if (
             this.isTeleporting
@@ -1332,7 +1323,7 @@ export default class GameScene extends Scene {
 
         if (
             !this.gridEngine.isMoving('hero')
-            && this.isSpaceJustDown
+            && this.inputManager.isSpaceJustDown()
             && this.heroSprite.haveSword
         ) {
             const facingDirection = this.gridEngine.getFacingDirection('hero');
@@ -1351,14 +1342,11 @@ export default class GameScene extends Scene {
         });
 
         this.heroActionCollider.update();
-        if (this.cursors.left.isDown || this.wasd.left.isDown) {
-            this.gridEngine.move('hero', 'left');
-        } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
-            this.gridEngine.move('hero', 'right');
-        } else if (this.cursors.up.isDown || this.wasd.up.isDown) {
-            this.gridEngine.move('hero', 'up');
-        } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
-            this.gridEngine.move('hero', 'down');
+        
+        // 使用输入管理器处理移动
+        const currentDirection = this.inputManager.getCurrentDirection();
+        if (currentDirection && !this.gridEngine.isMoving('hero')) {
+            this.gridEngine.move('hero', currentDirection);
         }
     }
 }

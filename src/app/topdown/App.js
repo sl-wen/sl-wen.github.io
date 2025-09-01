@@ -13,6 +13,8 @@ import GameMenu from "./game/GameMenu";
 import DialogBox from "./game/DialogBox";
 import HeroCoin from "./game/HeroCoin";
 import HeroHealth from "./game/HeroHealth";
+import VirtualJoystick from "./game/VirtualJoystick";
+import ActionButton from "./game/ActionButton";
 import './App.css';
 import { calculateGameSize } from "./game/utils";
 
@@ -73,6 +75,7 @@ function App() {
   const [gameMenuPosition, setGameMenuPosition] = useState('center');
   const [heroHealthStates, setHeroHealthStates] = useState([]);
   const [heroCoins, setHeroCoins] = useState(null);
+  const [joystickDirection, setJoystickDirection] = useState(null);
 
   const handleMessageIsDone = useCallback(() => {
     const customEvent = new CustomEvent(`${characterName}-dialog-finished`, {
@@ -91,6 +94,26 @@ function App() {
       detail: {
         selectedItem,
       },
+    });
+    window.dispatchEvent(customEvent);
+  }, []);
+
+  const handleJoystickDirectionChange = useCallback((direction) => {
+    setJoystickDirection(direction);
+    
+    // 发送虚拟摇杆方向变化事件给游戏
+    const customEvent = new CustomEvent('virtual-joystick-direction', {
+      detail: {
+        direction,
+      },
+    });
+    window.dispatchEvent(customEvent);
+  }, []);
+
+  const handleActionButtonPress = useCallback(() => {
+    // 发送动作按钮按下事件给游戏
+    const customEvent = new CustomEvent('action-button-pressed', {
+      detail: {},
     });
     window.dispatchEvent(customEvent);
   }, []);
@@ -220,6 +243,28 @@ function App() {
                   onSelected={handleMenuItemSelected}
               />
           )}
+          
+          {/* 虚拟摇杆 - 始终显示在左下角 */}
+          <VirtualJoystick
+              onDirectionChange={handleJoystickDirectionChange}
+              gameSize={{
+                width,
+                height,
+                multiplier,
+              }}
+          />
+          
+          {/* 动作按钮 - 显示在右下角 */}
+          <ActionButton
+              onAction={handleActionButtonPress}
+              gameSize={{
+                width,
+                height,
+                multiplier,
+              }}
+              icon="⚔️"
+              label="Attack"
+          />
         </GameWrapper>
       </div>
   );

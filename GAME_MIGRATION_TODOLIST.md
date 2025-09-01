@@ -107,7 +107,8 @@
 - 🚀 完整的部署配置
 
 ### 访问地址
-- 主游戏页面: http://localhost:3000/top-down-game
+- Top-Down游戏页面: http://localhost:3000/top-down-game
+- 小猫农场游戏: http://localhost:3000/game
 - 游戏演示页面: http://localhost:3000/demo
 
 ### 部署方式

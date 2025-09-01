@@ -1,0 +1,73 @@
+# GitHub 仓库设置配置
+# 用于优化 Actions 性能
+
+repository:
+  # 启用 Actions 缓存
+  actions:
+    enabled: true
+    allowed_actions: "selected"
+    github_owned_allowed: true
+    verified_allowed: true
+    patterns_allowed: []
+    workflows_allowed: []
+    
+  # 启用依赖图
+  dependency_graph:
+    enabled: true
+    
+  # 启用安全功能
+  security_and_analysis:
+    secret_scanning:
+      status: enabled
+    secret_scanning_push_protection:
+      status: enabled
+    dependabot_security_updates:
+      status: enabled
+      
+  # 启用代码扫描
+  code_scanning:
+    default_setup: false
+    query_suite: default
+    schedule: weekly
+    
+  # 启用问题模板
+  has_issues: true
+  has_wiki: false
+  has_downloads: false
+  
+  # 启用讨论
+  has_discussions: false
+  
+  # 启用项目
+  has_projects: false
+  
+  # 启用页面
+  pages:
+    source:
+      branch: gh-pages
+      path: /
+      
+  # 启用分支保护
+  branches:
+    - name: main
+      protection:
+        required_status_checks:
+          strict: true
+          contexts: []
+        enforce_admins: false
+        required_pull_request_reviews:
+          required_approving_review_count: 1
+          dismiss_stale_reviews: true
+          require_code_owner_reviews: false
+        restrictions: null
+    - name: react
+      protection:
+        required_status_checks:
+          strict: true
+          contexts: []
+        enforce_admins: false
+        required_pull_request_reviews:
+          required_approving_review_count: 1
+          dismiss_stale_reviews: true
+          require_code_owner_reviews: false
+        restrictions: null

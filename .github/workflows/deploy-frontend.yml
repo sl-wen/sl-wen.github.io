@@ -11,9 +11,49 @@ on:
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          node_modules
+          .next/cache
+        key: ${{ runner.os }}-deps-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-deps-
+          
+    - name: Install dependencies
+      run: npm ci --prefer-offline --no-audit
+      
+    - name: Build application
+      run: |
+        # 设置环境变量
+        export NODE_ENV=production
+        export NEXT_TELEMETRY_DISABLED=1
+        export SKIP_TYPE_CHECK=1
+        export NODE_OPTIONS="--max-old-space-size=8192 --max-semi-space-size=512"
+        
+        # 清理缓存
+        rm -rf .next
+        rm -rf node_modules/.cache
+        rm -rf .turbo
+        
+        # 使用超快构建
+        npm run build:ultra
+      
     - name: Deploy Frontend to Server
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -22,7 +62,7 @@ jobs:
         key: ${{ secrets.SERVER_SSH }}
         port: 22
         timeout: 30s
-        command_timeout: 10m
+        command_timeout: 8m
         script: |
           echo "=== 开始部署前端应用 ==="
           echo "时间: $(date)"
@@ -58,8 +98,8 @@ jobs:
           rm -rf .next
           rm -rf package-lock.json
           
-          # 使用标准构建命令，跳过 lint
-          if npm run build  --skip-type-check; then
+          # 使用快速构建命令
+          if npm run build:fast; then
             echo "✅ 前端构建完成"
           else
             echo "❌ 前端构建失败"
@@ -72,7 +112,7 @@ jobs:
           
           # 快速检查服务状态
           echo "检查服务状态..."
-          sleep 5
+          sleep 3
           
           if sudo systemctl is-active --quiet blog; then
             echo "✅ 前端服务启动成功"
@@ -94,7 +134,7 @@ jobs:
           # 重启nginx
           if command -v nginx > /dev/null 2>&1; then
             echo "重启nginx..."
-            sudo systemctl restart nginx || echo "nginx重启完成"
+            sudo systemctl reload nginx || echo "nginx重载完成"
           fi
           
           echo "=== 前端部署完成 ==="

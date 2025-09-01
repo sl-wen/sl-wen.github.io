@@ -9,6 +9,7 @@
     "build:light": "cross-env NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS='--max-old-space-size=1024' SKIP_TYPE_CHECK=1 next build",
     "build:static": "next build && next export",
     "build:ci": "cross-env NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 SKIP_TYPE_CHECK=1 NODE_OPTIONS='--max-old-space-size=4096' next build",
+    "build:ultra": "cross-env NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 SKIP_TYPE_CHECK=1 NODE_OPTIONS='--max-old-space-size=8192 --max-semi-space-size=512' next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fast": "eslint src --ext .ts,.tsx,.js,.jsx --max-warnings 50",

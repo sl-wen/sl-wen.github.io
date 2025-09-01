@@ -19,6 +19,17 @@ const nextConfig = {
     optimizePackageImports: ['lodash'],
     // 启用 SWC 类型检查（更快）
     swcMinify: true,
+    // 启用更快的构建
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
+    // 启用并行构建
+    cpus: Math.max(1, Math.min(4, require('os').cpus().length)),
   },
 
   // 图片优化配置
@@ -69,8 +80,19 @@ const nextConfig = {
               chunks: 'all',
               priority: 10,
             },
+            // 优化游戏资源
+            game: {
+              test: /[\\/]src[\\/]components[\\/]game/,
+              name: 'game',
+              chunks: 'all',
+              priority: 5,
+            },
           },
         };
+        
+        // 启用更快的压缩
+        config.optimization.minimize = true;
+        config.optimization.minimizer = config.optimization.minimizer || [];
       }
     }
 
@@ -78,12 +100,25 @@ const nextConfig = {
     config.module.rules.push({
       test: /\.(png|jpg|gif|svg|json)$/,
       type: 'asset/resource',
+      generator: {
+        filename: 'static/media/[name].[hash][ext]',
+      },
     });
 
     // 忽略Material-UI v4与React 19的兼容性警告
     config.ignoreWarnings = [
       /Attempted import error: 'findDOMNode' is not exported from 'react-dom'/,
     ];
+
+    // 启用持久化缓存
+    if (!dev) {
+      config.cache = {
+        type: 'filesystem',
+        buildDependencies: {
+          config: [__filename],
+        },
+      };
+    }
 
     return config;
   },
@@ -93,6 +128,15 @@ const nextConfig = {
 
   // 生产环境优化
   // SWC压缩在 Next.js 13+ 中默认启用
+  
+  // 启用更快的构建
+  poweredByHeader: false,
+  
+  // 优化静态生成
+  generateEtags: false,
+  
+  // 启用更快的路由
+  trailingSlash: false,
 };
 
 module.exports = nextConfig; 

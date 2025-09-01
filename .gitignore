@@ -38,3 +38,47 @@ Thumbs.db
 # 仅在开发环境使用的文件
 *.dev.js
 *.dev.css
+
+# 构建缓存和临时文件
+.turbo/
+.vercel/
+.output/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# TypeScript 构建信息
+*.tsbuildinfo
+.tsbuildinfo
+
+# 测试覆盖率
+coverage/
+*.lcov
+
+# 日志文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# 运行时数据
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 依赖锁定文件（可选，用于加速安装）
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# 本地环境文件
+.env
+.env.*
+!.env.example
+
+# 临时构建文件
+build/
+dist/
+out/

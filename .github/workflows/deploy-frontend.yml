@@ -73,32 +73,20 @@ jobs:
            
            # 重新安装依赖（使用生产模式）
            echo "安装依赖..."
-           npm ci --production=false --no-audit --no-fund
+           npm install
           
-                     # 使用标准构建命令，跳过 lint
+           # 使用标准构建命令，跳过 lint
            echo "开始构建..."
            
-           # 设置Node.js内存限制
-           export NODE_OPTIONS="--max-old-space-size=2048"
-           
-           # 使用快速构建模式
-           if timeout 600 npm run build:fast; then
-             echo "✅ 前端构建完成（快速模式）"
+
+           # 构建
+           if timeout 600 npm run build; then
+             echo "✅ 前端构建完成"
            else
-             echo "❌ 快速构建失败，尝试轻量级构建..."
-             if timeout 600 npm run build:light; then
-               echo "✅ 前端构建完成（轻量级模式）"
-             else
-               echo "❌ 轻量级构建失败，尝试标准构建..."
-               if timeout 600 npm run build; then
-                 echo "✅ 前端构建完成（标准模式）"
-               else
-                 echo "❌ 前端构建失败"
-                 echo "构建日志:"
-                 npm run build 2>&1 | tail -100
-                 exit 1
-               fi
-             fi
+             echo "❌ 前端构建失败"
+             echo "构建日志:"
+             npm run build 2>&1 | tail -100
+             exit 1
            fi
           
           # 启动前端服务

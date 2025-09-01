@@ -37,6 +37,7 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     }
 
     console.log('创建Phaser游戏配置');
+    console.log('容器尺寸:', width, 'x', height);
 
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
@@ -90,38 +91,22 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
     console.log('TopDownGame useEffect 触发');
 
     if (typeof window !== 'undefined') {
-      console.log('在客户端环境中，等待DOM元素准备就绪');
-
-      // 使用 requestAnimationFrame 确保在下一帧渲染后执行
-      let retryCount = 0;
-      const maxRetries = 50; // 最大重试50次（约2.5秒）
-
-      const checkDOMReady = () => {
+      console.log('在客户端环境中，开始初始化游戏');
+      
+      // 简单延迟确保DOM渲染完成
+      const timer = setTimeout(() => {
         if (gameRef.current) {
           console.log('DOM元素已准备就绪，开始初始化游戏');
           initializeGame();
         } else {
-          retryCount++;
-          console.log(`DOM元素仍未准备就绪，重试次数: ${retryCount}/${maxRetries}`);
-
-          if (retryCount >= maxRetries) {
-            console.error('错误: 达到最大重试次数，DOM元素仍未准备就绪');
-            setError('游戏容器初始化超时');
-            return;
-          }
-
-          // 如果DOM元素还没有准备好，继续等待
-          requestAnimationFrame(checkDOMReady);
+          console.error('错误: gameRef.current 为空');
+          setError('游戏容器未找到');
         }
-      };
-
-      // 延迟一帧开始检查
-      requestAnimationFrame(() => {
-        requestAnimationFrame(checkDOMReady);
-      });
+      }, 100);
 
       return () => {
         console.log('TopDownGame 组件卸载，清理游戏实例');
+        clearTimeout(timer);
         if (gameInstanceRef.current) {
           gameInstanceRef.current.destroy(true);
           gameInstanceRef.current = null;
@@ -162,15 +147,14 @@ export const TopDownGame: React.FC<TopDownGameProps> = ({
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative" style={{ width: `${width}px`, height: `${height}px` }}>
       {/* 游戏画布容器 */}
       <div
         ref={gameRef}
-        className="w-full h-full"
         style={{
-          width: `${width}px`,
-          height: `${height}px`,
-          margin: 'auto',
+          width: '100%',
+          height: '100%',
+          margin: 0,
           padding: 0,
           overflow: 'hidden',
         }}

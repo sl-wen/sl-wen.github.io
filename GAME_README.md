@@ -47,7 +47,8 @@ npm run dev
 ```
 
 ### 访问游戏
-- 🎮 主游戏页面: http://localhost:3000/top-down-game
+- 🎮 Top-Down游戏页面: http://localhost:3000/top-down-game
+- 🐱 小猫农场游戏: http://localhost:3000/game  
 - 🎯 游戏演示页面: http://localhost:3000/demo
 
 ## 🎮 游戏控制

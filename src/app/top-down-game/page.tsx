@@ -16,7 +16,7 @@ const TopDownGameWrapper = dynamic(
     }
 );
 
-export default function GamePage() {
+export default function TopDownGamePage() {
     const [isGameReady, setIsGameReady] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -54,7 +54,7 @@ export default function GamePage() {
             <div className="container mx-auto px-4 py-4">
                 <div className="text-center mb-4">
                     <h1 className="text-4xl font-bold text-white mb-2">Top-Down 游戏</h1>
-                    <p className="text-gray-300">一个简单的 2D 角色扮演游戏</p>
+                    <p className="text-gray-300">一个基于 React + TypeScript + Phaser 的 2D 角色扮演游戏</p>
                 </div>
 
                 <div className="flex justify-center">
@@ -69,8 +69,16 @@ export default function GamePage() {
                             <h3 className="text-lg font-semibold mb-2">游戏控制：</h3>
                             <ul className="text-sm space-y-1">
                                 <li>• 使用 WASD 或方向键移动角色</li>
-                                <li>• 空格键与NPC对话</li>
-                                <li>• ESC键打开菜单</li>
+                                <li>• 空格键与NPC对话或确认</li>
+                                <li>• ESC键打开/关闭菜单</li>
+                                <li>• 鼠标点击进行菜单选择</li>
+                                {isMobile && (
+                                    <>
+                                        <li>• 触摸屏幕移动角色</li>
+                                        <li>• 点击NPC进行对话</li>
+                                        <li>• 点击物品进行收集</li>
+                                    </>
+                                )}
                             </ul>
                         </div>
                     </div>

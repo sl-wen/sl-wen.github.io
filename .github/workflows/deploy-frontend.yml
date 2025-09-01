@@ -43,10 +43,6 @@ jobs:
           echo "拉取最新前端代码..."
           OLD_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
           
-          if [ -n "$SSH_KEY" ]; then
-            export GIT_SSH_COMMAND="ssh -i $SSH_KEY -o ConnectTimeout=10 -o StrictHostKeyChecking=no"
-          fi
-          
           if timeout 30 git fetch origin --prune; then
             git reset --hard origin/react
             git checkout react
@@ -61,19 +57,11 @@ jobs:
           echo "快速清理和安装依赖..."
           rm -rf .next
           rm -rf package-lock.json
-           
-            
-          # 重新安装依赖（使用生产模式）
-          echo "安装依赖..."
-          npm ci --no-audit --no-fund || npm install --no-audit --no-fund 
-          
           # 使用标准构建命令，跳过 lint
            if timeout 600 npm run build; then
              echo "✅ 前端构建完成"
            else
              echo "❌ 前端构建失败"
-             echo "构建日志:"
-             npm run build 2>&1 | tail -100
              exit 1
            fi
           

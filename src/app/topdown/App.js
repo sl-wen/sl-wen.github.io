@@ -129,6 +129,7 @@ function App() {
   const [heroHealthStates, setHeroHealthStates] = useState([]); // 角色生命值状态
   const [heroCoins, setHeroCoins] = useState(null);      // 角色金币数量
   const [joystickDirection, setJoystickDirection] = useState(null); // 虚拟摇杆方向
+  const [actionContext, setActionContext] = useState('attack');     // 交互上下文：talk/interact/attack/none
 
   /**
    * 处理对话完成事件
@@ -268,12 +269,19 @@ function App() {
     };
     window.addEventListener('hero-coin', heroCoinEventListener);
 
+    // 监听行动上下文事件（决定右下角按钮图标）
+    const actionContextEventListener = ({ detail }) => {
+      setActionContext(detail.context);
+    };
+    window.addEventListener('action-context', actionContextEventListener);
+
     // 清理事件监听器
     return () => {
       window.removeEventListener('new-dialog', dialogBoxEventListener);
       window.removeEventListener('menu-items', gameMenuEventListener);
       window.removeEventListener('hero-health', heroHealthEventListener);
       window.removeEventListener('hero-coin', heroCoinEventListener);
+      window.removeEventListener('action-context', actionContextEventListener);
     };
   }, [setCharacterName, setMessages]);
 
@@ -358,8 +366,8 @@ function App() {
                 height,
                 multiplier,
               }}
-              icon="⚔️"
-              label="Attack"
+              icon={actionContext === 'talk' ? '💬' : actionContext === 'interact' ? '🗝️' : actionContext === 'attack' ? '⚔️' : '•'}
+              label={actionContext === 'talk' ? 'Talk' : actionContext === 'interact' ? 'Open' : actionContext === 'attack' ? 'Attack' : ''}
           />
         </GameWrapper>
       </div>

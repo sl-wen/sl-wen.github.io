@@ -772,6 +772,7 @@ export default class GameScene extends Scene {
                     }
                 }
             });
+            });
         }
 
         camera.startFollow(this.heroSprite, true);

@@ -252,7 +252,8 @@ export default class BootScene extends Scene {
      * 确保游戏文本正确显示
      */
     loadFonts() {
-        // 字体由全局样式或系统字体提供，避免在移动端加载失败导致阻塞
+        // 加载像素风格字体
+        this.load.webfont('Press Start 2P', '/game/assets/fonts/PressStart2P-Regular.ttf');
     }
 
     /**

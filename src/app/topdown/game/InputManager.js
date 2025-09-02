@@ -180,8 +180,13 @@ class InputManager {
    * @returns {boolean} 如果空格键或动作按钮刚被按下则返回 true
    */
   isSpaceJustDown() {
-    // 支持动作按钮和空格键
-    return this.actionButtonPressed || Phaser.Input.Keyboard.JustDown(this.spaceKey);
+    // 消费一次性动作按钮按下（移动端），避免同一帧被多处处理（交互与攻击同时触发）
+    if (this.actionButtonPressed) {
+      this.actionButtonPressed = false;
+      return true;
+    }
+    // 键盘空格键使用 Phaser 的一次性 JustDown 语义
+    return Phaser.Input.Keyboard.JustDown(this.spaceKey);
   }
 
   /**

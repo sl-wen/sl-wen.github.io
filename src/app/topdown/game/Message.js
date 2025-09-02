@@ -1,3 +1,27 @@
+/**
+ * 文本逐字显示组件 Message
+ * 
+ * 职责：
+ * - 以“打字机”效果逐字显示一条消息
+ * - 支持强制立即显示完整消息（用于点击或按键跳过）
+ * - 在一条消息完整显示时通过回调通知上层（DialogBox）
+ * 
+ * Props：
+ * - message: string 要显示的消息文本
+ * - trail: number 字符显示的间隔（毫秒），默认 35ms
+ * - multiplier: number UI 缩放倍数
+ * - onMessageEnded: () => void 当整条消息显示完毕时触发
+ * - forceShowFullMessage: boolean 是否强制直接显示完整文本
+ * 
+ * 使用方法：
+ * <Message
+ *   message="Welcome"
+ *   trail={35}
+ *   multiplier={1}
+ *   forceShowFullMessage={false}
+ *   onMessageEnded={() => {...}}
+ * />
+ */
 import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { styled } from '@mui/material/styles';

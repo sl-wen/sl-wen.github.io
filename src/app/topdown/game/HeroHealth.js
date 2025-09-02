@@ -1,3 +1,13 @@
+/**
+ * 生命值显示组件 HeroHealth
+ * 
+ * 职责：
+ * - 显示玩家生命值的心形容器序列（full/half/empty）
+ * - 与 `GameScene` 通过自定义事件保持同步
+ * 
+ * 使用方法：
+ * <HeroHealth gameSize={{ width, height, multiplier }} healthStates={['full','half','empty']} />
+ */
 import { styled } from '@mui/material/styles';
 import classNames from 'classnames';
 

@@ -1,3 +1,17 @@
+/**
+ * 游戏菜单组件 GameMenu
+ * 
+ * 职责：
+ * - 接收菜单项并渲染为可选择列表
+ * - 支持键盘上下选择、Enter 确认
+ * - 支持鼠标 hover 高亮与点击选择
+ * - 通过 `onSelected` 回调将结果传给调用方（通常是场景）
+ * 
+ * 使用方法：
+ * - 由场景通过自定义事件下发菜单（参见 MainMenuScene / GameOverScene）：
+ *   window.dispatchEvent(new CustomEvent('menu-items', { detail: { menuItems, menuPosition } }))
+ * - React 层捕获后渲染 <GameMenu items position onSelected />
+ */
 import { useEffect, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import classNames from 'classnames';

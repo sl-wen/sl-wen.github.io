@@ -1,3 +1,13 @@
+/**
+ * 金币显示组件 HeroCoin
+ * 
+ * 职责：
+ * - 在屏幕左上区域显示玩家当前金币数量
+ * - 当金币达到上限（999）时使用不同样式高亮
+ * 
+ * 使用方法：
+ * <HeroCoin gameSize={{ width, height, multiplier }} heroCoins={coin} />
+ */
 import { styled } from '@mui/material/styles';
 import classNames from 'classnames';
 

@@ -54,6 +54,7 @@ export default class GameScene extends Scene {
     isShowingDialog = false;
     isTeleporting = false;
     isAttacking = false;
+    isAutoMoving = false;
 
     init(data) {
         this.initData = data;
@@ -1089,6 +1090,25 @@ export default class GameScene extends Scene {
 
         this.gridEngine.create(map, gridEngineConfig); // 初始化 GridEngine（必须在角色加入后）
 
+        // Tap-to-move: 触摸/点击地图自动寻路到目标；若不可达则前往最近可达位置
+        this.input.on('pointerdown', (pointer) => {
+            if (this.isTeleporting || this.isAttacking || this.isShowingDialog) {
+                return;
+            }
+
+            const worldX = pointer.worldX ?? pointer.x;
+            const worldY = pointer.worldY ?? pointer.y;
+            const target = {
+                x: Math.floor(worldX / map.tileWidth),
+                y: Math.floor(worldY / map.tileHeight),
+            };
+
+            this.isAutoMoving = true;
+            this.gridEngine.moveTo('hero', target, {
+                NoPathFoundStrategy: 'CLOSEST_REACHABLE',
+            });
+        });
+
         // NPCs
         npcsKeys.forEach((npcData) => {
             const {
@@ -1194,6 +1214,8 @@ export default class GameScene extends Scene {
             if (charId === 'hero') {
                 this.heroSprite.anims.stop();
                 this.heroSprite.setFrame(this.getStopFrame(direction, charId));
+                // 自动寻路结束（hero 停止）
+                this.isAutoMoving = false;
             } else {
                 const npc = npcSprites.getChildren().find((npcSprite) => npcSprite.texture.key === charId);
                 if (npc) {
@@ -1451,15 +1473,21 @@ export default class GameScene extends Scene {
         // 使用输入管理器处理移动（虚拟摇杆/键盘已统一到 InputManager）
         const currentDirection = this.inputManager.getCurrentDirection();
 
-        // 无输入时立即停止（防止松手后惯性继续）
-        if (!currentDirection && this.gridEngine.isMoving('hero')) {
+        // 无输入时：当非自动寻路才停止（避免打断 moveTo）
+        if (!currentDirection && this.gridEngine.isMoving('hero') && !this.isAutoMoving) {
             this.gridEngine.stopMovement('hero');
             return;
         }
 
-        // 有输入时移动（GridEngine 支持 8 向方向字符串：up/down/left/right/up-left/...）
-        if (currentDirection && !this.gridEngine.isMoving('hero')) {
-            this.gridEngine.move('hero', currentDirection);
+        // 有手动输入：打断自动寻路并按输入方向移动
+        if (currentDirection) {
+            if (this.isAutoMoving) {
+                this.isAutoMoving = false;
+                this.gridEngine.stopMovement('hero');
+            }
+            if (!this.gridEngine.isMoving('hero')) {
+                this.gridEngine.move('hero', currentDirection);
+            }
         }
     }
 }

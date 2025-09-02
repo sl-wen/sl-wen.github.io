@@ -31,7 +31,7 @@ import { styled } from '@mui/material/styles';
  */
 const JoystickContainer = styled('div')(({ theme, gameSize }) => ({
   position: 'fixed',
-  bottom: '20px',
+  bottom: '70px',
   left: '20px',
   zIndex: 1000,
   width: '140px', // 从120px增加到140px，提供更大的操作区域

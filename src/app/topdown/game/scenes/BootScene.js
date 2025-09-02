@@ -199,8 +199,8 @@ export default class BootScene extends Scene {
      * 包括主角、NPC、敌人等角色的精灵表
      */
     loadCharacterSprites() {
-        // 主角精灵图集
-        this.load.atlas('hero', '/game/assets/sprites/atlas/hero.png', '/game/assets/sprites/atlas/hero.json');
+        // 主角精灵图集（加载为 'cat' 以匹配帧前缀）
+        this.load.atlas('cat', '/game/assets/sprites/atlas/hero.png', '/game/assets/sprites/atlas/hero.json');
         
         // NPC 精灵图集
         this.load.atlas('npc_01', '/game/assets/sprites/atlas/npc_01.png', '/game/assets/sprites/atlas/npc_01.json');

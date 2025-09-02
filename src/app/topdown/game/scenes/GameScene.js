@@ -116,16 +116,19 @@ export default class GameScene extends Scene {
             .sort((a, b) => (a.frame < b.frame ? -1 : 1));
     }
 
-    createPlayerWalkingAnimation(assetKey, animationName) {
+    createPlayerWalkingAnimation(assetKey, animationName, textureKeyOverride) {
         // 角色/NPC 的行走循环动画（上/右/下/左），若不存在则创建
+        // assetKey 用于动画键名；textureKeyOverride/帧前缀用于帧来源
         const animationKey = `${assetKey}_${animationName}`;
+        const framePrefix = textureKeyOverride || assetKey;
+        const textureKey = textureKeyOverride || assetKey;
         if (!this.anims.exists(animationKey)) {
             this.anims.create({
                 key: animationKey,
                 frames: [
-                    { key: assetKey, frame: `${assetKey}_${animationName}_01` },
-                    { key: assetKey, frame: `${assetKey}_${animationName.replace('walking', 'idle')}_01` },
-                    { key: assetKey, frame: `${assetKey}_${animationName}_02` },
+                    { key: textureKey, frame: `${framePrefix}_${animationName}_01` },
+                    { key: textureKey, frame: `${framePrefix}_${animationName.replace('walking', 'idle')}_01` },
+                    { key: textureKey, frame: `${framePrefix}_${animationName}_02` },
                 ],
                 frameRate: 4,
                 repeat: -1,
@@ -134,18 +137,20 @@ export default class GameScene extends Scene {
         }
     }
 
-    createPlayerAttackAnimation(assetKey, animationName) {
+    createPlayerAttackAnimation(assetKey, animationName, textureKeyOverride) {
         // 角色的攻击动画（方向区分），若不存在则创建
         const animationKey = `${assetKey}_${animationName}`;
+        const framePrefix = textureKeyOverride || assetKey;
+        const textureKey = textureKeyOverride || assetKey;
         if (!this.anims.exists(animationKey)) {
             this.anims.create({
                 key: animationKey,
                 frames: [
-                    { key: assetKey, frame: `${assetKey}_${animationName}_01` },
-                    { key: assetKey, frame: `${assetKey}_${animationName}_02` },
-                    { key: assetKey, frame: `${assetKey}_${animationName}_03` },
-                    { key: assetKey, frame: `${assetKey}_${animationName}_04` },
-                    { key: assetKey, frame: `${assetKey}_${animationName.replace('attack', 'idle')}_01` },
+                    { key: textureKey, frame: `${framePrefix}_${animationName}_01` },
+                    { key: textureKey, frame: `${framePrefix}_${animationName}_02` },
+                    { key: textureKey, frame: `${framePrefix}_${animationName}_03` },
+                    { key: textureKey, frame: `${framePrefix}_${animationName}_04` },
+                    { key: textureKey, frame: `${framePrefix}_${animationName.replace('attack', 'idle')}_01` },
                 ],
                 frameRate: 16,
                 repeat: 0,
@@ -156,15 +161,16 @@ export default class GameScene extends Scene {
 
     getStopFrame(direction, spriteKey) {
         // 根据朝向返回该精灵的“站立”帧
+        const frameKey = spriteKey === 'hero' ? 'cat' : spriteKey;
         switch (direction) {
             case 'up':
-                return `${spriteKey}_idle_up_01`;
+                return `${frameKey}_idle_up_01`;
             case 'right':
-                return `${spriteKey}_idle_right_01`;
+                return `${frameKey}_idle_right_01`;
             case 'down':
-                return `${spriteKey}_idle_down_01`;
+                return `${frameKey}_idle_down_01`;
             case 'left':
-                return `${spriteKey}_idle_left_01`;
+                return `${frameKey}_idle_left_01`;
             default:
                 return null;
         }
@@ -449,8 +455,10 @@ export default class GameScene extends Scene {
         }
 
         // Hero 主角：初始属性、碰撞盒与交互体
+        // 使用 cat 图集帧作为主角外观，但保留 GridEngine 角色 id 为 'hero'
+        const initialCatFrame = initialFrame?.replace(/^hero_/, 'cat_') || 'cat_idle_down_01';
         this.heroSprite = this.physics.add
-            .sprite(initialPosition.x * 16, initialPosition.y * 16, 'hero', initialFrame)
+            .sprite(initialPosition.x * 16, initialPosition.y * 16, 'cat', initialCatFrame)
             .setDepth(1);
         this.heroSprite.health = heroHealth;
         this.heroSprite.maxHealth = heroMaxHealth;
@@ -805,7 +813,7 @@ export default class GameScene extends Scene {
                                         heroStatus: {
                                             position: { x: teleportToX, y: teleportToY },
                                             previousPosition: this.calculatePreviousTeleportPosition(),
-                                            frame: `hero_idle_${facingDirection}_01`,
+                                            frame: `cat_idle_${facingDirection}_01`,
                                             facingDirection,
                                             health: this.heroSprite.health,
                                             maxHealth: this.heroSprite.maxHealth,
@@ -1064,16 +1072,16 @@ export default class GameScene extends Scene {
         });
 
         // Movement
-        this.createPlayerWalkingAnimation('hero', 'walking_up');
-        this.createPlayerWalkingAnimation('hero', 'walking_right');
-        this.createPlayerWalkingAnimation('hero', 'walking_down');
-        this.createPlayerWalkingAnimation('hero', 'walking_left');
+        this.createPlayerWalkingAnimation('hero', 'walking_up', 'cat');
+        this.createPlayerWalkingAnimation('hero', 'walking_right', 'cat');
+        this.createPlayerWalkingAnimation('hero', 'walking_down', 'cat');
+        this.createPlayerWalkingAnimation('hero', 'walking_left', 'cat');
 
         // Attack
-        this.createPlayerAttackAnimation('hero', 'attack_up', 12, 0, false);
-        this.createPlayerAttackAnimation('hero', 'attack_right', 12, 0, false);
-        this.createPlayerAttackAnimation('hero', 'attack_down', 12, 0, false);
-        this.createPlayerAttackAnimation('hero', 'attack_left', 12, 0, false);
+        this.createPlayerAttackAnimation('hero', 'attack_up', 'cat');
+        this.createPlayerAttackAnimation('hero', 'attack_right', 'cat');
+        this.createPlayerAttackAnimation('hero', 'attack_down', 'cat');
+        this.createPlayerAttackAnimation('hero', 'attack_left', 'cat');
 
         this.heroSprite.on('animationcomplete', (animation, animationFrame) => {
             if (animation.key.includes('attack')) {
@@ -1175,7 +1183,7 @@ export default class GameScene extends Scene {
         // Animations
         this.gridEngine.movementStarted().subscribe(({ charId, direction }) => { // 开始移动时切换行走动画
             if (charId === 'hero') {
-                this.heroSprite.anims.play(`hero_walking_${direction}`);
+                this.heroSprite.anims.play(`hero_walking_${direction}`); // 动画键仍以 hero_* 命名
             } else {
                 const npc = npcSprites.getChildren().find((npcSprite) => npcSprite.texture.key === charId);
                 if (npc) {
@@ -1432,7 +1440,7 @@ export default class GameScene extends Scene {
             && this.heroSprite.haveSword
         ) {
             const facingDirection = this.gridEngine.getFacingDirection('hero');
-            this.heroSprite.anims.play(`hero_attack_${facingDirection}`);
+            this.heroSprite.anims.play(`hero_attack_${facingDirection}`); // 动画键仍以 hero_* 命名
             this.isAttacking = true;
             return;
         }

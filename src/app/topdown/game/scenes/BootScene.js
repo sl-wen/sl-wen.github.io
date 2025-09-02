@@ -222,15 +222,15 @@ export default class BootScene extends Scene {
         this.load.atlas('coin', '/game/assets/sprites/atlas/coin.png', '/game/assets/sprites/atlas/coin.json');
         
         // 其他物品图片
-        this.load.image('sword', '/game/assets/sprites/images/sword.png');
-        this.load.image('push', '/game/assets/sprites/images/push.png');
-        this.load.image('heart_container', '/game/assets/sprites/images/heart_container.png');
+        this.load.image('sword', '/game/assets/images/sword.png');
+        this.load.image('push', '/game/assets/images/push.png');
+        this.load.image('heart_container', '/game/assets/images/heart_container.png');
         
         // UI 元素
-        this.load.image('dialog_borderbox', '/game/assets/sprites/images/dialog_borderbox.png');
-        this.load.image('main_menu_background', '/game/assets/sprites/images/main_menu_background.png');
-        this.load.image('game_over_background', '/game/assets/sprites/images/game_over_background.png');
-        this.load.image('game_logo', '/game/assets/sprites/images/game_logo.png');
+        this.load.image('dialog_borderbox', '/game/assets/images/dialog_borderbox.png');
+        this.load.image('main_menu_background', '/game/assets/images/main_menu_background.png');
+        this.load.image('game_over_background', '/game/assets/images/game_over_background.png');
+        this.load.image('game_logo', '/game/assets/images/game_logo.png');
     }
 
     /**
@@ -252,8 +252,7 @@ export default class BootScene extends Scene {
      * 确保游戏文本正确显示
      */
     loadFonts() {
-        // 加载像素风格字体
-        this.load.webfont('Press Start 2P', '/game/assets/fonts/PressStart2P-Regular.ttf');
+        // 字体由全局样式或系统字体提供，避免在移动端加载失败导致阻塞
     }
 
     /**
@@ -273,58 +272,18 @@ export default class BootScene extends Scene {
      * 为角色精灵设置各种动画状态
      */
     createAnimations() {
-        // 主角行走动画
-        this.anims.create({
-            key: 'hero_walk_down',
-            frames: this.anims.generateFrameNumbers('hero', { start: 0, end: 3 }),
-            frameRate: 8,
-            repeat: -1
-        });
+        // 基于图集帧名创建主角行走与待机动画
+        const walking = (dir) => [`hero_walking_${dir}_01`, `hero_idle_${dir}_01`, `hero_walking_${dir}_02`].map((frame) => ({ key: 'hero', frame }));
+        const idle = (dir) => [{ key: 'hero', frame: `hero_idle_${dir}_01` }];
 
-        this.anims.create({
-            key: 'hero_walk_up',
-            frames: this.anims.generateFrameNumbers('hero', { start: 4, end: 7 }),
-            frameRate: 8,
-            repeat: -1
-        });
+        this.anims.create({ key: 'hero_walk_down', frames: walking('down'), frameRate: 8, repeat: -1, yoyo: true });
+        this.anims.create({ key: 'hero_walk_up', frames: walking('up'), frameRate: 8, repeat: -1, yoyo: true });
+        this.anims.create({ key: 'hero_walk_left', frames: walking('left'), frameRate: 8, repeat: -1, yoyo: true });
+        this.anims.create({ key: 'hero_walk_right', frames: walking('right'), frameRate: 8, repeat: -1, yoyo: true });
 
-        this.anims.create({
-            key: 'hero_walk_left',
-            frames: this.anims.generateFrameNumbers('hero', { start: 8, end: 11 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'hero_walk_right',
-            frames: this.anims.generateFrameNumbers('hero', { start: 12, end: 15 }),
-            frameRate: 8,
-            repeat: -1
-        });
-
-        // 主角待机动画
-        this.anims.create({
-            key: 'hero_idle_down',
-            frames: [{ key: 'hero', frame: 0 }],
-            frameRate: 1
-        });
-
-        this.anims.create({
-            key: 'hero_idle_up',
-            frames: [{ key: 'hero', frame: 4 }],
-            frameRate: 1
-        });
-
-        this.anims.create({
-            key: 'hero_idle_left',
-            frames: [{ key: 'hero', frame: 8 }],
-            frameRate: 1
-        });
-
-        this.anims.create({
-            key: 'hero_idle_right',
-            frames: [{ key: 'hero', frame: 12 }],
-            frameRate: 1
-        });
+        this.anims.create({ key: 'hero_idle_down', frames: idle('down'), frameRate: 1 });
+        this.anims.create({ key: 'hero_idle_up', frames: idle('up'), frameRate: 1 });
+        this.anims.create({ key: 'hero_idle_left', frames: idle('left'), frameRate: 1 });
+        this.anims.create({ key: 'hero_idle_right', frames: idle('right'), frameRate: 1 });
     }
 }

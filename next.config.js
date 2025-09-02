@@ -53,7 +53,7 @@ const nextConfig = {
     // 优化游戏资源加载
     config.module.rules.push({
       test: /\.(png|jpg|gif|svg|json)$/,
-      type: '/game/assets',
+      type: 'asset/resource',
     });
 
     return config;

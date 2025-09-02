@@ -1226,11 +1226,16 @@ export default class GameScene extends Scene {
         // Animations
         this.gridEngine.movementStarted().subscribe(({ charId, direction }) => { // 开始移动时切换行走动画
             if (charId === 'hero') {
-                this.heroSprite.anims.play(`hero_walking_${direction}`);
+                // 角色移动方向来自 GridEngine（可能为 8 向）。动画素材仅有 4 向，做归一映射。
+                const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
+                const animDir = (cardinal === 'up' || cardinal === 'down' || cardinal === 'left' || cardinal === 'right') ? cardinal : direction;
+                this.heroSprite.anims.play(`hero_walking_${animDir}`);
             } else {
                 const npc = npcSprites.getChildren().find((npcSprite) => npcSprite.texture.key === charId);
                 if (npc) {
-                    npc.anims.play(`${charId}_walking_${direction}`);
+                    const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
+                    const animDir = (cardinal === 'up' || cardinal === 'down' || cardinal === 'left' || cardinal === 'right') ? cardinal : direction;
+                    npc.anims.play(`${charId}_walking_${animDir}`);
                     return;
                 }
 
@@ -1244,7 +1249,8 @@ export default class GameScene extends Scene {
         this.gridEngine.movementStopped().subscribe(({ charId, direction }) => { // 停止时重置为站立帧/待机
             if (charId === 'hero') {
                 this.heroSprite.anims.stop();
-                this.heroSprite.setFrame(this.getStopFrame(direction, charId));
+                const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
+                this.heroSprite.setFrame(this.getStopFrame(cardinal, charId));
                 // 自动寻路结束（hero 停止）
                 this.isAutoMoving = false;
                 // 隐藏目标高亮
@@ -1255,7 +1261,8 @@ export default class GameScene extends Scene {
                 const npc = npcSprites.getChildren().find((npcSprite) => npcSprite.texture.key === charId);
                 if (npc) {
                     npc.anims.stop();
-                    npc.setFrame(this.getStopFrame(direction, charId));
+                    const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
+                    npc.setFrame(this.getStopFrame(cardinal, charId));
                     return;
                 }
 
@@ -1268,11 +1275,13 @@ export default class GameScene extends Scene {
 
         this.gridEngine.directionChanged().subscribe(({ charId, direction }) => { // 朝向改变时更新站立帧
             if (charId === 'hero') {
-                this.heroSprite.setFrame(this.getStopFrame(direction, charId));
+                const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
+                this.heroSprite.setFrame(this.getStopFrame(cardinal, charId));
             } else {
                 const npc = npcSprites.getChildren().find((npcSprite) => npcSprite.texture.key === charId);
                 if (npc) {
-                    npc.setFrame(this.getStopFrame(direction, charId));
+                    const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
+                    npc.setFrame(this.getStopFrame(cardinal, charId));
                     return;
                 }
 

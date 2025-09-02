@@ -26,6 +26,7 @@ class InputManager {
     
     // 输入状态管理
     this.virtualJoystickDirection = null;  // 虚拟摇杆方向
+    this.virtualJoystickVector = null;      // 虚拟摇杆向量信息 { dx, dy, angle }
     this.keyboardDirection = null;          // 键盘方向
     this.currentDirection = null;           // 当前有效方向
     this.actionButtonPressed = false;       // 动作按钮是否被按下
@@ -65,7 +66,14 @@ class InputManager {
   setupInputListeners() {
     // 监听虚拟摇杆方向变化
     window.addEventListener('virtual-joystick-direction', (event) => {
-      this.virtualJoystickDirection = event.detail.direction;
+      const { direction, dx, dy, angle } = event.detail || {};
+      this.virtualJoystickDirection = direction;
+      // 如果提供了向量信息，则记录用于角度/主轴判断
+      if (typeof dx === 'number' && typeof dy === 'number') {
+        this.virtualJoystickVector = { dx, dy, angle };
+      } else {
+        this.virtualJoystickVector = null;
+      }
       this.updateCurrentDirection();
     });
 
@@ -129,13 +137,14 @@ class InputManager {
    * 根据输入优先级确定最终的方向
    */
   updateCurrentDirection() {
-    // 虚拟摇杆优先级高于键盘
-    this.currentDirection = this.virtualJoystickDirection || this.keyboardDirection;
+    // 虚拟摇杆优先级高于键盘（保持原始 8 向，用于移动逻辑）
+    const sourceDirection = this.virtualJoystickDirection ?? this.keyboardDirection;
+    this.currentDirection = sourceDirection;
   }
 
   /**
    * 获取当前方向
-   * @returns {string|null} 当前方向（'up', 'down', 'left', 'right' 或 null）
+   * @returns {string|null} 当前方向（始终归一为 'up' | 'down' | 'left' | 'right' 或 null）
    */
   getCurrentDirection() {
     return this.currentDirection;
@@ -183,6 +192,53 @@ class InputManager {
   destroy() {
     // 注意：这里不需要移除事件监听器，因为事件监听器是在window上全局添加的
     // 如果需要清理，可以在组件卸载时处理
+  }
+
+  /**
+   * 将 8 向方向归一化为 4 向方向。
+   * 若提供 dx/dy，则根据主轴（|dx| vs |dy|）和符号来决定最贴近摇杆朝向的 4 向方向。
+   * 若仅提供合成字符串（如 'up-left'），则采用合理的回退映射。
+   * @param {string|null} direction
+   * @param {{dx:number,dy:number,angle?:number}|null} vector
+   * @returns {string|null}
+   */
+  normalizeToCardinal(direction, vector) {
+    if (!direction) return null;
+    // 已是 4 向
+    if (direction === 'up' || direction === 'down' || direction === 'left' || direction === 'right') {
+      return direction;
+    }
+
+    // 优先使用摇杆的向量信息
+    if (vector && typeof vector.dx === 'number' && typeof vector.dy === 'number') {
+      const { dx, dy } = vector;
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        return dx >= 0 ? 'right' : 'left';
+      }
+      return dy >= 0 ? 'down' : 'up';
+    }
+
+    // 回退：仅根据合成方向名进行近似映射（垂直优先，避免左右抖动）
+    switch (direction) {
+      case 'up-left':
+      case 'up-right':
+        return 'up';
+      case 'down-left':
+      case 'down-right':
+        return 'down';
+      default:
+        return null;
+    }
+  }
+
+  /** 获取当前方向的 4 向表示（用于选择 4 向素材） */
+  getCurrentCardinalDirection() {
+    return this.normalizeToCardinal(this.currentDirection, this.virtualJoystickVector);
+  }
+
+  /** 获取最近一次虚拟摇杆向量（dx/dy/angle），若无则返回 null */
+  getLastJoystickVector() {
+    return this.virtualJoystickVector || null;
   }
 }
 

@@ -305,6 +305,7 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
     // 设置方向检测的阈值
     const threshold = 10;
     let direction = null;
+    let payload = null;
 
     // 检测 8 个方向
     if (Math.abs(deltaX) > threshold || Math.abs(deltaY) > threshold) {
@@ -325,13 +326,15 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
       } else if (deltaY > threshold && deltaX > threshold) {
         direction = 'down-right';
       }
+      const angle = Math.atan2(deltaY, deltaX); // -PI .. PI（屏幕坐标，向下为正Y）
+      payload = { direction, dx: deltaX, dy: deltaY, angle };
     }
 
     // 如果方向发生变化，通知父组件
     if (direction !== currentDirection) {
       setCurrentDirection(direction);
       currentDirectionRef.current = direction;
-      onDirectionChange(direction);
+      onDirectionChange(payload ? payload : direction);
     }
   };
 

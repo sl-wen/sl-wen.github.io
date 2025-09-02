@@ -164,15 +164,18 @@ function App() {
    * 处理虚拟摇杆方向变化事件
    * 当玩家操作虚拟摇杆时，更新方向状态并通知游戏引擎
    */
-  const handleJoystickDirectionChange = useCallback((direction) => {
-    setJoystickDirection(direction);
-    
-    // 发送虚拟摇杆方向变化事件给游戏
-    const customEvent = new CustomEvent('virtual-joystick-direction', {
-      detail: {
-        direction,
-      },
-    });
+  const handleJoystickDirectionChange = useCallback((dirOrPayload) => {
+    // 支持字符串或包含向量信息的对象 { direction, dx, dy, angle }
+    const isObject = dirOrPayload && typeof dirOrPayload === 'object';
+    const nextDirection = isObject ? dirOrPayload.direction : dirOrPayload;
+    setJoystickDirection(nextDirection);
+
+    // 发送虚拟摇杆方向变化事件给游戏（扁平化 payload，便于 InputManager 使用）
+    const detail = isObject
+      ? { direction: dirOrPayload.direction, dx: dirOrPayload.dx, dy: dirOrPayload.dy, angle: dirOrPayload.angle }
+      : { direction: nextDirection };
+
+    const customEvent = new CustomEvent('virtual-joystick-direction', { detail });
     window.dispatchEvent(customEvent);
   }, []);
 

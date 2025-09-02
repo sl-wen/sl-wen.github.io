@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:fast": "cross-env NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 SKIP_TYPE_CHECK=1 next build",
-    "build:light": "cross-env NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS='--max-old-space-size=1024' SKIP_TYPE_CHECK=1 next build",
+    "build:fast": "cross-env NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS='--max-old-space-size=2048' SKIP_TYPE_CHECK=1 next build",
+    "build:light": "cross-env NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS='--max-old-space-size=2048' SKIP_TYPE_CHECK=1 next build",
     "build:static": "next build && next export",
     "build:ci": "cross-env NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 SKIP_TYPE_CHECK=1 NODE_OPTIONS='--max-old-space-size=4096' next build",
     "start": "next start",

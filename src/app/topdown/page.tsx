@@ -35,7 +35,7 @@ export default function TopDownPage() {
   }
 
   return (
-    <div className="w-full h-screen bg-black">
+    <div className="w-full h-screen bg-black flex items-center justify-center overflow-hidden">
       <TopDownGame />
     </div>
   );

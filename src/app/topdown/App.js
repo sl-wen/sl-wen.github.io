@@ -26,10 +26,19 @@ const GameContentWrapper = styled('div')(({ theme }) => ({
   margin: 'auto',
   padding: 0,
   overflow: 'hidden',
+  position: 'relative',
+  // 确保游戏画面在容器中居中
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   '& canvas': {
     imageRendering: 'pixelated',
     '-ms-interpolation-mode': 'nearest-neighbor',
     boxShadow: '0px 0px 0px 3px rgba(0,0,0,0.75)',
+    // 确保画布完全填充容器
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
   },
 }));
 

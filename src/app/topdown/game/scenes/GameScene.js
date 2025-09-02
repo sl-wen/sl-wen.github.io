@@ -56,6 +56,8 @@ export default class GameScene extends Scene {
     isAttacking = false;
     isAutoMoving = false;
     autoMoveTargetHighlight = null;
+    currentActionContext = 'attack';
+    npcSprites = null;
 
     init(data) {
         this.initData = data;
@@ -213,6 +215,65 @@ export default class GameScene extends Scene {
                 };
             default:
                 return position;
+        }
+    }
+
+    /**
+     * 计算主角面前一格的像素坐标
+     */
+    getFrontPixelPosition() {
+        const facingDirection = this.gridEngine.getFacingDirection('hero');
+        const position = this.gridEngine.getPosition('hero');
+        switch (facingDirection) {
+            case 'up':
+                return { x: position.x * 16, y: (position.y - 1) * 16 };
+            case 'right':
+                return { x: (position.x + 1) * 16, y: position.y * 16 };
+            case 'down':
+                return { x: position.x * 16, y: (position.y + 1) * 16 };
+            case 'left':
+                return { x: (position.x - 1) * 16, y: position.y * 16 };
+            default:
+                return { x: position.x * 16, y: position.y * 16 };
+        }
+    }
+
+    /**
+     * 更新交互上下文并通知 React，决定 ActionButton 的图标
+     * 规则优先级：
+     * 1) 面前是可对话 NPC => 'talk'
+     * 2) 面前是可交互箱子/宝箱 => 'interact'
+     * 3) 默认（有剑）=> 'attack'，否则 'none'
+     */
+    updateActionContext() {
+        if (!this.heroSprite || !this.map) return;
+        let nextContext = 'attack';
+
+        // 1) 检测面前是否有 NPC（使用存在的 heroActionCollider 与 npcSprites 重叠近似）
+        const nearbyNpc = this.npcSprites?.getChildren?.().some((npc) => {
+            return Phaser.Geom.Intersects.RectangleToRectangle(this.heroActionCollider.getBounds(), npc.getBounds());
+        });
+        if (nearbyNpc) {
+            nextContext = 'talk';
+        } else {
+            // 2) 检测面前一格是否为箱子或其它可交互图块
+            const front = this.getFrontPixelPosition();
+            const isInteractable = this.map.layers?.some((layer) => {
+                const t = layer.tilemapLayer.getTileAtWorldXY(front.x, front.y);
+                return t?.properties?.ge_collide || t?.properties?.interactable;
+            });
+            if (isInteractable) {
+                nextContext = 'interact';
+            } else {
+                // 3) 默认
+                nextContext = this.heroSprite.haveSword ? 'attack' : 'none';
+            }
+        }
+
+        if (this.currentActionContext !== nextContext) {
+            this.currentActionContext = nextContext;
+            const customEvent = new CustomEvent('action-context', { detail: { context: nextContext } });
+            window.dispatchEvent(customEvent);
         }
     }
 
@@ -447,8 +508,9 @@ export default class GameScene extends Scene {
 
         if (isDebugMode) {
             window.phaserGame = game;
-            this.map = map;
         }
+        // 需要在更新期查询前方图块与交互环境，因此总是持有 map 引用
+        this.map = map;
 
         // Hero 主角：初始属性、碰撞盒与交互体
         this.heroSprite = this.physics.add
@@ -469,6 +531,8 @@ export default class GameScene extends Scene {
 
         this.heroSprite.increaseMaxHealth = (increase) => {
             this.heroSprite.maxHealth += increase;
+            // 参照原项目：提升心之容器后，当前生命同步至最大值
+            this.heroSprite.health = this.heroSprite.maxHealth;
             this.updateHeroHealthUi(this.calculateHeroHealthStates());
         };
 
@@ -1064,6 +1128,8 @@ export default class GameScene extends Scene {
                 offsetY: 4,
             });
         });
+        // 供运行期检测交互环境使用
+        this.npcSprites = npcSprites;
 
         // Movement
         this.createPlayerWalkingAnimation('hero', 'walking_up');
@@ -1513,6 +1579,8 @@ export default class GameScene extends Scene {
         });
 
         this.heroActionCollider.update();
+        // 根据周围环境更新交互按钮图标（对话 / 宝箱/箱子 / 攻击）
+        this.updateActionContext();
         
         // 使用输入管理器处理移动（虚拟摇杆/键盘已统一到 InputManager）
         const currentDirection = this.inputManager.getCurrentDirection();

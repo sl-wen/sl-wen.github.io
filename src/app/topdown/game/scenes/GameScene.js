@@ -1449,6 +1449,14 @@ export default class GameScene extends Scene {
         
         // 使用输入管理器处理移动（虚拟摇杆/键盘已统一到 InputManager）
         const currentDirection = this.inputManager.getCurrentDirection();
+
+        // 无输入时立即停止（防止松手后惯性继续）
+        if (!currentDirection && this.gridEngine.isMoving('hero')) {
+            this.gridEngine.stopMovement('hero');
+            return;
+        }
+
+        // 有输入时移动（GridEngine 支持 8 向方向字符串：up/down/left/right/up-left/...）
         if (currentDirection && !this.gridEngine.isMoving('hero')) {
             this.gridEngine.move('hero', currentDirection);
         }

@@ -95,15 +95,28 @@ class InputManager {
    */
   updateKeyboardDirection() {
     let direction = null;
-    
-    // 检测方向键或 WASD 键的按下状态
-    if (this.cursors.left.isDown || this.wasd.left.isDown) {
+
+    const left = this.cursors.left.isDown || this.wasd.left.isDown;
+    const right = this.cursors.right.isDown || this.wasd.right.isDown;
+    const up = this.cursors.up.isDown || this.wasd.up.isDown;
+    const down = this.cursors.down.isDown || this.wasd.down.isDown;
+
+    // 支持斜方向（组合键）
+    if (up && left && !right && !down) {
+      direction = 'up-left';
+    } else if (up && right && !left && !down) {
+      direction = 'up-right';
+    } else if (down && left && !right && !up) {
+      direction = 'down-left';
+    } else if (down && right && !left && !up) {
+      direction = 'down-right';
+    } else if (left && !right) {
       direction = 'left';
-    } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
+    } else if (right && !left) {
       direction = 'right';
-    } else if (this.cursors.up.isDown || this.wasd.up.isDown) {
+    } else if (up && !down) {
       direction = 'up';
-    } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
+    } else if (down && !up) {
       direction = 'down';
     }
     

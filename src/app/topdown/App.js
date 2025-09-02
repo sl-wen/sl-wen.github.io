@@ -319,6 +319,7 @@ function App() {
                     height,
                     multiplier,
                   }}
+                  safeBottomOffset={140}
               />
           )}
           

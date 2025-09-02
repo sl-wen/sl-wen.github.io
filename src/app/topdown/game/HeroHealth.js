@@ -14,14 +14,17 @@ import classNames from 'classnames';
 // Images
 // Note: health.png is now served from public/game/assets/images/health.png
 
-const HealthContainer = styled('div')(({ multiplier, width }) => {
+const HealthContainer = styled('div')(({ multiplier, width, topOffset = 16, leftOffset = 16, heartsPerRow = 10, gap = 2 }) => {
     const left = window.innerWidth - (width * multiplier);
     return {
         imageRendering: 'pixelated',
         position: 'absolute',
-        top: `${16 * multiplier}px`,
-        left: `${(16 * multiplier) + left / 2}px`,
-        display: 'flex',
+        top: `${topOffset * multiplier}px`,
+        left: `${(leftOffset * multiplier) + left / 2}px`,
+        display: 'grid',
+        gridTemplateColumns: `repeat(${heartsPerRow}, ${16 * multiplier}px)`,
+        columnGap: `${gap * multiplier}px`,
+        rowGap: `${gap * multiplier}px`,
     };
 });
 
@@ -39,6 +42,10 @@ const Health = styled('div')(({ multiplier, healthState }) => ({
 const HeroHealth = ({
     gameSize,
     healthStates,
+    heartsPerRow = 10,
+    gap = 2,
+    topOffset = 16,
+    leftOffset = 16,
 }) => {
     const {
         width,
@@ -49,7 +56,14 @@ const HeroHealth = ({
 
 
     return (
-        <HealthContainer multiplier={multiplier} width={width}>
+        <HealthContainer
+            multiplier={multiplier}
+            width={width}
+            heartsPerRow={heartsPerRow}
+            gap={gap}
+            topOffset={topOffset}
+            leftOffset={leftOffset}
+        >
             {healthStates.map((healthState, index) => (
                 <Health
                     key={index}

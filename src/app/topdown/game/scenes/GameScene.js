@@ -55,6 +55,7 @@ export default class GameScene extends Scene {
     isTeleporting = false;
     isAttacking = false;
     isAutoMoving = false;
+    autoMoveTargetHighlight = null;
 
     init(data) {
         this.initData = data;
@@ -621,7 +622,7 @@ export default class GameScene extends Scene {
                                 return;
                             }
 
-                            if (this.inputManager.isEnterJustDown()) {
+                            if (this.inputManager.isEnterJustDown() || this.inputManager.isSpaceJustDown()) {
                                 const characterName = value;
                                 const customEvent = new CustomEvent('new-dialog', {
                                     detail: {
@@ -1104,6 +1105,36 @@ export default class GameScene extends Scene {
             };
 
             this.isAutoMoving = true;
+            // 显示目标瓦片高亮
+            const pixelX = target.x * map.tileWidth;
+            const pixelY = target.y * map.tileHeight;
+            if (!this.autoMoveTargetHighlight) {
+                this.autoMoveTargetHighlight = this.add.rectangle(
+                    pixelX + map.tileWidth / 2,
+                    pixelY + map.tileHeight / 2,
+                    map.tileWidth,
+                    map.tileHeight,
+                    0xffff66,
+                    0.25,
+                ).setOrigin(0.5, 0.5).setDepth(1000);
+                this.autoMoveTargetHighlight.setBlendMode(Phaser.BlendModes.SCREEN);
+                this.autoMoveTargetHighlight.setStrokeStyle(1, 0xffff99, 0.8);
+            } else {
+                this.autoMoveTargetHighlight.setVisible(true);
+                this.autoMoveTargetHighlight.setPosition(
+                    pixelX + map.tileWidth / 2,
+                    pixelY + map.tileHeight / 2,
+                );
+                this.autoMoveTargetHighlight.setSize(map.tileWidth, map.tileHeight);
+            }
+            // 轻微闪烁以提示
+            this.tweens.add({
+                targets: this.autoMoveTargetHighlight,
+                alpha: { from: 0.25, to: 0.45 },
+                duration: 400,
+                yoyo: true,
+                repeat: 2,
+            });
             this.gridEngine.moveTo('hero', target, {
                 NoPathFoundStrategy: 'CLOSEST_REACHABLE',
             });
@@ -1216,6 +1247,10 @@ export default class GameScene extends Scene {
                 this.heroSprite.setFrame(this.getStopFrame(direction, charId));
                 // 自动寻路结束（hero 停止）
                 this.isAutoMoving = false;
+                // 隐藏目标高亮
+                if (this.autoMoveTargetHighlight) {
+                    this.autoMoveTargetHighlight.setVisible(false);
+                }
             } else {
                 const npc = npcSprites.getChildren().find((npcSprite) => npcSprite.texture.key === charId);
                 if (npc) {
@@ -1310,7 +1345,7 @@ export default class GameScene extends Scene {
 
             const npc = [objA, objB].find((obj) => obj !== this.heroActionCollider);
 
-            if (this.inputManager.isEnterJustDown()) {
+            if (this.inputManager.isEnterJustDown() || this.inputManager.isSpaceJustDown()) {
                 if (this.gridEngine.isMoving(npc.texture.key)) {
                     return;
                 }
@@ -1426,7 +1461,7 @@ export default class GameScene extends Scene {
 
             // Handles attack
             if (this.isAttacking) {
-                const isSpaceJustDown = this.isSpaceJustDown;
+                const isSpaceJustDown = this.inputManager.isSpaceJustDown();
                 this.time.delayedCall(
                     ATTACK_DELAY_TIME,
                     () => {
@@ -1484,6 +1519,10 @@ export default class GameScene extends Scene {
             if (this.isAutoMoving) {
                 this.isAutoMoving = false;
                 this.gridEngine.stopMovement('hero');
+                // 手动输入打断时隐藏目标高亮
+                if (this.autoMoveTargetHighlight) {
+                    this.autoMoveTargetHighlight.setVisible(false);
+                }
             }
             if (!this.gridEngine.isMoving('hero')) {
                 this.gridEngine.move('hero', currentDirection);

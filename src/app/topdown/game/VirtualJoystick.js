@@ -6,8 +6,8 @@ const JoystickContainer = styled('div')(({ theme, gameSize }) => ({
   bottom: '20px',
   left: '20px',
   zIndex: 1000,
-  width: '120px',
-  height: '120px',
+  width: '140px', // 从120px增加到140px
+  height: '140px', // 从120px增加到140px
   touchAction: 'none',
   userSelect: 'none',
   WebkitUserSelect: 'none',
@@ -28,8 +28,8 @@ const JoystickBase = styled('div')(({ theme }) => ({
 }));
 
 const JoystickStick = styled('div')(({ theme, isActive, position }) => ({
-  width: '50px',
-  height: '50px',
+  width: '60px', // 从50px增加到60px
+  height: '60px', // 从50px增加到60px
   borderRadius: '50%',
   backgroundColor: isActive ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.7)',
   border: '2px solid rgba(255, 255, 255, 0.8)',

@@ -6,8 +6,8 @@ const ActionButtonContainer = styled('div')(({ theme, gameSize }) => ({
   bottom: '20px',
   right: '20px',
   zIndex: 1000,
-  width: '80px',
-  height: '80px',
+  width: '100px', // 从80px增加到100px
+  height: '100px', // 从80px增加到100px
   touchAction: 'none',
   userSelect: 'none',
   WebkitUserSelect: 'none',
@@ -36,7 +36,7 @@ const ActionButtonBase = styled('div')(({ theme, isPressed }) => ({
 }));
 
 const ButtonIcon = styled('div')(({ theme }) => ({
-  fontSize: '24px',
+  fontSize: '32px', // 从24px增加到32px
   color: 'rgba(255, 255, 255, 0.9)',
   fontWeight: 'bold',
   textAlign: 'center',

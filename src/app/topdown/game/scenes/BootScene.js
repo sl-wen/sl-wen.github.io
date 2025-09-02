@@ -176,22 +176,22 @@ export default class BootScene extends Scene {
      */
     loadMaps() {
         // 加载图块集
-        this.load.image('tileset', 'game/assets/sprites/maps/tilesets/tileset.png');
-        this.load.image('actions_tileset', 'game/assets/sprites/maps/tilesets/actions_tileset.png');
-        this.load.image('ui_elements', 'game/assets/sprites/maps/tilesets/ui_elements.png');
+        this.load.image('tileset', '/game/assets/sprites/maps/tilesets/tileset.png');
+        this.load.image('actions_tileset', '/game/assets/sprites/maps/tilesets/actions_tileset.png');
+        this.load.image('ui_elements', '/game/assets/sprites/maps/tilesets/ui_elements.png');
         
         // 加载城市地图
-        this.load.tilemapTiledJSON('home_page_city', 'game/assets/sprites/maps/cities/home_page_city.json');
+        this.load.tilemapTiledJSON('home_page_city', '/game/assets/sprites/maps/cities/home_page_city.json');
         
         // 加载房屋地图
-        this.load.tilemapTiledJSON('home_page_city_house_01', 'game/assets/sprites/maps/houses/home_page_city_house_01.json');
-        this.load.tilemapTiledJSON('home_page_city_house_02', 'game/assets/sprites/maps/houses/home_page_city_house_02.json');
-        this.load.tilemapTiledJSON('home_page_city_house_03', 'game/assets/sprites/maps/houses/home_page_city_house_03.json');
+        this.load.tilemapTiledJSON('home_page_city_house_01', '/game/assets/sprites/maps/houses/home_page_city_house_01.json');
+        this.load.tilemapTiledJSON('home_page_city_house_02', '/game/assets/sprites/maps/houses/home_page_city_house_02.json');
+        this.load.tilemapTiledJSON('home_page_city_house_03', '/game/assets/sprites/maps/houses/home_page_city_house_03.json');
         
         // 加载图块集配置
-        this.load.tilemapTiledJSON('tileset', 'game/assets/sprites/maps/tilesets/tileset.json');
-        this.load.tilemapTiledJSON('actions_tileset', 'game/assets/sprites/maps/tilesets/actions_tileset.json');
-        this.load.tilemapTiledJSON('ui_elements', 'game/assets/sprites/maps/tilesets/ui_elements.json');
+        this.load.tilemapTiledJSON('tileset', '/game/assets/sprites/maps/tilesets/tileset.json');
+        this.load.tilemapTiledJSON('actions_tileset', '/game/assets/sprites/maps/tilesets/actions_tileset.json');
+        this.load.tilemapTiledJSON('ui_elements', '/game/assets/sprites/maps/tilesets/ui_elements.json');
     }
 
     /**
@@ -200,16 +200,16 @@ export default class BootScene extends Scene {
      */
     loadCharacterSprites() {
         // 主角精灵图集
-        this.load.atlas('hero', 'game/assets/sprites/atlas/hero.png', 'game/assets/sprites/atlas/hero.json');
+        this.load.atlas('hero', '/game/assets/sprites/atlas/hero.png', '/game/assets/sprites/atlas/hero.json');
         
         // NPC 精灵图集
-        this.load.atlas('npc_01', 'game/assets/sprites/atlas/npc_01.png', 'game/assets/sprites/atlas/npc_01.json');
-        this.load.atlas('npc_02', 'game/assets/sprites/atlas/npc_02.png', 'game/assets/sprites/atlas/npc_02.json');
-        this.load.atlas('npc_03', 'game/assets/sprites/atlas/npc_03.png', 'game/assets/sprites/atlas/npc_03.json');
-        this.load.atlas('npc_04', 'game/assets/sprites/atlas/npc_04.png', 'game/assets/sprites/atlas/npc_04.json');
+        this.load.atlas('npc_01', '/game/assets/sprites/atlas/npc_01.png', '/game/assets/sprites/atlas/npc_01.json');
+        this.load.atlas('npc_02', '/game/assets/sprites/atlas/npc_02.png', '/game/assets/sprites/atlas/npc_02.json');
+        this.load.atlas('npc_03', '/game/assets/sprites/atlas/npc_03.png', '/game/assets/sprites/atlas/npc_03.json');
+        this.load.atlas('npc_04', '/game/assets/sprites/atlas/npc_04.png', '/game/assets/sprites/atlas/npc_04.json');
         
         // 敌人精灵图集
-        this.load.atlas('slime', 'game/assets/sprites/atlas/slime.png', 'game/assets/sprites/atlas/slime.json');
+        this.load.atlas('slime', '/game/assets/sprites/atlas/slime.png', '/game/assets/sprites/atlas/slime.json');
     }
 
     /**
@@ -218,19 +218,19 @@ export default class BootScene extends Scene {
      */
     loadItemsAndUI() {
         // 物品图集
-        this.load.atlas('heart', 'game/assets/sprites/atlas/heart.png', 'game/assets/sprites/atlas/heart.json');
-        this.load.atlas('coin', 'game/assets/sprites/atlas/coin.png', 'game/assets/sprites/atlas/coin.json');
+        this.load.atlas('heart', '/game/assets/sprites/atlas/heart.png', '/game/assets/sprites/atlas/heart.json');
+        this.load.atlas('coin', '/game/assets/sprites/atlas/coin.png', '/game/assets/sprites/atlas/coin.json');
         
         // 其他物品图片
-        this.load.image('sword', 'game/assets/sprites/images/sword.png');
-        this.load.image('push', 'game/assets/sprites/images/push.png');
-        this.load.image('heart_container', 'game/assets/sprites/images/heart_container.png');
+        this.load.image('sword', '/game/assets/sprites/images/sword.png');
+        this.load.image('push', '/game/assets/sprites/images/push.png');
+        this.load.image('heart_container', '/game/assets/sprites/images/heart_container.png');
         
         // UI 元素
-        this.load.image('dialog_borderbox', 'game/assets/sprites/images/dialog_borderbox.png');
-        this.load.image('main_menu_background', 'game/assets/sprites/images/main_menu_background.png');
-        this.load.image('game_over_background', 'game/assets/sprites/images/game_over_background.png');
-        this.load.image('game_logo', 'game/assets/sprites/images/game_logo.png');
+        this.load.image('dialog_borderbox', '/game/assets/sprites/images/dialog_borderbox.png');
+        this.load.image('main_menu_background', '/game/assets/sprites/images/main_menu_background.png');
+        this.load.image('game_over_background', '/game/assets/sprites/images/game_over_background.png');
+        this.load.image('game_logo', '/game/assets/sprites/images/game_logo.png');
     }
 
     /**
@@ -239,12 +239,12 @@ export default class BootScene extends Scene {
      */
     loadAudio() {
         // 背景音乐
-        this.load.audio('bgm', 'game/assets/audio/background_music.mp3');
+        this.load.audio('bgm', '/game/assets/audio/background_music.mp3');
         
         // 音效
-        this.load.audio('coin_sound', 'game/assets/audio/coin.mp3');
-        this.load.audio('attack_sound', 'game/assets/audio/attack.mp3');
-        this.load.audio('walk_sound', 'game/assets/audio/walk.mp3');
+        this.load.audio('coin_sound', '/game/assets/audio/coin.mp3');
+        this.load.audio('attack_sound', '/game/assets/audio/attack.mp3');
+        this.load.audio('walk_sound', '/game/assets/audio/walk.mp3');
     }
 
     /**
@@ -253,7 +253,7 @@ export default class BootScene extends Scene {
      */
     loadFonts() {
         // 加载像素风格字体
-        this.load.webfont('Press Start 2P', 'game/assets/fonts/PressStart2P-Regular.ttf');
+        this.load.webfont('Press Start 2P', '/game/assets/fonts/PressStart2P-Regular.ttf');
     }
 
     /**

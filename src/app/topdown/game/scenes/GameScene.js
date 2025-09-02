@@ -861,6 +861,7 @@ export default class GameScene extends Scene {
                     offsetY: 4,
                 },
             ],
+            numberOfDirections: 8,
         };
 
         this.physics.add.overlap(this.heroSprite, this.itemsSprites, (objA, objB) => {

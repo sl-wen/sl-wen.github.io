@@ -175,7 +175,11 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
       setIsActive(false);
       isDragging.current = false;
       setPosition({ x: 0, y: 0 });
-      updateDirection(0, 0);
+      // 直接重置方向并通知父组件，避免阈值/闭包导致的漏派发
+      if (currentDirection !== null) {
+        setCurrentDirection(null);
+        onDirectionChange(null);
+      }
     };
 
     // 添加触摸事件监听器（包含全局兜底，防止手指移出容器后不触发）
@@ -271,7 +275,11 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
       setIsActive(false);
       isDragging.current = false;
       setPosition({ x: 0, y: 0 });
-      updateDirection(0, 0);
+      // 直接重置方向并通知父组件，避免阈值/闭包导致的漏派发
+      if (currentDirection !== null) {
+        setCurrentDirection(null);
+        onDirectionChange(null);
+      }
     };
 
     // 添加鼠标事件监听器

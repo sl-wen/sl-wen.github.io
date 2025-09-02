@@ -97,6 +97,7 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
   const isDragging = useRef(false);         // 是否正在拖拽
   const startPos = useRef({ x: 0, y: 0 }); // 拖拽开始位置
   const centerPos = useRef({ x: 0, y: 0 }); // 摇杆中心位置
+  const currentDirectionRef = useRef(null); // 使用 ref 保存最新方向，避免闭包陈旧值
 
   /**
    * 设置触摸事件监听器
@@ -175,11 +176,10 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
       setIsActive(false);
       isDragging.current = false;
       setPosition({ x: 0, y: 0 });
-      // 直接重置方向并通知父组件，避免阈值/闭包导致的漏派发
-      if (currentDirection !== null) {
-        setCurrentDirection(null);
-        onDirectionChange(null);
-      }
+      // 无条件重置方向并派发事件，避免闭包导致的未清空
+      currentDirectionRef.current = null;
+      setCurrentDirection(null);
+      onDirectionChange(null);
     };
 
     // 添加触摸事件监听器（包含全局兜底，防止手指移出容器后不触发）
@@ -275,11 +275,10 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
       setIsActive(false);
       isDragging.current = false;
       setPosition({ x: 0, y: 0 });
-      // 直接重置方向并通知父组件，避免阈值/闭包导致的漏派发
-      if (currentDirection !== null) {
-        setCurrentDirection(null);
-        onDirectionChange(null);
-      }
+      // 无条件重置方向并派发事件，避免闭包导致的未清空
+      currentDirectionRef.current = null;
+      setCurrentDirection(null);
+      onDirectionChange(null);
     };
 
     // 添加鼠标事件监听器
@@ -331,6 +330,7 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
     // 如果方向发生变化，通知父组件
     if (direction !== currentDirection) {
       setCurrentDirection(direction);
+      currentDirectionRef.current = direction;
       onDirectionChange(direction);
     }
   };

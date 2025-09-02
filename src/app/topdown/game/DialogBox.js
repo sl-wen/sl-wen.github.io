@@ -19,8 +19,8 @@
  * - 按 ESC 键：跳过当前消息
  */
 
-import { useCallback, useEffect, useState } from 'react';
 import { styled } from '@mui/material/styles';
+import { useCallback, useEffect, useState } from 'react';
 
 // 图片资源
 // 注意：dialog_borderbox.png 现在从 public/game/assets/images/dialog_borderbox.png 提供
@@ -167,7 +167,7 @@ const DialogBox = ({
             <DialogTitle multiplier={multiplier}>
                 {characterName}
             </DialogTitle>
-            
+
             {/* 消息内容组件 */}
             <Message
                 action={messages[currentMessage].action}
@@ -179,10 +179,10 @@ const DialogBox = ({
                     setMessageEnded(true);
                 }}
             />
-            
+
             {/* 交互提示 */}
             <DialogFooter multiplier={multiplier}>
-                {messageEnded ? 'Tap/Click or press Space/Enter to continue' : 'Tap/Click or press Space/Enter to skip'}
+                {messageEnded ? 'continue' : 'skip'}
             </DialogFooter>
         </DialogWindow>
     );

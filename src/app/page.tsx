@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { useHomeData } from '@/hooks/useHomeData';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 
 // 懒加载 ArticleList 组件 - 优化首屏加载性能
 const ArticleList = lazy(() => import('@/components/ArticleList'));
@@ -103,10 +103,10 @@ export default function HomePage() {
                   {/* 按钮悬停效果背景 */}
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                 </a>
-                
+
                 {/* game 游戏按钮 - 特色功能 */}
                 <a
-                  href="/game"
+                  href="/topdown"
                   className="group inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   <span className="flex items-center gap-2">
@@ -126,7 +126,7 @@ export default function HomePage() {
                     </svg>
                   </span>
                 </a>
-                
+
                 {/* 了解更多按钮 - 次要行动按钮 */}
                 <a
                   href="/about"

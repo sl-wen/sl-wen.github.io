@@ -59,9 +59,6 @@ const nextConfig = {
     return config;
   },
 
-  // 输出配置
-  output: 'standalone',
-
 };
 
 module.exports = nextConfig; 

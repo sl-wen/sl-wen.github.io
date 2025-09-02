@@ -364,7 +364,30 @@ export default class GameScene extends Scene {
 
         // Map
         const map = this.make.tilemap({ key: mapKey });
-        map.addTilesetImage('tileset', 'tileset');
+        
+        // 添加调试信息
+        console.log('Loading map:', mapKey);
+        console.log('Map tilesets:', map.tilesets);
+        console.log('Map layers:', map.layers);
+        
+        // 动态添加图块集，支持多个图块集
+        if (map.tilesets && map.tilesets.length > 0) {
+            map.tilesets.forEach(tileset => {
+                const tilesetName = tileset.name;
+                console.log('Adding tileset:', tilesetName);
+                if (tilesetName === 'tileset') {
+                    map.addTilesetImage('tileset', 'tileset');
+                } else if (tilesetName === 'actions_tileset') {
+                    map.addTilesetImage('actions_tileset', 'actions_tileset');
+                } else if (tilesetName === 'ui_elements') {
+                    map.addTilesetImage('ui_elements', 'ui_elements');
+                }
+            });
+        } else {
+            // 默认添加基础图块集
+            console.log('No tilesets found, using default');
+            map.addTilesetImage('tileset', 'tileset');
+        }
 
         if (isDebugMode) {
             window.phaserGame = game;
@@ -373,7 +396,7 @@ export default class GameScene extends Scene {
 
         // Hero
         this.heroSprite = this.physics.add
-            .sprite(0, 0, 'hero', initialFrame)
+            .sprite(initialPosition.x * 16, initialPosition.y * 16, 'hero', initialFrame)
             .setDepth(1);
         this.heroSprite.health = heroHealth;
         this.heroSprite.maxHealth = heroMaxHealth;
@@ -485,27 +508,47 @@ export default class GameScene extends Scene {
         const enemiesData = [];
         const elementsLayers = this.add.group();
         for (let i = 0; i < map.layers.length; i++) {
-            const layer = map.createLayer(i, 'tileset', 0, 0);
-            layer.layer.properties.forEach((property) => {
-                const { value, name } = property;
+            const layerData = map.layers[i];
+            let layer;
+            
+            // 动态检测图层使用的图块集
+            if (layerData.tileset) {
+                const tilesetName = layerData.tileset.name;
+                layer = map.createLayer(i, tilesetName, 0, 0);
+            } else {
+                // 如果没有指定图块集，使用默认的
+                layer = map.createLayer(i, 'tileset', 0, 0);
+            }
+            
+            // 检查图层属性
+            if (layerData.properties) {
+                layerData.properties.forEach((property) => {
+                    const { value, name } = property;
 
-                if (name === 'type' && value === 'elements') {
-                    elementsLayers.add(layer);
-                }
-            });
+                    if (name === 'type' && value === 'elements') {
+                        elementsLayers.add(layer);
+                    }
+                });
+            }
 
             this.physics.add.collider(this.heroSprite, layer);
         }
 
         const npcsKeys = [];
         const dataLayer = map.getObjectLayer('actions');
-        dataLayer.objects.forEach((data) => {
-            const { properties, x, y } = data;
+        console.log('Data layer:', dataLayer);
+        console.log('Data layer objects:', dataLayer?.objects);
+        
+        if (dataLayer && dataLayer.objects) {
+            dataLayer.objects.forEach((data) => {
+                const { properties, x, y } = data;
+                console.log('Processing object at:', x, y, 'with properties:', properties);
 
-            properties.forEach((property) => {
-                const { name, type, value } = property;
+                properties.forEach((property) => {
+                    const { name, type, value } = property;
+                    console.log('Property:', name, type, value);
 
-                switch (name) {
+                    switch (name) {
                     case 'dialog': {
                         const customCollider = createInteractiveGameObject(
                             this,
@@ -669,6 +712,8 @@ export default class GameScene extends Scene {
                     }
 
                     case 'teleportTo': {
+                        console.log('Found teleport object at:', x, y, 'with value:', value);
+                        
                         const customCollider = createInteractiveGameObject(
                             this,
                             x,
@@ -684,8 +729,11 @@ export default class GameScene extends Scene {
                             x: teleportToX,
                             y: teleportToY,
                         } = this.extractTeleportDataFromTiled(value);
+                        
+                        console.log('Teleport data:', { teleportToMapKey, teleportToX, teleportToY });
 
                         const overlapCollider = this.physics.add.overlap(this.heroSprite, customCollider, () => {
+                            console.log('Hero entered teleport, teleporting to:', teleportToMapKey, teleportToX, teleportToY);
                             // camera.stopFollow();
                             this.physics.world.removeCollider(overlapCollider);
                             const facingDirection = this.gridEngine.getFacingDirection('hero');
@@ -724,7 +772,7 @@ export default class GameScene extends Scene {
                     }
                 }
             });
-        });
+        }
 
         camera.startFollow(this.heroSprite, true);
         camera.setFollowOffset(-this.heroSprite.width, -this.heroSprite.height);

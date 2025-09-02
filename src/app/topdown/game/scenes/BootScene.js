@@ -253,7 +253,7 @@ export default class BootScene extends Scene {
      */
     loadFonts() {
         // 加载像素风格字体
-        this.load.webfont('Press Start 2P', '/game/assets/fonts/PressStart2P-Regular.ttf');
+        // this.load.webfont('Press Start 2P', '/game/assets/fonts/PressStart2P-Regular.ttf');
     }
 
     /**

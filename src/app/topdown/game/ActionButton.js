@@ -32,7 +32,7 @@ import { styled } from '@mui/material/styles';
  */
 const ActionButtonContainer = styled('div')(({ theme, gameSize }) => ({
   position: 'fixed',
-  bottom: '20px',
+  bottom: '90px',
   right: '20px',
   zIndex: 1000,
   width: '100px',  // 从80px增加到100px，提供更大的触摸区域

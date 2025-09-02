@@ -15,9 +15,6 @@ ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
 ENV npm_config_platform=linux
 ENV npm_config_arch=x64
 
-# 安装依赖并重建Sharp
-RUN npm ci --only=production && \
-    npm rebuild sharp --platform=linux --arch=x64
 
 # 构建阶段
 FROM base AS builder

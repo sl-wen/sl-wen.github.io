@@ -12,13 +12,12 @@ const nextConfig = {
 
   // 优化构建以减少内存使用
   compress: true,
-  // 启用实验性功能（谨慎使用）
+  // 启用 SWC 加快生产环境的构建和压缩速度
+  swcMinify: true,
   experimental: {
     // 禁用可能导致构建缓慢的功能
     optimizeCss: false,
     optimizePackageImports: ['lodash'],
-    // 启用 SWC 类型检查（更快）
-    swcMinify: true,
   },
 
   // 图片优化配置

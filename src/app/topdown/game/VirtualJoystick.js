@@ -31,11 +31,11 @@ import { styled } from '@mui/material/styles';
  */
 const JoystickContainer = styled('div')(({ theme, gameSize }) => ({
   position: 'fixed',
-  bottom: '90px',
+  bottom: '120px',
   left: '20px',
   zIndex: 1000,
-  width: '140px', // 从120px增加到140px，提供更大的操作区域
-  height: '140px', // 从120px增加到140px，提供更大的操作区域
+  width: '160px', // 从120px增加到160px，提供更大的操作区域
+  height: '160px', // 从120px增加到160px，提供更大的操作区域
   touchAction: 'none',        // 禁用默认触摸行为
   userSelect: 'none',         // 禁用文本选择
   WebkitUserSelect: 'none',   // Webkit 浏览器兼容性
@@ -78,29 +78,6 @@ const JoystickStick = styled('div')(({ theme, isActive, position }) => ({
   boxShadow: isActive 
     ? '0 0 20px rgba(255, 255, 255, 0.6)'    // 激活状态下的发光效果
     : '0 2px 10px rgba(0, 0, 0, 0.3)',       // 非激活状态下的阴影
-}));
-
-/**
- * 方向指示器样式组件
- * 在摇杆周围显示方向提示，帮助用户理解操作
- */
-const DirectionIndicator = styled('div')(({ theme, direction }) => ({
-  position: 'absolute',
-  width: '20px',
-  height: '20px',
-  backgroundColor: 'rgba(255, 255, 255, 0.3)',
-  borderRadius: '50%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '12px',
-  color: 'rgba(255, 255, 255, 0.8)',
-  fontWeight: 'bold',
-  // 根据方向设置位置
-  ...(direction === 'up' && { top: '5px', left: '50%', transform: 'translateX(-50%)' }),
-  ...(direction === 'right' && { right: '5px', top: '50%', transform: 'translateY(-50%)' }),
-  ...(direction === 'down' && { bottom: '5px', left: '50%', transform: 'translateX(-50%)' }),
-  ...(direction === 'left' && { left: '5px', top: '50%', transform: 'translateY(-50%)' }),
 }));
 
 /**
@@ -347,11 +324,6 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
   return (
     <JoystickContainer ref={containerRef} gameSize={gameSize}>
       <JoystickBase>
-        {/* 方向指示器 */}
-        <DirectionIndicator direction="up">↑</DirectionIndicator>
-        <DirectionIndicator direction="right">→</DirectionIndicator>
-        <DirectionIndicator direction="down">↓</DirectionIndicator>
-        <DirectionIndicator direction="left">←</DirectionIndicator>
         
         {/* 摇杆手柄 */}
         <JoystickStick 

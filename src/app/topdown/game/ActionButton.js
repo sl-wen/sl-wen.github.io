@@ -32,11 +32,11 @@ import { styled } from '@mui/material/styles';
  */
 const ActionButtonContainer = styled('div')(({ theme, gameSize }) => ({
   position: 'fixed',
-  bottom: '90px',
+  bottom: '120px',
   right: '20px',
   zIndex: 1000,
-  width: '100px',  // 从80px增加到100px，提供更大的触摸区域
-  height: '100px', // 从80px增加到100px，提供更大的触摸区域
+  width: '120px',  // 从80px增加到120px，提供更大的触摸区域
+  height: '120px', // 从80px增加到120px，提供更大的触摸区域
   touchAction: 'none',        // 禁用默认触摸行为
   userSelect: 'none',         // 禁用文本选择
   WebkitUserSelect: 'none',   // Webkit 浏览器兼容性

@@ -1,3 +1,38 @@
+/**
+ * 主游戏场景 GameScene
+ * 
+ * 职责：
+ * - 加载并实例化地图（Tiled 导出的 tilemap）
+ * - 创建主角、NPC、敌人、物品以及对应动画
+ * - 建立碰撞体与交互触发器（对话、传送、可破坏草丛、可推动箱子等）
+ * - 处理输入（由 InputManager 统一管理），驱动 GridEngine 网格移动
+ * - 维护角色生命值、金币等状态并通过自定义事件同步到 React UI
+ * - 处理敌人 AI（随机巡逻、追踪玩家、攻击节奏）
+ * - 处理场景切换（传送门）与相机跟随/边界
+ * 
+ * 使用方法（开发者视角）：
+ * 1. 在 `App.js` 的 Phaser 配置中将本场景加入 scene 数组（已完成）。
+ * 2. 通过 `MainMenuScene` 开始游戏时调用：
+ *    this.scene.start('GameScene', {
+ *      heroStatus: { position, previousPosition, frame, facingDirection, health, maxHealth, coin, canPush, haveSword },
+ *      mapKey: 'your_map_key_from_BootScene',
+ *    });
+ * 3. 地图资源需在 `BootScene` 预加载，并确保 Tiled 中 tileset 名称与此处 `addTilesetImage` 匹配。
+ * 4. 想要新增 NPC/敌人/物品/传送门：在 Tiled 的对象层 `actions` 中放置对象并配置属性：
+ *    - dialog: 值为角色 key（与 React `dialogs` 对应）
+ *    - npcData: 形如 `npc_01:random;1000;4;down`
+ *    - enemyData: 形如 `slime_green:ai_type;3:40`（类型:AI:速度:生命）
+ *    - itemData: 形如 `coin:`、`heart:`、`heart_container:`、`sword:`、`push:`
+ *    - teleportTo: 形如 `map_key:10,12`
+ * 5. 输入与移动：
+ *    - 键盘 WASD/方向键 与 触摸（虚拟摇杆/动作按钮）均通过 `InputManager` 统一处理。
+ *    - 在 `update()` 中读取当前方向并调用 `gridEngine.move('hero', direction)`。
+ * 
+ * 常见问题排查：
+ * - 人物无法从传送门离开当前房间：检查 `actions` 对象层是否存在 teleportTo 对象，格式是否正确；检查 tileset 名称是否与 `BootScene` 加载一致。
+ * - 图块显示异常：核对 Tiled 中 tileset 的名称与 `addTilesetImage` 所用 key 保持一致。
+ * - 敌人不移动/不追踪：确认 `enemyData` 的 AI 类型与常量定义匹配，且重叠体积（presence collider）覆盖到敌人。
+ */
 import { Input, Math as PhaserMath, Scene } from 'phaser';
 import {
     ATTACK_DELAY_TIME,
@@ -25,6 +60,7 @@ export default class GameScene extends Scene {
     }
 
     calculatePreviousTeleportPosition() {
+        // 计算传送前玩家的“上一格”位置，用于从目的地回传时的落点与朝向
         const currentPosition = this.gridEngine.getPosition('hero');
         const facingDirection = this.gridEngine.getFacingDirection('hero');
 
@@ -67,6 +103,7 @@ export default class GameScene extends Scene {
     }
 
     getFramesForAnimation(assetKey, animation) {
+        // 从精灵图集中筛选指定动画前缀的帧，并按名称排序
         return this.anims.generateFrameNames(assetKey)
             .filter((frame) => {
                 if (frame.frame.includes(`${assetKey}_${animation}`)) {
@@ -80,6 +117,7 @@ export default class GameScene extends Scene {
     }
 
     createPlayerWalkingAnimation(assetKey, animationName) {
+        // 角色/NPC 的行走循环动画（上/右/下/左），若不存在则创建
         const animationKey = `${assetKey}_${animationName}`;
         if (!this.anims.exists(animationKey)) {
             this.anims.create({
@@ -97,6 +135,7 @@ export default class GameScene extends Scene {
     }
 
     createPlayerAttackAnimation(assetKey, animationName) {
+        // 角色的攻击动画（方向区分），若不存在则创建
         const animationKey = `${assetKey}_${animationName}`;
         if (!this.anims.exists(animationKey)) {
             this.anims.create({
@@ -116,6 +155,7 @@ export default class GameScene extends Scene {
     }
 
     getStopFrame(direction, spriteKey) {
+        // 根据朝向返回该精灵的“站立”帧
         switch (direction) {
             case 'up':
                 return `${spriteKey}_idle_up_01`;
@@ -131,6 +171,7 @@ export default class GameScene extends Scene {
     }
 
     getOppositeDirection(direction) {
+        // 计算相反方向，用于 NPC 面向玩家等场景
         switch (direction) {
             case 'up':
                 return 'down';
@@ -146,6 +187,7 @@ export default class GameScene extends Scene {
     }
 
     getBackPosition(facingDirection, position) {
+        // 取得玩家背后一格，用于敌人追踪到玩家身后位置
         switch (facingDirection) {
             case 'up':
                 return {
@@ -173,6 +215,7 @@ export default class GameScene extends Scene {
     }
 
     extractTeleportDataFromTiled(data) {
+        // 从 Tiled 自定义属性中解析传送目的地：mapKey:x,y
         const [mapKey, position] = data.trim().split(':');
         const [x, y] = position.split(',');
 
@@ -184,6 +227,7 @@ export default class GameScene extends Scene {
     }
 
     extractNpcDataFromTiled(data) {
+        // 从 Tiled 自定义属性中解析 NPC 数据：npcKey:movement;delay;area;direction
         const [npcKey, config] = data.trim().split(':');
         const [movementType, delay, area, direction] = config.split(';');
 
@@ -197,6 +241,7 @@ export default class GameScene extends Scene {
     }
 
     calculateHeroHealthState(health) {
+        // 将血量转为 UI 需要的状态片段：full/half/empty
         if (health > 10) {
             return 'full';
         }
@@ -209,6 +254,7 @@ export default class GameScene extends Scene {
     }
 
     calculateHeroHealthStates() {
+        // 计算一排心形容器的状态数组，maxHealth 每 20 为一格
         return Array.from({ length: this.heroSprite.maxHealth / 20 })
             .fill(null).map(
                 (v, index) => this.calculateHeroHealthState(
@@ -218,6 +264,7 @@ export default class GameScene extends Scene {
     }
 
     updateHeroHealthUi(healthStates) {
+        // 通过自定义事件与 React `HeroHealth` 同步
         const customEvent = new CustomEvent('hero-health', {
             detail: {
                 healthStates,
@@ -228,6 +275,7 @@ export default class GameScene extends Scene {
     }
 
     updateHeroCoinUi(heroCoins) {
+        // 通过自定义事件与 React `HeroCoin` 同步
         const customEvent = new CustomEvent('hero-coin', {
             detail: {
                 heroCoins,
@@ -238,6 +286,7 @@ export default class GameScene extends Scene {
     }
 
     getEnemySpecies(enemyType) {
+        // 目前敌人族类仅区分史莱姆，保留扩展点
         if (enemyType.includes('slime')) {
             return 'slime';
         }
@@ -246,6 +295,7 @@ export default class GameScene extends Scene {
     }
 
     getEnemyColor(enemyType) {
+        // 根据敌人类型为同一精灵着色，便于区分
         if (enemyType.includes('red')) {
             return 0xF1374B;
         }
@@ -262,6 +312,7 @@ export default class GameScene extends Scene {
     }
 
     getEnemyAttackSpeed(enemyType) {
+        // 不同颜色（类型）的攻击频率不同
         if (enemyType.includes('red')) {
             return 2000;
         }
@@ -278,6 +329,7 @@ export default class GameScene extends Scene {
     }
 
     spawnItem(position) {
+        // 敌人死亡或破坏元素后按概率掉落物品
         const isDebugMode = this.physics.config.debug;
         const itemChance = PhaserMath.Between(1, isDebugMode ? 2 : 5);
         if (itemChance === 1) {
@@ -304,6 +356,7 @@ export default class GameScene extends Scene {
     }
 
     calculatePushTilePosition() {
+        // 根据玩家朝向计算箱子被推动后的目标像素坐标（以 16px 为一格）
         const facingDirection = this.gridEngine.getFacingDirection('hero');
         const position = this.gridEngine.getPosition('hero');
 
@@ -341,6 +394,7 @@ export default class GameScene extends Scene {
     }
 
     create() {
+        // 场景创建入口：加载地图、创建角色/敌人/NPC、设置相机、动画与碰撞
         const camera = this.cameras.main;
         const { game } = this.sys;
         const isDebugMode = this.physics.config.debug;
@@ -362,7 +416,7 @@ export default class GameScene extends Scene {
         // 初始化输入管理器
         this.inputManager = new InputManager(this);
 
-        // Map
+        // Map 地图加载：根据 `mapKey` 创建 tilemap，并动态注册 tileset
         const map = this.make.tilemap({ key: mapKey });
         
         // 添加调试信息
@@ -370,7 +424,7 @@ export default class GameScene extends Scene {
         console.log('Map tilesets:', map.tilesets);
         console.log('Map layers:', map.layers);
         
-        // 动态添加图块集，支持多个图块集
+        // 动态添加图块集，支持多个图块集（名称需与 Tiled 中一致）
         if (map.tilesets && map.tilesets.length > 0) {
             map.tilesets.forEach(tileset => {
                 const tilesetName = tileset.name;
@@ -384,7 +438,7 @@ export default class GameScene extends Scene {
                 }
             });
         } else {
-            // 默认添加基础图块集
+            // 默认添加基础图块集（兼容旧地图）
             console.log('No tilesets found, using default');
             map.addTilesetImage('tileset', 'tileset');
         }
@@ -394,7 +448,7 @@ export default class GameScene extends Scene {
             this.map = map;
         }
 
-        // Hero
+        // Hero 主角：初始属性、碰撞盒与交互体
         this.heroSprite = this.physics.add
             .sprite(initialPosition.x * 16, initialPosition.y * 16, 'hero', initialFrame)
             .setDepth(1);
@@ -483,7 +537,7 @@ export default class GameScene extends Scene {
             { x: 0.5, y: 0.5 }
         );
 
-        // Items
+        // Items 物品组：心与金币的待机动画
         this.itemsSprites = this.add.group();
         if (!this.anims.exists('heart_idle')) {
             this.anims.create({
@@ -507,6 +561,7 @@ export default class GameScene extends Scene {
 
         const enemiesData = [];
         const elementsLayers = this.add.group();
+        // 逐层创建 tilemapLayer，并记录 elements 类型图层用于交互
         for (let i = 0; i < map.layers.length; i++) {
             const layerData = map.layers[i];
             let layer;
@@ -535,7 +590,7 @@ export default class GameScene extends Scene {
         }
 
         const npcsKeys = [];
-        const dataLayer = map.getObjectLayer('actions');
+        const dataLayer = map.getObjectLayer('actions'); // Tiled 中的对象层，承载对话、NPC、敌人、传送、物品
         console.log('Data layer:', dataLayer);
         console.log('Data layer objects:', dataLayer?.objects);
         
@@ -711,7 +766,7 @@ export default class GameScene extends Scene {
                         break;
                     }
 
-                    case 'teleportTo': {
+                    case 'teleportTo': { // 传送门：到达重叠即触发，淡出后重启场景到目标地图
                         console.log('Found teleport object at:', x, y, 'with value:', value);
                         
                         const customCollider = createInteractiveGameObject(
@@ -775,7 +830,7 @@ export default class GameScene extends Scene {
             });
         }
 
-        camera.startFollow(this.heroSprite, true);
+        camera.startFollow(this.heroSprite, true); // 相机跟随主角
         camera.setFollowOffset(-this.heroSprite.width, -this.heroSprite.height);
         camera.setBounds(
             0,
@@ -887,7 +942,7 @@ export default class GameScene extends Scene {
         });
 
         this.enemiesSprites = this.add.group();
-        enemiesData.forEach((enemyData, index) => {
+        enemiesData.forEach((enemyData, index) => { // 敌人创建、动画与网格配置
             const { enemySpecies, enemyType, x, y, enemyName, speed, enemyAI, health } = enemyData;
             const enemy = this.physics.add.sprite(0, 0, enemyType, `${enemySpecies}_idle_01`);
             enemy.setTint(this.getEnemyColor(enemyType));
@@ -986,7 +1041,7 @@ export default class GameScene extends Scene {
         });
 
         const npcSprites = this.add.group();
-        npcsKeys.forEach((npcData) => {
+        npcsKeys.forEach((npcData) => { // NPC 创建与行走动画注册
             const { npcKey, x, y, facingDirection = 'down' } = npcData;
             const npc = this.physics.add.sprite(0, 0, npcKey, `${npcKey}_idle_${facingDirection}_01`);
             npc.body.setSize(14, 14);
@@ -1031,7 +1086,7 @@ export default class GameScene extends Scene {
             }
         });
 
-        this.gridEngine.create(map, gridEngineConfig);
+        this.gridEngine.create(map, gridEngineConfig); // 初始化 GridEngine（必须在角色加入后）
 
         // NPCs
         npcsKeys.forEach((npcData) => {
@@ -1117,7 +1172,7 @@ export default class GameScene extends Scene {
         });
 
         // Animations
-        this.gridEngine.movementStarted().subscribe(({ charId, direction }) => {
+        this.gridEngine.movementStarted().subscribe(({ charId, direction }) => { // 开始移动时切换行走动画
             if (charId === 'hero') {
                 this.heroSprite.anims.play(`hero_walking_${direction}`);
             } else {
@@ -1134,7 +1189,7 @@ export default class GameScene extends Scene {
             }
         });
 
-        this.gridEngine.movementStopped().subscribe(({ charId, direction }) => {
+        this.gridEngine.movementStopped().subscribe(({ charId, direction }) => { // 停止时重置为站立帧/待机
             if (charId === 'hero') {
                 this.heroSprite.anims.stop();
                 this.heroSprite.setFrame(this.getStopFrame(direction, charId));
@@ -1153,7 +1208,7 @@ export default class GameScene extends Scene {
             }
         });
 
-        this.gridEngine.directionChanged().subscribe(({ charId, direction }) => {
+        this.gridEngine.directionChanged().subscribe(({ charId, direction }) => { // 朝向改变时更新站立帧
             if (charId === 'hero') {
                 this.heroSprite.setFrame(this.getStopFrame(direction, charId));
             } else {
@@ -1170,7 +1225,7 @@ export default class GameScene extends Scene {
             }
         });
 
-        this.heroActionCollider.update = () => {
+        this.heroActionCollider.update = () => { // 随主角更新交互体位置与朝向
             const facingDirection = this.gridEngine.getFacingDirection('hero');
             this.heroPresenceCollider.setPosition(
                 this.heroSprite.x + 16,
@@ -1225,7 +1280,7 @@ export default class GameScene extends Scene {
             }
         };
 
-        this.physics.add.overlap(this.heroActionCollider, npcSprites, (objA, objB) => {
+        this.physics.add.overlap(this.heroActionCollider, npcSprites, (objA, objB) => { // 回车与 NPC 交互（对话）
             if (this.isShowingDialog) {
                 return;
             }
@@ -1268,7 +1323,7 @@ export default class GameScene extends Scene {
             }
         });
 
-        this.physics.add.overlap(this.heroActionCollider, elementsLayers, (objA, objB) => {
+        this.physics.add.overlap(this.heroActionCollider, elementsLayers, (objA, objB) => { // 与场景元素交互：砍草、推箱
             const tile = [objA, objB].find((obj) => obj !== this.heroActionCollider);
 
             // Handles attack
@@ -1343,7 +1398,7 @@ export default class GameScene extends Scene {
             }
         });
 
-        this.physics.add.overlap(this.heroActionCollider, this.enemiesSprites, (objA, objB) => {
+        this.physics.add.overlap(this.heroActionCollider, this.enemiesSprites, (objA, objB) => { // 攻击判定
             const enemy = [objA, objB].find((obj) => obj !== this.heroActionCollider);
 
             // Handles attack
@@ -1360,7 +1415,7 @@ export default class GameScene extends Scene {
     }
 
     update() {
-        // 移除这行，因为现在由输入管理器处理
+        // 帧更新：根据状态早退；从 InputManager 取当前方向驱动网格移动
 
         if (
             this.isTeleporting
@@ -1392,7 +1447,7 @@ export default class GameScene extends Scene {
 
         this.heroActionCollider.update();
         
-        // 使用输入管理器处理移动
+        // 使用输入管理器处理移动（虚拟摇杆/键盘已统一到 InputManager）
         const currentDirection = this.inputManager.getCurrentDirection();
         if (currentDirection && !this.gridEngine.isMoving('hero')) {
             this.gridEngine.move('hero', currentDirection);

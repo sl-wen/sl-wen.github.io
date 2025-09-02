@@ -12,20 +12,11 @@ const nextConfig = {
 
   // 优化构建以减少内存使用
   compress: true,
-  // 启用 SWC 加快生产环境的构建和压缩速度
-  swcMinify: true,
-  experimental: {
-    // 禁用可能导致构建缓慢的功能
-    optimizeCss: false,
-    optimizePackageImports: ['lodash'],
-  },
 
   // 图片优化配置
   images: {
     // 禁用图片优化以支持游戏资源
     unoptimized: true,
-    // 禁用Sharp以解决Linux兼容性问题
-    dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
@@ -57,32 +48,13 @@ const nextConfig = {
         tls: false,
       };
 
-      // 优化代码分割（仅在生产环境）
-      if (!dev) {
-        config.optimization.splitChunks = {
-          chunks: 'all',
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
-              priority: 10,
-            },
-          },
-        };
-      }
     }
 
     // 优化游戏资源加载
     config.module.rules.push({
       test: /\.(png|jpg|gif|svg|json)$/,
-      type: 'asset/resource',
+      type: '/game/assets',
     });
-
-    // 忽略Material-UI v4与React 19的兼容性警告
-    config.ignoreWarnings = [
-      /Attempted import error: 'findDOMNode' is not exported from 'react-dom'/,
-    ];
 
     return config;
   },
@@ -90,8 +62,6 @@ const nextConfig = {
   // 输出配置
   output: 'standalone',
 
-  // 生产环境优化
-  // SWC压缩在 Next.js 13+ 中默认启用
 };
 
 module.exports = nextConfig; 

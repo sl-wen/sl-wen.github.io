@@ -52,6 +52,7 @@ const DialogWindow = styled('div')(({ width, height, multiplier, safeBottomOffse
         left: '50%',
         transform: 'translate(-50%, 0%)', // 水平居中
         minHeight: `${messageBoxHeight}px`, // 最小高度
+        touchAction: 'manipulation', // 优化触摸点击
     };
 });
 
@@ -128,6 +129,13 @@ const DialogBox = ({
         }
     }, [currentMessage, messageEnded, messages.length, onDone]);
 
+    // 统一指针事件（触摸/鼠标）推进对话
+    const handlePointerDown = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleClick();
+    }, [handleClick]);
+
     /**
      * 设置键盘事件监听器
      * 支持键盘交互：回车键、空格键、ESC 键
@@ -145,7 +153,16 @@ const DialogBox = ({
     }, [handleClick]);
 
     return (
-        <DialogWindow width={width} height={height} multiplier={multiplier} safeBottomOffset={safeBottomOffset}>
+        <DialogWindow
+            width={width}
+            height={height}
+            multiplier={multiplier}
+            safeBottomOffset={safeBottomOffset}
+            onPointerDown={handlePointerDown}
+            onClick={handleClick}
+            role="button"
+            tabIndex={0}
+        >
             {/* 角色名称标题 */}
             <DialogTitle multiplier={multiplier}>
                 {characterName}
@@ -165,7 +182,7 @@ const DialogBox = ({
             
             {/* 交互提示 */}
             <DialogFooter multiplier={multiplier}>
-                {messageEnded ? 'Click or press Space/Enter to continue' : 'Click or press Space/Enter to skip'}
+                {messageEnded ? 'Tap/Click or press Space/Enter to continue' : 'Tap/Click or press Space/Enter to skip'}
             </DialogFooter>
         </DialogWindow>
     );

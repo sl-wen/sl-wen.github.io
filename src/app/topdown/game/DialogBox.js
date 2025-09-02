@@ -32,9 +32,10 @@ import Message from './Message';
  * 对话框窗口样式组件
  * 设置对话框的外观、位置和尺寸
  */
-const DialogWindow = styled('div')(({ width, height, multiplier }) => {
+const DialogWindow = styled('div')(({ width, height, multiplier, safeBottomOffset = 0 }) => {
     // 根据游戏尺寸计算消息框高度
     const messageBoxHeight = Math.ceil((height / 3.5) * multiplier);
+    const bottomOffset = Math.max(0, Number(safeBottomOffset) * multiplier);
     return {
         imageRendering: 'pixelated',  // 像素化渲染
         fontFamily: '"Press Start 2P"', // 像素风格字体
@@ -46,7 +47,7 @@ const DialogWindow = styled('div')(({ width, height, multiplier }) => {
         padding: `${8 * multiplier}px`, // 内边距，支持缩放
         position: 'absolute',
         // 计算对话框位置：底部居中
-        top: `${Math.ceil((height * multiplier) - (messageBoxHeight + messageBoxHeight * 0.1))}px`,
+        top: `${Math.ceil((height * multiplier) - (messageBoxHeight + messageBoxHeight * 0.1 + bottomOffset))}px`,
         width: `${Math.ceil(width * 0.8 * multiplier)}px`, // 宽度为游戏宽度的 80%
         left: '50%',
         transform: 'translate(-50%, 0%)', // 水平居中
@@ -90,6 +91,7 @@ const DialogBox = ({
     characterName,
     onDone,
     gameSize,
+    safeBottomOffset = 0,
 }) => {
     const {
         width,      // 游戏宽度
@@ -143,7 +145,7 @@ const DialogBox = ({
     }, [handleClick]);
 
     return (
-        <DialogWindow width={width} height={height} multiplier={multiplier}>
+        <DialogWindow width={width} height={height} multiplier={multiplier} safeBottomOffset={safeBottomOffset}>
             {/* 角色名称标题 */}
             <DialogTitle multiplier={multiplier}>
                 {characterName}

@@ -621,7 +621,7 @@ export default class GameScene extends Scene {
                                 return;
                             }
 
-                            if (this.inputManager.isEnterJustDown()) {
+                            if (this.inputManager.isEnterJustDown() || this.inputManager.isSpaceJustDown()) {
                                 const characterName = value;
                                 const customEvent = new CustomEvent('new-dialog', {
                                     detail: {
@@ -1310,7 +1310,7 @@ export default class GameScene extends Scene {
 
             const npc = [objA, objB].find((obj) => obj !== this.heroActionCollider);
 
-            if (this.inputManager.isEnterJustDown()) {
+            if (this.inputManager.isEnterJustDown() || this.inputManager.isSpaceJustDown()) {
                 if (this.gridEngine.isMoving(npc.texture.key)) {
                     return;
                 }
@@ -1426,7 +1426,7 @@ export default class GameScene extends Scene {
 
             // Handles attack
             if (this.isAttacking) {
-                const isSpaceJustDown = this.isSpaceJustDown;
+                const isSpaceJustDown = this.inputManager.isSpaceJustDown();
                 this.time.delayedCall(
                     ATTACK_DELAY_TIME,
                     () => {

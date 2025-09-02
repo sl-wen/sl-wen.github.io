@@ -469,6 +469,8 @@ export default class GameScene extends Scene {
 
         this.heroSprite.increaseMaxHealth = (increase) => {
             this.heroSprite.maxHealth += increase;
+            // 参照原项目：提升心之容器后，当前生命同步至最大值
+            this.heroSprite.health = this.heroSprite.maxHealth;
             this.updateHeroHealthUi(this.calculateHeroHealthStates());
         };
 

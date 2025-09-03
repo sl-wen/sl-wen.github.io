@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { supabase } from './supabase-config';
 import { initUserTasks, updateTaskProgress } from './task';
+import type { FarmDataPayload } from './farmdataService';
 
 export interface UserProfile {
   user_id?: string;
@@ -14,6 +15,7 @@ export interface UserProfile {
   experience?: number;
   consecutive_logins?: number;
   last_login?: string;
+  farmdata?: FarmDataPayload | null;
 }
 
 interface AuthContextType {

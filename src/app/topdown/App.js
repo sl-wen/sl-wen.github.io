@@ -30,12 +30,15 @@ import { styled } from '@mui/material/styles';
 // Note: dialog_borderbox.png is now served from public/game/assets/images/dialog_borderbox.png
 import GameMenu from "./game/GameMenu";
 import DialogBox from "./game/DialogBox";
-import HeroCoin from "./game/HeroCoin";
-import HeroHealth from "./game/HeroHealth";
+// import HeroHealth from "./game/HeroHealth";
 import VirtualJoystick from "./game/VirtualJoystick";
 import ActionButton from "./game/ActionButton";
 import './App.css';
 import { calculateGameSize } from "./game/utils";
+import Modal from '../../components/ui/Modal';
+import { Button } from '../../components/ui';
+import { useAuth } from '../../utils/auth-context';
+import { saveFarmData } from '../../utils/farmdataService';
 
 // 计算游戏尺寸和缩放倍数，确保在不同设备上都有良好的显示效果
 const { width, height, multiplier } = calculateGameSize();
@@ -124,10 +127,17 @@ function App() {
   const [characterName, setCharacterName] = useState(''); // 当前对话的角色名称
   const [gameMenuItems, setGameMenuItems] = useState([]); // 游戏菜单选项
   const [gameMenuPosition, setGameMenuPosition] = useState('center'); // 菜单显示位置
-  const [heroHealthStates, setHeroHealthStates] = useState([]); // 角色生命值状态
   const [heroCoins, setHeroCoins] = useState(null);      // 角色金币数量
   const [joystickDirection, setJoystickDirection] = useState(null); // 虚拟摇杆方向
   const [actionContext, setActionContext] = useState('attack');     // 交互上下文：talk/interact/attack/none
+  const { userProfile } = useAuth();
+
+  // UI: 设置与背包弹窗、保存提示
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [inventoryData, setInventoryData] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveBanner, setSaveBanner] = useState("");
 
   /**
    * 处理对话完成事件
@@ -255,17 +265,11 @@ function App() {
     };
     window.addEventListener('menu-items', gameMenuEventListener);
 
-    // 监听角色生命值事件
-    const heroHealthEventListener = ({ detail }) => {
-      setHeroHealthStates(detail.healthStates);
-    };
-    window.addEventListener('hero-health', heroHealthEventListener);
-
     // 监听角色金币事件
     const heroCoinEventListener = ({ detail }) => {
-      setHeroCoins(detail.heroCoins);
+      setHeroCoins(detail.catCoins);
     };
-    window.addEventListener('hero-coin', heroCoinEventListener);
+    window.addEventListener('cat-coin', heroCoinEventListener);
 
     // 监听行动上下文事件（决定右下角按钮图标）
     const actionContextEventListener = ({ detail }) => {
@@ -277,11 +281,92 @@ function App() {
     return () => {
       window.removeEventListener('new-dialog', dialogBoxEventListener);
       window.removeEventListener('menu-items', gameMenuEventListener);
-      window.removeEventListener('hero-health', heroHealthEventListener);
-      window.removeEventListener('hero-coin', heroCoinEventListener);
+      window.removeEventListener('cat-coin', heroCoinEventListener);
       window.removeEventListener('action-context', actionContextEventListener);
     };
   }, [setCharacterName, setMessages]);
+
+  // 请求游戏状态（返回 Promise）
+  const requestGameState = useCallback(() => {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        window.removeEventListener('game-state', onState);
+        reject(new Error('获取游戏状态超时'));
+      }, 3000);
+
+      const onState = (e) => {
+        clearTimeout(timeout);
+        window.removeEventListener('game-state', onState);
+        resolve(e.detail);
+      };
+
+      window.addEventListener('game-state', onState);
+      const ev = new CustomEvent('request-game-state', { detail: {} });
+      window.dispatchEvent(ev);
+    });
+  }, []);
+
+  // 保存游戏数据
+  const saveGame = useCallback(async (reason = 'manual') => {
+    if (!userProfile || !userProfile.user_id) return false;
+    try {
+      setIsSaving(true);
+      const state = await requestGameState();
+      const payload = {
+        ...state,
+        savedAt: new Date().toISOString(),
+        version: '1.0.0',
+      };
+      const ok = await saveFarmData(userProfile.user_id, payload);
+      if (ok) {
+        setSaveBanner(reason === 'manual' ? '保存成功' : '已自动保存');
+        setTimeout(() => setSaveBanner(""), 2000);
+      }
+      return ok;
+    } catch (e) {
+      setSaveBanner('保存失败');
+      setTimeout(() => setSaveBanner(""), 2000);
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [requestGameState, userProfile]);
+
+  // 自动保存：每5分钟
+  useEffect(() => {
+    if (!userProfile || !userProfile.user_id) return;
+    const id = setInterval(() => {
+      saveGame('auto');
+    }, 5 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [saveGame, userProfile]);
+
+  // 关键节点自动保存（来自 GameScene 的通知）
+  useEffect(() => {
+    if (!userProfile || !userProfile.user_id) return;
+    let last = 0;
+    const onSavePoint = () => {
+      const now = Date.now();
+      if (now - last > 10 * 1000) { // 10秒节流
+        last = now;
+        saveGame('auto');
+      }
+    };
+    window.addEventListener('save-point', onSavePoint);
+    return () => window.removeEventListener('save-point', onSavePoint);
+  }, [saveGame, userProfile]);
+
+  // 打开背包：请求一次状态
+  const openInventory = useCallback(async () => {
+    try {
+      const state = await requestGameState();
+      setInventoryData(state);
+      setIsInventoryOpen(true);
+    } catch (e) {
+      setInventoryData(null);
+      setIsInventoryOpen(true);
+    }
+  }, [requestGameState]);
 
   return (
       <div>
@@ -291,31 +376,46 @@ function App() {
               id="game-content"
           >
             {/* 这里将渲染 Phaser 游戏画布 */}
+            {/* 顶部中部保存提示 */}
+            {saveBanner && (
+              <div
+                style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 20 }}
+                className="px-3 py-1 bg-black/70 text-white rounded"
+              >
+                {saveBanner}
+              </div>
+            )}
+            {/* 左上角头像与金币 */}
+            <div
+              style={{ position: 'absolute', top: 8, left: 8, zIndex: 20, display: 'flex', alignItems: 'center', gap: 8 }}
+            >
+              <button
+                onClick={openInventory}
+                style={{ width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', border: '2px solid #fff' }}
+              >
+                <img
+                  src={(userProfile && userProfile.avatar_url) ? userProfile.avatar_url : '/default-avatar.svg'}
+                  alt="avatar"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </button>
+              {heroCoins !== null && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#fff', fontFamily: '"Press Start 2P"', fontSize: 12 }}>
+                  <div style={{ width: 16, height: 16, backgroundImage: 'url(/game/assets/images/coin.png)', backgroundSize: 'contain' }} />
+                  <span>{String(heroCoins).padStart(3, '0')}</span>
+                </div>
+              )}
+            </div>
+            {/* 右上角设置按钮（移动优先） */}
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              style={{ position: 'absolute', top: 8, right: 8, zIndex: 20 }}
+              className="px-2 py-1 bg-black/60 text-white rounded"
+              aria-label="设置"
+            >
+              ⚙️
+            </button>
           </GameContentWrapper>
-          
-          {/* 角色生命值显示 - 当有生命值状态时显示 */}
-          {heroHealthStates.length > 0 && (
-              <HeroHealth
-                  gameSize={{
-                    width,
-                    height,
-                    multiplier,
-                  }}
-                  healthStates={heroHealthStates}
-              />
-          )}
-          
-          {/* 角色金币显示 - 当有金币数据时显示 */}
-          {heroCoins !== null && (
-              <HeroCoin
-                  gameSize={{
-                    width,
-                    height,
-                    multiplier,
-                  }}
-                  heroCoins={heroCoins}
-              />
-          )}
           
           {/* 对话对话框 - 当有对话消息时显示 */}
           {messages.length > 0 && (
@@ -367,6 +467,32 @@ function App() {
               icon={actionContext === 'talk' ? '💬' : actionContext === 'interact' ? '🗝️' : actionContext === 'attack' ? '⚔️' : '•'}
               label={actionContext === 'talk' ? 'Talk' : actionContext === 'interact' ? 'Open' : actionContext === 'attack' ? 'Attack' : ''}
           />
+
+          {/* 设置弹窗 */}
+          <Modal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} title="设置">
+            <div className="space-y-4">
+              <p className="text-gray-700">可以在此保存当前进度。</p>
+              <Button onClick={() => saveGame('manual')} disabled={isSaving}>
+                {isSaving ? '保存中...' : '保存进度'}
+              </Button>
+            </div>
+          </Modal>
+
+          {/* 背包弹窗 */}
+          <Modal isOpen={isInventoryOpen} onClose={() => setIsInventoryOpen(false)} title="背包">
+            <div className="space-y-2 text-gray-800">
+              {inventoryData ? (
+                <>
+                  <div>地图: {inventoryData.mapKey}</div>
+                  <div>位置: ({inventoryData.catStatus?.position?.x}, {inventoryData.catStatus?.position?.y})</div>
+                  <div>金币: {inventoryData.catStatus?.coin}</div>
+                  <div>装备: {inventoryData.catStatus?.haveSword ? '剑' : '无'}, {inventoryData.catStatus?.canPush ? '推箱子' : '无'}</div>
+                </>
+              ) : (
+                <div>暂无数据</div>
+              )}
+            </div>
+          </Modal>
         </GameWrapper>
       </div>
   );

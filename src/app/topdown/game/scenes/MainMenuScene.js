@@ -51,20 +51,24 @@ export default class MainMenuScene extends Scene {
         const gameMenuSelectedEventListener = ({ detail }) => {
             switch (detail.selectedItem) {
                 case 'start': {
+                    // 读取 React 注入的保存数据（若存在）
+                    const saved = typeof window !== 'undefined' ? window.__farmdata : null;
+                    const mapKey = saved?.mapKey || 'home_page_city_house_1';
+                    const catStatus = saved?.catStatus || {
+                        position: { x: 4, y: 3 },
+                        previousPosition: { x: 4, y: 3 },
+                        frame: 'cat_idle_down',
+                        facingDirection: 'down',
+                        health: 60,
+                        maxHealth: 60,
+                        coin: 0,
+                        canPush: false,
+                        haveSword: false,
+                    };
                     // 启动游戏：进入 GameScene 并传递初始主角状态与地图 key
                     this.scene.start('GameScene', {
-                        catStatus: {
-                            position: { x: 4, y: 3 },
-                            previousPosition: { x: 4, y: 3 },
-                            frame: 'cat_idle_down',
-                            facingDirection: 'down',
-                            health: 60,
-                            maxHealth: 60,
-                            coin: 0,
-                            canPush: false,
-                            haveSword: false,
-                        },
-                        mapKey: 'home_page_city_house_1',
+                        catStatus,
+                        mapKey,
                     });
                     break;
                 }

@@ -5,49 +5,31 @@ import { useEffect } from 'react';
 export default function ServiceWorkerRegistration() {
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      // 注册 Service Worker
-      const registerSW = async () => {
+      const ensureSW = async () => {
         try {
-          // next-pwa 会自动生成 sw.js，我们只需要确保注册
-          const registration = await navigator.serviceWorker.register('/sw.js', {
-            scope: '/'
-          });
-
-          console.log('Service Worker registered successfully:', registration);
-
-          // 监听 Service Worker 更新
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // 显示更新提示
-                  if (confirm('有新版本可用，是否立即更新？')) {
-                    newWorker.postMessage({ type: 'SKIP_WAITING' });
-                    window.location.reload();
-                  }
-                }
-              });
-            }
-          });
-
-          // 监听 Service Worker 消息
-          navigator.serviceWorker.addEventListener('message', (event) => {
-            if (event.data && event.data.type === 'CACHE_UPDATED') {
-              console.log('Cache updated:', event.data.payload);
-            }
-          });
-
+          // 先探测 sw.js 是否存在（避免 404 抛错）
+          const res = await fetch('/sw.js', { method: 'HEAD', cache: 'no-store' });
+          if (res.ok) {
+            const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+            console.log('Service Worker registered successfully:', registration);
+          } else {
+            // 文件不存在：确保注销已有的 ServiceWorker
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map((r) => r.unregister()));
+            console.log('Service Worker not found; unregistered any existing registrations.');
+          }
         } catch (error) {
-          console.error('Service Worker registration failed:', error);
+          // 异常也尝试清理已有注册，避免反复报错
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map((r) => r.unregister()));
+          console.error('Service Worker check/register failed, cleaned registrations:', error);
         }
       };
 
-      // 等待页面加载完成后注册
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', registerSW);
+        document.addEventListener('DOMContentLoaded', ensureSW);
       } else {
-        registerSW();
+        ensureSW();
       }
     }
   }, []);

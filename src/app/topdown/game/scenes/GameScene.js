@@ -886,7 +886,11 @@ export default class GameScene extends Scene {
                             camera.fadeOut(SCENE_FADE_TIME);
                             // this.scene.pause();
                             this.isTeleporting = true;
-                            // this.gridEngine.stopMovement('cat');
+                            this.isAutoMoving = false;
+                            if (this.autoMoveTargetHighlight) {
+                                this.autoMoveTargetHighlight.setVisible(false);
+                            }
+                            this.gridEngine.stopMovement('cat');
 
                             this.time.delayedCall(
                                 SCENE_FADE_TIME,
@@ -949,6 +953,7 @@ export default class GameScene extends Scene {
                     id: 'cat',
                     sprite: this.catSprite,
                     startPosition: initialPosition,
+                    speed: 2,
                     offsetY: 4,
                 },
             ],

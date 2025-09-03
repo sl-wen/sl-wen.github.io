@@ -53,16 +53,16 @@ export default class BootScene extends Scene {
 
         // 加载游戏地图文件
         this.loadMaps();
-        
+
         // 加载角色精灵图片
         this.loadCharacterSprites();
-        
+
         // 加载物品和 UI 图片
         this.loadItemsAndUI();
-        
+
         // 加载音频文件
-        this.loadAudio();
-        
+        //this.loadAudio();
+
         // 加载字体文件
         this.loadFonts();
     }
@@ -179,15 +179,15 @@ export default class BootScene extends Scene {
         this.load.image('tileset', '/game/assets/sprites/maps/tilesets/tileset.png');
         this.load.image('actions_tileset', '/game/assets/sprites/maps/tilesets/actions_tileset.png');
         this.load.image('ui_elements', '/game/assets/sprites/maps/tilesets/ui_elements.png');
-        
+
         // 加载城市地图
         this.load.tilemapTiledJSON('home_page_city', '/game/assets/sprites/maps/cities/home_page_city.json');
-        
+
         // 加载房屋地图
         this.load.tilemapTiledJSON('home_page_city_house_1', '/game/assets/sprites/maps/houses/home_page_city_house_1.json');
         this.load.tilemapTiledJSON('home_page_city_house_2', '/game/assets/sprites/maps/houses/home_page_city_house_2.json');
         this.load.tilemapTiledJSON('home_page_city_house_3', '/game/assets/sprites/maps/houses/home_page_city_house_3.json');
-        
+
         // 加载图块集配置
         this.load.tilemapTiledJSON('tileset', '/game/assets/sprites/maps/tilesets/tileset.json');
         this.load.tilemapTiledJSON('actions_tileset', '/game/assets/sprites/maps/tilesets/actions_tileset.json');
@@ -201,13 +201,13 @@ export default class BootScene extends Scene {
     loadCharacterSprites() {
         // 主角精灵图集
         this.load.atlas('cat', '/game/assets/sprites/atlas/cat.png', '/game/assets/sprites/atlas/cat.json');
-        
+
         // NPC 精灵图集
         this.load.atlas('npc_1', '/game/assets/sprites/atlas/npc_1.png', '/game/assets/sprites/atlas/npc_1.json');
         this.load.atlas('npc_2', '/game/assets/sprites/atlas/npc_2.png', '/game/assets/sprites/atlas/npc_2.json');
         this.load.atlas('npc_3', '/game/assets/sprites/atlas/npc_3.png', '/game/assets/sprites/atlas/npc_3.json');
         this.load.atlas('npc_4', '/game/assets/sprites/atlas/npc_4.png', '/game/assets/sprites/atlas/npc_4.json');
-        
+
         // 敌人精灵图集
         this.load.atlas('slime', '/game/assets/sprites/atlas/slime.png', '/game/assets/sprites/atlas/slime.json');
     }
@@ -220,12 +220,12 @@ export default class BootScene extends Scene {
         // 物品图集
         this.load.atlas('heart', '/game/assets/sprites/atlas/heart.png', '/game/assets/sprites/atlas/heart.json');
         this.load.atlas('coin', '/game/assets/sprites/atlas/coin.png', '/game/assets/sprites/atlas/coin.json');
-        
+
         // 其他物品图片
         this.load.image('sword', '/game/assets/images/sword.png');
         this.load.image('push', '/game/assets/images/push.png');
         this.load.image('heart_container', '/game/assets/images/heart_container.png');
-        
+
         // UI 元素
         this.load.image('dialog_borderbox', '/game/assets/images/dialog_borderbox.png');
         this.load.image('main_menu_background', '/game/assets/images/main_menu_background.png');
@@ -240,7 +240,7 @@ export default class BootScene extends Scene {
     loadAudio() {
         // 背景音乐
         this.load.audio('bgm', '/game/assets/audio/background_music.mp3');
-        
+
         // 音效
         this.load.audio('coin_sound', '/game/assets/audio/coin.mp3');
         this.load.audio('attack_sound', '/game/assets/audio/attack.mp3');
@@ -263,7 +263,7 @@ export default class BootScene extends Scene {
     create() {
         // 创建角色动画
         this.createAnimations();
-        
+
         // 启动主菜单场景
         this.scene.start('MainMenuScene');
     }

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     experience INT DEFAULT 0,
     coins INT DEFAULT 0,
     consecutive_logins INT DEFAULT 0, -- 连续登录天数
+    farmdata JSONB DEFAULT null,  -- 存农场地图，比如瓦块，植物状态等
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

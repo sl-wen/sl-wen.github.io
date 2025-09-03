@@ -81,7 +81,7 @@
                         {
                          "name":"teleportTo",
                          "type":"string",
-                         "value":"home_page_city_house_02:4,10"
+                         "value":"home_page_city_house_2:4,10"
                         }],
                  "rotation":0,
                  "type":"",
@@ -99,7 +99,7 @@
                         {
                          "name":"teleportTo",
                          "type":"string",
-                         "value":"home_page_city_house_03:4,10"
+                         "value":"home_page_city_house_3:4,10"
                         }],
                  "rotation":0,
                  "type":"",
@@ -117,7 +117,7 @@
                         {
                          "name":"teleportTo",
                          "type":"string",
-                         "value":"home_page_city_house_01:4,10"
+                         "value":"home_page_city_house_1:4,10"
                         }],
                  "rotation":0,
                  "type":"",

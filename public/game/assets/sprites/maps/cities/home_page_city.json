@@ -153,7 +153,7 @@
                         {
                          "name":"npcData",
                          "type":"string",
-                         "value":"npc_01:still;1500;5;up"
+                         "value":"npc_1:still;1500;5;up"
                         }],
                  "rotation":0,
                  "type":"",
@@ -171,7 +171,7 @@
                         {
                          "name":"npcData",
                          "type":"string",
-                         "value":"npc_02:random;1500;5;down"
+                         "value":"npc_2:random;1500;5;down"
                         }],
                  "rotation":0,
                  "type":"",

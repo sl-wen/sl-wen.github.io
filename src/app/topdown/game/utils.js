@@ -29,7 +29,7 @@ import { GameObjects } from 'phaser';
  * 
  * 使用示例：
  * const npcCollider = createInteractiveGameObject(
- *   this, 100, 100, 32, 32, 'npc_01', false
+ *   this, 100, 100, 32, 32, 'npc_1', false
  * );
  */
 export const createInteractiveGameObject = (

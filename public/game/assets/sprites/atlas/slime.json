@@ -241,7 +241,7 @@
                     }
                 },
                 {
-                    "filename": "slime_walking_03",
+                    "filename": "slime_walk_03",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -367,7 +367,7 @@
                     }
                 },
                 {
-                    "filename": "slime_walking_02",
+                    "filename": "slime_walk_02",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -388,7 +388,7 @@
                     }
                 },
                 {
-                    "filename": "slime_walking_04",
+                    "filename": "slime_walk_04",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -577,7 +577,7 @@
                     }
                 },
                 {
-                    "filename": "slime_walking_01",
+                    "filename": "slime_walk_01",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {

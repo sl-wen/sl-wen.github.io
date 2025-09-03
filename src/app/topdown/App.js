@@ -79,25 +79,25 @@ const GameWrapper = styled('div')(({ theme }) => ({
  * 定义了游戏中各种 NPC 和物品的对话内容
  * 
  * 对话格式：
- * - npc_01, npc_02 等：NPC 角色的对话
+ * - npc_1, npc_2 等：NPC 角色的对话
  * - sword, push 等：物品或能力的提示信息
- * - sign_01, book_01 等：可读物品的文本
+ * - sign_1, book_1 等：可读物品的文本
  */
 const dialogs = {
-  "npc_01": [{
+  "npc_1": [{
     "message": "你好！",
   }, {
     "message": "你是谁",
   }],
-  "npc_02": [{
+  "npc_2": [{
     "message": "这是哪",
   }],
-  "npc_03": [{
+  "npc_3": [{
     "message": "嗨",
   }, {
     "message": "好的",
   }],
-  "npc_04": [{
+  "npc_4": [{
     "message": "嗨",
   }],
   "sword": [{
@@ -106,10 +106,10 @@ const dialogs = {
   "push": [{
     "message": "你现在能够推箱子",
   }],
-  "sign_01": [{
+  "sign_1": [{
     "message": "你能够读消息",
   }],
-  "book_01": [{
+  "book_1": [{
     "message": "欢迎来到我的游戏",
   }]
 };

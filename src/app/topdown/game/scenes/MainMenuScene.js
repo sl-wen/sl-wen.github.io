@@ -64,7 +64,7 @@ export default class MainMenuScene extends Scene {
                             canPush: false,
                             haveSword: false,
                         },
-                        mapKey: 'home_page_city_house_01',
+                        mapKey: 'home_page_city_house_1',
                     });
                     break;
                 }

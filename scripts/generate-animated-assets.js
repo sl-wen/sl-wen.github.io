@@ -3,7 +3,7 @@ const fs = require('fs');
 
 // Generate animated character sprite sheets
 const generateAnimatedCharacter = (type, size = 32) => {
-  const frameCount = 4; // 4 frames for walking animation
+  const frameCount = 4; // 4 frames for walk animation
   const directions = ['down', 'left', 'right', 'up']; // 4 directions
   const sheetWidth = frameCount * size;
   const sheetHeight = directions.length * size;
@@ -44,7 +44,7 @@ const generateAnimatedCharacter = (type, size = 32) => {
       // Clear frame
       ctx.clearRect(x, y, size, size);
       
-      // Walking animation offset
+      // walk animation offset
       const walkOffset = frame % 2 === 0 ? 0 : 1;
       const bobOffset = frame % 2 === 0 ? 0 : -1;
       
@@ -79,7 +79,7 @@ const drawCharacterFrame = (ctx, x, y, size, direction, colors, walkOffset, bobO
   ctx.fillStyle = colors.body;
   ctx.fillRect(centerX - 6, centerY - 2 + bobOffset, 12, 12);
   
-  // Arms (animated based on walking)
+  // Arms (animated based on walk)
   ctx.fillStyle = colors.skin;
   if (direction === 'left' || direction === 'right') {
     // Side view arms
@@ -92,7 +92,7 @@ const drawCharacterFrame = (ctx, x, y, size, direction, colors, walkOffset, bobO
     ctx.fillRect(centerX + 6, centerY + walkOffset + bobOffset, 4, 8);
   }
   
-  // Legs (animated based on walking)
+  // Legs (animated based on walk)
   ctx.fillStyle = colors.legs;
   const legOffset = walkOffset * 2;
   if (direction === 'left' || direction === 'right') {

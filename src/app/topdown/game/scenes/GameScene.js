@@ -20,7 +20,7 @@
  * 3. 地图资源需在 `BootScene` 预加载，并确保 Tiled 中 tileset 名称与此处 `addTilesetImage` 匹配。
  * 4. 想要新增 NPC/敌人/物品/传送门：在 Tiled 的对象层 `actions` 中放置对象并配置属性：
  *    - dialog: 值为角色 key（与 React `dialogs` 对应）
- *    - npcData: 形如 `npc_01:random;1000;4;down`
+ *    - npcData: 形如 `npc_1:random;1000;4;down`
  *    - enemyData: 形如 `slime_green:ai_type;3:40`（类型:AI:速度:生命）
  *    - itemData: 形如 `coin:`、`heart:`、`heart_container:`、`sword:`、`push:`
  *    - teleportTo: 形如 `map_key:10,12`
@@ -120,16 +120,16 @@ export default class GameScene extends Scene {
             .sort((a, b) => (a.frame < b.frame ? -1 : 1));
     }
 
-    createPlayerWalkingAnimation(assetKey, animationName) {
+    createPlayerwalkAnimation(assetKey, animationName) {
         // 角色/NPC 的行走循环动画（上/右/下/左），若不存在则创建
         const animationKey = `${assetKey}_${animationName}`;
         if (!this.anims.exists(animationKey)) {
             this.anims.create({
                 key: animationKey,
                 frames: [
-                    { key: assetKey, frame: `${assetKey}_${animationName}_01` },
-                    { key: assetKey, frame: `${assetKey}_${animationName.replace('walking', 'idle')}_01` },
-                    { key: assetKey, frame: `${assetKey}_${animationName}_02` },
+                    { key: assetKey, frame: `${assetKey}_${animationName}_1` },
+                    { key: assetKey, frame: `${assetKey}_${animationName.replace('walk', 'idle')}_1` },
+                    { key: assetKey, frame: `${assetKey}_${animationName}_2` },
                 ],
                 frameRate: 4,
                 repeat: -1,
@@ -145,11 +145,11 @@ export default class GameScene extends Scene {
             this.anims.create({
                 key: animationKey,
                 frames: [
-                    { key: assetKey, frame: `${assetKey}_${animationName}_01` },
-                    { key: assetKey, frame: `${assetKey}_${animationName}_02` },
-                    { key: assetKey, frame: `${assetKey}_${animationName}_03` },
-                    { key: assetKey, frame: `${assetKey}_${animationName}_04` },
-                    { key: assetKey, frame: `${assetKey}_${animationName.replace('attack', 'idle')}_01` },
+                    { key: assetKey, frame: `${assetKey}_${animationName}_1` },
+                    { key: assetKey, frame: `${assetKey}_${animationName}_2` },
+                    { key: assetKey, frame: `${assetKey}_${animationName}_3` },
+                    { key: assetKey, frame: `${assetKey}_${animationName}_4` },
+                    { key: assetKey, frame: `${assetKey}_${animationName.replace('attack', 'idle')}_1` },
                 ],
                 frameRate: 16,
                 repeat: 0,
@@ -162,13 +162,13 @@ export default class GameScene extends Scene {
         // 根据朝向返回该精灵的“站立”帧
         switch (direction) {
             case 'up':
-                return `${spriteKey}_idle_up_01`;
+                return `${spriteKey}_idle_up`;
             case 'right':
-                return `${spriteKey}_idle_right_01`;
+                return `${spriteKey}_idle_right`;
             case 'down':
-                return `${spriteKey}_idle_down_01`;
+                return `${spriteKey}_idle_down`;
             case 'left':
-                return `${spriteKey}_idle_left_01`;
+                return `${spriteKey}_idle_left`;
             default:
                 return null;
         }
@@ -871,7 +871,7 @@ export default class GameScene extends Scene {
                                         catStatus: {
                                             position: { x: teleportToX, y: teleportToY },
                                             previousPosition: this.calculatePreviousTeleportPosition(),
-                                            frame: `cat_idle_${facingDirection}_01`,
+                                            frame: `cat_idle_${facingDirection}`,
                                             facingDirection,
                                             health: this.catSprite.health,
                                             maxHealth: this.catSprite.maxHealth,
@@ -1011,7 +1011,7 @@ export default class GameScene extends Scene {
         this.enemiesSprites = this.add.group();
         enemiesData.forEach((enemyData, index) => { // 敌人创建、动画与网格配置
             const { enemySpecies, enemyType, x, y, enemyName, speed, enemyAI, health } = enemyData;
-            const enemy = this.physics.add.sprite(0, 0, enemyType, `${enemySpecies}_idle_01`);
+            const enemy = this.physics.add.sprite(0, 0, enemyType, `${enemySpecies}_idle_1`);
             enemy.setTint(this.getEnemyColor(enemyType));
             enemy.name = enemyName;
             enemy.enemyType = enemyType;
@@ -1071,10 +1071,10 @@ export default class GameScene extends Scene {
                 });
             }
 
-            if (!this.anims.exists(`${enemySpecies}_walking`)) {
+            if (!this.anims.exists(`${enemySpecies}_walk`)) {
                 this.anims.create({
-                    key: `${enemySpecies}_walking`,
-                    frames: this.getFramesForAnimation(enemySpecies, 'walking'),
+                    key: `${enemySpecies}_walk`,
+                    frames: this.getFramesForAnimation(enemySpecies, 'walk'),
                     frameRate: 8,
                     repeat: -1,
                     yoyo: false,
@@ -1110,15 +1110,15 @@ export default class GameScene extends Scene {
         const npcSprites = this.add.group();
         npcsKeys.forEach((npcData) => { // NPC 创建与行走动画注册
             const { npcKey, x, y, facingDirection = 'down' } = npcData;
-            const npc = this.physics.add.sprite(0, 0, npcKey, `${npcKey}_idle_${facingDirection}_01`);
+            const npc = this.physics.add.sprite(0, 0, npcKey, `${npcKey}_idle_${facingDirection}_1`);
             npc.body.setSize(14, 14);
             npc.body.setOffset(9, 13);
             npcSprites.add(npc);
 
-            this.createPlayerWalkingAnimation(npcKey, 'walking_up');
-            this.createPlayerWalkingAnimation(npcKey, 'walking_right');
-            this.createPlayerWalkingAnimation(npcKey, 'walking_down');
-            this.createPlayerWalkingAnimation(npcKey, 'walking_left');
+            this.createPlayerwalkAnimation(npcKey, 'walk_up');
+            this.createPlayerwalkAnimation(npcKey, 'walk_right');
+            this.createPlayerwalkAnimation(npcKey, 'walk_down');
+            this.createPlayerwalkAnimation(npcKey, 'walk_left');
 
             gridEngineConfig.characters.push({
                 id: npcKey,
@@ -1132,10 +1132,10 @@ export default class GameScene extends Scene {
         this.npcSprites = npcSprites;
 
         // Movement
-        this.createPlayerWalkingAnimation('cat', 'walking_up');
-        this.createPlayerWalkingAnimation('cat', 'walking_right');
-        this.createPlayerWalkingAnimation('cat', 'walking_down');
-        this.createPlayerWalkingAnimation('cat', 'walking_left');
+        this.createPlayerwalkAnimation('cat', 'walk_up');
+        this.createPlayerwalkAnimation('cat', 'walk_right');
+        this.createPlayerwalkAnimation('cat', 'walk_down');
+        this.createPlayerwalkAnimation('cat', 'walk_left');
 
         // Attack
         this.createPlayerAttackAnimation('cat', 'attack_up', 12, 0, false);
@@ -1295,19 +1295,19 @@ export default class GameScene extends Scene {
                 // 角色移动方向来自 GridEngine（可能为 8 向）。动画素材仅有 4 向，做归一映射。
                 const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
                 const animDir = (cardinal === 'up' || cardinal === 'down' || cardinal === 'left' || cardinal === 'right') ? cardinal : direction;
-                this.catSprite.anims.play(`cat_walking_${animDir}`);
+                this.catSprite.anims.play(`cat_walk_${animDir}`);
             } else {
                 const npc = npcSprites.getChildren().find((npcSprite) => npcSprite.texture.key === charId);
                 if (npc) {
                     const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
                     const animDir = (cardinal === 'up' || cardinal === 'down' || cardinal === 'left' || cardinal === 'right') ? cardinal : direction;
-                    npc.anims.play(`${charId}_walking_${animDir}`);
+                    npc.anims.play(`${charId}_walk_${animDir}`);
                     return;
                 }
 
                 const enemy = this.enemiesSprites.getChildren().find((enemySprite) => enemySprite.name === charId);
                 if (enemy) {
-                    enemy.anims.play(`${enemy.enemySpecies}_walking`);
+                    enemy.anims.play(`${enemy.enemySpecies}_walk`);
                 }
             }
         });

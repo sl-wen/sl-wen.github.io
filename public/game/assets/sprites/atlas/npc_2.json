@@ -1,7 +1,7 @@
 {
     "textures": [
         {
-            "image": "npc_01.png",
+            "image": "npc_2.png",
             "format": "RGBA8888",
             "size": {
                 "w": 49,
@@ -10,7 +10,7 @@
             "scale": 1,
             "frames": [
                 {
-                    "filename": "npc_01_attack_down_03",
+                    "filename": "npc_2_attack_down_3",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -31,7 +31,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_down_04",
+                    "filename": "npc_2_attack_down_4",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -52,7 +52,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_idle_up_01",
+                    "filename": "npc_2_idle_up_1",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -73,7 +73,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_left_02",
+                    "filename": "npc_2_attack_left_2",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -94,7 +94,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_left_03",
+                    "filename": "npc_2_attack_left_3",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -115,7 +115,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_left_04",
+                    "filename": "npc_2_attack_left_4",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -136,7 +136,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_down_02",
+                    "filename": "npc_2_attack_down_2",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -157,7 +157,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_right_03",
+                    "filename": "npc_2_attack_right_3",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -178,7 +178,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_right_04",
+                    "filename": "npc_2_attack_right_4",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -199,7 +199,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_up_03",
+                    "filename": "npc_2_attack_up_3",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -220,7 +220,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_up_04",
+                    "filename": "npc_2_attack_up_4",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -241,7 +241,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_idle_down_01",
+                    "filename": "npc_2_idle_down_1",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -262,7 +262,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_walking_up_01",
+                    "filename": "npc_2_walk_up_1",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -283,7 +283,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_walking_up_02",
+                    "filename": "npc_2_walk_up_2",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -304,7 +304,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_left_01",
+                    "filename": "npc_2_attack_left_1",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -325,7 +325,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_idle_left_01",
+                    "filename": "npc_2_idle_left_1",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -346,7 +346,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_idle_right_01",
+                    "filename": "npc_2_idle_right_1",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -367,7 +367,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_right_02",
+                    "filename": "npc_2_attack_right_2",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -388,7 +388,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_up_01",
+                    "filename": "npc_2_attack_up_1",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -409,7 +409,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_down_01",
+                    "filename": "npc_2_attack_down_1",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -430,7 +430,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_right_01",
+                    "filename": "npc_2_attack_right_1",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -451,7 +451,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_walking_down_01",
+                    "filename": "npc_2_walk_down_1",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -472,7 +472,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_walking_down_02",
+                    "filename": "npc_2_walk_down_2",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -493,7 +493,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_walking_left_01",
+                    "filename": "npc_2_walk_left_1",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -514,7 +514,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_walking_left_02",
+                    "filename": "npc_2_walk_left_2",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -535,7 +535,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_walking_right_01",
+                    "filename": "npc_2_walk_right_1",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -556,7 +556,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_walking_right_02",
+                    "filename": "npc_2_walk_right_2",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -577,7 +577,7 @@
                     }
                 },
                 {
-                    "filename": "npc_01_attack_up_02",
+                    "filename": "npc_2_attack_up_2",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {

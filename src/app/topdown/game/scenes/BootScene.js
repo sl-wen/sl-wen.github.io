@@ -184,9 +184,9 @@ export default class BootScene extends Scene {
         this.load.tilemapTiledJSON('home_page_city', '/game/assets/sprites/maps/cities/home_page_city.json');
         
         // 加载房屋地图
-        this.load.tilemapTiledJSON('home_page_city_house_01', '/game/assets/sprites/maps/houses/home_page_city_house_01.json');
-        this.load.tilemapTiledJSON('home_page_city_house_02', '/game/assets/sprites/maps/houses/home_page_city_house_02.json');
-        this.load.tilemapTiledJSON('home_page_city_house_03', '/game/assets/sprites/maps/houses/home_page_city_house_03.json');
+        this.load.tilemapTiledJSON('home_page_city_house_1', '/game/assets/sprites/maps/houses/home_page_city_house_1.json');
+        this.load.tilemapTiledJSON('home_page_city_house_2', '/game/assets/sprites/maps/houses/home_page_city_house_2.json');
+        this.load.tilemapTiledJSON('home_page_city_house_3', '/game/assets/sprites/maps/houses/home_page_city_house_3.json');
         
         // 加载图块集配置
         this.load.tilemapTiledJSON('tileset', '/game/assets/sprites/maps/tilesets/tileset.json');
@@ -203,10 +203,10 @@ export default class BootScene extends Scene {
         this.load.atlas('cat', '/game/assets/sprites/atlas/cat.png', '/game/assets/sprites/atlas/cat.json');
         
         // NPC 精灵图集
-        this.load.atlas('npc_01', '/game/assets/sprites/atlas/npc_01.png', '/game/assets/sprites/atlas/npc_01.json');
-        this.load.atlas('npc_02', '/game/assets/sprites/atlas/npc_02.png', '/game/assets/sprites/atlas/npc_02.json');
-        this.load.atlas('npc_03', '/game/assets/sprites/atlas/npc_03.png', '/game/assets/sprites/atlas/npc_03.json');
-        this.load.atlas('npc_04', '/game/assets/sprites/atlas/npc_04.png', '/game/assets/sprites/atlas/npc_04.json');
+        this.load.atlas('npc_1', '/game/assets/sprites/atlas/npc_1.png', '/game/assets/sprites/atlas/npc_1.json');
+        this.load.atlas('npc_2', '/game/assets/sprites/atlas/npc_2.png', '/game/assets/sprites/atlas/npc_2.json');
+        this.load.atlas('npc_3', '/game/assets/sprites/atlas/npc_3.png', '/game/assets/sprites/atlas/npc_3.json');
+        this.load.atlas('npc_4', '/game/assets/sprites/atlas/npc_4.png', '/game/assets/sprites/atlas/npc_4.json');
         
         // 敌人精灵图集
         this.load.atlas('slime', '/game/assets/sprites/atlas/slime.png', '/game/assets/sprites/atlas/slime.json');
@@ -274,13 +274,13 @@ export default class BootScene extends Scene {
      */
     createAnimations() {
         // 基于图集帧名创建主角行走与待机动画
-        const walking = (dir) => [`cat${dir}_01`, `cat_idle_${dir}_01`, `cat_walk_${dir}_02`].map((frame) => ({ key: 'cat', frame }));
-        const idle = (dir) => [{ key: 'cat', frame: `cat_idle_${dir}_01` }];
+        const walk = (dir) => [`cat_walk_${dir}_1`, `cat_walk_${dir}_2`].map((frame) => ({ key: 'cat', frame }));
+        const idle = (dir) => [{ key: 'cat', frame: `cat_idle_${dir}` }];
 
-        this.anims.create({ key: 'cat_walk_down', frames: walking('down'), frameRate: 8, repeat: -1, yoyo: true });
-        this.anims.create({ key: 'cat_walk_up', frames: walking('up'), frameRate: 8, repeat: -1, yoyo: true });
-        this.anims.create({ key: 'cat_walk_left', frames: walking('left'), frameRate: 8, repeat: -1, yoyo: true });
-        this.anims.create({ key: 'cat_walk_right', frames: walking('right'), frameRate: 8, repeat: -1, yoyo: true });
+        this.anims.create({ key: 'cat_walk_down', frames: walk('down'), frameRate: 8, repeat: -1, yoyo: true });
+        this.anims.create({ key: 'cat_walk_up', frames: walk('up'), frameRate: 8, repeat: -1, yoyo: true });
+        this.anims.create({ key: 'cat_walk_left', frames: walk('left'), frameRate: 8, repeat: -1, yoyo: true });
+        this.anims.create({ key: 'cat_walk_right', frames: walk('right'), frameRate: 8, repeat: -1, yoyo: true });
 
         this.anims.create({ key: 'cat_idle_down', frames: idle('down'), frameRate: 1 });
         this.anims.create({ key: 'cat_idle_up', frames: idle('up'), frameRate: 1 });

@@ -21,8 +21,8 @@ function checkGameAssets() {
     'public/game/assets/sprites/atlas/hero.json',
     'public/game/assets/sprites/atlas/heart.png',
     'public/game/assets/sprites/atlas/heart.json',
-    'public/game/assets/sprites/atlas/npc_01.png',
-    'public/game/assets/sprites/atlas/npc_01.json',
+    'public/game/assets/sprites/atlas/npc_1.png',
+    'public/game/assets/sprites/atlas/npc_1.json',
     
     // 瓦片集资源
     'public/game/assets/sprites/maps/tilesets/tileset.png',

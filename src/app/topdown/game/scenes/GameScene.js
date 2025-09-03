@@ -32,6 +32,31 @@
  * - 人物无法从传送门离开当前房间：检查 `actions` 对象层是否存在 teleportTo 对象，格式是否正确；检查 tileset 名称是否与 `BootScene` 加载一致。
  * - 图块显示异常：核对 Tiled 中 tileset 的名称与 `addTilesetImage` 所用 key 保持一致。
  * - 敌人不移动/不追踪：确认 `enemyData` 的 AI 类型与常量定义匹配，且重叠体积（presence collider）覆盖到敌人。
+ *
+ * 使用说明（运行与集成）：
+ * - 启动顺序：先在 `BootScene` 预加载资源与 tilemap，再在 `MainMenuScene` 进入 `GameScene`。
+ * - 场景入参：通过 `this.scene.start('GameScene', { catStatus, mapKey })` 传入角色状态与地图 key。
+ * - 依赖系统：
+ *   1) GridEngine 用于网格化移动、寻路与移动事件订阅。
+ *   2) InputManager 统一键盘/手柄/触屏输入，提供“JustDown”与当前方向枚举。
+ *   3) Phaser Physics（Arcade）用于碰撞检测、重叠触发器（对话/道具/元素/敌人）。
+ *   4) React UI 通过 window 自定义事件监听游戏状态（血量、金币、动作上下文、对话）。
+ * - Tiled 规范：
+ *   - tileset 名称需与 `BootScene` 中 `this.load.image(key)` 的 key 保持一致。
+ *   - 对象层名固定为 `actions`，对象属性键使用：`dialog`、`npcData`、`itemData`、`enemyData`、`teleportTo`。
+ * - 自定义事件（供 React 侧监听）：
+ *   - `cat-health`：detail: { healthStates: ('full'|'half'|'empty')[] }
+ *   - `cat-coin`：detail: { catCoins: number|null }
+ *   - `action-context`：detail: { context: 'talk'|'interact'|'attack'|'none' }
+ *   - `new-dialog`：detail: { characterName: string }；完成事件为 `${characterName}-dialog-finished`
+ * - 常用调试：将 Phaser 物理 debug 设为 true，可在全局 window 访问 `phaserGame` 与可视化碰撞体。
+ * - 地图切换：通过 `teleportTo` 自动淡出并重启当前场景，参数带到新地图，落点与朝向自动计算。
+ *
+ * 注意事项与陷阱：
+ * - Tiled 图层若未绑定 tileset 名称，代码会回退到默认 `tileset`，需保证存在此 key。
+ * - 箱子推挤：目标落点若任一图层有 `ge_collide`，则判为不可推进。
+ * - 砍草掉落：瓦片移除需使用 TilemapLayer API（removeTileAt），避免直接修改 tile 属性导致冻结。
+ * - 自动寻路：用户手动输入会打断 `moveTo`，并隐藏落点高亮。
  */
 import { Input, Math as PhaserMath, Scene } from 'phaser';
 import {
@@ -1158,51 +1183,51 @@ export default class GameScene extends Scene {
         this.gridEngine.create(map, gridEngineConfig); // 初始化 GridEngine（必须在角色加入后）
 
         // Tap-to-move: 触摸/点击地图自动寻路到目标；若不可达则前往最近可达位置
-        this.input.on('pointerdown', (pointer) => {
-            if (this.isTeleporting || this.isAttacking || this.isShowingDialog) {
-                return;
+        this.input.on('pointerdown', (pointer) => { // 监听指针按下事件（含鼠标与触屏）
+            if (this.isTeleporting || this.isAttacking || this.isShowingDialog) { // 传送/攻击/对话期间禁用点地移动
+                return; // 直接返回，防止状态冲突
             }
 
-            const worldX = pointer.worldX ?? pointer.x;
-            const worldY = pointer.worldY ?? pointer.y;
-            const target = {
-                x: Math.floor(worldX / map.tileWidth),
-                y: Math.floor(worldY / map.tileHeight),
+            const worldX = pointer.worldX ?? pointer.x; // 获取指针在世界坐标中的 X（若无则退化为屏幕坐标）
+            const worldY = pointer.worldY ?? pointer.y; // 获取指针在世界坐标中的 Y（若无则退化为屏幕坐标）
+            const target = { // 目标瓦片的网格坐标（基于 16x16 或 map.tileWidth/tileHeight）
+                x: Math.floor(worldX / map.tileWidth), // 取整到网格 X
+                y: Math.floor(worldY / map.tileHeight), // 取整到网格 Y
             };
 
-            this.isAutoMoving = true;
+            this.isAutoMoving = true; // 标记进入自动寻路模式（用于与手动输入互斥）
             // 显示目标瓦片高亮
-            const pixelX = target.x * map.tileWidth;
-            const pixelY = target.y * map.tileHeight;
-            if (!this.autoMoveTargetHighlight) {
+            const pixelX = target.x * map.tileWidth; // 计算目标像素 X（用于绘制提示）
+            const pixelY = target.y * map.tileHeight; // 计算目标像素 Y（用于绘制提示）
+            if (!this.autoMoveTargetHighlight) { // 若尚未创建高亮指示器，则创建
                 this.autoMoveTargetHighlight = this.add.rectangle(
-                    pixelX + map.tileWidth / 2,
-                    pixelY + map.tileHeight / 2,
-                    map.tileWidth,
-                    map.tileHeight,
-                    0xffff66,
-                    0.25,
-                ).setOrigin(0.5, 0.5).setDepth(1000);
-                this.autoMoveTargetHighlight.setBlendMode(Phaser.BlendModes.SCREEN);
-                this.autoMoveTargetHighlight.setStrokeStyle(1, 0xffff99, 0.8);
-            } else {
-                this.autoMoveTargetHighlight.setVisible(true);
+                    pixelX + map.tileWidth / 2, // 矩形中心 X（居中到瓦片）
+                    pixelY + map.tileHeight / 2, // 矩形中心 Y（居中到瓦片）
+                    map.tileWidth, // 矩形宽（与瓦片同宽）
+                    map.tileHeight, // 矩形高（与瓦片同高）
+                    0xffff66, // 填充颜色（浅黄）
+                    0.25, // 透明度
+                ).setOrigin(0.5, 0.5).setDepth(1000); // 设置原点与深度，保证覆盖在最上层
+                this.autoMoveTargetHighlight.setBlendMode(Phaser.BlendModes.SCREEN); // 轻微叠加高光效果
+                this.autoMoveTargetHighlight.setStrokeStyle(1, 0xffff99, 0.8); // 添加边框以增强对比度
+            } else { // 已存在则复用并移动到新位置
+                this.autoMoveTargetHighlight.setVisible(true); // 显示高亮
                 this.autoMoveTargetHighlight.setPosition(
-                    pixelX + map.tileWidth / 2,
-                    pixelY + map.tileHeight / 2,
+                    pixelX + map.tileWidth / 2, // 更新中心 X
+                    pixelY + map.tileHeight / 2, // 更新中心 Y
                 );
-                this.autoMoveTargetHighlight.setSize(map.tileWidth, map.tileHeight);
+                this.autoMoveTargetHighlight.setSize(map.tileWidth, map.tileHeight); // 更新尺寸以适配当前地图瓦片大小
             }
             // 轻微闪烁以提示
-            this.tweens.add({
-                targets: this.autoMoveTargetHighlight,
-                alpha: { from: 0.25, to: 0.45 },
-                duration: 400,
-                yoyo: true,
-                repeat: 2,
+            this.tweens.add({ // 创建一个 tween 动画
+                targets: this.autoMoveTargetHighlight, // 作用于高亮矩形
+                alpha: { from: 0.25, to: 0.45 }, // 透明度往返变化
+                duration: 400, // 动画时长 400ms
+                yoyo: true, // 往返播放
+                repeat: 2, // 重复 2 次，合计闪烁 3 次
             });
-            this.gridEngine.moveTo('cat', target, {
-                NoPathFoundStrategy: 'CLOSEST_REACHABLE',
+            this.gridEngine.moveTo('cat', target, { // 让 GridEngine 寻路到目标格子
+                NoPathFoundStrategy: 'CLOSEST_REACHABLE', // 若无路径则移动到最靠近的可达格
             });
         });
 
@@ -1559,62 +1584,62 @@ export default class GameScene extends Scene {
         });
     }
 
-    update() {
+    update() { // 每帧更新循环（由 Phaser 驱动）
         // 帧更新：根据状态早退；从 InputManager 取当前方向驱动网格移动
 
-        if (
+        if ( // 全局状态拦截：传送/攻击/对话时不处理移动
             this.isTeleporting
             || this.isAttacking
             || this.isShowingDialog
         ) {
-            return;
+            return; // 阻止进一步逻辑，避免与动画/切场冲突
         }
 
-        if (
+        if ( // 站立时按下空格并且已获得剑 => 触发攻击
             !this.gridEngine.isMoving('cat')
             && this.inputManager.isSpaceJustDown()
             && this.catSprite.haveSword
         ) {
-            const facingDirection = this.gridEngine.getFacingDirection('cat');
-            this.catSprite.anims.play(`cat_attack_${facingDirection}`);
-            this.isAttacking = true;
-            return;
+            const facingDirection = this.gridEngine.getFacingDirection('cat'); // 读取当前朝向
+            this.catSprite.anims.play(`cat_attack_${facingDirection}`); // 播放对应方向攻击动画
+            this.isAttacking = true; // 标记攻击中，锁输入
+            return; // 本帧不再处理移动
         }
 
-        this.enemiesSprites.getChildren().forEach((enemy) => {
-            enemy.canSeecat = enemy.body.embedded;
-            if (!enemy.canSeecat && enemy.isFollowingcat) {
-                enemy.isFollowingcat = false;
-                this.gridEngine.setSpeed(enemy.name, enemy.speed);
-                this.gridEngine.moveRandomly(enemy.name, 1000, 4);
+        this.enemiesSprites.getChildren().forEach((enemy) => { // 敌人“视野”与跟随状态更新
+            enemy.canSeecat = enemy.body.embedded; // 使用 Arcade 的嵌入状态近似“看见”
+            if (!enemy.canSeecat && enemy.isFollowingcat) { // 若丢失目标且处于跟随态
+                enemy.isFollowingcat = false; // 退出跟随
+                this.gridEngine.setSpeed(enemy.name, enemy.speed); // 恢复原速
+                this.gridEngine.moveRandomly(enemy.name, 1000, 4); // 回到随机巡逻
             }
         });
 
-        this.catActionCollider.update();
+        this.catActionCollider.update(); // 同步攻击/存在/对象碰撞体到主角位置与朝向
         // 根据周围环境更新交互按钮图标（对话 / 宝箱/箱子 / 攻击）
-        this.updateActionContext();
+        this.updateActionContext(); // 推送到 React 的 action-context
         
         // 使用输入管理器处理移动（虚拟摇杆/键盘已统一到 InputManager）
-        const currentDirection = this.inputManager.getCurrentDirection();
+        const currentDirection = this.inputManager.getCurrentDirection(); // 获取当前连续方向（可能为 8 向）
 
         // 无输入时：当非自动寻路才停止（避免打断 moveTo）
         if (!currentDirection && this.gridEngine.isMoving('cat') && !this.isAutoMoving) {
-            this.gridEngine.stopMovement('cat');
-            return;
+            this.gridEngine.stopMovement('cat'); // 停止当前移动（站立）
+            return; // 本帧结束
         }
 
         // 有手动输入：打断自动寻路并按输入方向移动
-        if (currentDirection) {
-            if (this.isAutoMoving) {
-                this.isAutoMoving = false;
-                this.gridEngine.stopMovement('cat');
+        if (currentDirection) { // 若检测到手动方向输入
+            if (this.isAutoMoving) { // 若正处于自动寻路
+                this.isAutoMoving = false; // 清除自动寻路标记
+                this.gridEngine.stopMovement('cat'); // 立即中断路径移动
                 // 手动输入打断时隐藏目标高亮
                 if (this.autoMoveTargetHighlight) {
-                    this.autoMoveTargetHighlight.setVisible(false);
+                    this.autoMoveTargetHighlight.setVisible(false); // 隐藏高亮提示
                 }
             }
-            if (!this.gridEngine.isMoving('cat')) {
-                this.gridEngine.move('cat', currentDirection);
+            if (!this.gridEngine.isMoving('cat')) { // 若当前不在移动（防抖）
+                this.gridEngine.move('cat', currentDirection); // 发起按方向的离散步进
             }
         }
     }

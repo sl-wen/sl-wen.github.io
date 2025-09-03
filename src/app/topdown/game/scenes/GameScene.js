@@ -504,6 +504,35 @@ export default class GameScene extends Scene {
         // 初始化输入管理器
         this.inputManager = new InputManager(this);
 
+        // 响应 React 侧的状态请求，回传可保存的最小状态
+        const onRequestState = () => {
+            try {
+                const position = this.gridEngine.getPosition('cat');
+                const facingDirection = this.gridEngine.getFacingDirection('cat');
+                const frame = this.catSprite.texture?.key || 'cat_idle_down';
+                const detail = {
+                    mapKey,
+                    catStatus: {
+                        position,
+                        previousPosition: this.calculatePreviousTeleportPosition(),
+                        frame,
+                        facingDirection,
+                        health: this.catSprite.health,
+                        maxHealth: this.catSprite.maxHealth,
+                        coin: this.catSprite.coin,
+                        canPush: this.catSprite.canPush,
+                        haveSword: this.catSprite.haveSword,
+                    },
+                };
+                const ev = new CustomEvent('game-state', { detail });
+                window.dispatchEvent(ev);
+            } catch (e) {
+                const ev = new CustomEvent('game-state', { detail: null });
+                window.dispatchEvent(ev);
+            }
+        };
+        window.addEventListener('request-game-state', onRequestState);
+
         // Map 地图加载：根据 `mapKey` 创建 tilemap，并动态注册 tileset
         const map = this.make.tilemap({ key: mapKey });
         
@@ -564,6 +593,9 @@ export default class GameScene extends Scene {
         this.catSprite.collectCoin = (coinQuantity) => {
             this.catSprite.coin = Math.min(this.catSprite.coin + coinQuantity, 999);
             this.updatecatCoinUi(this.catSprite.coin);
+            // 关键节点：金币变化即触发一次潜在保存
+            const saveEv = new CustomEvent('save-point', { detail: { reason: 'coin' } });
+            window.dispatchEvent(saveEv);
         };
 
         this.catSprite.takeDamage = (damage) => {
@@ -1007,6 +1039,8 @@ export default class GameScene extends Scene {
                 this.catSprite.haveSword = true;
                 item.setVisible(false);
                 item.destroy();
+                const saveEv = new CustomEvent('save-point', { detail: { reason: 'sword' } });
+                window.dispatchEvent(saveEv);
             }
 
             if (item.itemType === 'push') {
@@ -1035,6 +1069,8 @@ export default class GameScene extends Scene {
                 this.catSprite.canPush = true;
                 item.setVisible(false);
                 item.destroy();
+                const saveEv = new CustomEvent('save-point', { detail: { reason: 'push' } });
+                window.dispatchEvent(saveEv);
             }
         });
 

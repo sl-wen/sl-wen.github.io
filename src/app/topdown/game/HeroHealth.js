@@ -9,7 +9,6 @@
  * <HeroHealth gameSize={{ width, height, multiplier }} healthStates={['full','half','empty']} />
  */
 import { styled } from '@mui/material/styles';
-import classNames from 'classnames';
 
 // Images
 // Note: health.png is now served from public/game/assets/images/health.png
@@ -57,8 +56,9 @@ const HeroHealth = ({
 
     return (
         <HealthContainer
-            multiplier={multiplier}
             width={width}
+            height={height}
+            multiplier={multiplier}
             heartsPerRow={heartsPerRow}
             gap={gap}
             topOffset={topOffset}

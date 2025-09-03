@@ -14,7 +14,7 @@
  * 1. 在 `App.js` 的 Phaser 配置中将本场景加入 scene 数组（已完成）。
  * 2. 通过 `MainMenuScene` 开始游戏时调用：
  *    this.scene.start('GameScene', {
- *      heroStatus: { position, previousPosition, frame, facingDirection, health, maxHealth, coin, canPush, haveSword },
+ *      catStatus: { position, previousPosition, frame, facingDirection, health, maxHealth, coin, canPush, haveSword },
  *      mapKey: 'your_map_key_from_BootScene',
  *    });
  * 3. 地图资源需在 `BootScene` 预加载，并确保 Tiled 中 tileset 名称与此处 `addTilesetImage` 匹配。
@@ -26,7 +26,7 @@
  *    - teleportTo: 形如 `map_key:10,12`
  * 5. 输入与移动：
  *    - 键盘 WASD/方向键 与 触摸（虚拟摇杆/动作按钮）均通过 `InputManager` 统一处理。
- *    - 在 `update()` 中读取当前方向并调用 `gridEngine.move('hero', direction)`。
+ *    - 在 `update()` 中读取当前方向并调用 `gridEngine.move('cat', direction)`。
  * 
  * 常见问题排查：
  * - 人物无法从传送门离开当前房间：检查 `actions` 对象层是否存在 teleportTo 对象，格式是否正确；检查 tileset 名称是否与 `BootScene` 加载一致。
@@ -65,8 +65,8 @@ export default class GameScene extends Scene {
 
     calculatePreviousTeleportPosition() {
         // 计算传送前玩家的“上一格”位置，用于从目的地回传时的落点与朝向
-        const currentPosition = this.gridEngine.getPosition('hero');
-        const facingDirection = this.gridEngine.getFacingDirection('hero');
+        const currentPosition = this.gridEngine.getPosition('cat');
+        const facingDirection = this.gridEngine.getFacingDirection('cat');
 
         switch (facingDirection) {
             case 'up': {
@@ -222,8 +222,8 @@ export default class GameScene extends Scene {
      * 计算主角面前一格的像素坐标
      */
     getFrontPixelPosition() {
-        const facingDirection = this.gridEngine.getFacingDirection('hero');
-        const position = this.gridEngine.getPosition('hero');
+        const facingDirection = this.gridEngine.getFacingDirection('cat');
+        const position = this.gridEngine.getPosition('cat');
         switch (facingDirection) {
             case 'up':
                 return { x: position.x * 16, y: (position.y - 1) * 16 };
@@ -246,12 +246,12 @@ export default class GameScene extends Scene {
      * 3) 默认（有剑）=> 'attack'，否则 'none'
      */
     updateActionContext() {
-        if (!this.heroSprite || !this.map) return;
+        if (!this.catSprite || !this.map) return;
         let nextContext = 'attack';
 
-        // 1) 检测面前是否有 NPC（使用存在的 heroActionCollider 与 npcSprites 重叠近似）
+        // 1) 检测面前是否有 NPC（使用存在的 catActionCollider 与 npcSprites 重叠近似）
         const nearbyNpc = this.npcSprites?.getChildren?.().some((npc) => {
-            return Phaser.Geom.Intersects.RectangleToRectangle(this.heroActionCollider.getBounds(), npc.getBounds());
+            return Phaser.Geom.Intersects.RectangleToRectangle(this.catActionCollider.getBounds(), npc.getBounds());
         });
         if (nearbyNpc) {
             nextContext = 'talk';
@@ -266,7 +266,7 @@ export default class GameScene extends Scene {
                 nextContext = 'interact';
             } else {
                 // 3) 默认
-                nextContext = this.heroSprite.haveSword ? 'attack' : 'none';
+                nextContext = this.catSprite.haveSword ? 'attack' : 'none';
             }
         }
 
@@ -303,7 +303,7 @@ export default class GameScene extends Scene {
         };
     }
 
-    calculateHeroHealthState(health) {
+    calculatecatHealthState(health) {
         // 将血量转为 UI 需要的状态片段：full/half/empty
         if (health > 10) {
             return 'full';
@@ -316,19 +316,19 @@ export default class GameScene extends Scene {
         return 'empty';
     }
 
-    calculateHeroHealthStates() {
+    calculatecatHealthStates() {
         // 计算一排心形容器的状态数组，maxHealth 每 20 为一格
-        return Array.from({ length: this.heroSprite.maxHealth / 20 })
+        return Array.from({ length: this.catSprite.maxHealth / 20 })
             .fill(null).map(
-                (v, index) => this.calculateHeroHealthState(
-                    Math.max(this.heroSprite.health - (20 * index), 0)
+                (v, index) => this.calculatecatHealthState(
+                    Math.max(this.catSprite.health - (20 * index), 0)
                 )
             );
     }
 
-    updateHeroHealthUi(healthStates) {
-        // 通过自定义事件与 React `HeroHealth` 同步
-        const customEvent = new CustomEvent('hero-health', {
+    updatecatHealthUi(healthStates) {
+        // 通过自定义事件与 React `catHealth` 同步
+        const customEvent = new CustomEvent('cat-health', {
             detail: {
                 healthStates,
             },
@@ -337,11 +337,11 @@ export default class GameScene extends Scene {
         window.dispatchEvent(customEvent);
     }
 
-    updateHeroCoinUi(heroCoins) {
-        // 通过自定义事件与 React `HeroCoin` 同步
-        const customEvent = new CustomEvent('hero-coin', {
+    updatecatCoinUi(catCoins) {
+        // 通过自定义事件与 React `catCoin` 同步
+        const customEvent = new CustomEvent('cat-coin', {
             detail: {
-                heroCoins,
+                catCoins,
             },
         });
 
@@ -420,8 +420,8 @@ export default class GameScene extends Scene {
 
     calculatePushTilePosition() {
         // 根据玩家朝向计算箱子被推动后的目标像素坐标（以 16px 为一格）
-        const facingDirection = this.gridEngine.getFacingDirection('hero');
-        const position = this.gridEngine.getPosition('hero');
+        const facingDirection = this.gridEngine.getFacingDirection('cat');
+        const position = this.gridEngine.getPosition('cat');
 
         switch (facingDirection) {
             case 'up':
@@ -461,18 +461,18 @@ export default class GameScene extends Scene {
         const camera = this.cameras.main;
         const { game } = this.sys;
         const isDebugMode = this.physics.config.debug;
-        const { heroStatus, mapKey } = this.initData;
+        const { catStatus, mapKey } = this.initData;
         const {
             position: initialPosition,
             frame: initialFrame,
             facingDirection: initialFacingDirection,
             previousPosition,
-            health: heroHealth,
-            maxHealth: heroMaxHealth,
-            coin: heroCoin,
-            canPush: heroCanPush,
-            haveSword: heroHaveSword,
-        } = heroStatus;
+            health: catHealth,
+            maxHealth: catMaxHealth,
+            coin: catCoin,
+            canPush: catCanPush,
+            haveSword: catHaveSword,
+        } = catStatus;
 
         camera.fadeIn(SCENE_FADE_TIME);
 
@@ -512,44 +512,44 @@ export default class GameScene extends Scene {
         // 需要在更新期查询前方图块与交互环境，因此总是持有 map 引用
         this.map = map;
 
-        // Hero 主角：初始属性、碰撞盒与交互体
-        this.heroSprite = this.physics.add
-            .sprite(initialPosition.x * 16, initialPosition.y * 16, 'hero', initialFrame)
+        // cat 主角：初始属性、碰撞盒与交互体
+        this.catSprite = this.physics.add
+            .sprite(initialPosition.x * 16, initialPosition.y * 16, 'cat', initialFrame)
             .setDepth(1);
-        this.heroSprite.health = heroHealth;
-        this.heroSprite.maxHealth = heroMaxHealth;
-        this.heroSprite.coin = heroCoin;
-        this.heroSprite.canPush = heroCanPush;
-        this.heroSprite.haveSword = heroHaveSword;
-        this.updateHeroHealthUi(this.calculateHeroHealthStates());
-        this.updateHeroCoinUi(heroCoin);
+        this.catSprite.health = catHealth;
+        this.catSprite.maxHealth = catMaxHealth;
+        this.catSprite.coin = catCoin;
+        this.catSprite.canPush = catCanPush;
+        this.catSprite.haveSword = catHaveSword;
+        this.updatecatHealthUi(this.calculatecatHealthStates());
+        this.updatecatCoinUi(catCoin);
 
-        this.heroSprite.restoreHealth = (restore) => {
-            this.heroSprite.health = Math.min(this.heroSprite.health + restore, this.heroSprite.maxHealth);
-            this.updateHeroHealthUi(this.calculateHeroHealthStates());
+        this.catSprite.restoreHealth = (restore) => {
+            this.catSprite.health = Math.min(this.catSprite.health + restore, this.catSprite.maxHealth);
+            this.updatecatHealthUi(this.calculatecatHealthStates());
         };
 
-        this.heroSprite.increaseMaxHealth = (increase) => {
-            this.heroSprite.maxHealth += increase;
+        this.catSprite.increaseMaxHealth = (increase) => {
+            this.catSprite.maxHealth += increase;
             // 参照原项目：提升心之容器后，当前生命同步至最大值
-            this.heroSprite.health = this.heroSprite.maxHealth;
-            this.updateHeroHealthUi(this.calculateHeroHealthStates());
+            this.catSprite.health = this.catSprite.maxHealth;
+            this.updatecatHealthUi(this.calculatecatHealthStates());
         };
 
-        this.heroSprite.collectCoin = (coinQuantity) => {
-            this.heroSprite.coin = Math.min(this.heroSprite.coin + coinQuantity, 999);
-            this.updateHeroCoinUi(this.heroSprite.coin);
+        this.catSprite.collectCoin = (coinQuantity) => {
+            this.catSprite.coin = Math.min(this.catSprite.coin + coinQuantity, 999);
+            this.updatecatCoinUi(this.catSprite.coin);
         };
 
-        this.heroSprite.takeDamage = (damage) => {
+        this.catSprite.takeDamage = (damage) => {
             this.time.delayedCall(
                 180,
                 () => {
-                    this.heroSprite.health -= damage;
-                    if (this.heroSprite.health <= 0) {
+                    this.catSprite.health -= damage;
+                    if (this.catSprite.health <= 0) {
                         camera.fadeOut(SCENE_FADE_TIME);
-                        this.updateHeroHealthUi([]);
-                        this.updateHeroCoinUi(null);
+                        this.updatecatHealthUi([]);
+                        this.updatecatCoinUi(null);
                         this.time.delayedCall(
                             SCENE_FADE_TIME,
                             () => {
@@ -558,9 +558,9 @@ export default class GameScene extends Scene {
                             }
                         );
                     } else {
-                        this.updateHeroHealthUi(this.calculateHeroHealthStates());
+                        this.updatecatHealthUi(this.calculatecatHealthStates());
                         this.tweens.add({
-                            targets: this.heroSprite,
+                            targets: this.catSprite,
                             alpha: 0,
                             ease: PhaserMath.Easing.Elastic.InOut,
                             duration: 70,
@@ -571,31 +571,31 @@ export default class GameScene extends Scene {
                 }
             );
         };
-        this.heroSprite.body.setSize(14, 14);
-        this.heroSprite.body.setOffset(9, 13);
-        this.heroActionCollider = createInteractiveGameObject(
+        this.catSprite.body.setSize(14, 14);
+        this.catSprite.body.setOffset(9, 13);
+        this.catActionCollider = createInteractiveGameObject(
             this,
-            this.heroSprite.x + 9,
-            this.heroSprite.y + 36,
+            this.catSprite.x + 9,
+            this.catSprite.y + 36,
             14,
             8,
             'attack',
             isDebugMode
         );
-        this.heroPresenceCollider = createInteractiveGameObject(
+        this.catPresenceCollider = createInteractiveGameObject(
             this,
-            this.heroSprite.x + 16,
-            this.heroSprite.y + 20,
+            this.catSprite.x + 16,
+            this.catSprite.y + 20,
             320, // TODO
             320, // TODO
             'presence',
             isDebugMode,
             { x: 0.5, y: 0.5 }
         );
-        this.heroObjectCollider = createInteractiveGameObject(
+        this.catObjectCollider = createInteractiveGameObject(
             this,
-            this.heroSprite.x + 16,
-            this.heroSprite.y + 20,
+            this.catSprite.x + 16,
+            this.catSprite.y + 20,
             24,
             24,
             'object',
@@ -652,7 +652,7 @@ export default class GameScene extends Scene {
                 });
             }
 
-            this.physics.add.collider(this.heroSprite, layer);
+            this.physics.add.collider(this.catSprite, layer);
         }
 
         const npcsKeys = [];
@@ -681,7 +681,7 @@ export default class GameScene extends Scene {
                             isDebugMode
                         );
 
-                        this.physics.add.overlap(this.heroActionCollider, customCollider, (objA, objB) => {
+                        this.physics.add.overlap(this.catActionCollider, customCollider, (objA, objB) => {
                             if (this.isShowingDialog) {
                                 return;
                             }
@@ -782,7 +782,7 @@ export default class GameScene extends Scene {
                             }
 
                             case 'sword': {
-                                if (!heroHaveSword) {
+                                if (!catHaveSword) {
                                     const item = this.physics.add
                                         .sprite(x, y, 'sword')
                                         .setDepth(1)
@@ -796,7 +796,7 @@ export default class GameScene extends Scene {
                             }
 
                             case 'push': {
-                                if (!heroCanPush) {
+                                if (!catCanPush) {
                                     const item = this.physics.add
                                         .sprite(x, y, 'push')
                                         .setDepth(1)
@@ -853,31 +853,31 @@ export default class GameScene extends Scene {
                         
                         console.log('Teleport data:', { teleportToMapKey, teleportToX, teleportToY });
 
-                        const overlapCollider = this.physics.add.overlap(this.heroSprite, customCollider, () => {
-                            console.log('Hero entered teleport, teleporting to:', teleportToMapKey, teleportToX, teleportToY);
+                        const overlapCollider = this.physics.add.overlap(this.catSprite, customCollider, () => {
+                            console.log('cat entered teleport, teleporting to:', teleportToMapKey, teleportToX, teleportToY);
                             // camera.stopFollow();
                             this.physics.world.removeCollider(overlapCollider);
-                            const facingDirection = this.gridEngine.getFacingDirection('hero');
+                            const facingDirection = this.gridEngine.getFacingDirection('cat');
                             camera.fadeOut(SCENE_FADE_TIME);
                             // this.scene.pause();
                             this.isTeleporting = true;
-                            // this.gridEngine.stopMovement('hero');
+                            // this.gridEngine.stopMovement('cat');
 
                             this.time.delayedCall(
                                 SCENE_FADE_TIME,
                                 () => {
                                     this.isTeleporting = false;
                                     this.scene.restart({
-                                        heroStatus: {
+                                        catStatus: {
                                             position: { x: teleportToX, y: teleportToY },
                                             previousPosition: this.calculatePreviousTeleportPosition(),
-                                            frame: `hero_idle_${facingDirection}_01`,
+                                            frame: `cat_idle_${facingDirection}_01`,
                                             facingDirection,
-                                            health: this.heroSprite.health,
-                                            maxHealth: this.heroSprite.maxHealth,
-                                            coin: this.heroSprite.coin,
-                                            canPush: this.heroSprite.canPush,
-                                            haveSword: this.heroSprite.haveSword,
+                                            health: this.catSprite.health,
+                                            maxHealth: this.catSprite.maxHealth,
+                                            coin: this.catSprite.coin,
+                                            canPush: this.catSprite.canPush,
+                                            haveSword: this.catSprite.haveSword,
                                         },
                                         mapKey: teleportToMapKey,
                                     });
@@ -896,8 +896,8 @@ export default class GameScene extends Scene {
             });
         }
 
-        camera.startFollow(this.heroSprite, true); // 相机跟随主角
-        camera.setFollowOffset(-this.heroSprite.width, -this.heroSprite.height);
+        camera.startFollow(this.catSprite, true); // 相机跟随主角
+        camera.setFollowOffset(-this.catSprite.width, -this.catSprite.height);
         camera.setBounds(
             0,
             0,
@@ -921,8 +921,8 @@ export default class GameScene extends Scene {
         const gridEngineConfig = {
             characters: [
                 {
-                    id: 'hero',
-                    sprite: this.heroSprite,
+                    id: 'cat',
+                    sprite: this.catSprite,
                     startPosition: initialPosition,
                     offsetY: 4,
                 },
@@ -930,23 +930,23 @@ export default class GameScene extends Scene {
             numberOfDirections: 8,
         };
 
-        this.physics.add.overlap(this.heroSprite, this.itemsSprites, (objA, objB) => {
-            const item = [objA, objB].find((obj) => obj !== this.heroSprite);
+        this.physics.add.overlap(this.catSprite, this.itemsSprites, (objA, objB) => {
+            const item = [objA, objB].find((obj) => obj !== this.catSprite);
 
             if (item.itemType === 'heart') {
-                this.heroSprite.restoreHealth(20);
+                this.catSprite.restoreHealth(20);
                 item.setVisible(false);
                 item.destroy();
             }
 
             if (item.itemType === 'coin') {
-                this.heroSprite.collectCoin(1);
+                this.catSprite.collectCoin(1);
                 item.setVisible(false);
                 item.destroy();
             }
 
             if (item.itemType === 'heart_container') {
-                this.heroSprite.increaseMaxHealth(20);
+                this.catSprite.increaseMaxHealth(20);
                 item.setVisible(false);
                 item.destroy();
             }
@@ -974,7 +974,7 @@ export default class GameScene extends Scene {
                     dialogBoxFinishedEventListener
                 );
 
-                this.heroSprite.haveSword = true;
+                this.catSprite.haveSword = true;
                 item.setVisible(false);
                 item.destroy();
             }
@@ -1002,7 +1002,7 @@ export default class GameScene extends Scene {
                     dialogBoxFinishedEventListener
                 );
 
-                this.heroSprite.canPush = true;
+                this.catSprite.canPush = true;
                 item.setVisible(false);
                 item.destroy();
             }
@@ -1020,8 +1020,8 @@ export default class GameScene extends Scene {
             enemy.speed = speed;
             enemy.health = health;
             enemy.isAttacking = false;
-            enemy.updateFollowHeroPosition = true;
-            enemy.lastKnowHeroPosition = { x: 0, y: 0 };
+            enemy.updateFollowcatPosition = true;
+            enemy.lastKnowcatPosition = { x: 0, y: 0 };
             enemy.body.setSize(14, 14);
             enemy.body.setOffset(9, 21);
             this.enemiesSprites.add(enemy);
@@ -1132,24 +1132,24 @@ export default class GameScene extends Scene {
         this.npcSprites = npcSprites;
 
         // Movement
-        this.createPlayerWalkingAnimation('hero', 'walking_up');
-        this.createPlayerWalkingAnimation('hero', 'walking_right');
-        this.createPlayerWalkingAnimation('hero', 'walking_down');
-        this.createPlayerWalkingAnimation('hero', 'walking_left');
+        this.createPlayerWalkingAnimation('cat', 'walking_up');
+        this.createPlayerWalkingAnimation('cat', 'walking_right');
+        this.createPlayerWalkingAnimation('cat', 'walking_down');
+        this.createPlayerWalkingAnimation('cat', 'walking_left');
 
         // Attack
-        this.createPlayerAttackAnimation('hero', 'attack_up', 12, 0, false);
-        this.createPlayerAttackAnimation('hero', 'attack_right', 12, 0, false);
-        this.createPlayerAttackAnimation('hero', 'attack_down', 12, 0, false);
-        this.createPlayerAttackAnimation('hero', 'attack_left', 12, 0, false);
+        this.createPlayerAttackAnimation('cat', 'attack_up', 12, 0, false);
+        this.createPlayerAttackAnimation('cat', 'attack_right', 12, 0, false);
+        this.createPlayerAttackAnimation('cat', 'attack_down', 12, 0, false);
+        this.createPlayerAttackAnimation('cat', 'attack_left', 12, 0, false);
 
-        this.heroSprite.on('animationcomplete', (animation, animationFrame) => {
+        this.catSprite.on('animationcomplete', (animation, animationFrame) => {
             if (animation.key.includes('attack')) {
                 this.isAttacking = false;
             }
         });
 
-        this.heroSprite.on('animationstop', (animation, animationFrame) => {
+        this.catSprite.on('animationstop', (animation, animationFrame) => {
             if (animation.key.includes('attack')) {
                 this.isAttacking = false;
             }
@@ -1201,7 +1201,7 @@ export default class GameScene extends Scene {
                 yoyo: true,
                 repeat: 2,
             });
-            this.gridEngine.moveTo('hero', target, {
+            this.gridEngine.moveTo('cat', target, {
                 NoPathFoundStrategy: 'CLOSEST_REACHABLE',
             });
         });
@@ -1230,14 +1230,14 @@ export default class GameScene extends Scene {
 
             this.gridEngine.moveRandomly(enemyName, 1000, 4);
         });
-        this.physics.add.overlap(this.heroObjectCollider, this.enemiesSprites, (objA, objB) => {
-            const enemy = [objA, objB].find((obj) => obj !== this.heroObjectCollider);
+        this.physics.add.overlap(this.catObjectCollider, this.enemiesSprites, (objA, objB) => {
+            const enemy = [objA, objB].find((obj) => obj !== this.catObjectCollider);
             if (enemy.isAttacking || this.gridEngine.isMoving(enemy.name)) {
                 return;
             }
 
             enemy.anims.play(`${enemy.enemySpecies}_attack`);
-            this.heroSprite.takeDamage(10);
+            this.catSprite.takeDamage(10);
             enemy.isAttacking = true;
             this.time.delayedCall(
                 this.getEnemyAttackSpeed(enemy.enemyType),
@@ -1247,55 +1247,55 @@ export default class GameScene extends Scene {
             );
         });
 
-        this.physics.add.overlap(this.heroPresenceCollider, this.enemiesSprites, (objA, objB) => {
-            const enemy = [objA, objB].find((obj) => obj !== this.heroPresenceCollider);
+        this.physics.add.overlap(this.catPresenceCollider, this.enemiesSprites, (objA, objB) => {
+            const enemy = [objA, objB].find((obj) => obj !== this.catPresenceCollider);
 
-            if (enemy.canSeeHero && enemy.enemyAI === ENEMY_AI_TYPE) {
-                enemy.isFollowingHero = true;
-                if (enemy.updateFollowHeroPosition) {
-                    const facingDirection = this.gridEngine.getFacingDirection('hero');
-                    const heroPosition = this.gridEngine.getPosition('hero');
-                    const heroBackPosition = this.getBackPosition(facingDirection, heroPosition);
+            if (enemy.canSeecat && enemy.enemyAI === ENEMY_AI_TYPE) {
+                enemy.isFollowingcat = true;
+                if (enemy.updateFollowcatPosition) {
+                    const facingDirection = this.gridEngine.getFacingDirection('cat');
+                    const catPosition = this.gridEngine.getPosition('cat');
+                    const catBackPosition = this.getBackPosition(facingDirection, catPosition);
 
                     if (
-                        enemy.lastKnowHeroPosition.x !== heroBackPosition.x
-                        || enemy.lastKnowHeroPosition.y !== heroBackPosition.y
+                        enemy.lastKnowcatPosition.x !== catBackPosition.x
+                        || enemy.lastKnowcatPosition.y !== catBackPosition.y
                     ) {
                         const enemyPosition = this.gridEngine.getPosition(enemy.name);
-                        enemy.lastKnowHeroPosition = heroBackPosition;
+                        enemy.lastKnowcatPosition = catBackPosition;
 
                         if (
-                            heroBackPosition.x === enemyPosition.x
-                            && heroBackPosition.y === enemyPosition.y
+                            catBackPosition.x === enemyPosition.x
+                            && catBackPosition.y === enemyPosition.y
                         ) {
-                            enemy.updateFollowHeroPosition = false;
+                            enemy.updateFollowcatPosition = false;
                             // TODO can attack I guess
                             return;
                         }
 
-                        enemy.updateFollowHeroPosition = false;
+                        enemy.updateFollowcatPosition = false;
                         this.time.delayedCall(1000, () => {
-                            enemy.updateFollowHeroPosition = true;
+                            enemy.updateFollowcatPosition = true;
                         });
 
                         this.gridEngine.setSpeed(enemy.name, Math.ceil(enemy.speed * 1.5));
-                        this.gridEngine.moveTo(enemy.name, heroBackPosition, {
+                        this.gridEngine.moveTo(enemy.name, catBackPosition, {
                             NoPathFoundStrategy: 'CLOSEST_REACHABLE',
                         });
                     }
                 }
             }
 
-            enemy.canSeeHero = enemy.body.embedded;
+            enemy.canSeecat = enemy.body.embedded;
         });
 
         // Animations
         this.gridEngine.movementStarted().subscribe(({ charId, direction }) => { // 开始移动时切换行走动画
-            if (charId === 'hero') {
+            if (charId === 'cat') {
                 // 角色移动方向来自 GridEngine（可能为 8 向）。动画素材仅有 4 向，做归一映射。
                 const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
                 const animDir = (cardinal === 'up' || cardinal === 'down' || cardinal === 'left' || cardinal === 'right') ? cardinal : direction;
-                this.heroSprite.anims.play(`hero_walking_${animDir}`);
+                this.catSprite.anims.play(`cat_walking_${animDir}`);
             } else {
                 const npc = npcSprites.getChildren().find((npcSprite) => npcSprite.texture.key === charId);
                 if (npc) {
@@ -1313,11 +1313,11 @@ export default class GameScene extends Scene {
         });
 
         this.gridEngine.movementStopped().subscribe(({ charId, direction }) => { // 停止时重置为站立帧/待机
-            if (charId === 'hero') {
-                this.heroSprite.anims.stop();
+            if (charId === 'cat') {
+                this.catSprite.anims.stop();
                 const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
-                this.heroSprite.setFrame(this.getStopFrame(cardinal, charId));
-                // 自动寻路结束（hero 停止）
+                this.catSprite.setFrame(this.getStopFrame(cardinal, charId));
+                // 自动寻路结束（cat 停止）
                 this.isAutoMoving = false;
                 // 隐藏目标高亮
                 if (this.autoMoveTargetHighlight) {
@@ -1340,9 +1340,9 @@ export default class GameScene extends Scene {
         });
 
         this.gridEngine.directionChanged().subscribe(({ charId, direction }) => { // 朝向改变时更新站立帧
-            if (charId === 'hero') {
+            if (charId === 'cat') {
                 const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
-                this.heroSprite.setFrame(this.getStopFrame(cardinal, charId));
+                this.catSprite.setFrame(this.getStopFrame(cardinal, charId));
             } else {
                 const npc = npcSprites.getChildren().find((npcSprite) => npcSprite.texture.key === charId);
                 if (npc) {
@@ -1358,51 +1358,51 @@ export default class GameScene extends Scene {
             }
         });
 
-        this.heroActionCollider.update = () => { // 随主角更新交互体位置与朝向
-            const facingDirection = this.gridEngine.getFacingDirection('hero');
-            this.heroPresenceCollider.setPosition(
-                this.heroSprite.x + 16,
-                this.heroSprite.y + 20
+        this.catActionCollider.update = () => { // 随主角更新交互体位置与朝向
+            const facingDirection = this.gridEngine.getFacingDirection('cat');
+            this.catPresenceCollider.setPosition(
+                this.catSprite.x + 16,
+                this.catSprite.y + 20
             );
 
-            this.heroObjectCollider.setPosition(
-                this.heroSprite.x + 16,
-                this.heroSprite.y + 20
+            this.catObjectCollider.setPosition(
+                this.catSprite.x + 16,
+                this.catSprite.y + 20
             );
 
             switch (facingDirection) {
                 case 'down': {
-                    this.heroActionCollider.setSize(14, 8);
-                    this.heroActionCollider.body.setSize(14, 8);
-                    this.heroActionCollider.setX(this.heroSprite.x + 9);
-                    this.heroActionCollider.setY(this.heroSprite.y + 36);
+                    this.catActionCollider.setSize(14, 8);
+                    this.catActionCollider.body.setSize(14, 8);
+                    this.catActionCollider.setX(this.catSprite.x + 9);
+                    this.catActionCollider.setY(this.catSprite.y + 36);
 
                     break;
                 }
 
                 case 'up': {
-                    this.heroActionCollider.setSize(14, 8);
-                    this.heroActionCollider.body.setSize(14, 8);
-                    this.heroActionCollider.setX(this.heroSprite.x + 9);
-                    this.heroActionCollider.setY(this.heroSprite.y + 12);
+                    this.catActionCollider.setSize(14, 8);
+                    this.catActionCollider.body.setSize(14, 8);
+                    this.catActionCollider.setX(this.catSprite.x + 9);
+                    this.catActionCollider.setY(this.catSprite.y + 12);
 
                     break;
                 }
 
                 case 'left': {
-                    this.heroActionCollider.setSize(8, 14);
-                    this.heroActionCollider.body.setSize(8, 14);
-                    this.heroActionCollider.setX(this.heroSprite.x);
-                    this.heroActionCollider.setY(this.heroSprite.y + 21);
+                    this.catActionCollider.setSize(8, 14);
+                    this.catActionCollider.body.setSize(8, 14);
+                    this.catActionCollider.setX(this.catSprite.x);
+                    this.catActionCollider.setY(this.catSprite.y + 21);
 
                     break;
                 }
 
                 case 'right': {
-                    this.heroActionCollider.setSize(8, 14);
-                    this.heroActionCollider.body.setSize(8, 14);
-                    this.heroActionCollider.setX(this.heroSprite.x + 24);
-                    this.heroActionCollider.setY(this.heroSprite.y + 21);
+                    this.catActionCollider.setSize(8, 14);
+                    this.catActionCollider.body.setSize(8, 14);
+                    this.catActionCollider.setX(this.catSprite.x + 24);
+                    this.catActionCollider.setY(this.catSprite.y + 21);
 
                     break;
                 }
@@ -1413,12 +1413,12 @@ export default class GameScene extends Scene {
             }
         };
 
-        this.physics.add.overlap(this.heroActionCollider, npcSprites, (objA, objB) => { // 回车与 NPC 交互（对话）
+        this.physics.add.overlap(this.catActionCollider, npcSprites, (objA, objB) => { // 回车与 NPC 交互（对话）
             if (this.isShowingDialog) {
                 return;
             }
 
-            const npc = [objA, objB].find((obj) => obj !== this.heroActionCollider);
+            const npc = [objA, objB].find((obj) => obj !== this.catActionCollider);
 
             if (this.inputManager.isEnterJustDown() || this.inputManager.isSpaceJustDown()) {
                 if (this.gridEngine.isMoving(npc.texture.key)) {
@@ -1450,14 +1450,14 @@ export default class GameScene extends Scene {
                 window.addEventListener(`${characterName}-dialog-finished`, dialogBoxFinishedEventListener);
 
                 this.isShowingDialog = true;
-                const facingDirection = this.gridEngine.getFacingDirection('hero');
+                const facingDirection = this.gridEngine.getFacingDirection('cat');
                 this.gridEngine.stopMovement(characterName);
                 npc.setFrame(this.getStopFrame(this.getOppositeDirection(facingDirection), characterName));
             }
         });
 
-        this.physics.add.overlap(this.heroActionCollider, elementsLayers, (objA, objB) => { // 与场景元素交互：砍草、推箱
-            const tile = [objA, objB].find((obj) => obj !== this.heroActionCollider);
+        this.physics.add.overlap(this.catActionCollider, elementsLayers, (objA, objB) => { // 与场景元素交互：砍草、推箱
+            const tile = [objA, objB].find((obj) => obj !== this.catActionCollider);
 
             // 防御性校验，确保拿到的是有效的 Tile 对象
             if (!tile || typeof tile.index !== 'number' || (tile.layer == null && tile.tilemapLayer == null)) {
@@ -1490,7 +1490,7 @@ export default class GameScene extends Scene {
                     }
 
                     case BOX_INDEX: {
-                        if (this.heroSprite.canPush && this.isAttacking) {
+                        if (this.catSprite.canPush && this.isAttacking) {
                             const newPosition = this.calculatePushTilePosition();
                             const canBePushed = map.layers.every((layer) => {
                                 const t = layer.tilemapLayer.getTileAtWorldXY(
@@ -1543,8 +1543,8 @@ export default class GameScene extends Scene {
             }
         });
 
-        this.physics.add.overlap(this.heroActionCollider, this.enemiesSprites, (objA, objB) => { // 攻击判定
-            const enemy = [objA, objB].find((obj) => obj !== this.heroActionCollider);
+        this.physics.add.overlap(this.catActionCollider, this.enemiesSprites, (objA, objB) => { // 攻击判定
+            const enemy = [objA, objB].find((obj) => obj !== this.catActionCollider);
 
             // Handles attack
             if (this.isAttacking) {
@@ -1571,26 +1571,26 @@ export default class GameScene extends Scene {
         }
 
         if (
-            !this.gridEngine.isMoving('hero')
+            !this.gridEngine.isMoving('cat')
             && this.inputManager.isSpaceJustDown()
-            && this.heroSprite.haveSword
+            && this.catSprite.haveSword
         ) {
-            const facingDirection = this.gridEngine.getFacingDirection('hero');
-            this.heroSprite.anims.play(`hero_attack_${facingDirection}`);
+            const facingDirection = this.gridEngine.getFacingDirection('cat');
+            this.catSprite.anims.play(`cat_attack_${facingDirection}`);
             this.isAttacking = true;
             return;
         }
 
         this.enemiesSprites.getChildren().forEach((enemy) => {
-            enemy.canSeeHero = enemy.body.embedded;
-            if (!enemy.canSeeHero && enemy.isFollowingHero) {
-                enemy.isFollowingHero = false;
+            enemy.canSeecat = enemy.body.embedded;
+            if (!enemy.canSeecat && enemy.isFollowingcat) {
+                enemy.isFollowingcat = false;
                 this.gridEngine.setSpeed(enemy.name, enemy.speed);
                 this.gridEngine.moveRandomly(enemy.name, 1000, 4);
             }
         });
 
-        this.heroActionCollider.update();
+        this.catActionCollider.update();
         // 根据周围环境更新交互按钮图标（对话 / 宝箱/箱子 / 攻击）
         this.updateActionContext();
         
@@ -1598,8 +1598,8 @@ export default class GameScene extends Scene {
         const currentDirection = this.inputManager.getCurrentDirection();
 
         // 无输入时：当非自动寻路才停止（避免打断 moveTo）
-        if (!currentDirection && this.gridEngine.isMoving('hero') && !this.isAutoMoving) {
-            this.gridEngine.stopMovement('hero');
+        if (!currentDirection && this.gridEngine.isMoving('cat') && !this.isAutoMoving) {
+            this.gridEngine.stopMovement('cat');
             return;
         }
 
@@ -1607,14 +1607,14 @@ export default class GameScene extends Scene {
         if (currentDirection) {
             if (this.isAutoMoving) {
                 this.isAutoMoving = false;
-                this.gridEngine.stopMovement('hero');
+                this.gridEngine.stopMovement('cat');
                 // 手动输入打断时隐藏目标高亮
                 if (this.autoMoveTargetHighlight) {
                     this.autoMoveTargetHighlight.setVisible(false);
                 }
             }
-            if (!this.gridEngine.isMoving('hero')) {
-                this.gridEngine.move('hero', currentDirection);
+            if (!this.gridEngine.isMoving('cat')) {
+                this.gridEngine.move('cat', currentDirection);
             }
         }
     }

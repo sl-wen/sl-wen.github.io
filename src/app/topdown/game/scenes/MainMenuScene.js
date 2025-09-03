@@ -53,10 +53,10 @@ export default class MainMenuScene extends Scene {
                 case 'start': {
                     // 启动游戏：进入 GameScene 并传递初始主角状态与地图 key
                     this.scene.start('GameScene', {
-                        heroStatus: {
+                        catStatus: {
                             position: { x: 4, y: 3 },
                             previousPosition: { x: 4, y: 3 },
-                            frame: 'hero_idle_down_01',
+                            frame: 'cat_idle_down',
                             facingDirection: 'down',
                             health: 60,
                             maxHealth: 60,

@@ -18,7 +18,7 @@
  * - 点击对话框或按空格键/回车键：显示完整消息或进入下一条
  * - 按 ESC 键：跳过当前消息
  */
-
+    
 import { styled } from '@mui/material/styles';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -182,7 +182,7 @@ const DialogBox = ({
 
             {/* 交互提示 */}
             <DialogFooter multiplier={multiplier}>
-                {messageEnded ? 'continue' : 'skip'}
+                {messageEnded ? '结束' : '继续'}
             </DialogFooter>
         </DialogWindow>
     );

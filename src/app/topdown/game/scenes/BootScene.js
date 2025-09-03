@@ -200,7 +200,7 @@ export default class BootScene extends Scene {
      */
     loadCharacterSprites() {
         // 主角精灵图集
-        this.load.atlas('hero', '/game/assets/sprites/atlas/hero.png', '/game/assets/sprites/atlas/hero.json');
+        this.load.atlas('cat', '/game/assets/sprites/atlas/cat.png', '/game/assets/sprites/atlas/cat.json');
         
         // NPC 精灵图集
         this.load.atlas('npc_01', '/game/assets/sprites/atlas/npc_01.png', '/game/assets/sprites/atlas/npc_01.json');
@@ -274,17 +274,17 @@ export default class BootScene extends Scene {
      */
     createAnimations() {
         // 基于图集帧名创建主角行走与待机动画
-        const walking = (dir) => [`hero_walking_${dir}_01`, `hero_idle_${dir}_01`, `hero_walking_${dir}_02`].map((frame) => ({ key: 'hero', frame }));
-        const idle = (dir) => [{ key: 'hero', frame: `hero_idle_${dir}_01` }];
+        const walking = (dir) => [`cat${dir}_01`, `cat_idle_${dir}_01`, `cat_walk_${dir}_02`].map((frame) => ({ key: 'cat', frame }));
+        const idle = (dir) => [{ key: 'cat', frame: `cat_idle_${dir}_01` }];
 
-        this.anims.create({ key: 'hero_walk_down', frames: walking('down'), frameRate: 8, repeat: -1, yoyo: true });
-        this.anims.create({ key: 'hero_walk_up', frames: walking('up'), frameRate: 8, repeat: -1, yoyo: true });
-        this.anims.create({ key: 'hero_walk_left', frames: walking('left'), frameRate: 8, repeat: -1, yoyo: true });
-        this.anims.create({ key: 'hero_walk_right', frames: walking('right'), frameRate: 8, repeat: -1, yoyo: true });
+        this.anims.create({ key: 'cat_walk_down', frames: walking('down'), frameRate: 8, repeat: -1, yoyo: true });
+        this.anims.create({ key: 'cat_walk_up', frames: walking('up'), frameRate: 8, repeat: -1, yoyo: true });
+        this.anims.create({ key: 'cat_walk_left', frames: walking('left'), frameRate: 8, repeat: -1, yoyo: true });
+        this.anims.create({ key: 'cat_walk_right', frames: walking('right'), frameRate: 8, repeat: -1, yoyo: true });
 
-        this.anims.create({ key: 'hero_idle_down', frames: idle('down'), frameRate: 1 });
-        this.anims.create({ key: 'hero_idle_up', frames: idle('up'), frameRate: 1 });
-        this.anims.create({ key: 'hero_idle_left', frames: idle('left'), frameRate: 1 });
-        this.anims.create({ key: 'hero_idle_right', frames: idle('right'), frameRate: 1 });
+        this.anims.create({ key: 'cat_idle_down', frames: idle('down'), frameRate: 1 });
+        this.anims.create({ key: 'cat_idle_up', frames: idle('up'), frameRate: 1 });
+        this.anims.create({ key: 'cat_idle_left', frames: idle('left'), frameRate: 1 });
+        this.anims.create({ key: 'cat_idle_right', frames: idle('right'), frameRate: 1 });
     }
 }

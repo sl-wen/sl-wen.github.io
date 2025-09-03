@@ -27,8 +27,6 @@ import MainMenuScene from './game/scenes/MainMenuScene';
 import GameOverScene from './game/scenes/GameOverScene';
 import GameScene from './game/scenes/GameScene';
 import { styled } from '@mui/material/styles';
-import classNames from 'classnames';
-import { Backdrop, Fade, Modal, Typography } from '@mui/material';
 // Note: dialog_borderbox.png is now served from public/game/assets/images/dialog_borderbox.png
 import GameMenu from "./game/GameMenu";
 import DialogBox from "./game/DialogBox";
@@ -87,32 +85,32 @@ const GameWrapper = styled('div')(({ theme }) => ({
  */
 const dialogs = {
   "npc_01": [{
-    "message": "Hello",
+    "message": "你好！",
   }, {
-    "message": "How are you?",
+    "message": "你是谁",
   }],
   "npc_02": [{
-    "message": "Hello there",
+    "message": "这是哪",
   }],
   "npc_03": [{
-    "message": "Hi",
+    "message": "嗨",
   }, {
-    "message": "Ok bye!",
+    "message": "好的",
   }],
   "npc_04": [{
-    "message": "Hey",
+    "message": "嗨",
   }],
   "sword": [{
-    "message": "You got a sword",
+    "message": "你获得了一把剑",
   }],
   "push": [{
-    "message": "You can push boxes now",
+    "message": "你现在能够推箱子",
   }],
   "sign_01": [{
-    "message": "You can read this!",
+    "message": "你能够读消息",
   }],
   "book_01": [{
-    "message": "Welcome to the game!",
+    "message": "欢迎来到我的游戏",
   }]
 };
 

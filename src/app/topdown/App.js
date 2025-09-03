@@ -19,23 +19,23 @@
  * 5. 触摸屏用户可使用虚拟摇杆和动作按钮
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import * as Phaser from 'phaser';
+import { styled } from '@mui/material/styles';
 import GridEngine from 'grid-engine';
+import * as Phaser from 'phaser';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import BootScene from './game/scenes/BootScene';
-import MainMenuScene from './game/scenes/MainMenuScene';
 import GameOverScene from './game/scenes/GameOverScene';
 import GameScene from './game/scenes/GameScene';
-import { styled } from '@mui/material/styles';
+import MainMenuScene from './game/scenes/MainMenuScene';
 // Note: dialog_borderbox.png is now served from public/game/assets/images/dialog_borderbox.png
-import GameMenu from "./game/GameMenu";
+import './App.css';
+import ActionButton from "./game/ActionButton";
 import DialogBox from "./game/DialogBox";
+import GameMenu from "./game/GameMenu";
 import HeroCoin from "./game/HeroCoin";
 import HeroHealth from "./game/HeroHealth";
-import VirtualJoystick from "./game/VirtualJoystick";
-import ActionButton from "./game/ActionButton";
-import './App.css';
 import { calculateGameSize } from "./game/utils";
+import VirtualJoystick from "./game/VirtualJoystick";
 
 // 计算游戏尺寸和缩放倍数，确保在不同设备上都有良好的显示效果
 const { width, height, multiplier } = calculateGameSize();
@@ -57,7 +57,7 @@ const GameContentWrapper = styled('div')(({ theme }) => ({
   justifyContent: 'center',
   '& canvas': {
     imageRendering: 'pixelated',
-    '-ms-interpolation-mode': 'nearest-neighbor',
+    msInterpolationMode: 'nearest-neighbor',
     boxShadow: '0px 0px 0px 3px rgba(0,0,0,0.75)',
     // 确保画布完全填充容器
     width: '100%',
@@ -119,6 +119,7 @@ const dialogs = {
  * 负责游戏的整体管理和状态控制
  */
 function App() {
+  const gameRef = useRef(null);
   // 游戏状态管理
   const [messages, setMessages] = useState([]);           // 当前显示的对话消息
   const [characterName, setCharacterName] = useState(''); // 当前对话的角色名称
@@ -195,6 +196,16 @@ function App() {
    * 设置游戏配置、场景、物理引擎和插件
    */
   useEffect(() => {
+    if (gameRef.current) {
+      try { gameRef.current.destroy(true); } catch (e) { }
+      gameRef.current = null;
+    }
+
+    if (typeof window !== 'undefined' && window.__phaserGame) {
+      try { window.__phaserGame.destroy(true); } catch (e) { }
+      window.__phaserGame = null;
+    }
+
     const game = new Phaser.Game({
       type: Phaser.AUTO,                    // 自动选择渲染器（WebGL 或 Canvas）
       title: 'some-game-title',             // 游戏标题
@@ -207,7 +218,7 @@ function App() {
       pixelArt: true,                       // 像素艺术模式
       scale: {
         autoCenter: Phaser.Scale.CENTER_BOTH, // 自动居中
-        mode: Phaser.Scale.ENVELOP,          // 缩放模式：适应容器
+        mode: Phaser.Scale.FIT,               // 使用 FIT 以避免分裂视图
       },
       scene: [                              // 游戏场景列表
         BootScene,                           // 启动场景
@@ -230,7 +241,23 @@ function App() {
       backgroundColor: '#000000',            // 背景颜色
     });
 
-    // window.phaserGame = game;
+    gameRef.current = game;
+    if (typeof window !== 'undefined') {
+      window.__phaserGame = game;
+    }
+
+    return () => {
+      try {
+        if (gameRef.current) {
+          gameRef.current.destroy(true);
+          gameRef.current = null;
+        }
+        if (typeof window !== 'undefined' && window.__phaserGame) {
+          window.__phaserGame.destroy(true);
+          window.__phaserGame = null;
+        }
+      } catch (e) { }
+    };
   }, []);
 
   /**
@@ -243,7 +270,7 @@ function App() {
       // TODO fallback
       setCharacterName(detail.characterName);
       setMessages(
-          dialogs[detail.characterName]
+        dialogs[detail.characterName]
       );
     };
     window.addEventListener('new-dialog', dialogBoxEventListener);
@@ -284,91 +311,91 @@ function App() {
   }, [setCharacterName, setMessages]);
 
   return (
-      <div>
-        <GameWrapper>
-          {/* 游戏画布容器 */}
-          <GameContentWrapper
-              id="game-content"
-          >
-            {/* 这里将渲染 Phaser 游戏画布 */}
-          </GameContentWrapper>
-          
-          {/* 角色生命值显示 - 当有生命值状态时显示 */}
-          {heroHealthStates.length > 0 && (
-              <HeroHealth
-                  gameSize={{
-                    width,
-                    height,
-                    multiplier,
-                  }}
-                  healthStates={heroHealthStates}
-              />
-          )}
-          
-          {/* 角色金币显示 - 当有金币数据时显示 */}
-          {heroCoins !== null && (
-              <HeroCoin
-                  gameSize={{
-                    width,
-                    height,
-                    multiplier,
-                  }}
-                  heroCoins={heroCoins}
-              />
-          )}
-          
-          {/* 对话对话框 - 当有对话消息时显示 */}
-          {messages.length > 0 && (
-              <DialogBox
-                  onDone={handleMessageIsDone}
-                  characterName={characterName}
-                  messages={messages}
-                  gameSize={{
-                    width,
-                    height,
-                    multiplier,
-                  }}
-                  safeBottomOffset={140}
-              />
-          )}
-          
-          {/* 游戏菜单 - 当有菜单选项时显示 */}
-          {gameMenuItems.length > 0 && (
-              <GameMenu
-                  items={gameMenuItems}
-                  gameSize={{
-                    width,
-                    height,
-                    multiplier,
-                  }}
-                  position={gameMenuPosition}
-                  onSelected={handleMenuItemSelected}
-              />
-          )}
-          
-          {/* 虚拟摇杆 - 始终显示在左下角，支持触摸屏操作 */}
-          <VirtualJoystick
-              onDirectionChange={handleJoystickDirectionChange}
-              gameSize={{
-                width,
-                height,
-                multiplier,
-              }}
+    <div>
+      <GameWrapper>
+        {/* 游戏画布容器 */}
+        <GameContentWrapper
+          id="game-content"
+        >
+          {/* 这里将渲染 Phaser 游戏画布 */}
+        </GameContentWrapper>
+
+        {/* 角色生命值显示 - 当有生命值状态时显示 */}
+        {heroHealthStates.length > 0 && (
+          <HeroHealth
+            gameSize={{
+              width,
+              height,
+              multiplier,
+            }}
+            healthStates={heroHealthStates}
           />
-          
-          {/* 动作按钮 - 显示在右下角，用于执行动作 */}
-          <ActionButton
-              onAction={handleActionButtonPress}
-              gameSize={{
-                width,
-                height,
-                multiplier,
-              }}
-              icon={actionContext === 'talk' ? '💬' : actionContext === 'interact' ? '🗝️' : actionContext === 'attack' ? '⚔️' : '•'}
-              label={actionContext === 'talk' ? 'Talk' : actionContext === 'interact' ? 'Open' : actionContext === 'attack' ? 'Attack' : ''}
+        )}
+
+        {/* 角色金币显示 - 当有金币数据时显示 */}
+        {heroCoins !== null && (
+          <HeroCoin
+            gameSize={{
+              width,
+              height,
+              multiplier,
+            }}
+            heroCoins={heroCoins}
           />
-        </GameWrapper>
-      </div>
+        )}
+
+        {/* 对话对话框 - 当有对话消息时显示 */}
+        {messages.length > 0 && (
+          <DialogBox
+            onDone={handleMessageIsDone}
+            characterName={characterName}
+            messages={messages}
+            gameSize={{
+              width,
+              height,
+              multiplier,
+            }}
+            safeBottomOffset={140}
+          />
+        )}
+
+        {/* 游戏菜单 - 当有菜单选项时显示 */}
+        {gameMenuItems.length > 0 && (
+          <GameMenu
+            items={gameMenuItems}
+            gameSize={{
+              width,
+              height,
+              multiplier,
+            }}
+            position={gameMenuPosition}
+            onSelected={handleMenuItemSelected}
+          />
+        )}
+
+        {/* 虚拟摇杆 - 始终显示在左下角，支持触摸屏操作 */}
+        <VirtualJoystick
+          onDirectionChange={handleJoystickDirectionChange}
+          gameSize={{
+            width,
+            height,
+            multiplier,
+          }}
+        />
+
+        {/* 动作按钮 - 显示在右下角，用于执行动作 */}
+        <ActionButton
+          onAction={handleActionButtonPress}
+          gameSize={{
+            width,
+            height,
+            multiplier,
+          }}
+          icon={actionContext === 'talk' ? '💬' : actionContext === 'interact' ? '🗝️' : actionContext === 'attack' ? '⚔️' : '•'}
+          label={actionContext === 'talk' ? 'Talk' : actionContext === 'interact' ? 'Open' : actionContext === 'attack' ? 'Attack' : ''}
+        />
+      </GameWrapper>
+    </div>
   );
 }
 

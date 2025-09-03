@@ -58,7 +58,7 @@
  * - 砍草掉落：瓦片移除需使用 TilemapLayer API（removeTileAt），避免直接修改 tile 属性导致冻结。
  * - 自动寻路：用户手动输入会打断 `moveTo`，并隐藏落点高亮。
  */
-import { Input, Math as PhaserMath, Scene } from 'phaser';
+import { Math as PhaserMath, Scene } from 'phaser';
 import {
     ATTACK_DELAY_TIME,
     BOX_INDEX,
@@ -67,8 +67,8 @@ import {
     NPC_MOVEMENT_RANDOM,
     SCENE_FADE_TIME,
 } from '../constants';
-import { createInteractiveGameObject } from '../utils';
 import InputManager from '../InputManager';
+import { createInteractiveGameObject } from '../utils';
 
 export default class GameScene extends Scene {
     constructor() {
@@ -506,12 +506,12 @@ export default class GameScene extends Scene {
 
         // Map 地图加载：根据 `mapKey` 创建 tilemap，并动态注册 tileset
         const map = this.make.tilemap({ key: mapKey });
-        
+
         // 添加调试信息
         console.log('Loading map:', mapKey);
         console.log('Map tilesets:', map.tilesets);
         console.log('Map layers:', map.layers);
-        
+
         // 动态添加图块集，支持多个图块集（名称需与 Tiled 中一致）
         if (map.tilesets && map.tilesets.length > 0) {
             map.tilesets.forEach(tileset => {
@@ -656,7 +656,7 @@ export default class GameScene extends Scene {
         for (let i = 0; i < map.layers.length; i++) {
             const layerData = map.layers[i];
             let layer;
-            
+
             // 动态检测图层使用的图块集
             if (layerData.tileset) {
                 const tilesetName = layerData.tileset.name;
@@ -665,7 +665,7 @@ export default class GameScene extends Scene {
                 // 如果没有指定图块集，使用默认的
                 layer = map.createLayer(i, 'tileset', 0, 0);
             }
-            
+
             // 检查图层属性
             if (layerData.properties) {
                 layerData.properties.forEach((property) => {
@@ -684,7 +684,7 @@ export default class GameScene extends Scene {
         const dataLayer = map.getObjectLayer('actions'); // Tiled 中的对象层，承载对话、NPC、敌人、传送、物品
         console.log('Data layer:', dataLayer);
         console.log('Data layer objects:', dataLayer?.objects);
-        
+
         if (dataLayer && dataLayer.objects) {
             dataLayer.objects.forEach((data) => {
                 const { properties, x, y } = data;
@@ -695,238 +695,239 @@ export default class GameScene extends Scene {
                     console.log('Property:', name, type, value);
 
                     switch (name) {
-                    case 'dialog': {
-                        const customCollider = createInteractiveGameObject(
-                            this,
-                            x,
-                            y,
-                            16,
-                            16,
-                            'dialog',
-                            isDebugMode
-                        );
+                        case 'dialog': {
+                            const customCollider = createInteractiveGameObject(
+                                this,
+                                x,
+                                y,
+                                16,
+                                16,
+                                'dialog',
+                                isDebugMode
+                            );
 
-                        this.physics.add.overlap(this.catActionCollider, customCollider, (objA, objB) => {
-                            if (this.isShowingDialog) {
-                                return;
-                            }
+                            this.physics.add.overlap(this.catActionCollider, customCollider, (objA, objB) => {
+                                if (this.isShowingDialog) {
+                                    return;
+                                }
 
-                            if (this.inputManager.isEnterJustDown() || this.inputManager.isSpaceJustDown()) {
-                                const characterName = value;
-                                const customEvent = new CustomEvent('new-dialog', {
-                                    detail: {
-                                        characterName,
-                                    },
-                                });
+                                if (this.inputManager.isEnterJustDown() || this.inputManager.isSpaceJustDown()) {
+                                    const characterName = value;
+                                    const customEvent = new CustomEvent('new-dialog', {
+                                        detail: {
+                                            characterName,
+                                        },
+                                    });
 
-                                window.dispatchEvent(customEvent);
-                                const dialogBoxFinishedEventListener = () => {
-                                    window.removeEventListener(
+                                    window.dispatchEvent(customEvent);
+                                    const dialogBoxFinishedEventListener = () => {
+                                        window.removeEventListener(
+                                            `${characterName}-dialog-finished`,
+                                            dialogBoxFinishedEventListener
+                                        );
+
+                                        // just to consume the JustDown
+                                        this.inputManager.isEnterJustDown();
+                                        this.inputManager.isSpaceJustDown();
+
+                                        this.time.delayedCall(100, () => {
+                                            this.isShowingDialog = false;
+                                        });
+                                    };
+                                    window.addEventListener(
                                         `${characterName}-dialog-finished`,
                                         dialogBoxFinishedEventListener
                                     );
 
-                                    // just to consume the JustDown
-                                    this.inputManager.isEnterJustDown();
-                                    this.inputManager.isSpaceJustDown();
-
-                                    this.time.delayedCall(100, () => {
-                                        this.isShowingDialog = false;
-                                    });
-                                };
-                                window.addEventListener(
-                                    `${characterName}-dialog-finished`,
-                                    dialogBoxFinishedEventListener
-                                );
-
-                                this.isShowingDialog = true;
-                            }
-                        });
-
-                        break;
-                    }
-
-                    case 'npcData': {
-                        const {
-                            facingDirection,
-                            movementType,
-                            npcKey,
-                            delay,
-                            area,
-                        } = this.extractNpcDataFromTiled(value);
-
-                        npcsKeys.push({
-                            facingDirection,
-                            movementType,
-                            npcKey,
-                            delay,
-                            area,
-                            x,
-                            y,
-                        });
-                        break;
-                    }
-
-                    case 'itemData': {
-                        const [itemType] = value.split(':');
-
-                        switch (itemType) {
-                            case 'coin': {
-                                const item = this.physics.add
-                                    .sprite(x, y, 'coin')
-                                    .setDepth(1)
-                                    .setOrigin(0, 1);
-
-                                item.itemType = 'coin';
-                                this.itemsSprites.add(item);
-                                item.anims.play('coin_idle');
-                                break;
-                            }
-
-                            case 'heart_container': {
-                                const item = this.physics.add
-                                    .sprite(x, y, 'heart_container')
-                                    .setDepth(1)
-                                    .setOrigin(0, 1);
-
-                                item.itemType = 'heart_container';
-                                this.itemsSprites.add(item);
-                                break;
-                            }
-
-                            case 'heart': {
-                                const item = this.physics.add
-                                    .sprite(x, y, 'heart')
-                                    .setDepth(1)
-                                    .setOrigin(0, 1);
-
-                                item.itemType = 'heart';
-                                this.itemsSprites.add(item);
-                                item.anims.play('heart_idle');
-                                break;
-                            }
-
-                            case 'sword': {
-                                if (!catHaveSword) {
-                                    const item = this.physics.add
-                                        .sprite(x, y, 'sword')
-                                        .setDepth(1)
-                                        .setOrigin(0, 1);
-
-                                    item.itemType = 'sword';
-                                    this.itemsSprites.add(item);
+                                    this.isShowingDialog = true;
                                 }
+                            });
 
-                                break;
-                            }
-
-                            case 'push': {
-                                if (!catCanPush) {
-                                    const item = this.physics.add
-                                        .sprite(x, y, 'push')
-                                        .setDepth(1)
-                                        .setOrigin(0, 1);
-
-                                    item.itemType = 'push';
-                                    this.itemsSprites.add(item);
-                                }
-
-                                break;
-                            }
-
-                            default: {
-                                break;
-                            }
+                            break;
                         }
 
-                        break;
-                    }
+                        case 'npcData': {
+                            const {
+                                facingDirection,
+                                movementType,
+                                npcKey,
+                                delay,
+                                area,
+                            } = this.extractNpcDataFromTiled(value);
 
-                    case 'enemyData': {
-                        const [enemyType, enemyAI, speed, health] = value.split(':');
-                        enemiesData.push({
-                            x,
-                            y,
-                            speed: Number.parseInt(speed, 10),
-                            enemyType,
-                            enemySpecies: this.getEnemySpecies(enemyType),
-                            enemyAI,
-                            enemyName: `${enemyType}_${enemiesData.length}`,
-                            health: Number.parseInt(health, 10),
-                        });
-                        break;
-                    }
+                            npcsKeys.push({
+                                facingDirection,
+                                movementType,
+                                npcKey,
+                                delay,
+                                area,
+                                x,
+                                y,
+                            });
+                            break;
+                        }
 
-                    case 'teleportTo': { // 传送门：到达重叠即触发，淡出后重启场景到目标地图
-                        console.log('Found teleport object at:', x, y, 'with value:', value);
-                        
-                        const customCollider = createInteractiveGameObject(
-                            this,
-                            x,
-                            y,
-                            16,
-                            16,
-                            'teleport',
-                            isDebugMode
-                        );
+                        case 'itemData': {
+                            const [itemType] = value.split(':');
 
-                        const {
-                            mapKey: teleportToMapKey,
-                            x: teleportToX,
-                            y: teleportToY,
-                        } = this.extractTeleportDataFromTiled(value);
-                        
-                        console.log('Teleport data:', { teleportToMapKey, teleportToX, teleportToY });
+                            switch (itemType) {
+                                case 'coin': {
+                                    const item = this.physics.add
+                                        .sprite(x, y, 'coin')
+                                        .setDepth(1)
+                                        .setOrigin(0, 1);
 
-                        const overlapCollider = this.physics.add.overlap(this.catSprite, customCollider, () => {
-                            console.log('cat entered teleport, teleporting to:', teleportToMapKey, teleportToX, teleportToY);
-                            // camera.stopFollow();
-                            this.physics.world.removeCollider(overlapCollider);
-                            const facingDirection = this.gridEngine.getFacingDirection('cat');
-                            camera.fadeOut(SCENE_FADE_TIME);
-                            // this.scene.pause();
-                            this.isTeleporting = true;
-                            this.isAutoMoving = false;
-                            if (this.autoMoveTargetHighlight) {
-                                this.autoMoveTargetHighlight.setVisible(false);
-                            }
-                            this.gridEngine.stopMovement('cat');
-
-                            this.time.delayedCall(
-                                SCENE_FADE_TIME,
-                                () => {
-                                    this.isTeleporting = false;
-                                    this.scene.restart({
-                                        catStatus: {
-                                            position: { x: teleportToX, y: teleportToY },
-                                            previousPosition: this.calculatePreviousTeleportPosition(),
-                                            frame: `cat_idle_${facingDirection}`,
-                                            facingDirection,
-                                            health: this.catSprite.health,
-                                            maxHealth: this.catSprite.maxHealth,
-                                            coin: this.catSprite.coin,
-                                            canPush: this.catSprite.canPush,
-                                            haveSword: this.catSprite.haveSword,
-                                        },
-                                        mapKey: teleportToMapKey,
-                                    });
+                                    item.itemType = 'coin';
+                                    this.itemsSprites.add(item);
+                                    item.anims.play('coin_idle');
+                                    break;
                                 }
+
+                                case 'heart_container': {
+                                    const item = this.physics.add
+                                        .sprite(x, y, 'heart_container')
+                                        .setDepth(1)
+                                        .setOrigin(0, 1);
+
+                                    item.itemType = 'heart_container';
+                                    this.itemsSprites.add(item);
+                                    break;
+                                }
+
+                                case 'heart': {
+                                    const item = this.physics.add
+                                        .sprite(x, y, 'heart')
+                                        .setDepth(1)
+                                        .setOrigin(0, 1);
+
+                                    item.itemType = 'heart';
+                                    this.itemsSprites.add(item);
+                                    item.anims.play('heart_idle');
+                                    break;
+                                }
+
+                                case 'sword': {
+                                    if (!catHaveSword) {
+                                        const item = this.physics.add
+                                            .sprite(x, y, 'sword')
+                                            .setDepth(1)
+                                            .setOrigin(0, 1);
+
+                                        item.itemType = 'sword';
+                                        this.itemsSprites.add(item);
+                                    }
+
+                                    break;
+                                }
+
+                                case 'push': {
+                                    if (!catCanPush) {
+                                        const item = this.physics.add
+                                            .sprite(x, y, 'push')
+                                            .setDepth(1)
+                                            .setOrigin(0, 1);
+
+                                        item.itemType = 'push';
+                                        this.itemsSprites.add(item);
+                                    }
+
+                                    break;
+                                }
+
+                                default: {
+                                    break;
+                                }
+                            }
+
+                            break;
+                        }
+
+                        case 'enemyData': {
+                            const [enemyType, enemyAI, speed, health] = value.split(':');
+                            enemiesData.push({
+                                x,
+                                y,
+                                speed: Number.parseInt(speed, 10),
+                                enemyType,
+                                enemySpecies: this.getEnemySpecies(enemyType),
+                                enemyAI,
+                                enemyName: `${enemyType}_${enemiesData.length}`,
+                                health: Number.parseInt(health, 10),
+                            });
+                            break;
+                        }
+
+                        case 'teleportTo': { // 传送门：到达重叠即触发，淡出后重启场景到目标地图
+                            console.log('Found teleport object at:', x, y, 'with value:', value);
+
+                            const customCollider = createInteractiveGameObject(
+                                this,
+                                x,
+                                y,
+                                16,
+                                16,
+                                'teleport',
+                                isDebugMode
                             );
-                        });
 
-                        break;
-                    }
+                            const {
+                                mapKey: teleportToMapKey,
+                                x: teleportToX,
+                                y: teleportToY,
+                            } = this.extractTeleportDataFromTiled(value);
 
-                    default: {
-                        break;
+                            console.log('Teleport data:', { teleportToMapKey, teleportToX, teleportToY });
+
+                            const overlapCollider = this.physics.add.overlap(this.catSprite, customCollider, () => {
+                                console.log('cat entered teleport, teleporting to:', teleportToMapKey, teleportToX, teleportToY);
+                                // camera.stopFollow();
+                                this.physics.world.removeCollider(overlapCollider);
+                                const facingDirection = this.gridEngine.getFacingDirection('cat');
+                                camera.fadeOut(SCENE_FADE_TIME);
+                                // this.scene.pause();
+                                this.isTeleporting = true;
+                                this.isAutoMoving = false;
+                                if (this.autoMoveTargetHighlight) {
+                                    this.autoMoveTargetHighlight.setVisible(false);
+                                }
+                                this.gridEngine.stopMovement('cat');
+
+                                this.time.delayedCall(
+                                    SCENE_FADE_TIME,
+                                    () => {
+                                        this.isTeleporting = false;
+                                        this.scene.restart({
+                                            catStatus: {
+                                                position: { x: teleportToX, y: teleportToY },
+                                                previousPosition: this.calculatePreviousTeleportPosition(),
+                                                frame: `cat_idle_${facingDirection}`,
+                                                facingDirection,
+                                                health: this.catSprite.health,
+                                                maxHealth: this.catSprite.maxHealth,
+                                                coin: this.catSprite.coin,
+                                                canPush: this.catSprite.canPush,
+                                                haveSword: this.catSprite.haveSword,
+                                            },
+                                            mapKey: teleportToMapKey,
+                                        });
+                                    }
+                                );
+                            });
+
+                            break;
+                        }
+
+                        default: {
+                            break;
+                        }
                     }
-                }
-            });
+                });
             });
         }
 
-        camera.startFollow(this.catSprite, true); // 相机跟随主角
-        camera.setFollowOffset(-this.catSprite.width, -this.catSprite.height);
+        camera.startFollow(this.catSprite, true, 1, 1);
+        camera.setFollowOffset(0, 0);
+        this.cameras.main.setRoundPixels(true);
         camera.setBounds(
             0,
             0,
@@ -936,14 +937,15 @@ export default class GameScene extends Scene {
 
         if (map.widthInPixels < game.scale.gameSize.width) {
             camera.setPosition(
-                (game.scale.gameSize.width - map.widthInPixels) / 2
+                Math.round((game.scale.gameSize.width - map.widthInPixels) / 2),
+                camera.y
             );
         }
 
         if (map.heightInPixels < game.scale.gameSize.height) {
             camera.setPosition(
                 camera.x,
-                (game.scale.gameSize.height - map.heightInPixels) / 2
+                Math.round((game.scale.gameSize.height - map.heightInPixels) / 2)
             );
         }
 
@@ -1623,7 +1625,7 @@ export default class GameScene extends Scene {
         this.catActionCollider.update(); // 同步攻击/存在/对象碰撞体到主角位置与朝向
         // 根据周围环境更新交互按钮图标（对话 / 宝箱/箱子 / 攻击）
         this.updateActionContext(); // 推送到 React 的 action-context
-        
+
         // 使用输入管理器处理移动（虚拟摇杆/键盘已统一到 InputManager）
         const currentDirection = this.inputManager.getCurrentDirection(); // 获取当前连续方向（可能为 8 向）
 
@@ -1647,5 +1649,11 @@ export default class GameScene extends Scene {
                 this.gridEngine.move('cat', currentDirection); // 发起按方向的离散步进
             }
         }
+        const cam = this.cameras?.main;
+        if (cam) {
+            cam.scrollX = Math.round(cam.scrollX);
+            cam.scrollY = Math.round(cam.scrollY);
+        }
+        this.catSprite.setPosition(Math.round(this.catSprite.x), Math.round(this.catSprite.y));
     }
 }

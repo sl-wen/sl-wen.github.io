@@ -1,4 +1,30 @@
 /** @type {import('next').NextConfig} */
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  disable: process.env.NODE_ENV !== 'production',
+  fallbacks: {
+    document: '/offline',
+  },
+  runtimeCaching: [
+    {
+      urlPattern: /^https?:\/\/.*\/_next\/static\//,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'next-static',
+        expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
+      },
+    },
+    {
+      urlPattern: /^https?:\/\/.*\/game\//,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'game-assets',
+        expiration: { maxEntries: 1000, maxAgeSeconds: 60 * 60 * 24 * 365 },
+      },
+    },
+  ],
+});
+
 const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
@@ -61,4 +87,4 @@ const nextConfig = {
 
 };
 
-module.exports = nextConfig; 
+module.exports = withPWA(nextConfig); 

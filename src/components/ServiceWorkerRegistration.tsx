@@ -5,6 +5,18 @@ import { useEffect } from 'react';
 export default function ServiceWorkerRegistration() {
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      // 开发环境不注册 SW，避免 404 噪音
+      const isProd = process.env.NODE_ENV === 'production';
+      if (!isProd) {
+        (async () => {
+          try {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map((r) => r.unregister()));
+          } catch { }
+        })();
+        return;
+      }
+
       const ensureSW = async () => {
         try {
           // 先探测 sw.js 是否存在（避免 404 抛错）

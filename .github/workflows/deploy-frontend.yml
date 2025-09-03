@@ -53,11 +53,6 @@ jobs:
             echo "❌ 前端代码拉取失败，使用本地版本"
           fi
           
-          # 快速清理和安装
-          echo "快速清理和安装依赖..."
-          rm -rf .next
-          rm -rf package-lock.json
-          
           # 使用标准构建命令
           if npm run build:fast; then
             echo "✅ 前端构建完成"
@@ -102,11 +97,4 @@ jobs:
           echo "服务状态: $(sudo systemctl is-active blog)"
           echo "当前提交: $(git log --oneline -n 1)"
           echo "内存使用: $(free -h | grep Mem | awk '{print $3 "/" $2}')"
-          
-          # 显示访问信息
-          EXTERNAL_IP=$(curl -s --connect-timeout 3 curl https://ipinfo.io/ip 2>/dev/null || echo "unknown")
-          if [ "$EXTERNAL_IP" ]; then
-            echo "🔗 前端访问地址: https://$EXTERNAL_IP"
-          fi
-          
           echo "🎉 前端部署成功完成！" 

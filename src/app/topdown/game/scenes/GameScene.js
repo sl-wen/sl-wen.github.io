@@ -867,7 +867,8 @@ export default class GameScene extends Scene {
                                 16,
                                 16,
                                 'teleport',
-                                isDebugMode
+                                isDebugMode,
+                                { x: 0, y: 0 }
                             );
 
                             const {

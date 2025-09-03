@@ -1459,8 +1459,13 @@ export default class GameScene extends Scene {
         this.physics.add.overlap(this.heroActionCollider, elementsLayers, (objA, objB) => { // 与场景元素交互：砍草、推箱
             const tile = [objA, objB].find((obj) => obj !== this.heroActionCollider);
 
+            // 防御性校验，确保拿到的是有效的 Tile 对象
+            if (!tile || typeof tile.index !== 'number' || (tile.layer == null && tile.tilemapLayer == null)) {
+                return;
+            }
+
             // Handles attack
-            if (tile?.index > 0 && !tile.wasHandled) {
+            if (tile.index > 0 && !tile.wasHandled) {
                 switch (tile.index) {
                     case BUSH_INDEX: {
                         if (this.isAttacking) {
@@ -1469,12 +1474,14 @@ export default class GameScene extends Scene {
                             this.time.delayedCall(
                                 ATTACK_DELAY_TIME,
                                 () => {
-                                    tile.setVisible(false);
-                                    this.spawnItem({
-                                        x: tile.pixelX,
-                                        y: tile.pixelY,
-                                    });
-                                    tile.destroy();
+                                    const layerRef = tile.layer?.tilemapLayer || tile.tilemapLayer;
+                                    const dropX = tile.pixelX;
+                                    const dropY = tile.pixelY;
+                                    if (layerRef) {
+                                        // 使用 TilemapLayer API 安全移除瓦片，避免失效引用导致的冻结
+                                        layerRef.removeTileAt(tile.x, tile.y, true, true);
+                                    }
+                                    this.spawnItem({ x: dropX, y: dropY });
                                 }
                             );
                         }
@@ -1503,19 +1510,24 @@ export default class GameScene extends Scene {
                                     ease: 'Power2', // PhaserMath.Easing
                                     duration: 700,
                                     onComplete: () => {
-                                        tile.setVisible(false);
-                                        const newTile = tile.layer.tilemapLayer.putTileAt(
-                                            BOX_INDEX,
-                                            newPosition.x / 16,
-                                            newPosition.y / 16,
-                                            true
-                                        );
+                                        const sourceLayer = tile.layer?.tilemapLayer || tile.tilemapLayer;
+                                        if (sourceLayer) {
+                                            // 移除旧瓦片后在目标位置放置新箱子瓦片
+                                            sourceLayer.removeTileAt(tile.x, tile.y, true, true);
+                                            const newTile = sourceLayer.putTileAt(
+                                                BOX_INDEX,
+                                                newPosition.x / 16,
+                                                newPosition.y / 16,
+                                                true
+                                            );
 
-                                        newTile.properties = {
-                                            ...tile.properties,
-                                        };
-                                        newTile.isMoved = true;
-                                        tile.destroy();
+                                            if (newTile) {
+                                                newTile.properties = {
+                                                    ...tile.properties,
+                                                };
+                                                newTile.isMoved = true;
+                                            }
+                                        }
                                     },
                                 });
                             }

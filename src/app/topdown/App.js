@@ -35,8 +35,9 @@ import VirtualJoystick from "./game/VirtualJoystick";
 import ActionButton from "./game/ActionButton";
 import './App.css';
 import { calculateGameSize } from "./game/utils";
-import Modal from '../../components/ui/Modal';
 import { Button } from '../../components/ui';
+import PanelBox from './game/PanelBox';
+import { getFarmData } from '../../utils/farmdataService';
 import { useAuth } from '../../utils/auth-context';
 import { saveFarmData } from '../../utils/farmdataService';
 
@@ -242,6 +243,25 @@ function App() {
 
     // window.phaserGame = game;
   }, []);
+
+  // 启动时加载保存数据并注入给 MainMenuScene 使用
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        if (userProfile && userProfile.user_id) {
+          const data = await getFarmData(userProfile.user_id);
+          if (!cancelled && typeof window !== 'undefined' && data) {
+            window.__farmdata = data;
+          }
+        }
+      } catch (_) {
+        // ignore
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [userProfile]);
 
   /**
    * 设置游戏事件监听器
@@ -468,18 +488,28 @@ function App() {
               label={actionContext === 'talk' ? 'Talk' : actionContext === 'interact' ? 'Open' : actionContext === 'attack' ? 'Attack' : ''}
           />
 
-          {/* 设置弹窗 */}
-          <Modal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} title="设置">
+          {/* 设置窗口（使用像素风 PanelBox） */}
+          <PanelBox
+            open={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            title="设置"
+            gameSize={{ width, height, multiplier }}
+          >
             <div className="space-y-4">
               <p className="text-gray-700">可以在此保存当前进度。</p>
               <Button onClick={() => saveGame('manual')} disabled={isSaving}>
                 {isSaving ? '保存中...' : '保存进度'}
               </Button>
             </div>
-          </Modal>
+          </PanelBox>
 
-          {/* 背包弹窗 */}
-          <Modal isOpen={isInventoryOpen} onClose={() => setIsInventoryOpen(false)} title="背包">
+          {/* 背包窗口（使用像素风 PanelBox） */}
+          <PanelBox
+            open={isInventoryOpen}
+            onClose={() => setIsInventoryOpen(false)}
+            title="背包"
+            gameSize={{ width, height, multiplier }}
+          >
             <div className="space-y-2 text-gray-800">
               {inventoryData ? (
                 <>
@@ -492,7 +522,7 @@ function App() {
                 <div>暂无数据</div>
               )}
             </div>
-          </Modal>
+          </PanelBox>
         </GameWrapper>
       </div>
   );

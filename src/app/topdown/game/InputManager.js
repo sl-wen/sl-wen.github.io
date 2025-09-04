@@ -16,6 +16,8 @@
  * 虚拟摇杆 > 键盘输入（触摸屏操作优先于键盘操作）
  */
 
+import * as Phaser from 'phaser';
+
 class InputManager {
   /**
    * 构造函数

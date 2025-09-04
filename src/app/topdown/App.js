@@ -272,6 +272,7 @@ function App() {
     const dialogBoxEventListener = ({ detail }) => {
       const rawKey = detail.characterName;
       setCharacterName(rawKey);
+      const normalizedKey = String(rawKey || '').trim();
       const nextMessages = dialogs[normalizedKey] || [{ message: '...' }];
       setMessages(nextMessages);
     };

@@ -35,6 +35,11 @@ import GameMenu from "./game/GameMenu";
 import CatCoin from "./game/CatCoin";
 import { calculateGameSize } from "./game/utils";
 import VirtualJoystick from "./game/VirtualJoystick";
+import HUDBar from "./game/HUDBar";
+import InventoryModal from "./game/InventoryModal";
+import SettingsModal from "./game/SettingsModal";
+import { supabase } from '@/utils/supabase-config';
+import { useAuth } from '@/utils/auth-context';
 
 // 计算游戏尺寸和缩放倍数，确保在不同设备上都有良好的显示效果
 const { width, height, multiplier } = calculateGameSize();
@@ -116,6 +121,7 @@ const dialogs = {
  */
 function App() {
   const gameRef = useRef(null);
+  const { userProfile, refreshProfile } = useAuth();
   // 游戏状态管理
   const [messages, setMessages] = useState([]);           // 当前显示的对话消息
   const [characterName, setCharacterName] = useState(''); // 当前对话的角色名称
@@ -125,6 +131,9 @@ function App() {
   const [joystickDirection, setJoystickDirection] = useState(null); // 虚拟摇杆方向
   const [actionContext, setActionContext] = useState('');     // 交互上下文：talk/interact/none
   const [hasGameStarted, setHasGameStarted] = useState(false); // 是否已点击开始进入游戏
+  const [inventory, setInventory] = useState({ seeds: 0, water: 0, fruits: 0 });
+  const [showInventory, setShowInventory] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   /**
    * 处理对话完成事件
@@ -297,14 +306,63 @@ function App() {
     };
     window.addEventListener('action-context', actionContextEventListener);
 
+    // 背包更新
+    const inventoryListener = ({ detail }) => {
+      setInventory(detail.inventory || { seeds: 0, water: 0, fruits: 0 });
+    };
+    window.addEventListener('inventory-update', inventoryListener);
+
     // 清理事件监听器
     return () => {
       window.removeEventListener('new-dialog', dialogBoxEventListener);
       window.removeEventListener('menu-items', gameMenuEventListener);
       window.removeEventListener('cat-coin', catCoinEventListener);
       window.removeEventListener('action-context', actionContextEventListener);
+      window.removeEventListener('inventory-update', inventoryListener);
     };
   }, [setCharacterName, setMessages]);
+
+  const requestSaveSnapshot = () => {
+    return new Promise((resolve) => {
+      const handler = ({ detail }) => {
+        window.removeEventListener('save-snapshot-ready', handler);
+        resolve(detail);
+      };
+      window.addEventListener('save-snapshot-ready', handler);
+      const evt = new CustomEvent('request-save-snapshot');
+      window.dispatchEvent(evt);
+    });
+  };
+
+  const handleSave = async () => {
+    try {
+      const snapshot = await requestSaveSnapshot();
+      // 写入 Supabase profiles.farmdata
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ farmdata: snapshot })
+          .eq('user_id', user.id);
+        if (error) throw error;
+        // 更新本地缓存的 userProfile
+        const local = JSON.parse(localStorage.getItem('userProfile') || '{}');
+        local.farmdata = snapshot;
+        localStorage.setItem('userProfile', JSON.stringify(local));
+        await refreshProfile();
+      } else {
+        // 未登录也存 localStorage 供离线
+        const local = JSON.parse(localStorage.getItem('userProfile') || '{}');
+        local.farmdata = snapshot;
+        localStorage.setItem('userProfile', JSON.stringify(local));
+      }
+      setShowSettings(false);
+    } catch (e) {
+      console.error('保存失败', e);
+    }
+  };
 
   return (
     <div>
@@ -315,6 +373,16 @@ function App() {
         >
           {/* 这里将渲染 Phaser 游戏画布 */}
         </GameContentWrapper>
+
+        {/* HUD 顶栏：头像+设置 */}
+        {hasGameStarted && (
+          <HUDBar
+            gameSize={{ width, height, multiplier }}
+            avatarUrl={userProfile?.avatar_url}
+            onAvatarClick={() => setShowInventory(true)}
+            onSettingsClick={() => setShowSettings(true)}
+          />
+        )}
 
         {/* 角色金币显示 - 当有金币数据时显示 */}
         {hasGameStarted && catCoins !== null && (
@@ -394,6 +462,25 @@ function App() {
               : actionContext === 'harvest' ? 'Harvest'
               : ''
             }
+          />
+        )}
+
+        {/* 背包弹窗 */}
+        {hasGameStarted && showInventory && (
+          <InventoryModal
+            gameSize={{ width, height, multiplier }}
+            inventory={inventory}
+            onClose={() => setShowInventory(false)}
+          />
+        )}
+
+        {/* 设置弹窗 */}
+        {hasGameStarted && showSettings && (
+          <SettingsModal
+            gameSize={{ width, height, multiplier }}
+            onSave={handleSave}
+            onExit={() => window.location.reload()}
+            onClose={() => setShowSettings(false)}
           />
         )}
       </GameWrapper>

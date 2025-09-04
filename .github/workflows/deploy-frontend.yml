@@ -54,7 +54,7 @@ jobs:
           fi
           
           # 使用标准构建命令
-          if npm run build:fast; then
+          if npm run build; then
             echo "✅ 前端构建完成"
           else
             echo "❌ 前端构建失败"

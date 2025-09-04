@@ -367,8 +367,22 @@ function App() {
             height,
             multiplier,
           }}
-          icon={actionContext === 'talk' ? '💬' : actionContext === 'interact' ? '🗝️' : '•'}
-          label={actionContext === 'talk' ? 'Talk' : actionContext === 'interact' ? 'Open' : ''}
+          icon={
+            actionContext === 'talk' ? '💬'
+            : actionContext === 'interact' ? '🗝️'
+            : actionContext === 'plant' ? '🌱'
+            : actionContext === 'water' ? '💧'
+            : actionContext === 'harvest' ? '🧺'
+            : '•'
+          }
+          label={
+            actionContext === 'talk' ? 'Talk'
+            : actionContext === 'interact' ? 'Open'
+            : actionContext === 'plant' ? 'Plant'
+            : actionContext === 'water' ? 'Water'
+            : actionContext === 'harvest' ? 'Harvest'
+            : ''
+          }
         />
       </GameWrapper>
     </div>

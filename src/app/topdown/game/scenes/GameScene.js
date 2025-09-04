@@ -62,6 +62,7 @@ import {
 } from '../constants';
 import InputManager from '../InputManager';
 import { createInteractiveGameObject } from '../utils';
+import FarmManager from '../farming/FarmManager';
 
 export default class GameScene extends Scene {
     constructor() {
@@ -74,6 +75,8 @@ export default class GameScene extends Scene {
     isAutoMoving = false;
     autoMoveTargetHighlight = null;
     npcSprites = null;
+    farmManager = null;
+    farmlandGraphics = null;
 
     init(data) {
         this.initData = data;
@@ -242,6 +245,7 @@ export default class GameScene extends Scene {
      */
     updateActionContext() {
         if (!this.catSprite || !this.map) return;
+        let nextContext = 'none';
 
         // 1) 检测面前是否有 NPC（使用存在的 catActionCollider 与 npcSprites 重叠近似）
         const nearbyNpc = this.npcSprites?.getChildren?.().some((npc) => {
@@ -256,7 +260,24 @@ export default class GameScene extends Scene {
                 const t = layer.tilemapLayer.getTileAtWorldXY(front.x, front.y);
                 return t?.properties?.ge_collide || t?.properties?.interactable;
             });
-            if (isInteractable) {
+            // 3) 农场交互：面前是否为耕地
+            if (this.farmManager) {
+                const tileX = Math.floor(front.x / this.map.tileWidth);
+                const tileY = Math.floor(front.y / this.map.tileHeight);
+                const onFarmland = this.farmManager.isFarmland(tileX, tileY);
+                const crop = this.farmManager.getCrop(tileX, tileY);
+                if (onFarmland) {
+                    if (!crop && this.farmManager.inventory.seeds > 0) {
+                        nextContext = 'plant';
+                    } else if (crop && crop.canHarvest()) {
+                        nextContext = 'harvest';
+                    } else if (crop && !crop.watered && crop.stage < 5 && this.farmManager.inventory.water > 0) {
+                        nextContext = 'water';
+                    }
+                } else if (isInteractable) {
+                    nextContext = 'interact';
+                }
+            } else if (isInteractable) {
                 nextContext = 'interact';
             }
         }
@@ -310,7 +331,7 @@ export default class GameScene extends Scene {
         const camera = this.cameras.main;
         const { game } = this.sys;
         const isDebugMode = this.physics.config.debug;
-        const { catStatus, mapKey } = this.initData;
+        const { catStatus, mapKey, farmSave } = this.initData;
         const {
             position: initialPosition,
             frame: initialFrame,
@@ -357,6 +378,25 @@ export default class GameScene extends Scene {
         }
         // 需要在更新期查询前方图块与交互环境，因此总是持有 map 引用
         this.map = map;
+
+        // 农场系统：初始化与耕地区域（简单示例区块）
+        this.farmManager = farmSave
+            ? FarmManager.fromSave(this, farmSave, { tileSize: map.tileWidth })
+            : new FarmManager(this, { tileSize: map.tileWidth });
+        // 在主屋地图里预留一块 4x3 的耕地，靠近出生点右侧
+        this.farmManager.addFarmlandRect(7, 4, 4, 3);
+        // 绘制耕地可视化覆盖层（浅棕色）
+        this.farmlandGraphics = this.add.graphics().setDepth(0.4);
+        this.farmlandGraphics.clear();
+        this.farmlandGraphics.fillStyle(0x8b5a2b, 0.35);
+        this.farmlandGraphics.lineStyle(1, 0xdeb887, 0.6);
+        this.farmManager.farmland.forEach((key) => {
+            const [tx, ty] = key.split(',').map(n => Number.parseInt(n, 10));
+            const px = tx * map.tileWidth;
+            const py = ty * map.tileHeight;
+            this.farmlandGraphics.fillRect(px, py, map.tileWidth, map.tileHeight);
+            this.farmlandGraphics.strokeRect(px + 0.5, py + 0.5, map.tileWidth - 1, map.tileHeight - 1);
+        });
 
         // cat 主角：初始属性、碰撞盒与交互体
         this.catSprite = this.physics.add
@@ -612,6 +652,7 @@ export default class GameScene extends Scene {
                                                 haveSword: this.catSprite.haveSword,
                                             },
                                             mapKey: teleportToMapKey,
+                                            farmSave: this.farmManager?.toJSON?.(),
                                         });
                                     }
                                 );
@@ -968,6 +1009,34 @@ export default class GameScene extends Scene {
         // 使用输入管理器处理移动（虚拟摇杆/键盘已统一到 InputManager）
         const currentDirection = this.inputManager.getCurrentDirection(); // 获取当前连续方向（可能为 8 向）
 
+        // 执行农场交互（按键触发）
+        if (this.inputManager.isEnterJustDown() || this.inputManager.isSpaceJustDown()) {
+            const context = this.currentActionContext;
+            if (context === 'plant' || context === 'water' || context === 'harvest') {
+                const front = this.getFrontPixelPosition();
+                const tileX = Math.floor(front.x / this.map.tileWidth);
+                const tileY = Math.floor(front.y / this.map.tileHeight);
+
+                if (context === 'plant') {
+                    const planted = this.farmManager.plant(tileX, tileY);
+                    if (!planted) {
+                        // noop
+                    }
+                } else if (context === 'water') {
+                    const ok = this.farmManager.water(tileX, tileY);
+                    if (!ok) {
+                        // noop
+                    }
+                } else if (context === 'harvest') {
+                    const yieldCount = this.farmManager.harvest(tileX, tileY);
+                    if (yieldCount > 0) {
+                        // 将果实转换为金币（示例）：
+                        this.catSprite.collectCoin(yieldCount);
+                    }
+                }
+            }
+        }
+
         // 无输入时：当非自动寻路才停止（避免打断 moveTo）
         if (!currentDirection && this.gridEngine.isMoving('cat') && !this.isAutoMoving) {
             this.gridEngine.stopMovement('cat'); // 停止当前移动（站立）
@@ -988,6 +1057,7 @@ export default class GameScene extends Scene {
                 this.gridEngine.move('cat', currentDirection); // 发起按方向的离散步进
             }
         }
+        // 更新相机与像素对齐
         const cam = this.cameras?.main;
         if (cam) {
             cam.scrollX = Math.round(cam.scrollX);

@@ -262,11 +262,13 @@ function App() {
   useEffect(() => {
     // 监听新对话事件
     const dialogBoxEventListener = ({ detail }) => {
-      // TODO fallback
-      setCharacterName(detail.characterName);
-      setMessages(
-        dialogs[detail.characterName]
-      );
+      const rawKey = detail.characterName;
+      // 兼容旧地图中的 book_01 命名为 book_1
+      const normalizedKey = rawKey === 'book_01' ? 'book_1' : rawKey;
+
+      setCharacterName(normalizedKey);
+      const nextMessages = dialogs[normalizedKey] || [{ message: '...' }];
+      setMessages(nextMessages);
     };
     window.addEventListener('new-dialog', dialogBoxEventListener);
 

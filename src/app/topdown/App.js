@@ -124,6 +124,7 @@ function App() {
   const [catCoins, setcatCoins] = useState(null);      // 角色金币数量
   const [joystickDirection, setJoystickDirection] = useState(null); // 虚拟摇杆方向
   const [actionContext, setActionContext] = useState('');     // 交互上下文：talk/interact/none
+  const [hasGameStarted, setHasGameStarted] = useState(false); // 是否已点击开始进入游戏
 
   /**
    * 处理对话完成事件
@@ -153,6 +154,13 @@ function App() {
       },
     });
     window.dispatchEvent(customEvent);
+
+    // 当玩家点击开始时，显示金币、摇杆与动作按钮
+    if (selectedItem === 'start') {
+      setHasGameStarted(true);
+    } else if (selectedItem === 'exit') {
+      setHasGameStarted(false);
+    }
   }, []);
 
   /**
@@ -308,7 +316,7 @@ function App() {
         </GameContentWrapper>
 
         {/* 角色金币显示 - 当有金币数据时显示 */}
-        {catCoins !== null && (
+        {hasGameStarted && catCoins !== null && (
           <CatCoin
             gameSize={{
               width,
@@ -348,41 +356,45 @@ function App() {
           />
         )}
 
-        {/* 虚拟摇杆 - 始终显示在左下角，支持触摸屏操作 */}
-        <VirtualJoystick
-          onDirectionChange={handleJoystickDirectionChange}
-          gameSize={{
-            width,
-            height,
-            multiplier,
-          }}
-        />
+        {/* 虚拟摇杆 - 仅在点击开始后显示 */}
+        {hasGameStarted && (
+          <VirtualJoystick
+            onDirectionChange={handleJoystickDirectionChange}
+            gameSize={{
+              width,
+              height,
+              multiplier,
+            }}
+          />
+        )}
 
-        {/* 动作按钮 - 显示在右下角，用于执行动作 */}
-        <ActionButton
-          onAction={handleActionButtonPress}
-          gameSize={{
-            width,
-            height,
-            multiplier,
-          }}
-          icon={
-            actionContext === 'talk' ? '💬'
-            : actionContext === 'interact' ? '❗'
-            : actionContext === 'plant' ? '🌱'
-            : actionContext === 'water' ? '💧'
-            : actionContext === 'harvest' ? '🧺'
-            : '•'
-          }
-          label={
-            actionContext === 'talk' ? 'Talk'
-            : actionContext === 'interact' ? 'Open'
-            : actionContext === 'plant' ? 'Plant'
-            : actionContext === 'water' ? 'Water'
-            : actionContext === 'harvest' ? 'Harvest'
-            : ''
-          }
-        />
+        {/* 动作按钮 - 仅在点击开始后显示 */}
+        {hasGameStarted && (
+          <ActionButton
+            onAction={handleActionButtonPress}
+            gameSize={{
+              width,
+              height,
+              multiplier,
+            }}
+            icon={
+              actionContext === 'talk' ? '💬'
+              : actionContext === 'interact' ? '❗'
+              : actionContext === 'plant' ? '🌱'
+              : actionContext === 'water' ? '💧'
+              : actionContext === 'harvest' ? '🧺'
+              : '•'
+            }
+            label={
+              actionContext === 'talk' ? 'Talk'
+              : actionContext === 'interact' ? 'Open'
+              : actionContext === 'plant' ? 'Plant'
+              : actionContext === 'water' ? 'Water'
+              : actionContext === 'harvest' ? 'Harvest'
+              : ''
+            }
+          />
+        )}
       </GameWrapper>
     </div>
   );

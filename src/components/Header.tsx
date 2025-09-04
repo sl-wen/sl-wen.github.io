@@ -115,6 +115,7 @@ const Header: React.FC = () => {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={item.href === '/topdown' ? false : undefined}
                   className={`nav-link ${isActive(item.href) ? 'nav-link-active' : ''}`}
                 >
                   {item.label}
@@ -180,6 +181,7 @@ const Header: React.FC = () => {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={item.href === '/topdown' ? false : undefined}
                   className={`nav-link ${isActive(item.href) ? 'nav-link-active' : ''}`}
                 >
                   {item.label}
@@ -295,6 +297,7 @@ const Header: React.FC = () => {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={item.href === '/topdown' ? false : undefined}
                   onClick={() => setIsMenuOpen(false)}
                   className={`block px-3 py-2 text-base font-medium rounded-md ${isActive(item.href)
                     ? 'text-primary-600 bg-primary-50'

@@ -22,5 +22,3 @@ export const COIN_INDEX = 192;             // 金币图块索引
 export const NPC_MOVEMENT_RANDOM = 'random';  // NPC 随机移动
 export const NPC_MOVEMENT_STILL = 'still';    // NPC 静止不动
 
-// 游戏存档相关常量
-export const SAVE_DATA_KEY = 'pablogg_game_data';  // 本地存储的存档数据键名

@@ -9,7 +9,6 @@
  * <HeroCoin gameSize={{ width, height, multiplier }} heroCoins={coin} />
  */
 import { styled } from '@mui/material/styles';
-import classNames from 'classnames';
 
 // Images
 // Note: coin.png is now served from public/game/assets/images/coin.png
@@ -52,7 +51,6 @@ const HeroCoin = ({
 }) => {
     const {
         width,
-        height,
         multiplier,
     } = gameSize;
 

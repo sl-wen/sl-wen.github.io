@@ -52,16 +52,31 @@ export default class MainMenuScene extends Scene {
             switch (detail.selectedItem) {
                 case 'start': {
                     // 启动游戏：进入 GameScene 并传递初始主角状态与地图 key
+                    let farmSave = null;
+                    let mapKey = 'home_page_city_house_1';
+                    let catStatus = {
+                        position: { x: 4, y: 3 },
+                        previousPosition: { x: 4, y: 3 },
+                        frame: 'cat_idle_down',
+                        facingDirection: 'down',
+                        coin: 0,
+                        haveSword: false,
+                    };
+                    try {
+                        const local = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                        if (local && local.farmdata) {
+                            farmSave = local.farmdata.farmSave || local.farmdata;
+                            // 兼容性：允许 farmdata 根层含 mapKey/catStatus
+                            mapKey = local.farmdata.mapKey || mapKey;
+                            if (local.farmdata.catStatus) {
+                                catStatus = { ...catStatus, ...local.farmdata.catStatus };
+                            }
+                        }
+                    } catch (_) { /* ignore */ }
                     this.scene.start('GameScene', {
-                        catStatus: {
-                            position: { x: 4, y: 3 },
-                            previousPosition: { x: 4, y: 3 },
-                            frame: 'cat_idle_down',
-                            facingDirection: 'down',
-                            coin: 0,
-                            haveSword: false,
-                        },
-                        mapKey: 'home_page_city_house_1',
+                        catStatus,
+                        mapKey,
+                        farmSave,
                     });
                     break;
                 }

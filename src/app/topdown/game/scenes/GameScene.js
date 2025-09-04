@@ -362,6 +362,7 @@ export default class GameScene extends Scene {
         const { game } = this.sys;
         const isDebugMode = this.physics.config.debug;
         const { catStatus, mapKey, farmSave } = this.initData;
+        this.currentMapKey = mapKey;
         const {
             position: initialPosition,
             frame: initialFrame,
@@ -412,6 +413,9 @@ export default class GameScene extends Scene {
         this.farmManager = farmSave
             ? FarmManager.fromSave(this, farmSave, { tileSize: map.tileWidth })
             : new FarmManager(this, { tileSize: map.tileWidth });
+
+        // 初始背包推送一次
+        this.farmManager.dispatchInventoryUpdate?.();
 
         // 在 city 地图中也预留一块 4x3 的耕地：以玩家出生点为参考，偏右上
         if (mapKey === 'home_page_city') {
@@ -737,6 +741,32 @@ export default class GameScene extends Scene {
             ],
             numberOfDirections: 8,
         };
+
+        // 监听保存快照请求：React 设置页会触发
+        const handleRequestSave = () => {
+            try {
+                const snapshot = {
+                    mapKey: this.currentMapKey,
+                    catStatus: {
+                        position: this.gridEngine.getPosition('cat'),
+                        frame: this.getStopFrame(this.gridEngine.getFacingDirection('cat'), 'cat'),
+                        facingDirection: this.gridEngine.getFacingDirection('cat'),
+                        previousPosition: this.calculatePreviousTeleportPosition(),
+                        coin: this.catSprite.coin,
+                        haveSword: this.catSprite.haveSword,
+                    },
+                    farmSave: this.farmManager?.toJSON?.(),
+                };
+                const evt = new CustomEvent('save-snapshot-ready', { detail: snapshot });
+                window.dispatchEvent(evt);
+            } catch (_) { /* noop */ }
+        };
+        window.addEventListener('request-save-snapshot', handleRequestSave);
+
+        // 清理事件监听
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            window.removeEventListener('request-save-snapshot', handleRequestSave);
+        });
 
         this.physics.add.overlap(this.catSprite, this.itemsSprites, (objA, objB) => {
             const item = [objA, objB].find((obj) => obj !== this.catSprite);

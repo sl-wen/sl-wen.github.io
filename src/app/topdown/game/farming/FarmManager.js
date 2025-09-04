@@ -25,6 +25,7 @@ export default class FarmManager {
         this.inventory = {
             seeds: 5,
             water: 10,
+            fruits: 0,
         };
 
         /** 生长配置（每阶段时长 ms）；可按需平衡 */
@@ -63,6 +64,7 @@ export default class FarmManager {
         const crop = new Crop(this.scene, tileX, tileY, { tileSize: this.tileSize, cropKey: 'bailuobo' });
         this.crops.set(`${tileX},${tileY}`, crop);
         this.inventory.seeds -= 1;
+        this.dispatchInventoryUpdate();
         return true;
     }
 
@@ -74,6 +76,7 @@ export default class FarmManager {
         const crop = this.getCrop(tileX, tileY);
         crop.water(this.growthMsPerStage);
         this.inventory.water -= 1;
+        this.dispatchInventoryUpdate();
         return true;
     }
 
@@ -86,7 +89,10 @@ export default class FarmManager {
         crop.destroy();
         this.crops.delete(`${tileX},${tileY}`);
         // 简单：收获 1 个果实，转化为金币或物品
-        return 2; // 产量略高，提升成就感
+        const yieldCount = 2; // 产量略高，提升成就感
+        this.inventory.fruits += yieldCount;
+        this.dispatchInventoryUpdate();
+        return yieldCount;
     }
 
     /**
@@ -119,8 +125,21 @@ export default class FarmManager {
             const crop = Crop.fromSave(scene, c, { tileSize: fm.tileSize });
             fm.crops.set(`${crop.tileX},${crop.tileY}`, crop);
         });
-        fm.inventory = data.inventory || { seeds: 5, water: 10 };
+        fm.inventory = data.inventory || { seeds: 5, water: 10, fruits: 0 };
         return fm;
+    }
+
+    /**
+     * 发送背包更新事件给 React 层
+     */
+    dispatchInventoryUpdate() {
+        try {
+            const detail = { inventory: { ...this.inventory } };
+            const evt = new CustomEvent('inventory-update', { detail });
+            window.dispatchEvent(evt);
+        } catch (_) {
+            // 忽略 SSR 场景
+        }
     }
 }
 

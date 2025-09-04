@@ -334,10 +334,14 @@ function App() {
     });
   };
 
-  const handleSave = async () => {
+  // 统一保存逻辑（支持手动与自动保存）
+  const lastAutosaveRef = useRef(0);
+  const savingRef = useRef(false);
+  const saveSnapshotToProfile = useCallback(async (opts = { silent: false }) => {
+    if (savingRef.current) return; // 防重入
     try {
+      savingRef.current = true;
       const snapshot = await requestSaveSnapshot();
-      // 写入 Supabase profiles.farmdata
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -347,22 +351,38 @@ function App() {
           .update({ farmdata: snapshot })
           .eq('user_id', user.id);
         if (error) throw error;
-        // 更新本地缓存的 userProfile
         const local = JSON.parse(localStorage.getItem('userProfile') || '{}');
         local.farmdata = snapshot;
         localStorage.setItem('userProfile', JSON.stringify(local));
         await refreshProfile();
       } else {
-        // 未登录也存 localStorage 供离线
         const local = JSON.parse(localStorage.getItem('userProfile') || '{}');
         local.farmdata = snapshot;
         localStorage.setItem('userProfile', JSON.stringify(local));
       }
-      setShowSettings(false);
+      if (!opts.silent) setShowSettings(false);
     } catch (e) {
-      console.error('保存失败', e);
+      console.error(opts.silent ? '自动保存失败' : '保存失败', e);
+    } finally {
+      savingRef.current = false;
     }
+  }, [refreshProfile]);
+
+  const handleSave = async () => {
+    await saveSnapshotToProfile({ silent: false });
   };
+
+  // 监听自动保存请求（由 GameScene 发起）并节流
+  useEffect(() => {
+    const handler = async () => {
+      const now = Date.now();
+      if (now - lastAutosaveRef.current < 1500) return; // 1.5s 节流
+      lastAutosaveRef.current = now;
+      await saveSnapshotToProfile({ silent: true });
+    };
+    window.addEventListener('autosave-request', handler);
+    return () => window.removeEventListener('autosave-request', handler);
+  }, [saveSnapshotToProfile]);
 
   return (
     <div>

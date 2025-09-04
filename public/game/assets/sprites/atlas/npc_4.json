@@ -52,7 +52,7 @@
                     }
                 },
                 {
-                    "filename": "npc_4_idle_up_1",
+                    "filename": "npc_4_idle_up",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -241,7 +241,7 @@
                     }
                 },
                 {
-                    "filename": "npc_4_idle_down_1",
+                    "filename": "npc_4_idle_down",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -325,7 +325,7 @@
                     }
                 },
                 {
-                    "filename": "npc_4_idle_left_1",
+                    "filename": "npc_4_idle_left",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -346,7 +346,7 @@
                     }
                 },
                 {
-                    "filename": "npc_4_idle_right_1",
+                    "filename": "npc_4_idle_right",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {

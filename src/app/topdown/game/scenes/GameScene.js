@@ -55,14 +55,29 @@
  * - 砍草掉落：瓦片移除需使用 TilemapLayer API（removeTileAt），避免直接修改 tile 属性导致冻结。
  * - 自动寻路：用户手动输入会打断 `moveTo`，并隐藏落点高亮。
  */
-import { Math as PhaserMath, Scene } from 'phaser';
+import { Scene } from 'phaser';
 import {
     NPC_MOVEMENT_RANDOM,
     SCENE_FADE_TIME,
 } from '../constants';
+import FarmManager from '../farming/FarmManager';
 import InputManager from '../InputManager';
 import { createInteractiveGameObject } from '../utils';
-import FarmManager from '../farming/FarmManager';
+
+// 将 8 向方向归一为 4 向（用于动画/朝向显示）
+let lastCardinal = 'down';
+function toCardinal(dir) {
+    if (!dir) return lastCardinal;
+    if (dir === 'up' || dir === 'right' || dir === 'down' || dir === 'left') {
+        lastCardinal = dir;
+        return dir;
+    }
+    if (dir.includes('up')) { lastCardinal = 'up'; return 'up'; }
+    if (dir.includes('down')) { lastCardinal = 'down'; return 'down'; }
+    if (dir.includes('left')) { lastCardinal = 'left'; return 'left'; }
+    if (dir.includes('right')) { lastCardinal = 'right'; return 'right'; }
+    return lastCardinal;
+}
 
 export default class GameScene extends Scene {
     constructor() {
@@ -80,6 +95,21 @@ export default class GameScene extends Scene {
 
     init(data) {
         this.initData = data;
+    }
+
+    lastCardinal = 'down';
+    toCardinal(dir) {
+        if (!dir) return lastCardinal;
+        if (dir === 'up' || dir === 'right' || dir === 'down' || dir === 'left') {
+            lastCardinal = dir;
+            return dir;
+        }
+        // 斜向 → 4 向（可改成水平优先）
+        if (dir.includes('up')) { lastCardinal = 'up'; return 'up'; }
+        if (dir.includes('down')) { lastCardinal = 'down'; return 'down'; }
+        if (dir.includes('left')) { lastCardinal = 'left'; return 'left'; }
+        if (dir.includes('right')) { lastCardinal = 'right'; return 'right'; }
+        return lastCardinal;
     }
 
     calculatePreviousTeleportPosition() {
@@ -357,15 +387,13 @@ export default class GameScene extends Scene {
         // 动态添加图块集，支持多个图块集（名称需与 Tiled 中一致）
         const addedTilesets = {};
         if (map.tilesets && map.tilesets.length > 0) {
-            map.tilesets.forEach(tileset => {
+            map.tilesets.forEach((tileset) => {
                 const tilesetName = tileset.name;
                 console.log('Adding tileset:', tilesetName);
-                if (tilesetName === 'tileset') {
-                    addedTilesets['tileset'] = map.addTilesetImage('tileset', 'tileset');
-                } else if (tilesetName === 'actions_tileset') {
-                    addedTilesets['actions_tileset'] = map.addTilesetImage('actions_tileset', 'actions_tileset');
-                } else if (tilesetName === 'ui_elements') {
-                    addedTilesets['ui_elements'] = map.addTilesetImage('ui_elements', 'ui_elements');
+                try {
+                    addedTilesets[tilesetName] = map.addTilesetImage(tilesetName, tilesetName);
+                } catch (e) {
+                    console.warn('Failed to add tileset by name, ensure preloaded:', tilesetName, e);
                 }
             });
         } else {
@@ -384,8 +412,13 @@ export default class GameScene extends Scene {
         this.farmManager = farmSave
             ? FarmManager.fromSave(this, farmSave, { tileSize: map.tileWidth })
             : new FarmManager(this, { tileSize: map.tileWidth });
-        // 在主屋地图里预留一块 4x3 的耕地，靠近出生点右侧
-        this.farmManager.addFarmlandRect(7, 4, 4, 3);
+
+        // 在 city 地图中也预留一块 4x3 的耕地：以玩家出生点为参考，偏右上
+        if (mapKey === 'home_page_city') {
+            const fx = Math.min(Math.max(0, initialPosition.x + 4), Math.max(0, map.width - 4));
+            const fy = Math.min(Math.max(0, initialPosition.y - 2), Math.max(0, map.height - 3));
+            this.farmManager.addFarmlandRect(fx, fy, 4, 3);
+        }
         // 绘制耕地可视化覆盖层（浅棕色）
         this.farmlandGraphics = this.add.graphics().setDepth(0.4);
         this.farmlandGraphics.clear();
@@ -415,6 +448,15 @@ export default class GameScene extends Scene {
 
         this.catSprite.body.setSize(14, 14);
         this.catSprite.body.setOffset(9, 13);
+        this.catActionCollider = createInteractiveGameObject(
+            this,
+            this.catSprite.x + 9,
+            this.catSprite.y + 36,
+            14,
+            8,
+            'attack',
+            isDebugMode
+        );
         this.catPresenceCollider = createInteractiveGameObject(
             this,
             this.catSprite.x + 16,
@@ -450,27 +492,15 @@ export default class GameScene extends Scene {
         }
 
         const elementsLayers = this.add.group();
-        const tilesetsToUse = Object.values(addedTilesets);
-        // 逐层创建 tilemapLayer，并记录 elements 类型图层用于交互
         for (let i = 0; i < map.layers.length; i++) {
-            const layerData = map.layers[i];
-            // 仅处理 tilelayer，跳过对象层等
-            if (layerData.type !== 'tilelayer') {
-                continue;
-            }
+            const layer = map.createLayer(i, 'tileset', 0, 0);
+            layer.layer.properties.forEach((property) => {
+                const { value, name } = property;
 
-            const layer = map.createLayer(i, tilesetsToUse, 0, 0);
-
-            // 检查图层属性
-            if (layerData.properties) {
-                layerData.properties.forEach((property) => {
-                    const { value, name } = property;
-
-                    if (name === 'type' && value === 'elements') {
-                        elementsLayers.add(layer);
-                    }
-                });
-            }
+                if (name === 'type' && value === 'elements') {
+                    elementsLayers.add(layer);
+                }
+            });
 
             this.physics.add.collider(this.catSprite, layer);
         }
@@ -749,7 +779,7 @@ export default class GameScene extends Scene {
         const npcSprites = this.add.group();
         npcsKeys.forEach((npcData) => { // NPC 创建与行走动画注册
             const { npcKey, x, y, facingDirection = 'down' } = npcData;
-            const npc = this.physics.add.sprite(0, 0, npcKey, `${npcKey}_idle_${facingDirection}_1`);
+            const npc = this.physics.add.sprite(0, 0, npcKey, `${npcKey}_idle_${facingDirection}`);
             npc.body.setSize(14, 14);
             npc.body.setOffset(9, 13);
             npcSprites.add(npc);
@@ -855,56 +885,57 @@ export default class GameScene extends Scene {
             }
         });
 
-        // Animations
-        this.gridEngine.movementStarted().subscribe(({ charId, direction }) => { // 开始移动时切换行走动画
+        // Animations // 角色移动方向来自 GridEngine（可能为 8 向）。动画素材仅有 4 向，做归一映射。
+        this.gridEngine.movementStarted().subscribe(({ charId, direction }) => {
+            const dir4 = toCardinal(direction ?? this.gridEngine.getFacingDirection(charId));
             if (charId === 'cat') {
-                // 角色移动方向来自 GridEngine（可能为 8 向）。动画素材仅有 4 向，做归一映射。
-                const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
-                const animDir = (cardinal === 'up' || cardinal === 'down' || cardinal === 'left' || cardinal === 'right') ? cardinal : direction;
-                this.catSprite.anims.play(`cat_walk_${animDir}`);
+                const key = `cat_walk_${dir4}`;
+                const anim = this.catSprite.anims;
+                if (anim.currentAnim?.key !== key || !anim.isPlaying) anim.play(key);
             } else {
-                const npc = npcSprites.getChildren().find((npcSprite) => npcSprite.texture.key === charId);
+                const npc = npcSprites.getChildren().find(s => s.texture.key === charId);
                 if (npc) {
-                    const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
-                    const animDir = (cardinal === 'up' || cardinal === 'down' || cardinal === 'left' || cardinal === 'right') ? cardinal : direction;
-                    npc.anims.play(`${charId}_walk_${animDir}`);
-                    return;
+                    const key = `${charId}_walk_${dir4}`;
+                    const anim = npc.anims;
+                    if (anim.currentAnim?.key !== key || !anim.isPlaying) anim.play(key);
                 }
             }
         });
 
-        this.gridEngine.movementStopped().subscribe(({ charId, direction }) => { // 停止时重置为站立帧/待机
+        this.gridEngine.movementStopped().subscribe(({ charId, direction }) => {
+            const dir4 = toCardinal(direction ?? this.gridEngine.getFacingDirection(charId));
             if (charId === 'cat') {
                 this.catSprite.anims.stop();
-                const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
-                this.catSprite.setFrame(this.getStopFrame(cardinal, charId));
-                // 自动寻路结束（cat 停止）
-                this.isAutoMoving = false;
-                // 隐藏目标高亮
-                if (this.autoMoveTargetHighlight) {
-                    this.autoMoveTargetHighlight.setVisible(false);
-                }
+                this.catSprite.setFrame(this.getStopFrame(dir4, charId));
             } else {
-                const npc = npcSprites.getChildren().find((npcSprite) => npcSprite.texture.key === charId);
+                const npc = npcSprites.getChildren().find(s => s.texture.key === charId);
                 if (npc) {
                     npc.anims.stop();
-                    const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
-                    npc.setFrame(this.getStopFrame(cardinal, charId));
-                    return;
+                    npc.setFrame(this.getStopFrame(dir4, charId));
                 }
             }
         });
 
-        this.gridEngine.directionChanged().subscribe(({ charId, direction }) => { // 朝向改变时更新站立帧
+        this.gridEngine.directionChanged().subscribe(({ charId, direction }) => {
+            const dir4 = toCardinal(direction ?? this.gridEngine.getFacingDirection(charId));
+            const isMoving = this.gridEngine.isMoving(charId);
             if (charId === 'cat') {
-                const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
-                this.catSprite.setFrame(this.getStopFrame(cardinal, charId));
+                if (isMoving) {
+                    const key = `cat_walk_${dir4}`;
+                    const anim = this.catSprite.anims;
+                    if (anim.currentAnim?.key !== key || !anim.isPlaying) anim.play(key);
+                } else {
+                    this.catSprite.setFrame(this.getStopFrame(dir4, charId));
+                }
             } else {
-                const npc = npcSprites.getChildren().find((npcSprite) => npcSprite.texture.key === charId);
-                if (npc) {
-                    const cardinal = this.inputManager.getCurrentCardinalDirection() || direction;
-                    npc.setFrame(this.getStopFrame(cardinal, charId));
-                    return;
+                const npc = npcSprites.getChildren().find(s => s.texture.key === charId);
+                if (!npc) return;
+                if (isMoving) {
+                    const key = `${charId}_walk_${dir4}`;
+                    const anim = npc.anims;
+                    if (anim.currentAnim?.key !== key || !anim.isPlaying) anim.play(key);
+                } else {
+                    npc.setFrame(this.getStopFrame(dir4, charId));
                 }
             }
         });

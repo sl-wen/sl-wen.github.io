@@ -178,7 +178,7 @@
                     }
                 },
                 {
-                    "filename": "hero_idle_up_1",
+                    "filename": "hero_idle_up",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {
@@ -283,7 +283,7 @@
                     }
                 },
                 {
-                    "filename": "hero_idle_left_1",
+                    "filename": "hero_idle_left",
                     "rotated": false,
                     "trimmed": true,
                     "sourceSize": {

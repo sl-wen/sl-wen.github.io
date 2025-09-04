@@ -65,6 +65,8 @@ export default class FarmManager {
         this.crops.set(`${tileX},${tileY}`, crop);
         this.inventory.seeds -= 1;
         this.dispatchInventoryUpdate();
+        // autosave
+        try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
         return true;
     }
 
@@ -77,6 +79,7 @@ export default class FarmManager {
         crop.water(this.growthMsPerStage);
         this.inventory.water -= 1;
         this.dispatchInventoryUpdate();
+        try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
         return true;
     }
 
@@ -92,6 +95,7 @@ export default class FarmManager {
         const yieldCount = 2; // 产量略高，提升成就感
         this.inventory.fruits += yieldCount;
         this.dispatchInventoryUpdate();
+        try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
         return yieldCount;
     }
 

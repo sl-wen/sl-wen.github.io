@@ -690,6 +690,8 @@ export default class GameScene extends Scene {
                                             mapKey: teleportToMapKey,
                                             farmSave: this.farmManager?.toJSON?.(),
                                         });
+                                        // 地图变更后请求自动保存
+                                        triggerAutosave();
                                     }
                                 );
                             });
@@ -768,6 +770,14 @@ export default class GameScene extends Scene {
             window.removeEventListener('request-save-snapshot', handleRequestSave);
         });
 
+        // 自动保存事件触发工具
+        const triggerAutosave = () => {
+            try {
+                const evt = new CustomEvent('autosave-request');
+                window.dispatchEvent(evt);
+            } catch (_) { /* noop */ }
+        };
+
         this.physics.add.overlap(this.catSprite, this.itemsSprites, (objA, objB) => {
             const item = [objA, objB].find((obj) => obj !== this.catSprite);
 
@@ -775,6 +785,7 @@ export default class GameScene extends Scene {
                 this.catSprite.collectCoin(1);
                 item.setVisible(false);
                 item.destroy();
+                triggerAutosave();
             }
 
             if (item.itemType === 'sword') {
@@ -803,6 +814,7 @@ export default class GameScene extends Scene {
                 this.catSprite.haveSword = true;
                 item.setVisible(false);
                 item.destroy();
+                triggerAutosave();
             }
         });
 

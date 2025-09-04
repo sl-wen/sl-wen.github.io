@@ -1,5 +1,5 @@
 /**
- * 金币显示组件 HeroCoin
+ * 金币显示组件 CatCoin
  * 
  * 职责：
  * - 在屏幕左上区域显示玩家当前金币数量
@@ -47,7 +47,7 @@ const CoinText = styled('span')(({ multiplier, isFull }) => {
 
 const CatCoin = ({
     gameSize,
-    heroCoins,
+    catCoins,
 }) => {
     const {
         width,

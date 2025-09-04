@@ -778,6 +778,20 @@ export default class GameScene extends Scene {
 
         this.gridEngine.create(map, gridEngineConfig); // 初始化 GridEngine（必须在角色加入后）
 
+        // 同步初始朝向与待机帧
+        if (initialFacingDirection) {
+            try {
+                // GridEngine 将以此朝向作为 getFacingDirection 初始值
+                this.gridEngine.turnTowards('cat', initialFacingDirection);
+            } catch (e) {
+                // 忽略旧版本无 turnTowards 的情况
+            }
+            const stopFrame = this.getStopFrame(initialFacingDirection, 'cat');
+            if (stopFrame) {
+                this.catSprite.setFrame(stopFrame);
+            }
+        }
+
         // Tap-to-move: 触摸/点击地图自动寻路到目标；若不可达则前往最近可达位置
         this.input.on('pointerdown', (pointer) => { // 监听指针按下事件（含鼠标与触屏）
             if (this.isTeleporting || this.isShowingDialog) { // 传送/对话期间禁用点地移动

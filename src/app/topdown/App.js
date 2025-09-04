@@ -262,9 +262,9 @@ function App() {
   useEffect(() => {
     // 监听新对话事件
     const dialogBoxEventListener = ({ detail }) => {
-      const rawKey = detail.characterName;
-      setCharacterName(rawKey);
-      const nextMessages = dialogs[normalizedKey] || [{ message: '...' }];
+      const key = String(detail.characterName);
+      setCharacterName(key);
+      const nextMessages = dialogs[key] || [{ message: '...' }];
       setMessages(nextMessages);
     };
     window.addEventListener('new-dialog', dialogBoxEventListener);
@@ -278,9 +278,10 @@ function App() {
 
     // 监听角色金币事件
     const heroCoinEventListener = ({ detail }) => {
-      setHeroCoins(detail.heroCoins);
+      const coins = (detail && (detail.heroCoins ?? detail.catCoins)) ?? 0;
+      setHeroCoins(coins);
     };
-    window.addEventListener('hero-coin', heroCoinEventListener);
+    window.addEventListener('cat-coin', heroCoinEventListener);
 
     // 监听行动上下文事件（决定右下角按钮图标）
     const actionContextEventListener = ({ detail }) => {
@@ -292,7 +293,7 @@ function App() {
     return () => {
       window.removeEventListener('new-dialog', dialogBoxEventListener);
       window.removeEventListener('menu-items', gameMenuEventListener);
-      window.removeEventListener('hero-coin', heroCoinEventListener);
+      window.removeEventListener('cat-coin', heroCoinEventListener);
       window.removeEventListener('action-context', actionContextEventListener);
     };
   }, [setCharacterName, setMessages]);

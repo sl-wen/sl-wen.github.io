@@ -355,22 +355,23 @@ export default class GameScene extends Scene {
         console.log('Map layers:', map.layers);
 
         // 动态添加图块集，支持多个图块集（名称需与 Tiled 中一致）
+        const addedTilesets = {};
         if (map.tilesets && map.tilesets.length > 0) {
             map.tilesets.forEach(tileset => {
                 const tilesetName = tileset.name;
                 console.log('Adding tileset:', tilesetName);
                 if (tilesetName === 'tileset') {
-                    map.addTilesetImage('tileset', 'tileset');
+                    addedTilesets['tileset'] = map.addTilesetImage('tileset', 'tileset');
                 } else if (tilesetName === 'actions_tileset') {
-                    map.addTilesetImage('actions_tileset', 'actions_tileset');
+                    addedTilesets['actions_tileset'] = map.addTilesetImage('actions_tileset', 'actions_tileset');
                 } else if (tilesetName === 'ui_elements') {
-                    map.addTilesetImage('ui_elements', 'ui_elements');
+                    addedTilesets['ui_elements'] = map.addTilesetImage('ui_elements', 'ui_elements');
                 }
             });
         } else {
             // 默认添加基础图块集（兼容旧地图）
             console.log('No tilesets found, using default');
-            map.addTilesetImage('tileset', 'tileset');
+            addedTilesets['tileset'] = map.addTilesetImage('tileset', 'tileset');
         }
 
         if (isDebugMode) {
@@ -449,19 +450,16 @@ export default class GameScene extends Scene {
         }
 
         const elementsLayers = this.add.group();
+        const tilesetsToUse = Object.values(addedTilesets);
         // 逐层创建 tilemapLayer，并记录 elements 类型图层用于交互
         for (let i = 0; i < map.layers.length; i++) {
             const layerData = map.layers[i];
-            let layer;
-
-            // 动态检测图层使用的图块集
-            if (layerData.tileset) {
-                const tilesetName = layerData.tileset.name;
-                layer = map.createLayer(i, tilesetName, 0, 0);
-            } else {
-                // 如果没有指定图块集，使用默认的
-                layer = map.createLayer(i, 'tileset', 0, 0);
+            // 仅处理 tilelayer，跳过对象层等
+            if (layerData.type !== 'tilelayer') {
+                continue;
             }
+
+            const layer = map.createLayer(i, tilesetsToUse, 0, 0);
 
             // 检查图层属性
             if (layerData.properties) {
@@ -486,6 +484,10 @@ export default class GameScene extends Scene {
             dataLayer.objects.forEach((data) => {
                 const { properties, x, y } = data;
                 console.log('Processing object at:', x, y, 'with properties:', properties);
+
+                if (!properties || !Array.isArray(properties) || properties.length === 0) {
+                    return;
+                }
 
                 properties.forEach((property) => {
                     const { name, type, value } = property;

@@ -33,7 +33,6 @@ import ActionButton from "./game/ActionButton";
 import DialogBox from "./game/DialogBox";
 import GameMenu from "./game/GameMenu";
 import HeroCoin from "./game/HeroCoin";
-import HeroHealth from "./game/HeroHealth";
 import { calculateGameSize } from "./game/utils";
 import VirtualJoystick from "./game/VirtualJoystick";
 
@@ -80,7 +79,7 @@ const GameWrapper = styled('div')(({ theme }) => ({
  * 
  * 对话格式：
  * - npc_1, npc_2 等：NPC 角色的对话
- * - sword, push 等：物品或能力的提示信息
+ * - sword 等：物品或能力的提示信息
  * - sign_1, book_1 等：可读物品的文本
  */
 const dialogs = {
@@ -103,9 +102,6 @@ const dialogs = {
   "sword": [{
     "message": "你获得了一把剑",
   }],
-  "push": [{
-    "message": "你现在能够推箱子",
-  }],
   "sign_1": [{
     "message": "你能够读消息",
   }],
@@ -125,10 +121,9 @@ function App() {
   const [characterName, setCharacterName] = useState(''); // 当前对话的角色名称
   const [gameMenuItems, setGameMenuItems] = useState([]); // 游戏菜单选项
   const [gameMenuPosition, setGameMenuPosition] = useState('center'); // 菜单显示位置
-  const [heroHealthStates, setHeroHealthStates] = useState([]); // 角色生命值状态
   const [heroCoins, setHeroCoins] = useState(null);      // 角色金币数量
   const [joystickDirection, setJoystickDirection] = useState(null); // 虚拟摇杆方向
-  const [actionContext, setActionContext] = useState('attack');     // 交互上下文：talk/interact/attack/none
+  const [actionContext, setActionContext] = useState('');     // 交互上下文：talk/interact/none
 
   /**
    * 处理对话完成事件
@@ -282,12 +277,6 @@ function App() {
     };
     window.addEventListener('menu-items', gameMenuEventListener);
 
-    // 监听角色生命值事件
-    const heroHealthEventListener = ({ detail }) => {
-      setHeroHealthStates(detail.healthStates);
-    };
-    window.addEventListener('hero-health', heroHealthEventListener);
-
     // 监听角色金币事件
     const heroCoinEventListener = ({ detail }) => {
       setHeroCoins(detail.heroCoins);
@@ -304,7 +293,6 @@ function App() {
     return () => {
       window.removeEventListener('new-dialog', dialogBoxEventListener);
       window.removeEventListener('menu-items', gameMenuEventListener);
-      window.removeEventListener('hero-health', heroHealthEventListener);
       window.removeEventListener('hero-coin', heroCoinEventListener);
       window.removeEventListener('action-context', actionContextEventListener);
     };
@@ -319,18 +307,6 @@ function App() {
         >
           {/* 这里将渲染 Phaser 游戏画布 */}
         </GameContentWrapper>
-
-        {/* 角色生命值显示 - 当有生命值状态时显示 */}
-        {heroHealthStates.length > 0 && (
-          <HeroHealth
-            gameSize={{
-              width,
-              height,
-              multiplier,
-            }}
-            healthStates={heroHealthStates}
-          />
-        )}
 
         {/* 角色金币显示 - 当有金币数据时显示 */}
         {heroCoins !== null && (
@@ -391,8 +367,8 @@ function App() {
             height,
             multiplier,
           }}
-          icon={actionContext === 'talk' ? '💬' : actionContext === 'interact' ? '🗝️' : actionContext === 'attack' ? '⚔️' : '•'}
-          label={actionContext === 'talk' ? 'Talk' : actionContext === 'interact' ? 'Open' : actionContext === 'attack' ? 'Attack' : ''}
+          icon={actionContext === 'talk' ? '💬' : actionContext === 'interact' ? '🗝️' : '•'}
+          label={actionContext === 'talk' ? 'Talk' : actionContext === 'interact' ? 'Open' : ''}
         />
       </GameWrapper>
     </div>

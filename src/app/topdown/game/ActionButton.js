@@ -85,10 +85,10 @@ const ButtonIcon = styled('div')(({ theme }) => ({
  * 
  * @param {Function} onAction - 按钮按下时的回调函数
  * @param {Object} gameSize - 游戏尺寸对象，包含 width, height, multiplier
- * @param {string} icon - 按钮图标，默认为剑符号 '⚔️'
- * @param {string} label - 按钮标签，默认为 'Attack'
+ * @param {string} icon - 按钮图标，默认为talk符号 '💬'
+ * @param {string} label - 按钮标签，默认为 'talk'
  */
-const ActionButton = ({ onAction, gameSize, icon = '⚔️', label = 'Attack' }) => {
+const ActionButton = ({ onAction, gameSize, icon = '💬', label = 'talk' }) => {
   // 组件状态管理
   const [isPressed, setIsPressed] = useState(false);  // 按钮是否被按下
   

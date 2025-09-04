@@ -148,8 +148,6 @@ src/app/topdown/
 #### 修改游戏参数
 编辑 `src/app/topdown/game/constants.js`：
 ```javascript
-// 调整攻击延迟
-export const ATTACK_DELAY_TIME = 50;  // 毫秒
 
 // 修改 NPC 移动类型
 export const NPC_MOVEMENT_RANDOM = 'random';

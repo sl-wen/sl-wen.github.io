@@ -207,9 +207,6 @@ export default class BootScene extends Scene {
         this.load.atlas('npc_2', '/game/assets/sprites/atlas/npc_2.png', '/game/assets/sprites/atlas/npc_2.json');
         this.load.atlas('npc_3', '/game/assets/sprites/atlas/npc_3.png', '/game/assets/sprites/atlas/npc_3.json');
         this.load.atlas('npc_4', '/game/assets/sprites/atlas/npc_4.png', '/game/assets/sprites/atlas/npc_4.json');
-
-        // 敌人精灵图集
-        this.load.atlas('slime', '/game/assets/sprites/atlas/slime.png', '/game/assets/sprites/atlas/slime.json');
     }
 
     /**
@@ -218,13 +215,10 @@ export default class BootScene extends Scene {
      */
     loadItemsAndUI() {
         // 物品图集
-        this.load.atlas('heart', '/game/assets/sprites/atlas/heart.png', '/game/assets/sprites/atlas/heart.json');
         this.load.atlas('coin', '/game/assets/sprites/atlas/coin.png', '/game/assets/sprites/atlas/coin.json');
 
         // 其他物品图片
         this.load.image('sword', '/game/assets/images/sword.png');
-        this.load.image('push', '/game/assets/images/push.png');
-        this.load.image('heart_container', '/game/assets/images/heart_container.png');
 
         // UI 元素
         this.load.image('dialog_borderbox', '/game/assets/images/dialog_borderbox.png');
@@ -243,7 +237,6 @@ export default class BootScene extends Scene {
 
         // 音效
         this.load.audio('coin_sound', '/game/assets/audio/coin.mp3');
-        this.load.audio('attack_sound', '/game/assets/audio/attack.mp3');
         this.load.audio('walk_sound', '/game/assets/audio/walk.mp3');
     }
 

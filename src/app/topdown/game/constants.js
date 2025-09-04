@@ -15,7 +15,6 @@ export const SCENE_FADE_TIME = 300;        // 场景淡入淡出时间（毫秒�
 
 // 地图元素索引常量
 // 这些索引对应 Tiled 地图编辑器中的图块 ID
-export const BUSH_INDEX = 428;             // 灌木丛图块索引
 export const COIN_INDEX = 192;             // 金币图块索引
 
 // NPC 移动行为类型常量

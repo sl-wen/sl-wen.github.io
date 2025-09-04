@@ -32,7 +32,7 @@ import './App.css';
 import ActionButton from "./game/ActionButton";
 import DialogBox from "./game/DialogBox";
 import GameMenu from "./game/GameMenu";
-import HeroCoin from "./game/HeroCoin";
+import CatCoin from "./game/CatCoin";
 import { calculateGameSize } from "./game/utils";
 import VirtualJoystick from "./game/VirtualJoystick";
 
@@ -121,7 +121,7 @@ function App() {
   const [characterName, setCharacterName] = useState(''); // 当前对话的角色名称
   const [gameMenuItems, setGameMenuItems] = useState([]); // 游戏菜单选项
   const [gameMenuPosition, setGameMenuPosition] = useState('center'); // 菜单显示位置
-  const [heroCoins, setHeroCoins] = useState(null);      // 角色金币数量
+  const [catCoins, setcatCoins] = useState(null);      // 角色金币数量
   const [joystickDirection, setJoystickDirection] = useState(null); // 虚拟摇杆方向
   const [actionContext, setActionContext] = useState('');     // 交互上下文：talk/interact/none
 
@@ -277,10 +277,10 @@ function App() {
     window.addEventListener('menu-items', gameMenuEventListener);
 
     // 监听角色金币事件
-    const heroCoinEventListener = ({ detail }) => {
-      setHeroCoins(detail.heroCoins);
+    const catCoinEventListener = ({ detail }) => {
+      setcatCoins(detail.catCoins);
     };
-    window.addEventListener('hero-coin', heroCoinEventListener);
+    window.addEventListener('cat-coin', catCoinEventListener);
 
     // 监听行动上下文事件（决定右下角按钮图标）
     const actionContextEventListener = ({ detail }) => {
@@ -292,7 +292,7 @@ function App() {
     return () => {
       window.removeEventListener('new-dialog', dialogBoxEventListener);
       window.removeEventListener('menu-items', gameMenuEventListener);
-      window.removeEventListener('hero-coin', heroCoinEventListener);
+      window.removeEventListener('cat-coin', catCoinEventListener);
       window.removeEventListener('action-context', actionContextEventListener);
     };
   }, [setCharacterName, setMessages]);
@@ -308,14 +308,14 @@ function App() {
         </GameContentWrapper>
 
         {/* 角色金币显示 - 当有金币数据时显示 */}
-        {heroCoins !== null && (
-          <HeroCoin
+        {catCoins !== null && (
+          <CatCoin
             gameSize={{
               width,
               height,
               multiplier,
             }}
-            heroCoins={heroCoins}
+            catCoins={catCoins}
           />
         )}
 
@@ -368,7 +368,7 @@ function App() {
           }}
           icon={
             actionContext === 'talk' ? '💬'
-            : actionContext === 'interact' ? '🗝️'
+            : actionContext === 'interact' ? '❗'
             : actionContext === 'plant' ? '🌱'
             : actionContext === 'water' ? '💧'
             : actionContext === 'harvest' ? '🧺'

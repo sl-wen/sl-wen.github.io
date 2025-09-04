@@ -6,7 +6,7 @@
  * - 当金币达到上限（999）时使用不同样式高亮
  * 
  * 使用方法：
- * <HeroCoin gameSize={{ width, height, multiplier }} heroCoins={coin} />
+ * <CatCoin gameSize={{ width, height, multiplier }} catCoins={coin} />
  */
 import { styled } from '@mui/material/styles';
 
@@ -45,7 +45,7 @@ const CoinText = styled('span')(({ multiplier, isFull }) => {
     };
 });
 
-const HeroCoin = ({
+const CatCoin = ({
     gameSize,
     heroCoins,
 }) => {
@@ -61,12 +61,12 @@ const HeroCoin = ({
             <Coin multiplier={multiplier} />
             <CoinText
                 multiplier={multiplier}
-                isFull={heroCoins >= 999}
+                isFull={catCoins >= 999}
             >
-                {heroCoins.toString().padStart(3, '0')}
+                {catCoins.toString().padStart(3, '0')}
             </CoinText>
         </CoinContainer>
     );
 };
 
-export default HeroCoin;
+export default CatCoin;

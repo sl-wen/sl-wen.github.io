@@ -216,6 +216,8 @@ export default class BootScene extends Scene {
     loadItemsAndUI() {
         // 物品图集
         this.load.atlas('coin', '/game/assets/sprites/atlas/coin.png', '/game/assets/sprites/atlas/coin.json');
+        // 农场作物图集（0-种子，1-4生长，5-果实）
+        this.load.atlas('farmplants', '/game/assets/sprites/atlas/farmplants.png', '/game/assets/sprites/atlas/farmplants.json');
 
         // 其他物品图片
         this.load.image('sword', '/game/assets/images/sword.png');

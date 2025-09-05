@@ -497,9 +497,16 @@ export default class GameScene extends Scene {
         }
 
         const elementsLayers = this.add.group();
+        // 使用实际已添加的 tileset 列表创建图层，避免因名称不匹配导致不渲染
+        const tilesetArray = Object.values(addedTilesets);
         for (let i = 0; i < map.layers.length; i++) {
-            const layer = map.createLayer(i, 'tileset', 0, 0);
-            layer.layer.properties.forEach((property) => {
+            const layer = map.createLayer(
+                i,
+                tilesetArray.length > 0 ? tilesetArray : 'tileset',
+                0,
+                0
+            );
+            (layer.layer.properties || []).forEach((property) => {
                 const { value, name } = property;
 
                 if (name === 'type' && value === 'elements') {

@@ -544,6 +544,11 @@ export default class GameScene extends Scene {
                     console.log(`Found ${interactionTileCount} interaction tiles in ${layerData.name}, hidden but collision enabled`);
                 }
 
+                // 基于瓦片属性为该图层设置碰撞：凡是带有 ge_collide=true 的瓦片都会阻挡
+                try {
+                    layer.setCollisionByProperty({ ge_collide: true });
+                } catch (_) { /* noop */ }
+
                 (layer.layer.properties || []).forEach((property) => {
                     const { value, name } = property;
 
@@ -798,9 +803,9 @@ export default class GameScene extends Scene {
                 },
             ],
             numberOfDirections: 8,
-            // 确保 GridEngine 使用地图的碰撞数据
-            collisionLayerProperty: 'collides',
-            // 启用碰撞检测
+            // GridEngine 根据瓦片属性处理碰撞
+            collisionTilePropertyName: 'ge_collide',
+            // 额外将交互占位瓦片也视为阻挡
             collisionTiles: [169, 170],
         };
 

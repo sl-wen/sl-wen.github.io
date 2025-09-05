@@ -91,9 +91,9 @@ const NameText = styled('span')(({ multiplier }) => ({
   marginLeft: `${6 * multiplier}px`,
 }));
 
-const InventoryModal = ({ gameSize, inventory, onClose }) => {
+const InventoryModal = ({ gameSize, inventory, onClose, selectMode = false, selectTag = 'seeds', onSelect }) => {
   const { width, height, multiplier } = gameSize;
-  const [activeTab, setActiveTab] = useState('seeds');
+  const [activeTab, setActiveTab] = useState(selectTag || 'seeds');
   const [frames, setFrames] = useState(null);
 
   // 载入 atlas 帧信息（仅一次）
@@ -126,6 +126,13 @@ const InventoryModal = ({ gameSize, inventory, onClose }) => {
     return Object.values(current);
   }, [inventory, activeTab]);
 
+  const handleCellClick = (it) => {
+    if (!selectMode) return;
+    if (activeTab !== 'seeds') return; // 仅允许在种子标签选择
+    if (!it || (it.count ?? 0) <= 0) return;
+    if (typeof onSelect === 'function') onSelect(it.id);
+  };
+
   const renderIcon = (itemId) => {
     // water 不在 farmplants 图集中，使用 emoji 退化
     if (itemId === 'water' || !frames) {
@@ -154,7 +161,7 @@ const InventoryModal = ({ gameSize, inventory, onClose }) => {
       <Window multiplier={multiplier} width={width} height={height} onClick={(e) => e.stopPropagation()}>
         <Title multiplier={multiplier}>背包</Title>
         <Tabs multiplier={multiplier}>
-          <Tab multiplier={multiplier} active={activeTab === 'seeds'} onClick={() => setActiveTab('seeds')}>🌱 种子</Tab>
+          <Tab multiplier={multiplier} active={activeTab === 'seeds'} onClick={() => setActiveTab('seeds')}>🌱 种子{selectMode && '（选择）'}</Tab>
           <Tab multiplier={multiplier} active={activeTab === 'misc'} onClick={() => setActiveTab('misc')}>🧰 杂物</Tab>
           <Tab multiplier={multiplier} active={activeTab === 'fruits'} onClick={() => setActiveTab('fruits')}>🧺 果实</Tab>
         </Tabs>
@@ -164,7 +171,7 @@ const InventoryModal = ({ gameSize, inventory, onClose }) => {
             <Cell multiplier={multiplier}><span>空</span><b>x 0</b></Cell>
           )}
           {items.map((it) => (
-            <Cell key={it.id} multiplier={multiplier}>
+            <Cell key={it.id} multiplier={multiplier} onClick={() => handleCellClick(it)} style={{ cursor: selectMode && activeTab === 'seeds' && (it.count ?? 0) > 0 ? 'pointer' : 'default', opacity: selectMode && activeTab === 'seeds' && (it.count ?? 0) <= 0 ? 0.6 : 1 }}>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <IconSlot multiplier={multiplier}>{renderIcon(it.id)}</IconSlot>
                 <NameText multiplier={multiplier}>{it.name || it.id}</NameText>

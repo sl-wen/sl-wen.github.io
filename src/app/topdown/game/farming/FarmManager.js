@@ -136,13 +136,29 @@ export default class FarmManager {
         return true;
     }
 
-    /** 种植：在空的耕地上放置种子（stage=1） */
-    plant(tileX, tileY) {
+    /**
+     * 种植：在空的耕地上放置种子（stage=1）
+     * @param {number} tileX
+     * @param {number} tileY
+     * @param {string|null} [seedIdOverride] - 指定要使用的种子 id（如 'huluobo-0'）；为空则回退到第一种可用种子
+     */
+    plant(tileX, tileY, seedIdOverride = null) {
         if (!this.isFarmland(tileX, tileY)) return false;
         if (this.hasCrop(tileX, tileY)) return false;
         if (this.getTotalSeedsCount() <= 0) return false;
-        const seedId = this.getFirstAvailableSeedId();
+
+        let seedId = seedIdOverride || this.getFirstAvailableSeedId();
         if (!seedId) return false;
+
+        // 校验指定种子可用
+        if (seedIdOverride) {
+            const seeds = this.inventory?.tags?.seeds?.items || {};
+            if (!seeds[seedId] || (seeds[seedId].count || 0) <= 0) {
+                // 指定种子无效，尝试回退
+                seedId = this.getFirstAvailableSeedId();
+                if (!seedId) return false;
+            }
+        }
 
         // 从种子 id 提取 cropKey（例如 huluobo-0 -> huluobo）
         const cropKey = this.cropKeyFromSeedId(seedId);

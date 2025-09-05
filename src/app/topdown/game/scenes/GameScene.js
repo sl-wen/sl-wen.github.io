@@ -417,7 +417,7 @@ export default class GameScene extends Scene {
         // 初始背包推送一次
         this.farmManager.dispatchInventoryUpdate?.();
 
-        // 在 city 地图中也预留一块 4x3 的耕地：以玩家出生点为参考，偏右上
+        // 在 city 地图中预留一块 4x3 的耕地：以玩家出生点为参考，偏右上
         if (mapKey === 'home_page_city') {
             const fx = Math.min(Math.max(0, initialPosition.x + 4), Math.max(0, map.width - 4));
             const fy = Math.min(Math.max(0, initialPosition.y - 2), Math.max(0, map.height - 3));

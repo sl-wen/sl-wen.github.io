@@ -61,7 +61,7 @@ export default class FarmManager {
         if (this.hasCrop(tileX, tileY)) return false;
         if (this.inventory.seeds <= 0) return false;
 
-        const crop = new Crop(this.scene, tileX, tileY, { tileSize: this.tileSize, cropKey: 'bailuobo' });
+        const crop = new Crop(this.scene, tileX, tileY, { tileSize: this.tileSize, cropKey: 'bailuobo-1' });
         this.crops.set(`${tileX},${tileY}`, crop);
         this.inventory.seeds -= 1;
         this.dispatchInventoryUpdate();

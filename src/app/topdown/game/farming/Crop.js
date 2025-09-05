@@ -20,7 +20,7 @@ export default class Crop {
         this.cropKey = options.cropKey || 'bailuobo';
         this.tileSize = options.tileSize || 16;
 
-        this.stage = 0;           // 0~5
+        this.stage = 1;           // 0~5
         this.watered = false;     // 是否已浇水（用于推进到下一阶段）
         this._timer = null;       // Phaser 定时器
 

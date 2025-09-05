@@ -346,11 +346,25 @@ function App() {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
-        const { error } = await supabase
+        const { data: updatedRows, error: updateError } = await supabase
           .from('profiles')
           .update({ farmdata: snapshot })
-          .eq('user_id', user.id);
-        if (error) throw error;
+          .eq('user_id', user.id)
+          .select('user_id');
+        if (updateError) throw updateError;
+
+        // 若未匹配到用户资料，则补插一条（首登或资料缺失场景）
+        if (!updatedRows || updatedRows.length === 0) {
+          const derivedUsername =
+            (user.user_metadata && (user.user_metadata.user_name || user.user_metadata.preferred_username)) ||
+            (user.email ? user.email.split('@')[0] : null) ||
+            `player_${String(user.id).slice(0, 8)}`;
+
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert([{ user_id: user.id, username: derivedUsername, farmdata: snapshot }]);
+          if (insertError) throw insertError;
+        }
         const local = JSON.parse(localStorage.getItem('userProfile') || '{}');
         local.farmdata = snapshot;
         localStorage.setItem('userProfile', JSON.stringify(local));

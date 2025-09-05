@@ -134,6 +134,7 @@ function App() {
   const [inventory, setInventory] = useState({ tags: { seeds: { items: { 'huluobo-0': { id: 'huluobo-0', name: '胡萝卜种子', count: 0 }, 'bailuobo-0': { id: 'bailuobo-0', name: '白萝卜种子', count: 0 } } }, misc: { items: { water: { id: 'water', name: '水', count: 0 } } }, fruits: { items: { 'huluobo-5': { id: 'huluobo-5', name: '胡萝卜', count: 0 }, 'bailuobo-5': { id: 'bailuobo-5', name: '白萝卜', count: 0 } } } } });
   const [showInventory, setShowInventory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [inventorySelectMode, setInventorySelectMode] = useState(false);
 
   /**
    * 处理对话完成事件
@@ -324,6 +325,13 @@ function App() {
     };
     window.addEventListener('inventory-update', inventoryListener);
 
+    // 监听打开种子选择流程
+    const openSeedSelectListener = () => {
+      setInventorySelectMode(true);
+      setShowInventory(true);
+    };
+    window.addEventListener('open-seed-select', openSeedSelectListener);
+
     // 清理事件监听器
     return () => {
       window.removeEventListener('new-dialog', dialogBoxEventListener);
@@ -331,8 +339,18 @@ function App() {
       window.removeEventListener('cat-coin', catCoinEventListener);
       window.removeEventListener('action-context', actionContextEventListener);
       window.removeEventListener('inventory-update', inventoryListener);
+      window.removeEventListener('open-seed-select', openSeedSelectListener);
     };
   }, [setCharacterName, setMessages]);
+
+  const handleSeedSelected = (seedId) => {
+    try {
+      const evt = new CustomEvent('seed-selected', { detail: { seedId } });
+      window.dispatchEvent(evt);
+    } catch (e) { }
+    setShowInventory(false);
+    setInventorySelectMode(false);
+  };
 
   const requestSaveSnapshot = () => {
     return new Promise((resolve) => {
@@ -516,7 +534,19 @@ function App() {
           <InventoryModal
             gameSize={{ width, height, multiplier }}
             inventory={inventory}
-            onClose={() => setShowInventory(false)}
+            selectMode={inventorySelectMode}
+            selectTag={'seeds'}
+            onSelect={handleSeedSelected}
+            onClose={() => {
+              if (inventorySelectMode) {
+                try {
+                  const evt = new CustomEvent('seed-select-cancel');
+                  window.dispatchEvent(evt);
+                } catch (e) { }
+                setInventorySelectMode(false);
+              }
+              setShowInventory(false);
+            }}
           />
         )}
 

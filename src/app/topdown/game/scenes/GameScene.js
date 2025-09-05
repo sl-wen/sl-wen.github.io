@@ -1107,10 +1107,16 @@ export default class GameScene extends Scene {
                 const tileY = Math.floor(front.y / this.map.tileHeight);
 
                 if (context === 'plant') {
-                    const planted = this.farmManager.plant(tileX, tileY);
-                    if (!planted) {
-                        // noop
+                    // 若已有选择流程进行中，忽略重复触发
+                    if (this.seedSelectPending) {
+                        return;
                     }
+                    // 记录待种植地块，打开背包选择种子
+                    this.seedSelectPending = { tileX, tileY };
+                    try {
+                        const evt = new CustomEvent('open-seed-select');
+                        window.dispatchEvent(evt);
+                    } catch (_) { /* noop */ }
                 } else if (context === 'water') {
                     const ok = this.farmManager.water(tileX, tileY);
                     if (!ok) {

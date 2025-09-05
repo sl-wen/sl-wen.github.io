@@ -15,6 +15,59 @@ CREATE TABLE IF NOT EXISTS profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 确保一个 auth 用户只对应一条资料
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM   pg_indexes
+    WHERE  schemaname = 'public'
+    AND    indexname = 'uniq_profiles_user_id'
+  ) THEN
+    CREATE UNIQUE INDEX uniq_profiles_user_id ON profiles(user_id);
+  END IF;
+END $$;
+
+-- 启用 RLS 并添加最小策略（若尚未启用）
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_tables
+    WHERE schemaname = 'public' AND tablename = 'profiles'
+  ) THEN
+    -- 表尚未存在则跳过（由上方 CREATE TABLE 保障）
+    NULL;
+  END IF;
+
+  -- 启用 RLS（幂等）
+  EXECUTE 'ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY';
+
+  -- 仅允许本人读取、更新、插入自己的资料
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'profiles' AND policyname = 'profiles_select_own'
+  ) THEN
+    CREATE POLICY profiles_select_own ON public.profiles
+      FOR SELECT USING (auth.uid() = user_id);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'profiles' AND policyname = 'profiles_update_own'
+  ) THEN
+    CREATE POLICY profiles_update_own ON public.profiles
+      FOR UPDATE USING (auth.uid() = user_id);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'profiles' AND policyname = 'profiles_insert_self'
+  ) THEN
+    CREATE POLICY profiles_insert_self ON public.profiles
+      FOR INSERT WITH CHECK (auth.uid() = user_id);
+  END IF;
+END $$;
+
 -- 创建文章表
 CREATE TABLE IF NOT EXISTS posts (
     post_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

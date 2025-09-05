@@ -23,6 +23,7 @@ const PixelButton = styled('button')(({ multiplier }) => ({
   border: 'solid',
   borderImage: `url("/game/assets/images/dialog_borderbox.png") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px stretch`,
   padding: `${2 * multiplier}px ${2 * multiplier}px`,
+  backgroundColor: '#e2b27e',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

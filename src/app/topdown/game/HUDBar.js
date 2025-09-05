@@ -23,7 +23,7 @@ const PixelButton = styled('button')(({ multiplier }) => ({
   backgroundColor: '#e2b27e',
   border: 'solid',
   borderImage: `url("/game/assets/images/dialog_borderbox.png") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px stretch`,
-  padding: `${6 * multiplier}px ${8 * multiplier}px`,
+  padding: `${2 * multiplier}px ${3 * multiplier}px`,
   color: '#1b0f0a',
   display: 'flex',
   alignItems: 'center',
@@ -48,10 +48,10 @@ const HUDBar = ({ gameSize, avatarUrl, onAvatarClick, onSettingsClick }) => {
     <Bar multiplier={multiplier}>
       <PixelButton multiplier={multiplier} onClick={onAvatarClick}>
         <AvatarImg multiplier={multiplier} src={avatarUrl} />
-        背包
+        👜
       </PixelButton>
       <PixelButton multiplier={multiplier} onClick={onSettingsClick}>
-        ⚙ 设置
+        ⚙ 
       </PixelButton>
     </Bar>
   );

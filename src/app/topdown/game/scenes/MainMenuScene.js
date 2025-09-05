@@ -53,8 +53,8 @@ export default class MainMenuScene extends Scene {
                 case 'start': {
                     // 启动游戏：进入 GameScene 并传递初始主角状态与地图 key
                     let farmSave = null;
-                    // 默认使用新地图 key
-                    let mapKey = 'map';
+                    // 默认优先使用从 /topdown/game/map.json 加载的 new_map
+                    let mapKey = this.textures ? (this.cache.tilemap.has('new_map') ? 'new_map' : 'map') : 'map';
                     let catStatus = {
                         position: { x: 4, y: 3 },
                         previousPosition: { x: 4, y: 3 },

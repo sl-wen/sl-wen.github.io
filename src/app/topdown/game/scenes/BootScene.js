@@ -180,7 +180,9 @@ export default class BootScene extends Scene {
         this.load.image('actions_tileset', '/game/assets/sprites/maps/tilesets/actions_tileset.png');
         this.load.image('ui_elements', '/game/assets/sprites/maps/tilesets/ui_elements.png');
 
-        // 新地图（Tiled JSON，由 map.tmx 导出）
+        // 新地图（Tiled JSON，建议从 topdown/game/map.tmx 导出为 map.json 放置于 /public/topdown/game/）
+        this.load.tilemapTiledJSON('new_map', '/topdown/game/map.json');
+        // 兼容旧路径下的默认地图
         this.load.tilemapTiledJSON('map', '/game/assets/maps/main_map.json');
 
         // 加载城市地图

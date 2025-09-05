@@ -509,6 +509,8 @@ export default class GameScene extends Scene {
         }
 
         const elementsLayers = this.add.group();
+        // 收集所有应视为阻挡的瓦片索引（按 tileset 名称，比如 Fences）
+        const collidableTileIds = new Set();
         // 使用实际已添加的 tileset 列表创建图层，避免因名称不匹配导致不渲染
         const tilesetArray = Object.values(addedTilesets);
         console.log('Available tilesets:', Object.keys(addedTilesets));
@@ -527,6 +529,7 @@ export default class GameScene extends Scene {
 
             if (layer) {
                 console.log(`Layer ${i} (${layerData.name}) created successfully`);
+                const layerNameLower = String(layerData?.name || '').toLowerCase();
 
                 // 处理 interaction 瓦片：不显示但有碰撞属性
                 if (layerData.name === 'Objects' || layerData.name === 'Collision' || layerData.name === 'Farmable') {
@@ -542,6 +545,43 @@ export default class GameScene extends Scene {
                     });
 
                     console.log(`Found ${interactionTileCount} interaction tiles in ${layerData.name}, hidden but collision enabled`);
+                }
+
+                // 基于瓦片属性为该图层设置碰撞：凡是带有 ge_collide=true 的瓦片都会阻挡
+                try {
+                    layer.setCollisionByProperty({ ge_collide: true });
+                } catch (_) { /* noop */ }
+
+                // 兼容未在地图中标注 ge_collide 的情况：
+                // 将来自指定 tileset 的瓦片（如 Fences/House/interaction）统一视为阻挡
+                const blockingTilesetNames = new Set(['Fences', 'House', 'House Decoration', 'interaction']);
+                try {
+                    layer.forEachTile((tile) => {
+                        const tilesetName = tile?.tileset?.name;
+                        if (!tile || tile.index < 0 || !tilesetName) return;
+                        if (blockingTilesetNames.has(tilesetName)) {
+                            tile.setCollision(true);
+                            collidableTileIds.add(tile.index);
+                        }
+                    });
+                } catch (_) { /* noop */ }
+
+                // 特别处理 map.json 的命名图层：collision / fences（不依赖属性）
+                if (layerNameLower.includes('collision') || layerNameLower.includes('fence')) {
+                    console.log(`Enabling collision for layer by name: ${layerData.name}`);
+                    try {
+                        // 隐藏纯碰撞图层的显示（collision），围栏通常需要显示
+                        if (layerNameLower.includes('collision')) {
+                            layer.setVisible(false);
+                        }
+                        // 对该图层的所有非空瓦片启用碰撞
+                        layer.setCollisionByExclusion([-1]);
+                        layer.forEachTile((tile) => {
+                            if (tile && tile.index >= 0) {
+                                collidableTileIds.add(tile.index);
+                            }
+                        });
+                    } catch (_) { /* noop */ }
                 }
 
                 (layer.layer.properties || []).forEach((property) => {
@@ -798,10 +838,8 @@ export default class GameScene extends Scene {
                 },
             ],
             numberOfDirections: 8,
-            // 确保 GridEngine 使用地图的碰撞数据
-            collisionLayerProperty: 'collides',
-            // 启用碰撞检测
-            collisionTiles: [169, 170],
+            // 直接使用收集到的阻挡瓦片索引（无需地图属性）
+            collisionTiles: Array.from(collidableTileIds.size > 0 ? collidableTileIds : new Set([169, 170])),
         };
 
         // 监听保存快照请求：React 设置页会触发

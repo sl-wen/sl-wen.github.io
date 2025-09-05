@@ -25,6 +25,7 @@ const PixelButton = styled('button')(({ multiplier }) => ({
   padding: `${2 * multiplier}px ${2 * multiplier}px`,
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center',
   cursor: 'pointer',
   pointerEvents: 'auto',
 }));

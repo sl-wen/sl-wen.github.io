@@ -438,7 +438,8 @@ export default class GameScene extends Scene {
 
         // cat 主角：初始属性、碰撞盒与交互体
         this.catSprite = this.physics.add
-            .sprite(initialPosition.x * 16, initialPosition.y * 16, 'cat', initialFrame)
+            // 使用 idle 动画 key 作为初始纹理（单帧）
+            .sprite(initialPosition.x * 16, initialPosition.y * 16, `cat_idle_${initialFacingDirection || 'down'}`)
             .setDepth(1);
         this.catSprite.coin = catCoin;
 
@@ -842,11 +843,7 @@ export default class GameScene extends Scene {
         // 供运行期检测交互环境使用
         this.npcSprites = npcSprites;
 
-        // Movement
-        this.createPlayerwalkAnimation('cat', 'walk_up');
-        this.createPlayerwalkAnimation('cat', 'walk_right');
-        this.createPlayerwalkAnimation('cat', 'walk_down');
-        this.createPlayerwalkAnimation('cat', 'walk_left');
+        // Movement（cat 的动画已在 BootScene 中创建，这里无需基于 atlas 再创建）
 
         this.gridEngine.create(map, gridEngineConfig); // 初始化 GridEngine（必须在角色加入后）
 
@@ -860,7 +857,12 @@ export default class GameScene extends Scene {
             }
             const stopFrame = this.getStopFrame(initialFacingDirection, 'cat');
             if (stopFrame) {
-                this.catSprite.setFrame(stopFrame);
+                // getStopFrame 返回的是动画 key；当基于单帧纹理时，直接 setTexture 到该 key
+                if (this.textures.exists(stopFrame)) {
+                    this.catSprite.setTexture(stopFrame);
+                } else {
+                    this.catSprite.setFrame(stopFrame);
+                }
             }
         }
 
@@ -948,12 +950,26 @@ export default class GameScene extends Scene {
             const dir4 = toCardinal(direction ?? this.gridEngine.getFacingDirection(charId));
             if (charId === 'cat') {
                 this.catSprite.anims.stop();
-                this.catSprite.setFrame(this.getStopFrame(dir4, charId));
+                {
+                    const stopFrame = this.getStopFrame(dir4, charId);
+                    if (this.textures.exists(stopFrame)) {
+                        this.catSprite.setTexture(stopFrame);
+                    } else {
+                        this.catSprite.setFrame(stopFrame);
+                    }
+                }
             } else {
                 const npc = npcSprites.getChildren().find(s => s.texture.key === charId);
                 if (npc) {
                     npc.anims.stop();
-                    npc.setFrame(this.getStopFrame(dir4, charId));
+                    {
+                        const stopFrame = this.getStopFrame(dir4, charId);
+                        if (this.textures.exists(stopFrame)) {
+                            npc.setTexture(stopFrame);
+                        } else {
+                            npc.setFrame(stopFrame);
+                        }
+                    }
                 }
             }
         });
@@ -967,7 +983,14 @@ export default class GameScene extends Scene {
                     const anim = this.catSprite.anims;
                     if (anim.currentAnim?.key !== key || !anim.isPlaying) anim.play(key);
                 } else {
-                    this.catSprite.setFrame(this.getStopFrame(dir4, charId));
+                    {
+                        const stopFrame = this.getStopFrame(dir4, charId);
+                        if (this.textures.exists(stopFrame)) {
+                            this.catSprite.setTexture(stopFrame);
+                        } else {
+                            this.catSprite.setFrame(stopFrame);
+                        }
+                    }
                 }
             } else {
                 const npc = npcSprites.getChildren().find(s => s.texture.key === charId);
@@ -977,7 +1000,14 @@ export default class GameScene extends Scene {
                     const anim = npc.anims;
                     if (anim.currentAnim?.key !== key || !anim.isPlaying) anim.play(key);
                 } else {
-                    npc.setFrame(this.getStopFrame(dir4, charId));
+                    {
+                        const stopFrame = this.getStopFrame(dir4, charId);
+                        if (this.textures.exists(stopFrame)) {
+                            npc.setTexture(stopFrame);
+                        } else {
+                            npc.setFrame(stopFrame);
+                        }
+                    }
                 }
             }
         });

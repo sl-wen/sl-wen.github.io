@@ -22141,6 +22141,13 @@
       "name": "Collision",
       "opacity": 1,
       "type": "tilelayer",
+      "properties": [
+        {
+          "name": "collides",
+          "type": "bool",
+          "value": true
+        }
+      ],
       "visible": false,
       "width": 50,
       "x": 0,

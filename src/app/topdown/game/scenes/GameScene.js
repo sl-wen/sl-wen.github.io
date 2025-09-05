@@ -529,6 +529,7 @@ export default class GameScene extends Scene {
 
             if (layer) {
                 console.log(`Layer ${i} (${layerData.name}) created successfully`);
+                const layerNameLower = String(layerData?.name || '').toLowerCase();
 
                 // 处理 interaction 瓦片：不显示但有碰撞属性
                 if (layerData.name === 'Objects' || layerData.name === 'Collision' || layerData.name === 'Farmable') {
@@ -564,6 +565,24 @@ export default class GameScene extends Scene {
                         }
                     });
                 } catch (_) { /* noop */ }
+
+                // 特别处理 map.json 的命名图层：collision / fences（不依赖属性）
+                if (layerNameLower.includes('collision') || layerNameLower.includes('fence')) {
+                    console.log(`Enabling collision for layer by name: ${layerData.name}`);
+                    try {
+                        // 隐藏纯碰撞图层的显示（collision），围栏通常需要显示
+                        if (layerNameLower.includes('collision')) {
+                            layer.setVisible(false);
+                        }
+                        // 对该图层的所有非空瓦片启用碰撞
+                        layer.setCollisionByExclusion([-1]);
+                        layer.forEachTile((tile) => {
+                            if (tile && tile.index >= 0) {
+                                collidableTileIds.add(tile.index);
+                            }
+                        });
+                    } catch (_) { /* noop */ }
+                }
 
                 (layer.layer.properties || []).forEach((property) => {
                     const { value, name } = property;

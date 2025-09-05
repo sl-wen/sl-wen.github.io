@@ -3,6 +3,8 @@
   "version": "1.0.1",
   "private": true,
   "scripts": {
+    "tmx:json": "node ./scripts/convert-tmx-to-json.mjs",
+    "tmx:json:default": "node ./scripts/convert-tmx-to-json.mjs src/app/topdown/game/map.tmx public/topdown/game/map.json",
     "dev": "next dev",
     "build": "next build",
     "build:fast": "cross-env NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS='--max-old-space-size=4096' SKIP_TYPE_CHECK=1 next build",
@@ -74,10 +76,13 @@
     "eslint": "8.57.1",
     "eslint-config-next": "15.5.2",
     "eslint-plugin-react-hooks": "4.6.2",
+    "fast-xml-parser": "^5.2.5",
     "postcss": "8.5.6",
     "prettier": "3.6.2",
     "rimraf": "6.0.1",
     "tailwindcss": "3.4.17",
+    "tmx-parser": "^1.5.0",
+    "tmx2json": "^0.1.1",
     "typescript": "^5.9.2"
   },
   "description": "Modern React blog with Next.js, TypeScript, and Tailwind CSS",

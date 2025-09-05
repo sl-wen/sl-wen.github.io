@@ -179,6 +179,17 @@ export default class BootScene extends Scene {
         this.load.image('tileset', '/game/assets/sprites/maps/tilesets/tileset.png');
         this.load.image('actions_tileset', '/game/assets/sprites/maps/tilesets/actions_tileset.png');
         this.load.image('ui_elements', '/game/assets/sprites/maps/tilesets/ui_elements.png');
+        // 预加载与 TMX 中 tileset 名称一致的图像（用于 new_map 动态匹配）
+        this.load.image('Grass', '/game/assets/graphics/environment/Grass.png');
+        this.load.image('Hills', '/game/assets/graphics/environment/Hills.png');
+        this.load.image('Fences', '/game/assets/graphics/environment/Fences.png');
+        this.load.image('Plant Decoration', '/game/assets/graphics/environment/Plant Decoration.png');
+        this.load.image('Objects', '/game/assets/graphics/environment/Objects.png');
+        this.load.image('Paths', '/game/assets/graphics/environment/Paths.png');
+        this.load.image('interaction', '/game/assets/graphics/environment/interaction.png');
+        this.load.image('Water', '/game/assets/graphics/environment/Water.png');
+        this.load.image('House', '/game/assets/graphics/environment/House.png');
+        this.load.image('House Decoration', '/game/assets/graphics/environment/House Decoration.png');
 
         // 新地图（Tiled JSON，建议从 topdown/game/map.tmx 导出为 map.json 放置于 /public/topdown/game/）
         this.load.tilemapTiledJSON('new_map', '/topdown/game/map.json');

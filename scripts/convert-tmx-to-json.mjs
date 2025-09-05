@@ -100,7 +100,12 @@ try {
     for (const ts of tsArray) {
         if (ts.source) {
             // parse external TSX to pick up image and name
-            const tsxPath = path.resolve(path.dirname(absInput), ts.source);
+            let tsxPath = path.resolve(path.dirname(absInput), ts.source);
+            if (!fs.existsSync(tsxPath)) {
+                // fallback to public/topdown/game for moved tilesets
+                const alt = path.resolve(__dirname, '..', 'public', 'topdown', 'game', ts.source);
+                if (fs.existsSync(alt)) tsxPath = alt;
+            }
             const tsxXml = fs.readFileSync(tsxPath, 'utf8');
             const tsxDoc = parser.parse(tsxXml);
             const t = tsxDoc.tileset;

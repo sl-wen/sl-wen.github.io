@@ -32,8 +32,8 @@ export default class FarmManager {
                 seeds: {
                     items: {
                         // 种子：使用帧名 id（-0）
-                        'huluobo-0': { id: 'huluobo-0', name: '胡萝卜种子', count: 0 },
-                        'bailuobo-0': { id: 'bailuobo-0', name: '白萝卜种子', count: 0 },
+                        'huluobo-0': { id: 'huluobo-0', name: '胡萝卜种子', count: 5 },
+                        'bailuobo-0': { id: 'bailuobo-0', name: '白萝卜种子', count: 3 },
                     },
                 },
                 misc: {
@@ -45,7 +45,7 @@ export default class FarmManager {
                 fruits: {
                     items: {
                         // 果实：使用帧名 id（-5）
-                        'huluobo-5': { id: 'huluobo-5', name: '胡萝卜', count: 5 },
+                        'huluobo-5': { id: 'huluobo-5', name: '胡萝卜', count: 0 },
                         'bailuobo-5': { id: 'bailuobo-5', name: '白萝卜', count: 0 },
                     },
                 },

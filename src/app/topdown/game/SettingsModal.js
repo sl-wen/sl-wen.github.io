@@ -2,7 +2,7 @@ import React from 'react';
 import { styled } from '@mui/material/styles';
 
 const Overlay = styled('div')(({ multiplier }) => ({
-  position: 'absolute',
+  position: 'fixed',
   inset: 0,
   background: 'rgba(0,0,0,0.5)',
   display: 'flex',
@@ -37,6 +37,9 @@ const Button = styled('button')(({ multiplier }) => ({
   padding: `${6 * multiplier}px ${8 * multiplier}px`,
   color: '#1b0f0a',
   cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 }));
 
 const SettingsModal = ({ gameSize, onSave, onExit, onClose }) => {

@@ -53,11 +53,11 @@ export default class MainMenuScene extends Scene {
                 case 'start': {
                     // 启动游戏：进入 GameScene 并传递初始主角状态与地图 key
                     let farmSave = null;
-                    let mapKey = 'home_page_city_house_1';
+                    let mapKey = 'main_map';
                     let catStatus = {
                         position: { x: 4, y: 3 },
                         previousPosition: { x: 4, y: 3 },
-                        frame: 'cat_idle_down',
+                        frame: 'hero_idle_down_1',
                         facingDirection: 'down',
                         coin: 0,
                         haveSword: false,

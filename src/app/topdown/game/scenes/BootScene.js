@@ -183,6 +183,10 @@ export default class BootScene extends Scene {
         // 加载城市地图
         this.load.tilemapTiledJSON('home_page_city', '/game/assets/sprites/maps/cities/home_page_city.json');
 
+        // 加载新的主地图（JSON 导出的 Tiled 地图）
+        // 注：Phaser 仅支持 Tiled JSON，如需使用 .tmx 请先在 Tiled 中导出为 JSON
+        this.load.tilemapTiledJSON('main_map', '/game/assets/maps/main_map.json');
+
         // 加载房屋地图
         this.load.tilemapTiledJSON('home_page_city_house_1', '/game/assets/sprites/maps/houses/home_page_city_house_1.json');
         this.load.tilemapTiledJSON('home_page_city_house_2', '/game/assets/sprites/maps/houses/home_page_city_house_2.json');
@@ -201,6 +205,8 @@ export default class BootScene extends Scene {
     loadCharacterSprites() {
         // 主角精灵图集
         this.load.atlas('cat', '/game/assets/sprites/atlas/cat.png', '/game/assets/sprites/atlas/cat.json');
+        // 新的人物（hero）精灵图集
+        this.load.atlas('hero', '/game/assets/sprites/atlas/hero.png', '/game/assets/sprites/atlas/hero.json');
 
         // NPC 精灵图集
         this.load.atlas('npc_1', '/game/assets/sprites/atlas/npc_1.png', '/game/assets/sprites/atlas/npc_1.json');

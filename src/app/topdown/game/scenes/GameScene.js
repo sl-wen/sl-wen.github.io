@@ -173,11 +173,13 @@ export default class GameScene extends Scene {
         // 角色/NPC 的行走循环动画（上/右/下/左），若不存在则创建
         const animationKey = `${assetKey}_${animationName}`;
         if (!this.anims.exists(animationKey)) {
+            const dir = animationName.split('_').pop(); // up/right/down/left
+            const idleFrame = this.getStopFrame(dir, assetKey) || `${assetKey}_idle_${dir}`;
             this.anims.create({
                 key: animationKey,
                 frames: [
                     { key: assetKey, frame: `${assetKey}_${animationName}_1` },
-                    { key: assetKey, frame: `${assetKey}_${animationName.replace('walk', 'idle')}_1` },
+                    { key: assetKey, frame: idleFrame },
                     { key: assetKey, frame: `${assetKey}_${animationName}_2` },
                 ],
                 frameRate: 4,
@@ -191,13 +193,13 @@ export default class GameScene extends Scene {
         // 根据朝向返回该精灵的“站立”帧
         switch (direction) {
             case 'up':
-                return `${spriteKey}_idle_up`;
+                return spriteKey === 'hero' ? 'hero_idle_up' : `${spriteKey}_idle_up`;
             case 'right':
-                return `${spriteKey}_idle_right`;
+                return spriteKey === 'hero' ? 'hero_idle_right_1' : `${spriteKey}_idle_right`;
             case 'down':
-                return `${spriteKey}_idle_down`;
+                return spriteKey === 'hero' ? 'hero_idle_down_1' : `${spriteKey}_idle_down`;
             case 'left':
-                return `${spriteKey}_idle_left`;
+                return spriteKey === 'hero' ? 'hero_idle_left' : `${spriteKey}_idle_left`;
             default:
                 return null;
         }
@@ -253,17 +255,19 @@ export default class GameScene extends Scene {
     getFrontPixelPosition() {
         const facingDirection = this.gridEngine.getFacingDirection('cat');
         const position = this.gridEngine.getPosition('cat');
+        const tw = this.map?.tileWidth ?? 16;
+        const th = this.map?.tileHeight ?? 16;
         switch (facingDirection) {
             case 'up':
-                return { x: position.x * 16, y: (position.y - 1) * 16 };
+                return { x: position.x * tw, y: (position.y - 1) * th };
             case 'right':
-                return { x: (position.x + 1) * 16, y: position.y * 16 };
+                return { x: (position.x + 1) * tw, y: position.y * th };
             case 'down':
-                return { x: position.x * 16, y: (position.y + 1) * 16 };
+                return { x: position.x * tw, y: (position.y + 1) * th };
             case 'left':
-                return { x: (position.x - 1) * 16, y: position.y * 16 };
+                return { x: (position.x - 1) * tw, y: position.y * th };
             default:
-                return { x: position.x * 16, y: position.y * 16 };
+                return { x: position.x * tw, y: position.y * th };
         }
     }
 
@@ -418,7 +422,7 @@ export default class GameScene extends Scene {
         this.farmManager.dispatchInventoryUpdate?.();
 
         // 在 city 地图中预留一块 4x3 的耕地：以玩家出生点为参考，偏右上
-        if (mapKey === 'home_page_city') {
+        if (mapKey === 'home_page_city' || mapKey === 'main_map') {
             const fx = Math.min(Math.max(0, initialPosition.x + 4), Math.max(0, map.width - 4));
             const fy = Math.min(Math.max(0, initialPosition.y - 2), Math.max(0, map.height - 3));
             this.farmManager.addFarmlandRect(fx, fy, 4, 3);
@@ -436,9 +440,14 @@ export default class GameScene extends Scene {
             this.farmlandGraphics.strokeRect(px + 0.5, py + 0.5, map.tileWidth - 1, map.tileHeight - 1);
         });
 
-        // cat 主角：初始属性、碰撞盒与交互体
+        // 主角：初始属性、碰撞盒与交互体（切换为 hero 图集）
         this.catSprite = this.physics.add
-            .sprite(initialPosition.x * 16, initialPosition.y * 16, 'cat', initialFrame)
+            .sprite(
+                initialPosition.x * this.map.tileWidth,
+                initialPosition.y * this.map.tileHeight,
+                'hero',
+                initialFrame || this.getStopFrame(initialFacingDirection, 'hero')
+            )
             .setDepth(1);
         this.catSprite.coin = catCoin;
 
@@ -450,8 +459,11 @@ export default class GameScene extends Scene {
             this.updatecatCoinUi(this.catSprite.coin);
         };
 
-        this.catSprite.body.setSize(14, 14);
-        this.catSprite.body.setOffset(9, 13);
+        // 根据 tile 尺寸动态设置碰撞盒
+        const bodyWidth = Math.max(12, Math.floor(this.map.tileWidth * 0.9));
+        const bodyHeight = Math.max(12, Math.floor(this.map.tileHeight * 0.9));
+        this.catSprite.body.setSize(bodyWidth, bodyHeight);
+        this.catSprite.body.setOffset(Math.floor((this.map.tileWidth - bodyWidth) / 2), Math.floor(this.map.tileHeight - bodyHeight));
         this.catActionCollider = createInteractiveGameObject(
             this,
             this.catSprite.x + 9,
@@ -465,8 +477,8 @@ export default class GameScene extends Scene {
             this,
             this.catSprite.x + 16,
             this.catSprite.y + 20,
-            320, // TODO
-            320, // TODO
+            this.map.tileWidth * 20,
+            this.map.tileHeight * 20,
             'presence',
             isDebugMode,
             { x: 0.5, y: 0.5 }
@@ -842,11 +854,11 @@ export default class GameScene extends Scene {
         // 供运行期检测交互环境使用
         this.npcSprites = npcSprites;
 
-        // Movement
-        this.createPlayerwalkAnimation('cat', 'walk_up');
-        this.createPlayerwalkAnimation('cat', 'walk_right');
-        this.createPlayerwalkAnimation('cat', 'walk_down');
-        this.createPlayerwalkAnimation('cat', 'walk_left');
+        // Movement（hero 图集）
+        this.createPlayerwalkAnimation('hero', 'walk_up');
+        this.createPlayerwalkAnimation('hero', 'walk_right');
+        this.createPlayerwalkAnimation('hero', 'walk_down');
+        this.createPlayerwalkAnimation('hero', 'walk_left');
 
         this.gridEngine.create(map, gridEngineConfig); // 初始化 GridEngine（必须在角色加入后）
 
@@ -858,7 +870,7 @@ export default class GameScene extends Scene {
             } catch (e) {
                 // 忽略旧版本无 turnTowards 的情况
             }
-            const stopFrame = this.getStopFrame(initialFacingDirection, 'cat');
+            const stopFrame = this.getStopFrame(initialFacingDirection, 'hero');
             if (stopFrame) {
                 this.catSprite.setFrame(stopFrame);
             }
@@ -931,7 +943,7 @@ export default class GameScene extends Scene {
         this.gridEngine.movementStarted().subscribe(({ charId, direction }) => {
             const dir4 = toCardinal(direction ?? this.gridEngine.getFacingDirection(charId));
             if (charId === 'cat') {
-                const key = `cat_walk_${dir4}`;
+                const key = `hero_walk_${dir4}`;
                 const anim = this.catSprite.anims;
                 if (anim.currentAnim?.key !== key || !anim.isPlaying) anim.play(key);
             } else {
@@ -948,7 +960,7 @@ export default class GameScene extends Scene {
             const dir4 = toCardinal(direction ?? this.gridEngine.getFacingDirection(charId));
             if (charId === 'cat') {
                 this.catSprite.anims.stop();
-                this.catSprite.setFrame(this.getStopFrame(dir4, charId));
+                this.catSprite.setFrame(this.getStopFrame(dir4, 'hero'));
             } else {
                 const npc = npcSprites.getChildren().find(s => s.texture.key === charId);
                 if (npc) {
@@ -963,11 +975,11 @@ export default class GameScene extends Scene {
             const isMoving = this.gridEngine.isMoving(charId);
             if (charId === 'cat') {
                 if (isMoving) {
-                    const key = `cat_walk_${dir4}`;
+                    const key = `hero_walk_${dir4}`;
                     const anim = this.catSprite.anims;
                     if (anim.currentAnim?.key !== key || !anim.isPlaying) anim.play(key);
                 } else {
-                    this.catSprite.setFrame(this.getStopFrame(dir4, charId));
+                    this.catSprite.setFrame(this.getStopFrame(dir4, 'hero'));
                 }
             } else {
                 const npc = npcSprites.getChildren().find(s => s.texture.key === charId);

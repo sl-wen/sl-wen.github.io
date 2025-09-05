@@ -28,18 +28,18 @@ import GameOverScene from './game/scenes/GameOverScene';
 import GameScene from './game/scenes/GameScene';
 import MainMenuScene from './game/scenes/MainMenuScene';
 // Note: dialog_borderbox.png is now served from public/game/assets/images/dialog_borderbox.png
+import { useAuth } from '@/utils/auth-context';
+import { supabase } from '@/utils/supabase-config';
 import './App.css';
 import ActionButton from "./game/ActionButton";
+import CatCoin from "./game/CatCoin";
 import DialogBox from "./game/DialogBox";
 import GameMenu from "./game/GameMenu";
-import CatCoin from "./game/CatCoin";
-import { calculateGameSize } from "./game/utils";
-import VirtualJoystick from "./game/VirtualJoystick";
 import HUDBar from "./game/HUDBar";
 import InventoryModal from "./game/InventoryModal";
 import SettingsModal from "./game/SettingsModal";
-import { supabase } from '@/utils/supabase-config';
-import { useAuth } from '@/utils/auth-context';
+import { calculateGameSize } from "./game/utils";
+import VirtualJoystick from "./game/VirtualJoystick";
 
 // 计算游戏尺寸和缩放倍数，确保在不同设备上都有良好的显示效果
 const { width, height, multiplier } = calculateGameSize();
@@ -512,19 +512,19 @@ function App() {
             }}
             icon={
               actionContext === 'talk' ? '💬'
-              : actionContext === 'interact' ? '❗'
-              : actionContext === 'plant' ? '🌱'
-              : actionContext === 'water' ? '💧'
-              : actionContext === 'harvest' ? '🧺'
-              : '•'
+                : actionContext === 'interact' ? '❗'
+                  : actionContext === 'plant' ? '🌱'
+                    : actionContext === 'water' ? '💧'
+                      : actionContext === 'harvest' ? '🧺'
+                        : '•'
             }
             label={
               actionContext === 'talk' ? 'Talk'
-              : actionContext === 'interact' ? 'Open'
-              : actionContext === 'plant' ? 'Plant'
-              : actionContext === 'water' ? 'Water'
-              : actionContext === 'harvest' ? 'Harvest'
-              : ''
+                : actionContext === 'interact' ? 'Open'
+                  : actionContext === 'plant' ? 'Plant'
+                    : actionContext === 'water' ? 'Water'
+                      : actionContext === 'harvest' ? 'Harvest'
+                        : ''
             }
           />
         )}

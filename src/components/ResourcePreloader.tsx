@@ -149,7 +149,7 @@ export default function ResourcePreloader() {
       const handleUserInteraction = () => {
         // 用户开始交互后，预加载更多资源
         preloadNonCriticalResources();
-        
+
         // 移除事件监听器，避免重复执行
         document.removeEventListener('mousemove', handleUserInteraction);
         document.removeEventListener('touchstart', handleUserInteraction);

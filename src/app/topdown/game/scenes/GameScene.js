@@ -18,7 +18,7 @@
  *      mapKey: 'your_map_key_from_BootScene',
  *    });
  * 3. 地图资源需在 `BootScene` 预加载，并确保 Tiled 中 tileset 名称与此处 `addTilesetImage` 匹配。
- * 4. 想要新增 NPC/敌人/物品/传送门：在 Tiled 的对象层 `actions` 中放置对象并配置属性：
+ * 4. 想要新增 NPC/敌人/物品/传送门：在 Tiled 的对象层 `Player` 中放置对象并配置属性：
  *    - dialog: 值为角色 key（与 React `dialogs` 对应）
  *    - npcData: 形如 `npc_1:random;1000;4;down`
  *    - itemData: 形如 `coin:`、`sword:`
@@ -28,7 +28,7 @@
  *    - 在 `update()` 中读取当前方向并调用 `gridEngine.move('cat', direction)`。
  * 
  * 常见问题排查：
- * - 人物无法从传送门离开当前房间：检查 `actions` 对象层是否存在 teleportTo 对象，格式是否正确；检查 tileset 名称是否与 `BootScene` 加载一致。
+ * - 人物无法从传送门离开当前房间：检查 `Player` 对象层是否存在 teleportTo 对象，格式是否正确；检查 tileset 名称是否与 `BootScene` 加载一致。
  * - 图块显示异常：核对 Tiled 中 tileset 的名称与 `addTilesetImage` 所用 key 保持一致。
  *
  * 使用说明（运行与集成）：
@@ -41,7 +41,7 @@
  *   4) React UI 通过 window 自定义事件监听游戏状态（血量、金币、动作上下文、对话）。
  * - Tiled 规范：
  *   - tileset 名称需与 `BootScene` 中 `this.load.image(key)` 的 key 保持一致。
- *   - 对象层名固定为 `actions`，对象属性键使用：`dialog`、`npcData`、`itemData`、`teleportTo`。
+ *   - 对象层名固定为 `Player`，对象属性键使用：`dialog`、`npcData`、`itemData`、`teleportTo`。
  * - 自定义事件（供 React 侧监听）：
  *   - `cat-coin`：detail: { catCoins: number|null }
  *   - `action-context`：detail: { context: 'talk'|'interact'|'none' }
@@ -391,6 +391,18 @@ export default class GameScene extends Scene {
             map.tilesets.forEach((tileset) => {
                 const tilesetName = tileset.name;
                 console.log('Adding tileset:', tilesetName);
+                // 跳过图片路径，这些是多图块集的组成部分
+                if (tilesetName.includes('../../graphics/objects/')) {
+                    console.log('Skipping individual object image:', tilesetName);
+                    return;
+                }
+
+                // 加载 interaction tileset，因为需要它的碰撞数据
+                if (tilesetName === 'interaction') {
+                    console.log('Loading interaction tileset for collision data');
+                    // 继续加载，不跳过
+                }
+
                 try {
                     addedTilesets[tilesetName] = map.addTilesetImage(tilesetName, tilesetName);
                 } catch (e) {
@@ -499,26 +511,62 @@ export default class GameScene extends Scene {
         const elementsLayers = this.add.group();
         // 使用实际已添加的 tileset 列表创建图层，避免因名称不匹配导致不渲染
         const tilesetArray = Object.values(addedTilesets);
+        console.log('Available tilesets:', Object.keys(addedTilesets));
+        console.log('Tileset array:', tilesetArray);
+
         for (let i = 0; i < map.layers.length; i++) {
+            const layerData = map.layers[i];
+            console.log(`Creating layer ${i}: ${layerData.name}, visible: ${layerData.visible}`);
+
             const layer = map.createLayer(
                 i,
                 tilesetArray.length > 0 ? tilesetArray : 'tileset',
                 0,
                 0
             );
-            (layer.layer.properties || []).forEach((property) => {
-                const { value, name } = property;
 
-                if (name === 'type' && value === 'elements') {
-                    elementsLayers.add(layer);
+            if (layer) {
+                console.log(`Layer ${i} (${layerData.name}) created successfully`);
+
+                // 处理 interaction 瓦片：不显示但有碰撞属性
+                if (layerData.name === 'Objects' || layerData.name === 'Collision' || layerData.name === 'Farmable') {
+                    console.log(`Processing interaction tiles in ${layerData.name} layer`);
+
+                    // 隐藏这些瓦片的显示
+                    let interactionTileCount = 0;
+                    layer.forEachTile((tile) => {
+                        if (tile.index >= 169 && tile.index <= 170) {
+                            tile.setVisible(false); // 隐藏显示
+                            interactionTileCount++;
+                        }
+                    });
+
+                    console.log(`Found ${interactionTileCount} interaction tiles in ${layerData.name}, hidden but collision enabled`);
                 }
-            });
 
-            this.physics.add.collider(this.catSprite, layer);
+                (layer.layer.properties || []).forEach((property) => {
+                    const { value, name } = property;
+
+                    if (name === 'type' && value === 'elements') {
+                        elementsLayers.add(layer);
+                    }
+                });
+
+                this.physics.add.collider(this.catSprite, layer);
+
+                // 在添加碰撞检测后，为 interaction 瓦片设置碰撞属性
+                if (layerData.name === 'Objects' || layerData.name === 'Collision' || layerData.name === 'Farmable') {
+                    console.log(`Setting collision for interaction tiles in ${layerData.name} layer`);
+                    // 使用 setCollisionFromCollisionGroup 来处理 tileset 中定义的碰撞
+                    map.setCollisionFromCollisionGroup(true, true, layer);
+                }
+            } else {
+                console.error(`Failed to create layer ${i}: ${layerData.name}`);
+            }
         }
 
         const npcsKeys = [];
-        const dataLayer = map.getObjectLayer('actions'); // Tiled 中的对象层，承载对话、NPC、传送、物品
+        const dataLayer = map.getObjectLayer('Player'); // Tiled 中的对象层，承载对话、NPC、传送、物品
         console.log('Data layer:', dataLayer);
         console.log('Data layer objects:', dataLayer?.objects);
 
@@ -750,6 +798,10 @@ export default class GameScene extends Scene {
                 },
             ],
             numberOfDirections: 8,
+            // 确保 GridEngine 使用地图的碰撞数据
+            collisionLayerProperty: 'collides',
+            // 启用碰撞检测
+            collisionTiles: [169, 170],
         };
 
         // 监听保存快照请求：React 设置页会触发

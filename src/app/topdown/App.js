@@ -41,16 +41,16 @@ import SettingsModal from "./game/SettingsModal";
 import { calculateGameSize } from "./game/utils";
 import VirtualJoystick from "./game/VirtualJoystick";
 
-// 计算游戏尺寸和缩放倍数，确保在不同设备上都有良好的显示效果
-const { width, height, multiplier } = calculateGameSize();
+// 默认游戏尺寸，将在组件内部重新计算
+const defaultGameSize = { width: 400, height: 300, multiplier: 1, isMobile: false };
 
 /**
  * 游戏内容包装器样式组件
  * 负责游戏画布的显示和定位
  */
-const GameContentWrapper = styled('div')(({ theme }) => ({
-  width: `${width * multiplier}px`,
-  height: `${height * multiplier}px`,
+const GameContentWrapper = styled('div')(({ theme, gameWidth, gameHeight }) => ({
+  width: '100%',
+  height: '80vh',
   margin: 'auto',
   padding: 0,
   overflow: 'hidden',
@@ -59,14 +59,17 @@ const GameContentWrapper = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+  // 让容器能够更好地利用空间
+  maxWidth: '90vw',
+  maxHeight: '80vh',
   '& canvas': {
     imageRendering: 'pixelated',
     msInterpolationMode: 'nearest-neighbor',
     boxShadow: '0px 0px 0px 3px rgba(0,0,0,0.75)',
     // 确保画布完全填充容器
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain',
+    width: '100% !important',
+    height: '100% !important',
+    objectFit: 'fill',
   },
 }));
 
@@ -122,6 +125,40 @@ const dialogs = {
 function App() {
   const gameRef = useRef(null);
   const { userProfile, refreshProfile } = useAuth();
+
+  // 在客户端动态计算游戏尺寸
+  const [gameSize, setGameSize] = useState(defaultGameSize);
+
+  useEffect(() => {
+    // 确保在客户端计算游戏尺寸
+    if (typeof window !== 'undefined') {
+      const size = calculateGameSize();
+      setGameSize(size);
+
+      // 调试信息
+      console.log(`设备类型: ${size.isMobile ? '手机' : 'PC'}`);
+      console.log(`游戏尺寸: ${size.width}x${size.height}, 缩放倍数: ${size.multiplier}`);
+      console.log(`屏幕尺寸: ${window.innerWidth}x${window.innerHeight}`);
+    }
+
+    // 添加窗口大小变化监听器
+    const handleResize = () => {
+      if (typeof window !== 'undefined') {
+        const newSize = calculateGameSize();
+        setGameSize(newSize);
+
+        if (gameRef.current) {
+          gameRef.current.scale.resize(newSize.width, newSize.height);
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
   // 游戏状态管理
   const [messages, setMessages] = useState([]);           // 当前显示的对话消息
   const [characterName, setCharacterName] = useState(''); // 当前对话的角色名称
@@ -225,13 +262,13 @@ function App() {
       parent: 'game-content',               // 游戏画布的父容器 ID
       orientation: Phaser.Scale.LANDSCAPE,  // 游戏方向（横屏）
       localStorageName: 'some-game-title',  // 本地存储键名
-      width,                                // 游戏宽度
-      height,                               // 游戏高度
+      width: gameSize.width,                // 游戏宽度
+      height: gameSize.height,              // 游戏高度
       autoRound: true,                      // 自动四舍五入像素位置
       pixelArt: true,                       // 像素艺术模式
       scale: {
         autoCenter: Phaser.Scale.CENTER_BOTH, // 自动居中
-        mode: Phaser.Scale.FIT,               // 使用 FIT 以避免分裂视图
+        mode: Phaser.Scale.RESIZE, // 使用RESIZE模式让游戏完全填充容器
       },
       scene: [                              // 游戏场景列表
         BootScene,                           // 启动场景
@@ -271,7 +308,7 @@ function App() {
         }
       } catch (e) { }
     };
-  }, []);
+  }, [gameSize]);
 
   /**
    * 设置游戏事件监听器
@@ -434,6 +471,8 @@ function App() {
         {/* 游戏画布容器 */}
         <GameContentWrapper
           id="game-content"
+          gameWidth={gameSize.width}
+          gameHeight={gameSize.height}
         >
           {/* 这里将渲染 Phaser 游戏画布 */}
         </GameContentWrapper>
@@ -441,7 +480,7 @@ function App() {
         {/* HUD 顶栏：头像+设置 */}
         {hasGameStarted && (
           <HUDBar
-            gameSize={{ width, height, multiplier }}
+            gameSize={{ width: gameSize.width, height: gameSize.height, multiplier: gameSize.multiplier }}
             avatarUrl={userProfile?.avatar_url}
             onAvatarClick={() => setShowInventory(true)}
             onSettingsClick={() => setShowSettings(true)}
@@ -452,9 +491,9 @@ function App() {
         {hasGameStarted && catCoins !== null && (
           <CatCoin
             gameSize={{
-              width,
-              height,
-              multiplier,
+              width: gameSize.width,
+              height: gameSize.height,
+              multiplier: gameSize.multiplier,
             }}
             catCoins={catCoins}
           />
@@ -467,9 +506,9 @@ function App() {
             characterName={characterName}
             messages={messages}
             gameSize={{
-              width,
-              height,
-              multiplier,
+              width: gameSize.width,
+              height: gameSize.height,
+              multiplier: gameSize.multiplier,
             }}
             safeBottomOffset={140}
           />
@@ -480,35 +519,35 @@ function App() {
           <GameMenu
             items={gameMenuItems}
             gameSize={{
-              width,
-              height,
-              multiplier,
+              width: gameSize.width,
+              height: gameSize.height,
+              multiplier: gameSize.multiplier,
             }}
             position={gameMenuPosition}
             onSelected={handleMenuItemSelected}
           />
         )}
 
-        {/* 虚拟摇杆 - 仅在点击开始后显示 */}
-        {hasGameStarted && (
+        {/* 虚拟摇杆 - 仅在移动端且点击开始后显示 */}
+        {hasGameStarted && gameSize.isMobile && (
           <VirtualJoystick
             onDirectionChange={handleJoystickDirectionChange}
             gameSize={{
-              width,
-              height,
-              multiplier,
+              width: gameSize.width,
+              height: gameSize.height,
+              multiplier: gameSize.multiplier,
             }}
           />
         )}
 
-        {/* 动作按钮 - 仅在点击开始后显示 */}
-        {hasGameStarted && (
+        {/* 动作按钮 - 仅在移动端且点击开始后显示 */}
+        {hasGameStarted && gameSize.isMobile && (
           <ActionButton
             onAction={handleActionButtonPress}
             gameSize={{
-              width,
-              height,
-              multiplier,
+              width: gameSize.width,
+              height: gameSize.height,
+              multiplier: gameSize.multiplier,
             }}
             icon={
               actionContext === 'talk' ? '💬'
@@ -532,7 +571,7 @@ function App() {
         {/* 背包弹窗 */}
         {hasGameStarted && showInventory && (
           <InventoryModal
-            gameSize={{ width, height, multiplier }}
+            gameSize={{ width: gameSize.width, height: gameSize.height, multiplier: gameSize.multiplier }}
             inventory={inventory}
             selectMode={inventorySelectMode}
             selectTag={'seeds'}
@@ -553,7 +592,7 @@ function App() {
         {/* 设置弹窗 */}
         {hasGameStarted && showSettings && (
           <SettingsModal
-            gameSize={{ width, height, multiplier }}
+            gameSize={{ width: gameSize.width, height: gameSize.height, multiplier: gameSize.multiplier }}
             onSave={handleSave}
             onExit={() => window.location.reload()}
             onClose={() => setShowSettings(false)}

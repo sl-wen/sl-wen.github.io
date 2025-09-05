@@ -91,25 +91,28 @@ export const createInteractiveGameObject = (
  * console.log(`游戏尺寸: ${width}x${height}, 缩放倍数: ${multiplier}`);
  */
 export const calculateGameSize = () => {
-    // 增加基础尺寸，让游戏画面更大
-    let width = 1280;  // 从400增加到480
-    let height = 720; // 从224增加到270 (16:9比例)
+    // 检测设备类型
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        window.innerWidth <= 768;
 
-    // 增加最小倍数，确保在手机上显示得足够大
-    const minMultiplier = 2; // 设置最小倍数为2
-    const calculatedMultiplier = Math.min(Math.floor(window.innerWidth / width), Math.floor(window.innerHeight / height)) || 1;
-    const multiplier = Math.max(calculatedMultiplier, minMultiplier);
-    //const multiplier = 1;
+    let width, height, scale;
 
-    // 如果倍数大于1，进一步扩展尺寸以更好地利用屏幕空间
-    if (multiplier > 1) {
-        // 计算额外的宽度和高度，确保是16的倍数（保持像素完美）
-        const extraWidth = Math.floor((window.innerWidth - width * multiplier) / (16 * multiplier)) * 16;
-        const extraHeight = Math.floor((window.innerHeight - height * multiplier) / (16 * multiplier)) * 16;
+    if (isMobile) {
+        // 手机端设置 - 使用屏幕尺寸
+        width = Math.floor(window.innerWidth * 0.9);   // 使用屏幕宽度的90%
+        height = Math.floor(window.innerHeight * 0.7); // 使用屏幕高度的70%
+        scale = 1; // 直接使用屏幕尺寸，不需要额外缩放
 
-        width += extraWidth;
-        height += extraHeight;
+    } else {
+        // PC端设置 - 使用屏幕尺寸
+        width = Math.floor(window.innerWidth);   // 使用屏幕宽度的80%
+        height = Math.floor(window.innerHeight); // 使用屏幕高度的60%
+        scale = 1; // 直接使用屏幕尺寸，不需要额外缩放
     }
 
-    return { width, height, multiplier };
+    // 确保尺寸是偶数，避免像素偏移
+    width = width % 2 === 0 ? width : width - 1;
+    height = height % 2 === 0 ? height : height - 1;
+
+    return { width, height, multiplier: scale, isMobile };
 };

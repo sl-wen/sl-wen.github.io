@@ -180,6 +180,9 @@ export default class BootScene extends Scene {
         this.load.image('actions_tileset', '/game/assets/sprites/maps/tilesets/actions_tileset.png');
         this.load.image('ui_elements', '/game/assets/sprites/maps/tilesets/ui_elements.png');
 
+        // 新地图（Tiled JSON，由 map.tmx 导出）
+        this.load.tilemapTiledJSON('map', '/game/assets/maps/main_map.json');
+
         // 加载城市地图
         this.load.tilemapTiledJSON('home_page_city', '/game/assets/sprites/maps/cities/home_page_city.json');
 
@@ -199,8 +202,16 @@ export default class BootScene extends Scene {
      * 包括主角、NPC、敌人等角色的精灵表
      */
     loadCharacterSprites() {
-        // 主角精灵图集
-        this.load.atlas('cat', '/game/assets/sprites/atlas/cat.png', '/game/assets/sprites/atlas/cat.json');
+        // 主角（使用 directional 单帧素材）
+        const directions = ['down', 'right', 'up', 'left'];
+        directions.forEach((dir) => {
+            // 行走序列帧 0-3
+            for (let i = 0; i <= 3; i += 1) {
+                this.load.image(`cat_${dir}_${i}`, `/game/assets/graphics/character/${dir}/${i}.png`);
+            }
+            // 待机帧（取 idle 目录下的 0.png）
+            this.load.image(`cat_idle_${dir}`, `/game/assets/graphics/character/${dir}_idle/0.png`);
+        });
 
         // NPC 精灵图集
         this.load.atlas('npc_1', '/game/assets/sprites/atlas/npc_1.png', '/game/assets/sprites/atlas/npc_1.json');
@@ -268,18 +279,24 @@ export default class BootScene extends Scene {
      * 为角色精灵设置各种动画状态
      */
     createAnimations() {
-        // 基于图集帧名创建主角行走与待机动画
-        const walk = (dir) => [`cat_walk_${dir}_1`, `cat_walk_${dir}_2`].map((frame) => ({ key: 'cat', frame }));
-        const idle = (dir) => [{ key: 'cat', frame: `cat_idle_${dir}` }];
+        // 基于 directional 图像创建主角行走与待机动画
+        const createWalk = (dir) => ({
+            key: `cat_walk_${dir}`,
+            frames: [0, 1, 2, 3].map((i) => ({ key: `cat_${dir}_${i}` })),
+            frameRate: 8,
+            repeat: -1,
+            yoyo: true,
+        });
 
-        this.anims.create({ key: 'cat_walk_down', frames: walk('down'), frameRate: 8, repeat: -1, yoyo: true });
-        this.anims.create({ key: 'cat_walk_up', frames: walk('up'), frameRate: 8, repeat: -1, yoyo: true });
-        this.anims.create({ key: 'cat_walk_left', frames: walk('left'), frameRate: 8, repeat: -1, yoyo: true });
-        this.anims.create({ key: 'cat_walk_right', frames: walk('right'), frameRate: 8, repeat: -1, yoyo: true });
+        this.anims.create(createWalk('down'));
+        this.anims.create(createWalk('up'));
+        this.anims.create(createWalk('left'));
+        this.anims.create(createWalk('right'));
 
-        this.anims.create({ key: 'cat_idle_down', frames: idle('down'), frameRate: 1 });
-        this.anims.create({ key: 'cat_idle_up', frames: idle('up'), frameRate: 1 });
-        this.anims.create({ key: 'cat_idle_left', frames: idle('left'), frameRate: 1 });
-        this.anims.create({ key: 'cat_idle_right', frames: idle('right'), frameRate: 1 });
+        // idle 动画作为单帧占位，便于使用 anims.play 同一接口
+        this.anims.create({ key: 'cat_idle_down', frames: [{ key: 'cat_idle_down' }], frameRate: 1 });
+        this.anims.create({ key: 'cat_idle_up', frames: [{ key: 'cat_idle_up' }], frameRate: 1 });
+        this.anims.create({ key: 'cat_idle_left', frames: [{ key: 'cat_idle_left' }], frameRate: 1 });
+        this.anims.create({ key: 'cat_idle_right', frames: [{ key: 'cat_idle_right' }], frameRate: 1 });
     }
 }

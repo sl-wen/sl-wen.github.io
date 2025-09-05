@@ -297,11 +297,11 @@ export default class GameScene extends Scene {
                 const onFarmland = this.farmManager.isFarmland(tileX, tileY);
                 const crop = this.farmManager.getCrop(tileX, tileY);
                 if (onFarmland) {
-                    if (!crop && this.farmManager.inventory.seeds > 0) {
+                    if (!crop && this.farmManager.getTotalSeedsCount?.() > 0) {
                         nextContext = 'plant';
                     } else if (crop && crop.canHarvest()) {
                         nextContext = 'harvest';
-                    } else if (crop && !crop.watered && crop.stage < 5 && this.farmManager.inventory.water > 0) {
+                    } else if (crop && !crop.watered && crop.stage < 4 && this.farmManager.getWaterCount?.() > 0) {
                         nextContext = 'water';
                     }
                 } else if (isInteractable) {

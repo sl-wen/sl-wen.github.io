@@ -21,11 +21,33 @@ export default class FarmManager {
         /** @type {Map<string, Crop>} 当前已种植作物 key:`x,y` => Crop */
         this.crops = new Map();
 
-        /** 简单背包：种子与水量 */
+        /**
+         * 背包（按分类/Tag）
+         * - seeds: 各类种子
+         * - misc: 杂物（水/工具等）
+         * - fruits: 收获物
+         */
         this.inventory = {
-            seeds: 5,
-            water: 10,
-            fruits: 0,
+            tags: {
+                seeds: {
+                    items: {
+                        // 示例：胡萝卜种子 0
+                        'huluobo-seed': { id: 'huluobo-seed', name: '胡萝卜种子', count: 0 },
+                    },
+                },
+                misc: {
+                    items: {
+                        water: { id: 'water', name: '水', count: 10 },
+                        // 可扩展：锄头、洒水壶等
+                    },
+                },
+                fruits: {
+                    items: {
+                        // 示例：已有 5 个胡萝卜
+                        huluobo: { id: 'huluobo', name: '胡萝卜', count: 5 },
+                    },
+                },
+            },
         };
 
         /** 生长配置（每阶段时长 ms）；可按需平衡 */
@@ -55,15 +77,63 @@ export default class FarmManager {
         return this.crops.get(`${tileX},${tileY}`) || null;
     }
 
-    /** 种植：在空的耕地上放置种子（stage=0） */
+    /**
+     * 工具：取得种子总数
+     */
+    getTotalSeedsCount() {
+        const seeds = this.inventory?.tags?.seeds?.items || {};
+        return Object.values(seeds).reduce((sum, it) => sum + (it?.count || 0), 0);
+    }
+
+    /**
+     * 工具：取得可用的第一种种子 key（count>0）
+     */
+    getFirstAvailableSeedKey() {
+        const seeds = this.inventory?.tags?.seeds?.items || {};
+        return Object.keys(seeds).find((k) => (seeds[k]?.count || 0) > 0) || null;
+    }
+
+    /**
+     * 工具：取得水量
+     */
+    getWaterCount() {
+        return this.inventory?.tags?.misc?.items?.water?.count || 0;
+    }
+
+    /**
+     * 工具：减少某个分类物品数量
+     */
+    decreaseItem(tag, itemId, amount = 1) {
+        const items = this.inventory?.tags?.[tag]?.items;
+        if (!items || !items[itemId]) return false;
+        if (items[itemId].count < amount) return false;
+        items[itemId].count -= amount;
+        return true;
+    }
+
+    /**
+     * 工具：增加某个分类物品数量
+     */
+    increaseItem(tag, itemId, amount = 1, nameIfNew) {
+        if (!this.inventory.tags[tag]) this.inventory.tags[tag] = { items: {} };
+        const items = this.inventory.tags[tag].items;
+        if (!items[itemId]) items[itemId] = { id: itemId, name: nameIfNew || itemId, count: 0 };
+        items[itemId].count += amount;
+        return true;
+    }
+
+    /** 种植：在空的耕地上放置种子（stage=1） */
     plant(tileX, tileY) {
         if (!this.isFarmland(tileX, tileY)) return false;
         if (this.hasCrop(tileX, tileY)) return false;
-        if (this.inventory.seeds <= 0) return false;
+        if (this.getTotalSeedsCount() <= 0) return false;
+        const seedKey = this.getFirstAvailableSeedKey();
+        if (!seedKey) return false;
 
-        const crop = new Crop(this.scene, tileX, tileY, { tileSize: this.tileSize, cropKey: 'bailuobo-1' });
+        // 当前仅示例：胡萝卜（huluobo）
+        const crop = new Crop(this.scene, tileX, tileY, { tileSize: this.tileSize, cropKey: 'huluobo' });
         this.crops.set(`${tileX},${tileY}`, crop);
-        this.inventory.seeds -= 1;
+        this.decreaseItem('seeds', seedKey, 1);
         this.dispatchInventoryUpdate();
         // autosave
         try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
@@ -73,17 +143,17 @@ export default class FarmManager {
     /** 浇水：推进生长到下一阶段计时 */
     water(tileX, tileY) {
         if (!this.hasCrop(tileX, tileY)) return false;
-        if (this.inventory.water <= 0) return false;
+        if (this.getWaterCount() <= 0) return false;
 
         const crop = this.getCrop(tileX, tileY);
         crop.water(this.growthMsPerStage);
-        this.inventory.water -= 1;
+        this.decreaseItem('misc', 'water', 1);
         this.dispatchInventoryUpdate();
         try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
         return true;
     }
 
-    /** 收获：阶段 5 可收获，销毁作物并返回产物数量 */
+    /** 收获：阶段 4 可收获，销毁作物并返回产物数量 */
     harvest(tileX, tileY) {
         if (!this.hasCrop(tileX, tileY)) return 0;
         const crop = this.getCrop(tileX, tileY);
@@ -91,9 +161,9 @@ export default class FarmManager {
 
         crop.destroy();
         this.crops.delete(`${tileX},${tileY}`);
-        // 简单：收获 1 个果实，转化为金币或物品
-        const yieldCount = 2; // 产量略高，提升成就感
-        this.inventory.fruits += yieldCount;
+        // 简单：收获 2 个胡萝卜
+        const yieldCount = 2;
+        this.increaseItem('fruits', 'huluobo', yieldCount, '胡萝卜');
         this.dispatchInventoryUpdate();
         try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
         return yieldCount;
@@ -129,7 +199,19 @@ export default class FarmManager {
             const crop = Crop.fromSave(scene, c, { tileSize: fm.tileSize });
             fm.crops.set(`${crop.tileX},${crop.tileY}`, crop);
         });
-        fm.inventory = data.inventory || { seeds: 5, water: 10, fruits: 0 };
+        // 兼容旧版存档：顶层 {seeds, water, fruits}
+        const inv = data.inventory;
+        if (!inv || inv.tags === undefined) {
+            fm.inventory = {
+                tags: {
+                    seeds: { items: { 'huluobo-seed': { id: 'huluobo-seed', name: '胡萝卜种子', count: inv?.seeds ?? 0 } } },
+                    misc: { items: { water: { id: 'water', name: '水', count: inv?.water ?? 0 } } },
+                    fruits: { items: { huluobo: { id: 'huluobo', name: '胡萝卜', count: inv?.fruits ?? 0 } } },
+                },
+            };
+        } else {
+            fm.inventory = inv;
+        }
         return fm;
     }
 

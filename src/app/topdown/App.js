@@ -131,7 +131,7 @@ function App() {
   const [joystickDirection, setJoystickDirection] = useState(null); // 虚拟摇杆方向
   const [actionContext, setActionContext] = useState('');     // 交互上下文：talk/interact/none
   const [hasGameStarted, setHasGameStarted] = useState(false); // 是否已点击开始进入游戏
-  const [inventory, setInventory] = useState({ seeds: 0, water: 0, fruits: 0 });
+  const [inventory, setInventory] = useState({ tags: { seeds: { items: {} }, misc: { items: {} }, fruits: { items: {} } } });
   const [showInventory, setShowInventory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -308,7 +308,19 @@ function App() {
 
     // 背包更新
     const inventoryListener = ({ detail }) => {
-      setInventory(detail.inventory || { seeds: 0, water: 0, fruits: 0 });
+      const inv = detail.inventory;
+      if (!inv || inv.tags === undefined) {
+        // 兼容旧版
+        setInventory({
+          tags: {
+            seeds: { items: { 'huluobo-seed': { id: 'huluobo-seed', name: '胡萝卜种子', count: inv?.seeds ?? 0 } } },
+            misc: { items: { water: { id: 'water', name: '水', count: inv?.water ?? 0 } } },
+            fruits: { items: { huluobo: { id: 'huluobo', name: '胡萝卜', count: inv?.fruits ?? 0 } } },
+          },
+        });
+      } else {
+        setInventory(inv);
+      }
     };
     window.addEventListener('inventory-update', inventoryListener);
 

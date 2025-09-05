@@ -131,7 +131,7 @@ function App() {
   const [joystickDirection, setJoystickDirection] = useState(null); // 虚拟摇杆方向
   const [actionContext, setActionContext] = useState('');     // 交互上下文：talk/interact/none
   const [hasGameStarted, setHasGameStarted] = useState(false); // 是否已点击开始进入游戏
-  const [inventory, setInventory] = useState({ tags: { seeds: { items: { huluobo: { id: 'huluobo', name: '胡萝卜种子', count: 0 }, bailuobo: { id: 'bailuobo', name: '白萝卜种子', count: 0 } } }, misc: { items: { water: { id: 'water', name: '水', count: 0 } } }, fruits: { items: { huluobo: { id: 'huluobo', name: '胡萝卜', count: 0 }, bailuobo: { id: 'bailuobo', name: '白萝卜', count: 0 } } } } });
+  const [inventory, setInventory] = useState({ tags: { seeds: { items: { 'huluobo-0': { id: 'huluobo-0', name: '胡萝卜种子', count: 0 }, 'bailuobo-0': { id: 'bailuobo-0', name: '白萝卜种子', count: 0 } } }, misc: { items: { water: { id: 'water', name: '水', count: 0 } } }, fruits: { items: { 'huluobo-5': { id: 'huluobo-5', name: '胡萝卜', count: 0 }, 'bailuobo-5': { id: 'bailuobo-5', name: '白萝卜', count: 0 } } } } });
   const [showInventory, setShowInventory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -313,15 +313,9 @@ function App() {
         // 兼容旧版
         setInventory({
           tags: {
-            seeds: { items: {
-              huluobo: { id: 'huluobo', name: '胡萝卜种子', count: inv?.seeds ?? 0 },
-              bailuobo: { id: 'bailuobo', name: '白萝卜种子', count: 0 },
-            } },
+            seeds: { items: { 'huluobo-0': { id: 'huluobo-0', name: '胡萝卜种子', count: inv?.seeds ?? 0 }, 'bailuobo-0': { id: 'bailuobo-0', name: '白萝卜种子', count: 0 } } },
             misc: { items: { water: { id: 'water', name: '水', count: inv?.water ?? 0 } } },
-            fruits: { items: {
-              huluobo: { id: 'huluobo', name: '胡萝卜', count: inv?.fruits ?? 0 },
-              bailuobo: { id: 'bailuobo', name: '白萝卜', count: 0 },
-            } },
+            fruits: { items: { 'huluobo-5': { id: 'huluobo-5', name: '胡萝卜', count: inv?.fruits ?? 0 }, 'bailuobo-5': { id: 'bailuobo-5', name: '白萝卜', count: 0 } } },
           },
         });
       } else {

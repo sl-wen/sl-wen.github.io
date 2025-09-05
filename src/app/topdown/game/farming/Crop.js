@@ -21,7 +21,7 @@ export default class Crop {
         this.cropKey = options.cropKey || 'bailuobo';
         this.tileSize = options.tileSize || 16;
 
-        this.stage = 1;           // 1~4（按需求：1 为种下，4 为可收获）
+        this.stage = 1;           // 1~5（1~4 生长，5 可收获）
         this.watered = false;     // 是否已浇水（用于推进到下一阶段）
         this._timer = null;       // Phaser 定时器
 
@@ -48,7 +48,7 @@ export default class Crop {
      * @param {number} durationMs - 推进到下一阶段所需时间
      */
     water(durationMs) {
-        if (this.stage >= 4) return; // 已成熟
+        if (this.stage >= 5) return; // 已成熟
         if (this.watered) return;    // 已浇水等待中
 
         this.watered = true;
@@ -65,15 +65,15 @@ export default class Crop {
      * 前进一步生长阶段；阶段 5 停止
      */
     advanceStage() {
-        if (this.stage >= 4) return;
+        if (this.stage >= 5) return;
         this.stage += 1;
         this.watered = false;
         this._updateSprite();
     }
 
-    /** 可否收获（阶段 4） */
+    /** 可否收获（阶段 5） */
     canHarvest() {
-        return this.stage >= 4;
+        return this.stage >= 5;
     }
 
     /** 销毁渲染对象与计时器 */

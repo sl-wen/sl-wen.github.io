@@ -102,7 +102,7 @@ const InventoryModal = ({ gameSize, inventory, onClose }) => {
           )}
           {items.map((it) => (
             <Cell key={it.id} multiplier={multiplier}>
-              <span>{it.name}</span>
+              <span>{it.name || it.id}</span>
               <b>x {it.count ?? 0}</b>
             </Cell>
           ))}

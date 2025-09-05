@@ -31,9 +31,9 @@ export default class FarmManager {
             tags: {
                 seeds: {
                     items: {
-                        // 种子以 cropKey 命名，参照 farmplants.json 前缀
-                        huluobo: { id: 'huluobo', name: '胡萝卜种子', count: 0 },
-                        bailuobo: { id: 'bailuobo', name: '白萝卜种子', count: 0 },
+                        // 种子：使用帧名 id（-0）
+                        'huluobo-0': { id: 'huluobo-0', name: '胡萝卜种子', count: 0 },
+                        'bailuobo-0': { id: 'bailuobo-0', name: '白萝卜种子', count: 0 },
                     },
                 },
                 misc: {
@@ -44,9 +44,9 @@ export default class FarmManager {
                 },
                 fruits: {
                     items: {
-                        // 收获物以 cropKey 命名
-                        huluobo: { id: 'huluobo', name: '胡萝卜', count: 5 },
-                        bailuobo: { id: 'bailuobo', name: '白萝卜', count: 0 },
+                        // 果实：使用帧名 id（-5）
+                        'huluobo-5': { id: 'huluobo-5', name: '胡萝卜', count: 5 },
+                        'bailuobo-5': { id: 'bailuobo-5', name: '白萝卜', count: 0 },
                     },
                 },
             },
@@ -88,11 +88,23 @@ export default class FarmManager {
     }
 
     /**
-     * 工具：取得可用的第一种种子 key（count>0）
+     * 工具：取得可用的第一种种子 id（count>0），例如 'huluobo-0'
      */
-    getFirstAvailableSeedKey() {
+    getFirstAvailableSeedId() {
         const seeds = this.inventory?.tags?.seeds?.items || {};
         return Object.keys(seeds).find((k) => (seeds[k]?.count || 0) > 0) || null;
+    }
+
+    /** 从种子 id 推导 cropKey（去除 -0 后缀） */
+    cropKeyFromSeedId(seedId) {
+        if (!seedId) return null;
+        if (seedId.endsWith('-0')) return seedId.slice(0, -2);
+        return seedId;
+    }
+
+    /** 从 cropKey 推导果实 id（添加 -5 后缀） */
+    fruitIdFromCropKey(cropKey) {
+        return `${cropKey}-5`;
     }
 
     /**
@@ -129,13 +141,14 @@ export default class FarmManager {
         if (!this.isFarmland(tileX, tileY)) return false;
         if (this.hasCrop(tileX, tileY)) return false;
         if (this.getTotalSeedsCount() <= 0) return false;
-        const seedKey = this.getFirstAvailableSeedKey();
-        if (!seedKey) return false;
+        const seedId = this.getFirstAvailableSeedId();
+        if (!seedId) return false;
 
-        // cropKey 与 farmplants.json 前缀保持一致
-        const crop = new Crop(this.scene, tileX, tileY, { tileSize: this.tileSize, cropKey: seedKey });
+        // 从种子 id 提取 cropKey（例如 huluobo-0 -> huluobo）
+        const cropKey = this.cropKeyFromSeedId(seedId);
+        const crop = new Crop(this.scene, tileX, tileY, { tileSize: this.tileSize, cropKey });
         this.crops.set(`${tileX},${tileY}`, crop);
-        this.decreaseItem('seeds', seedKey, 1);
+        this.decreaseItem('seeds', seedId, 1);
         this.dispatchInventoryUpdate();
         // autosave
         try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
@@ -163,10 +176,13 @@ export default class FarmManager {
 
         crop.destroy();
         this.crops.delete(`${tileX},${tileY}`);
-        // 简单：收获 2 个对应作物
+        // 简单：收获 2 个对应作物的果实（-5）
         const yieldCount = 2;
-        const fruitKey = crop.cropKey; // 与 farmplants.json 前缀一致
-        this.increaseItem('fruits', fruitKey, yieldCount, fruitKey);
+        const fruitId = this.fruitIdFromCropKey(crop.cropKey);
+        // 友好名称（可扩展更多作物）
+        const cropNames = { huluobo: '胡萝卜', bailuobo: '白萝卜' };
+        const friendlyName = cropNames[crop.cropKey] || crop.cropKey;
+        this.increaseItem('fruits', fruitId, yieldCount, friendlyName);
         this.dispatchInventoryUpdate();
         try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
         return yieldCount;
@@ -208,13 +224,13 @@ export default class FarmManager {
             fm.inventory = {
                 tags: {
                     seeds: { items: {
-                        huluobo: { id: 'huluobo', name: '胡萝卜种子', count: inv?.seeds ?? 0 },
-                        bailuobo: { id: 'bailuobo', name: '白萝卜种子', count: 0 },
+                        'huluobo-0': { id: 'huluobo-0', name: '胡萝卜种子', count: inv?.seeds ?? 0 },
+                        'bailuobo-0': { id: 'bailuobo-0', name: '白萝卜种子', count: 0 },
                     } },
                     misc: { items: { water: { id: 'water', name: '水', count: inv?.water ?? 0 } } },
                     fruits: { items: {
-                        huluobo: { id: 'huluobo', name: '胡萝卜', count: inv?.fruits ?? 0 },
-                        bailuobo: { id: 'bailuobo', name: '白萝卜', count: 0 },
+                        'huluobo-5': { id: 'huluobo-5', name: '胡萝卜', count: inv?.fruits ?? 0 },
+                        'bailuobo-5': { id: 'bailuobo-5', name: '白萝卜', count: 0 },
                     } },
                 },
             };

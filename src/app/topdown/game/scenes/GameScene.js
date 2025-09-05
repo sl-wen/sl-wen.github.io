@@ -301,7 +301,7 @@ export default class GameScene extends Scene {
                         nextContext = 'plant';
                     } else if (crop && crop.canHarvest()) {
                         nextContext = 'harvest';
-                    } else if (crop && !crop.watered && crop.stage < 4 && this.farmManager.getWaterCount?.() > 0) {
+                    } else if (crop && !crop.watered && crop.stage < 5 && this.farmManager.getWaterCount?.() > 0) {
                         nextContext = 'water';
                     }
                 } else if (isInteractable) {

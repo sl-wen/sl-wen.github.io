@@ -31,8 +31,9 @@ export default class FarmManager {
             tags: {
                 seeds: {
                     items: {
-                        // 示例：胡萝卜种子 0
-                        'huluobo-seed': { id: 'huluobo-seed', name: '胡萝卜种子', count: 0 },
+                        // 种子以 cropKey 命名，参照 farmplants.json 前缀
+                        huluobo: { id: 'huluobo', name: '胡萝卜种子', count: 0 },
+                        bailuobo: { id: 'bailuobo', name: '白萝卜种子', count: 0 },
                     },
                 },
                 misc: {
@@ -43,8 +44,9 @@ export default class FarmManager {
                 },
                 fruits: {
                     items: {
-                        // 示例：已有 5 个胡萝卜
+                        // 收获物以 cropKey 命名
                         huluobo: { id: 'huluobo', name: '胡萝卜', count: 5 },
+                        bailuobo: { id: 'bailuobo', name: '白萝卜', count: 0 },
                     },
                 },
             },
@@ -130,8 +132,8 @@ export default class FarmManager {
         const seedKey = this.getFirstAvailableSeedKey();
         if (!seedKey) return false;
 
-        // 当前仅示例：胡萝卜（huluobo）
-        const crop = new Crop(this.scene, tileX, tileY, { tileSize: this.tileSize, cropKey: 'huluobo' });
+        // cropKey 与 farmplants.json 前缀保持一致
+        const crop = new Crop(this.scene, tileX, tileY, { tileSize: this.tileSize, cropKey: seedKey });
         this.crops.set(`${tileX},${tileY}`, crop);
         this.decreaseItem('seeds', seedKey, 1);
         this.dispatchInventoryUpdate();
@@ -161,9 +163,10 @@ export default class FarmManager {
 
         crop.destroy();
         this.crops.delete(`${tileX},${tileY}`);
-        // 简单：收获 2 个胡萝卜
+        // 简单：收获 2 个对应作物
         const yieldCount = 2;
-        this.increaseItem('fruits', 'huluobo', yieldCount, '胡萝卜');
+        const fruitKey = crop.cropKey; // 与 farmplants.json 前缀一致
+        this.increaseItem('fruits', fruitKey, yieldCount, fruitKey);
         this.dispatchInventoryUpdate();
         try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
         return yieldCount;
@@ -204,9 +207,15 @@ export default class FarmManager {
         if (!inv || inv.tags === undefined) {
             fm.inventory = {
                 tags: {
-                    seeds: { items: { 'huluobo-seed': { id: 'huluobo-seed', name: '胡萝卜种子', count: inv?.seeds ?? 0 } } },
+                    seeds: { items: {
+                        huluobo: { id: 'huluobo', name: '胡萝卜种子', count: inv?.seeds ?? 0 },
+                        bailuobo: { id: 'bailuobo', name: '白萝卜种子', count: 0 },
+                    } },
                     misc: { items: { water: { id: 'water', name: '水', count: inv?.water ?? 0 } } },
-                    fruits: { items: { huluobo: { id: 'huluobo', name: '胡萝卜', count: inv?.fruits ?? 0 } } },
+                    fruits: { items: {
+                        huluobo: { id: 'huluobo', name: '胡萝卜', count: inv?.fruits ?? 0 },
+                        bailuobo: { id: 'bailuobo', name: '白萝卜', count: 0 },
+                    } },
                 },
             };
         } else {

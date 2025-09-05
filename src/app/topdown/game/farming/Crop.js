@@ -17,6 +17,7 @@ export default class Crop {
         this.scene = scene;
         this.tileX = tileX;
         this.tileY = tileY;
+        // 作物 key 必须与 farmplants.json 帧名前缀一致
         this.cropKey = options.cropKey || 'bailuobo';
         this.tileSize = options.tileSize || 16;
 

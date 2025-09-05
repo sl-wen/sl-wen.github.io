@@ -17,10 +17,11 @@ export default class Crop {
         this.scene = scene;
         this.tileX = tileX;
         this.tileY = tileY;
+        // 作物 key 必须与 farmplants.json 帧名前缀一致
         this.cropKey = options.cropKey || 'bailuobo';
         this.tileSize = options.tileSize || 16;
 
-        this.stage = 1;           // 0~5
+        this.stage = 1;           // 1~5（1~4 生长，5 可收获）
         this.watered = false;     // 是否已浇水（用于推进到下一阶段）
         this._timer = null;       // Phaser 定时器
 

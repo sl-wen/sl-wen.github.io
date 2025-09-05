@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { styled } from '@mui/material/styles';
 
 const Overlay = styled('div')(({ multiplier }) => ({
@@ -30,9 +30,27 @@ const Title = styled('div')(({ multiplier }) => ({
   fontWeight: 'bold',
 }));
 
+const Tabs = styled('div')(({ multiplier }) => ({
+  display: 'flex',
+  gap: `${8 * multiplier}px`,
+  marginBottom: `${8 * multiplier}px`,
+}));
+
+const Tab = styled('button')(({ multiplier, active }) => ({
+  imageRendering: 'pixelated',
+  fontFamily: '"Press Start 2P"',
+  fontSize: `${8 * multiplier}px`,
+  padding: `${6 * multiplier}px ${8 * multiplier}px`,
+  backgroundColor: active ? '#e6c299' : '#e2b27e',
+  border: 'solid',
+  borderImage: `url("/game/assets/images/dialog_borderbox.png") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px stretch`,
+  color: '#1b0f0a',
+  cursor: 'pointer',
+}));
+
 const Grid = styled('div')(({ multiplier }) => ({
   display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
+  gridTemplateColumns: 'repeat(2, 1fr)',
   gap: `${8 * multiplier}px`,
 }));
 
@@ -60,14 +78,34 @@ const Close = styled('button')(({ multiplier }) => ({
 
 const InventoryModal = ({ gameSize, inventory, onClose }) => {
   const { width, height, multiplier } = gameSize;
+  const [activeTab, setActiveTab] = useState('seeds');
+
+  const items = useMemo(() => {
+    const tags = inventory?.tags || {};
+    const current = tags[activeTab]?.items || {};
+    return Object.values(current);
+  }, [inventory, activeTab]);
+
   return (
     <Overlay multiplier={multiplier} onClick={onClose}>
       <Window multiplier={multiplier} width={width} height={height} onClick={(e) => e.stopPropagation()}>
         <Title multiplier={multiplier}>背包</Title>
+        <Tabs multiplier={multiplier}>
+          <Tab multiplier={multiplier} active={activeTab === 'seeds'} onClick={() => setActiveTab('seeds')}>🌱 种子</Tab>
+          <Tab multiplier={multiplier} active={activeTab === 'misc'} onClick={() => setActiveTab('misc')}>🧰 杂物</Tab>
+          <Tab multiplier={multiplier} active={activeTab === 'fruits'} onClick={() => setActiveTab('fruits')}>🧺 果实</Tab>
+        </Tabs>
+
         <Grid multiplier={multiplier}>
-          <Cell multiplier={multiplier}><span>🌱 种子</span><b>x {inventory?.seeds ?? 0}</b></Cell>
-          <Cell multiplier={multiplier}><span>💧 水</span><b>x {inventory?.water ?? 0}</b></Cell>
-          <Cell multiplier={multiplier}><span>🧺 果实</span><b>x {inventory?.fruits ?? 0}</b></Cell>
+          {items.length === 0 && (
+            <Cell multiplier={multiplier}><span>空</span><b>x 0</b></Cell>
+          )}
+          {items.map((it) => (
+            <Cell key={it.id} multiplier={multiplier}>
+              <span>{it.name || it.id}</span>
+              <b>x {it.count ?? 0}</b>
+            </Cell>
+          ))}
         </Grid>
         <Close multiplier={multiplier} onClick={onClose}>关闭</Close>
       </Window>

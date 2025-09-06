@@ -594,17 +594,35 @@ export default class GameScene extends Scene {
                 // 在添加碰撞检测后，为 interaction 瓦片设置碰撞属性
                 if (layerData.name === 'Objects' || layerData.name === 'Collision' || layerData.name === 'Farmable') {
                     console.log(`Setting collision for interaction tiles in ${layerData.name} layer`);
-                    // 使用 setCollisionFromCollisionGroup 来处理 tileset 中定义的碰撞
-                    map.setCollisionFromCollisionGroup(true, true, layer);
+                    // 使用 tileset 碰撞组：优先调用 layer API，兼容旧版本则回退到 map API
+                    try {
+                        if (typeof layer.setCollisionFromCollisionGroup === 'function') {
+                            layer.setCollisionFromCollisionGroup(true, true);
+                        } else if (typeof map.setCollisionFromCollisionGroup === 'function') {
+                            map.setCollisionFromCollisionGroup(true, true, layer);
+                        }
+                    } catch (_) { /* noop */ }
 
                     // 显式为指定索引的瓦片应用碰撞（Tiled 未设置 collisionGroup 时的兜底方案）
                     const obstacleTileIds = [169, 170];
                     try {
-                        layer.setCollision(obstacleTileIds);
+                        if (typeof layer.setCollision === 'function') {
+                            layer.setCollision(obstacleTileIds);
+                        }
                         obstacleTileIds.forEach((id) => collidableTileIds.add(id));
                         console.log(`Applied explicit collision for tile IDs ${obstacleTileIds.join(', ')} on layer ${layerData.name}`);
                     } catch (_) { /* noop */ }
                 }
+                // 终极兜底：逐瓦片设置 169/170 的碰撞，确保无论在哪个图层都可阻挡
+                try {
+                    layer.forEachTile((tile) => {
+                        if (!tile || tile.index < 0) return;
+                        if (tile.index === 169 || tile.index === 170) {
+                            tile.setCollision(true);
+                            collidableTileIds.add(tile.index);
+                        }
+                    });
+                } catch (_) { /* noop */ }
             } else {
                 console.error(`Failed to create layer ${i}: ${layerData.name}`);
             }

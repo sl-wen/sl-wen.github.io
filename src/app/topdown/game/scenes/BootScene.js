@@ -176,8 +176,6 @@ export default class BootScene extends Scene {
      */
     loadMaps() {
         // 加载图块集
-        this.load.image('tileset', '/game/assets/sprites/maps/tilesets/tileset.png');
-        this.load.image('actions_tileset', '/game/assets/sprites/maps/tilesets/actions_tileset.png');
         this.load.image('ui_elements', '/game/assets/sprites/maps/tilesets/ui_elements.png');
         // 预加载与 TMX 中 tileset 名称一致的图像（用于 map 动态匹配）
         this.load.image('Grass', '/game/assets/graphics/environment/Grass.png');
@@ -195,20 +193,7 @@ export default class BootScene extends Scene {
 
         // 新地图（Tiled JSON，建议从 topdown/game/map.tmx 导出为 map.json 放置于 /public/topdown/game/）
         this.load.tilemapTiledJSON('map', '/topdown/game/map.json');
-        // 兼容旧路径下的默认地图
-        //this.load.tilemapTiledJSON('map', '/game/assets/maps/main_map.json');
 
-        // 加载城市地图
-        this.load.tilemapTiledJSON('home_page_city', '/game/assets/sprites/maps/cities/home_page_city.json');
-
-        // 加载房屋地图
-        this.load.tilemapTiledJSON('home_page_city_house_1', '/game/assets/sprites/maps/houses/home_page_city_house_1.json');
-        this.load.tilemapTiledJSON('home_page_city_house_2', '/game/assets/sprites/maps/houses/home_page_city_house_2.json');
-        this.load.tilemapTiledJSON('home_page_city_house_3', '/game/assets/sprites/maps/houses/home_page_city_house_3.json');
-
-        // 加载图块集配置
-        this.load.tilemapTiledJSON('tileset', '/game/assets/sprites/maps/tilesets/tileset.json');
-        this.load.tilemapTiledJSON('actions_tileset', '/game/assets/sprites/maps/tilesets/actions_tileset.json');
         this.load.tilemapTiledJSON('ui_elements', '/game/assets/sprites/maps/tilesets/ui_elements.json');
     }
 
@@ -227,12 +212,6 @@ export default class BootScene extends Scene {
             // 待机帧（取 idle 目录下的 0.png）
             this.load.image(`cat_idle_${dir}`, `/game/assets/graphics/character/${dir}_idle/0.png`);
         });
-
-        // NPC 精灵图集
-        this.load.atlas('npc_1', '/game/assets/sprites/atlas/npc_1.png', '/game/assets/sprites/atlas/npc_1.json');
-        this.load.atlas('npc_2', '/game/assets/sprites/atlas/npc_2.png', '/game/assets/sprites/atlas/npc_2.json');
-        this.load.atlas('npc_3', '/game/assets/sprites/atlas/npc_3.png', '/game/assets/sprites/atlas/npc_3.json');
-        this.load.atlas('npc_4', '/game/assets/sprites/atlas/npc_4.png', '/game/assets/sprites/atlas/npc_4.json');
     }
 
     /**
@@ -245,8 +224,6 @@ export default class BootScene extends Scene {
         // 农场作物图集（0-种子，1-4生长，5-果实）
         this.load.atlas('farmplants', '/game/assets/sprites/atlas/farmplants.png', '/game/assets/sprites/atlas/farmplants.json');
 
-        // 其他物品图片
-        this.load.image('sword', '/game/assets/images/sword.png');
 
         // UI 元素
         this.load.image('dialog_borderbox', '/game/assets/images/dialog_borderbox.png');

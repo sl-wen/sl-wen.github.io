@@ -60,7 +60,6 @@ import {
     NPC_MOVEMENT_RANDOM,
     SCENE_FADE_TIME,
 } from '../constants';
-import FarmManager from '../farming/FarmManager';
 import InputManager from '../InputManager';
 import { createInteractiveGameObject } from '../utils';
 
@@ -421,33 +420,6 @@ export default class GameScene extends Scene {
         // 需要在更新期查询前方图块与交互环境，因此总是持有 map 引用
         this.map = map;
 
-        // 农场系统：初始化与耕地区域（简单示例区块）
-        this.farmManager = farmSave
-            ? FarmManager.fromSave(this, farmSave, { tileSize: map.tileWidth })
-            : new FarmManager(this, { tileSize: map.tileWidth });
-
-        // 初始背包推送一次
-        this.farmManager.dispatchInventoryUpdate?.();
-
-        // 在 city 地图中预留一块 4x3 的耕地：以玩家出生点为参考，偏右上
-        if (mapKey === 'home_page_city') {
-            const fx = Math.min(Math.max(0, initialPosition.x + 4), Math.max(0, map.width - 4));
-            const fy = Math.min(Math.max(0, initialPosition.y - 2), Math.max(0, map.height - 3));
-            this.farmManager.addFarmlandRect(fx, fy, 4, 3);
-        }
-        // 绘制耕地可视化覆盖层（浅棕色）
-        this.farmlandGraphics = this.add.graphics().setDepth(0.4);
-        this.farmlandGraphics.clear();
-        this.farmlandGraphics.fillStyle(0x8b5a2b, 0.35);
-        this.farmlandGraphics.lineStyle(1, 0xdeb887, 0.6);
-        this.farmManager.farmland.forEach((key) => {
-            const [tx, ty] = key.split(',').map(n => Number.parseInt(n, 10));
-            const px = tx * map.tileWidth;
-            const py = ty * map.tileHeight;
-            this.farmlandGraphics.fillRect(px, py, map.tileWidth, map.tileHeight);
-            this.farmlandGraphics.strokeRect(px + 0.5, py + 0.5, map.tileWidth - 1, map.tileHeight - 1);
-        });
-
         // cat 主角：初始属性、碰撞盒与交互体
         this.catSprite = this.physics.add
             // 使用 idle 动画 key 作为初始纹理（单帧）
@@ -550,7 +522,30 @@ export default class GameScene extends Scene {
                 // 基于瓦片属性为该图层设置碰撞：凡是带有 ge_collide=true 的瓦片都会阻挡
                 try {
                     layer.setCollisionByProperty({ ge_collide: true });
+                    // 收集带有 ge_collide 属性的瓦片索引到 GridEngine 的碰撞列表
+                    let geCollideTileCount = 0;
+                    layer.forEachTile((tile) => {
+                        if (tile && tile.index >= 0 && tile.properties?.ge_collide) {
+                            collidableTileIds.add(tile.index);
+                            geCollideTileCount++;
+                        }
+                    });
+                    if (geCollideTileCount > 0) {
+                        console.log(`Found ${geCollideTileCount} tiles with ge_collide=true in layer ${layerData.name}`);
+                    }
                 } catch (_) { /* noop */ }
+
+                // 检查图层级别的 ge_collide 属性
+                const layerHasGeCollide = layerData.properties?.some(prop => prop.name === 'ge_collide' && prop.value === true);
+                if (layerHasGeCollide) {
+                    console.log(`Layer ${layerData.name} has ge_collide=true at layer level`);
+                    // 如果图层级别有 ge_collide=true，则将该图层的所有非空瓦片都视为碰撞
+                    layer.forEachTile((tile) => {
+                        if (tile && tile.index >= 0) {
+                            collidableTileIds.add(tile.index);
+                        }
+                    });
+                }
 
                 // 兼容未在地图中标注 ge_collide 的情况：
                 // 将来自指定 tileset 的瓦片（如 Fences/House/interaction）统一视为阻挡
@@ -841,6 +836,10 @@ export default class GameScene extends Scene {
             // 直接使用收集到的阻挡瓦片索引（无需地图属性）
             collisionTiles: Array.from(collidableTileIds.size > 0 ? collidableTileIds : new Set([169, 170])),
         };
+
+        // 调试信息：显示 GridEngine 的碰撞瓦片配置
+        console.log('GridEngine collision tiles:', gridEngineConfig.collisionTiles);
+        console.log('Total collidable tile IDs collected:', collidableTileIds.size);
 
         // 监听保存快照请求：React 设置页会触发
         const handleRequestSave = () => {

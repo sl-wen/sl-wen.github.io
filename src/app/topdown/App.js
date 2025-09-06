@@ -147,7 +147,8 @@ function App() {
         const newSize = calculateGameSize();
         setGameSize(newSize);
 
-        if (gameRef.current) {
+        // 只调整游戏画布大小，不重新创建游戏
+        if (gameRef.current && gameRef.current.scale) {
           gameRef.current.scale.resize(newSize.width, newSize.height);
         }
       }
@@ -246,9 +247,9 @@ function App() {
    * 设置游戏配置、场景、物理引擎和插件
    */
   useEffect(() => {
+    // 只在组件首次挂载时创建游戏，不依赖 gameSize
     if (gameRef.current) {
-      try { gameRef.current.destroy(true); } catch (e) { }
-      gameRef.current = null;
+      return; // 游戏已存在，不重新创建
     }
 
     if (typeof window !== 'undefined' && window.__phaserGame) {
@@ -308,7 +309,7 @@ function App() {
         }
       } catch (e) { }
     };
-  }, [gameSize]);
+  }, []); // 移除 gameSize 依赖，只在组件挂载时创建一次
 
   /**
    * 设置游戏事件监听器

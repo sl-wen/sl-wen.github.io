@@ -22146,6 +22146,11 @@
           "name": "collides",
           "type": "bool",
           "value": true
+        },
+        {
+          "name": "ge_collide",
+          "type": "bool",
+          "value": true
         }
       ],
       "visible": false,
@@ -24164,7 +24169,14 @@
       "visible": false,
       "width": 50,
       "x": 0,
-      "y": 0
+      "y": 0,
+      "properties": [
+        {
+          "name": "ge_collide",
+          "type": "bool",
+          "value": true
+        }
+      ]
     },
     {
       "draworder": "topdown",
@@ -26068,19 +26080,6 @@
       "tilecount": 10,
       "tileheight": 64,
       "tilewidth": 64
-    },
-    {
-      "columns": 0,
-      "firstgid": 143,
-      "image": "../../graphics/environment/Collision.png",
-      "imageheight": 0,
-      "imagewidth": 0,
-      "margin": 0,
-      "name": "Objects",
-      "spacing": 0,
-      "tilecount": 10,
-      "tileheight": 124,
-      "tilewidth": 96
     },
     {
       "columns": 4,

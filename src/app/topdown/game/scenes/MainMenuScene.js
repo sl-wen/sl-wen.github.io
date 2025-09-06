@@ -56,8 +56,8 @@ export default class MainMenuScene extends Scene {
                     // 默认优先使用从 /topdown/game/map.json 
                     let mapKey = 'map';
                     let catStatus = {
-                        position: { x: 4, y: 3 },
-                        previousPosition: { x: 4, y: 3 },
+                        position: { x: 24, y: 24 },
+                        previousPosition: { x: 24, y: 24 },
                         frame: 'cat_idle_down',
                         facingDirection: 'down',
                         coin: 0,

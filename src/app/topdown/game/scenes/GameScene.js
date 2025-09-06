@@ -542,6 +542,8 @@ export default class GameScene extends Scene {
                     // 如果图层级别有 ge_collide=true，则将该图层的所有非空瓦片都视为碰撞
                     layer.forEachTile((tile) => {
                         if (tile && tile.index >= 0) {
+                            // Arcade 物理需要在瓦片上设置碰撞标记
+                            tile.setCollision(true);
                             collidableTileIds.add(tile.index);
                         }
                     });
@@ -594,6 +596,14 @@ export default class GameScene extends Scene {
                     console.log(`Setting collision for interaction tiles in ${layerData.name} layer`);
                     // 使用 setCollisionFromCollisionGroup 来处理 tileset 中定义的碰撞
                     map.setCollisionFromCollisionGroup(true, true, layer);
+
+                    // 显式为指定索引的瓦片应用碰撞（Tiled 未设置 collisionGroup 时的兜底方案）
+                    const obstacleTileIds = [169, 170];
+                    try {
+                        layer.setCollision(obstacleTileIds);
+                        obstacleTileIds.forEach((id) => collidableTileIds.add(id));
+                        console.log(`Applied explicit collision for tile IDs ${obstacleTileIds.join(', ')} on layer ${layerData.name}`);
+                    } catch (_) { /* noop */ }
                 }
             } else {
                 console.error(`Failed to create layer ${i}: ${layerData.name}`);

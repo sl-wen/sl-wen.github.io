@@ -27,10 +27,7 @@ export default class MapLoader {
         const map = scene.make.tilemap({ key: mapKey });
         const collidableTileIds = new Set();
 
-        if (debug) {
-            // eslint-disable-next-line no-console
-            console.log('[MapLoader] Loading map:', mapKey);
-        }
+        // 移除日志输出，保持静默加载
 
         // Add tilesets by name (names must match preloaded keys)
         const addedTilesets = {};
@@ -39,10 +36,7 @@ export default class MapLoader {
                 const tilesetName = tileset.name;
                 try {
                     addedTilesets[tilesetName] = map.addTilesetImage(tilesetName, tilesetName);
-                } catch (e) {
-                    // eslint-disable-next-line no-console
-                    console.warn('[MapLoader] Failed to add tileset:', tilesetName, e);
-                }
+                } catch (e) { /* noop */ }
             });
         } else {
             try {
@@ -57,11 +51,7 @@ export default class MapLoader {
         for (let i = 0; i < map.layers.length; i += 1) {
             const layerData = map.layers[i];
             const layer = map.createLayer(i, tilesetArray.length > 0 ? tilesetArray : 'tileset', 0, 0);
-            if (!layer) {
-                // eslint-disable-next-line no-console
-                console.error('[MapLoader] Failed to create layer:', layerData?.name);
-                continue;
-            }
+            if (!layer) { continue; }
 
             createdLayers.push(layer);
 

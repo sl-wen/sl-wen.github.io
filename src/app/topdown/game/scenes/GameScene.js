@@ -252,17 +252,19 @@ export default class GameScene extends Scene {
     getFrontPixelPosition() {
         const facingDirection = this.gridEngine.getFacingDirection('cat');
         const position = this.gridEngine.getPosition('cat');
+        const tileW = this.map?.tileWidth || 16;
+        const tileH = this.map?.tileHeight || 16;
         switch (facingDirection) {
             case 'up':
-                return { x: position.x * 16, y: (position.y - 1) * 16 };
+                return { x: position.x * tileW, y: (position.y - 1) * tileH };
             case 'right':
-                return { x: (position.x + 1) * 16, y: position.y * 16 };
+                return { x: (position.x + 1) * tileW, y: position.y * tileH };
             case 'down':
-                return { x: position.x * 16, y: (position.y + 1) * 16 };
+                return { x: position.x * tileW, y: (position.y + 1) * tileH };
             case 'left':
-                return { x: (position.x - 1) * 16, y: position.y * 16 };
+                return { x: (position.x - 1) * tileW, y: position.y * tileH };
             default:
-                return { x: position.x * 16, y: position.y * 16 };
+                return { x: position.x * tileW, y: position.y * tileH };
         }
     }
 
@@ -423,7 +425,7 @@ export default class GameScene extends Scene {
         // cat 主角：初始属性、碰撞盒与交互体
         this.catSprite = this.physics.add
             // 使用 idle 动画 key 作为初始纹理（单帧）
-            .sprite(initialPosition.x * 16, initialPosition.y * 16, `cat_idle_${initialFacingDirection || 'down'}`)
+            .sprite(initialPosition.x * map.tileWidth, initialPosition.y * map.tileHeight, `cat_idle_${initialFacingDirection || 'down'}`)
             .setDepth(1);
         this.catSprite.coin = catCoin;
 

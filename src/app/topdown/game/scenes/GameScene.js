@@ -451,13 +451,10 @@ export default class GameScene extends Scene {
 
         const npcsKeys = [];
         const dataLayer = map.getObjectLayer('Player'); // Tiled 中的对象层，承载对话、NPC、传送、物品
-        console.log('Data layer:', dataLayer);
-        console.log('Data layer objects:', dataLayer?.objects);
 
         if (dataLayer && dataLayer.objects) {
             dataLayer.objects.forEach((data) => {
                 const { properties, x, y } = data;
-                console.log('Processing object at:', x, y, 'with properties:', properties);
 
                 if (!properties || !Array.isArray(properties) || properties.length === 0) {
                     return;
@@ -465,7 +462,6 @@ export default class GameScene extends Scene {
 
                 properties.forEach((property) => {
                     const { name, type, value } = property;
-                    console.log('Property:', name, type, value);
 
                     switch (name) {
                         case 'dialog': {
@@ -579,7 +575,6 @@ export default class GameScene extends Scene {
                         }
 
                         case 'teleportTo': { // 传送门：到达重叠即触发，淡出后重启场景到目标地图
-                            console.log('Found teleport object at:', x, y, 'with value:', value);
 
                             const customCollider = createInteractiveGameObject(
                                 this,
@@ -598,10 +593,7 @@ export default class GameScene extends Scene {
                                 y: teleportToY,
                             } = this.extractTeleportDataFromTiled(value);
 
-                            console.log('Teleport data:', { teleportToMapKey, teleportToX, teleportToY });
-
                             const overlapCollider = this.physics.add.overlap(this.catSprite, customCollider, () => {
-                                console.log('cat entered teleport, teleporting to:', teleportToMapKey, teleportToX, teleportToY);
                                 // camera.stopFollow();
                                 this.physics.world.removeCollider(overlapCollider);
                                 const facingDirection = this.gridEngine.getFacingDirection('cat');
@@ -671,63 +663,7 @@ export default class GameScene extends Scene {
             );
         }
 
-        // 参照参考项目：简化碰撞配置
-        // 调试：显示所有图层名称
-        console.log('All available layers:');
-        createdLayers.forEach((layer, index) => {
-            console.log(`  Layer ${index}: ${layer.layer.name}`);
-        });
-
-        // 找到主要的碰撞图层（优先选择Collision图层）
-        let wallsLayer = createdLayers.find(layer => {
-            const layerName = layer.layer.name ? layer.layer.name.toLowerCase() : '';
-            return layerName === 'collision'; // 优先选择专门的Collision图层
-        });
-
-        // 如果没有Collision图层，选择Fence图层
-        if (!wallsLayer) {
-            wallsLayer = createdLayers.find(layer => {
-                const layerName = layer.layer.name ? layer.layer.name.toLowerCase() : '';
-                return layerName === 'fence';
-            });
-        }
-
-        // 如果还没有，选择HouseWalls图层
-        if (!wallsLayer) {
-            wallsLayer = createdLayers.find(layer => {
-                const layerName = layer.layer.name ? layer.layer.name.toLowerCase() : '';
-                return layerName.includes('wall');
-            });
-        }
-
-        // 保存碰撞瓦片ID集合用于调试
-        this.collidableTileIds = collidableTileIds;
-        this.wallsLayer = wallsLayer;
-
-        console.log('Map loaded successfully');
-        console.log('Total collidable tile IDs:', collidableTileIds.size);
-        console.log('Walls layer found:', wallsLayer ? wallsLayer.layer.name : 'None');
-
-        // 如果没有找到专门的碰撞图层，使用第一个有碰撞瓦片的图层
-        if (!wallsLayer && createdLayers.length > 0) {
-            this.wallsLayer = createdLayers[0]; // 使用第一个图层作为备选
-            console.log('Using first layer as fallback:', this.wallsLayer.layer.name);
-        }
-
-        // 调试：检查选中图层的瓦片情况
-        if (this.wallsLayer) {
-            let tileCount = 0;
-            let collidableCount = 0;
-            this.wallsLayer.forEachTile((tile) => {
-                if (tile && tile.index >= 0) {
-                    tileCount++;
-                    if (this.collidableTileIds.has(tile.index)) {
-                        collidableCount++;
-                    }
-                }
-            });
-            console.log(`Selected layer "${this.wallsLayer.layer.name}" has ${tileCount} tiles, ${collidableCount} collidable`);
-        }
+        // 参照参考项目：简化碰撞配置（仅使用 Phaser 物理引擎的碰撞）
 
         // 参照参考项目：简化GridEngine配置
         const gridEngineConfig = {
@@ -741,22 +677,9 @@ export default class GameScene extends Scene {
                 },
             ],
             numberOfDirections: 8,
-            // 使用标准的碰撞属性名称
-            collisionTilePropertyName: 'ge_collide',
-            // 关键配置：直接指定碰撞瓦片ID
-            collisionTiles: Array.from(collidableTileIds),
-            // 确保寻路算法正确工作
-            pathfinding: {
-                algorithm: 'A*',
-                considerCosts: false, // 不考虑成本，只考虑碰撞
-            },
         };
 
-        // 调试信息：显示 GridEngine 配置
-        console.log('GridEngine config:', gridEngineConfig);
-        console.log('Total collidable tile IDs collected:', collidableTileIds.size);
-        console.log('Map tile size:', map.tileWidth, 'x', map.tileHeight);
-        console.log('Map dimensions:', map.width, 'x', map.height);
+        // 保持 GridEngine 仅用于移动与动画，碰撞完全依赖 Phaser 物理系统
 
         // 监听保存快照请求：React 设置页会触发
         const handleRequestSave = () => {
@@ -860,38 +783,6 @@ export default class GameScene extends Scene {
 
         this.gridEngine.create(map, gridEngineConfig); // 初始化 GridEngine（必须在角色加入后）
 
-        // 参照参考项目：移除手动碰撞设置，让GridEngine自动处理
-        console.log('GridEngine initialized with collisionTilePropertyName: ge_collide');
-
-        // 验证GridEngine初始化
-        console.log('GridEngine initialized successfully');
-        console.log('Cat position after GridEngine init:', this.gridEngine.getPosition('cat'));
-        console.log('Cat facing direction:', this.gridEngine.getFacingDirection('cat'));
-
-        // 测试GridEngine的碰撞检测
-        const testPos = this.gridEngine.getPosition('cat');
-        const testRight = { x: testPos.x + 1, y: testPos.y };
-        const testDown = { x: testPos.x, y: testPos.y + 1 };
-        console.log('GridEngine collision test:');
-        console.log('  Right position blocked:', this.gridEngine.isTileBlocked(testRight));
-        console.log('  Down position blocked:', this.gridEngine.isTileBlocked(testDown));
-
-        // 检查特定位置的瓦片
-        if (this.wallsLayer) {
-            const rightTile = this.wallsLayer.getTileAt(testRight.x, testRight.y);
-            const downTile = this.wallsLayer.getTileAt(testDown.x, testDown.y);
-            console.log('  Right tile ID:', rightTile ? rightTile.index : -1);
-            console.log('  Down tile ID:', downTile ? downTile.index : -1);
-            console.log('  Right tile collidable:', rightTile ? this.collidableTileIds.has(rightTile.index) : false);
-            console.log('  Down tile collidable:', downTile ? this.collidableTileIds.has(downTile.index) : false);
-        }
-
-        // 测试碰撞检测
-        const testPosition = this.gridEngine.getPosition('cat');
-        const canMoveRight = this.gridEngine.isBlocked({ x: testPosition.x + 1, y: testPosition.y });
-        const canMoveDown = this.gridEngine.isBlocked({ x: testPosition.x, y: testPosition.y + 1 });
-        console.log('Collision test - can move right:', !canMoveRight, 'can move down:', !canMoveDown);
-
         // 同步初始朝向与待机帧
         if (initialFacingDirection) {
             try {
@@ -912,70 +803,7 @@ export default class GameScene extends Scene {
         }
 
         // Tap-to-move: 触摸/点击地图自动寻路到目标；若不可达则前往最近可达位置
-        this.input.on('pointerdown', (pointer) => { // 监听指针按下事件（含鼠标与触屏）
-            if (this.isTeleporting || this.isShowingDialog) { // 传送/对话期间禁用点地移动
-                return; // 直接返回，防止状态冲突
-            }
-
-            const worldX = pointer.worldX ?? pointer.x; // 获取指针在世界坐标中的 X（若无则退化为屏幕坐标）
-            const worldY = pointer.worldY ?? pointer.y; // 获取指针在世界坐标中的 Y（若无则退化为屏幕坐标）
-            const target = { // 目标瓦片的网格坐标（基于 16x16 或 map.tileWidth/tileHeight）
-                x: Math.floor(worldX / map.tileWidth), // 取整到网格 X
-                y: Math.floor(worldY / map.tileHeight), // 取整到网格 Y
-            };
-
-            this.isAutoMoving = true; // 标记进入自动寻路模式（用于与手动输入互斥）
-            // 显示目标瓦片高亮
-            const pixelX = target.x * map.tileWidth; // 计算目标像素 X（用于绘制提示）
-            const pixelY = target.y * map.tileHeight; // 计算目标像素 Y（用于绘制提示）
-            if (!this.autoMoveTargetHighlight) { // 若尚未创建高亮指示器，则创建
-                this.autoMoveTargetHighlight = this.add.rectangle(
-                    pixelX + map.tileWidth / 2, // 矩形中心 X（居中到瓦片）
-                    pixelY + map.tileHeight / 2, // 矩形中心 Y（居中到瓦片）
-                    map.tileWidth, // 矩形宽（与瓦片同宽）
-                    map.tileHeight, // 矩形高（与瓦片同高）
-                    0xffff66, // 填充颜色（浅黄）
-                    0.25, // 透明度
-                ).setOrigin(0.5, 0.5).setDepth(1000); // 设置原点与深度，保证覆盖在最上层
-                this.autoMoveTargetHighlight.setBlendMode(Phaser.BlendModes.SCREEN); // 轻微叠加高光效果
-                this.autoMoveTargetHighlight.setStrokeStyle(1, 0xffff99, 0.8); // 添加边框以增强对比度
-            } else { // 已存在则复用并移动到新位置
-                this.autoMoveTargetHighlight.setVisible(true); // 显示高亮
-                this.autoMoveTargetHighlight.setPosition(
-                    pixelX + map.tileWidth / 2, // 更新中心 X
-                    pixelY + map.tileHeight / 2, // 更新中心 Y
-                );
-                this.autoMoveTargetHighlight.setSize(map.tileWidth, map.tileHeight); // 更新尺寸以适配当前地图瓦片大小
-            }
-            // 轻微闪烁以提示
-            this.tweens.add({ // 创建一个 tween 动画
-                targets: this.autoMoveTargetHighlight, // 作用于高亮矩形
-                alpha: { from: 0.25, to: 0.45 }, // 透明度往返变化
-                duration: 400, // 动画时长 400ms
-                yoyo: true, // 往返播放
-                repeat: 2, // 重复 2 次，合计闪烁 3 次
-            });
-            // 检查目标位置是否有碰撞
-            let canMoveToTarget = true;
-            if (this.wallsLayer) {
-                const targetTile = this.wallsLayer.getTileAt(target.x, target.y);
-                const tileId = targetTile ? targetTile.index : -1;
-                const isCollidable = tileId >= 0 && this.collidableTileIds.has(tileId);
-                if (isCollidable) {
-                    canMoveToTarget = false;
-                    console.log(`Click movement blocked: target (${target.x}, ${target.y}) has collision tile ${tileId}`);
-                }
-            }
-
-            // 只有在目标位置没有碰撞时才移动
-            if (canMoveToTarget) {
-                // 不使用GridEngine的moveTo，改为手动移动
-                // 这样可以确保每一步都经过我们的碰撞检测
-                this.startManualPathfinding(target);
-            } else {
-                console.log(`Cannot move to (${target.x}, ${target.y}) - blocked by collision`);
-            }
-        });
+        // 关闭点按自动寻路（保留纯粹的 Phaser 碰撞 + 手动移动）
 
         // NPCs
         npcsKeys.forEach((npcData) => {
@@ -1187,10 +1015,7 @@ export default class GameScene extends Scene {
         // 根据周围环境更新交互按钮图标（对话 / 宝箱/箱子 / 攻击）
         this.updateActionContext(); // 推送到 React 的 action-context
 
-        // 执行手动寻路
-        if (this.manualPathfinding && this.manualPathfinding.isActive) {
-            this.executeManualPathfindingStep();
-        }
+        // 移除手动寻路逻辑
 
         // 使用输入管理器处理移动（虚拟摇杆/键盘已统一到 InputManager）
         const currentDirection = this.inputManager.getCurrentDirection(); // 获取当前连续方向（可能为 8 向）
@@ -1245,68 +1070,11 @@ export default class GameScene extends Scene {
                     this.autoMoveTargetHighlight.setVisible(false); // 隐藏高亮提示
                 }
             }
-            if (!this.gridEngine.isMoving('cat')) { // 若当前不在移动（防抖）
-                // 测试移动前的碰撞检测
-                const currentPos = this.gridEngine.getPosition('cat');
-                let targetPos = { ...currentPos };
-
-                switch (currentDirection) {
-                    case 'up': targetPos.y -= 1; break;
-                    case 'down': targetPos.y += 1; break;
-                    case 'left': targetPos.x -= 1; break;
-                    case 'right': targetPos.x += 1; break;
-                    case 'up-left': targetPos.x -= 1; targetPos.y -= 1; break;
-                    case 'up-right': targetPos.x += 1; targetPos.y -= 1; break;
-                    case 'down-left': targetPos.x -= 1; targetPos.y += 1; break;
-                    case 'down-right': targetPos.x += 1; targetPos.y += 1; break;
-                }
-
-                // 混合碰撞检测：使用Phaser物理系统 + GridEngine
-                let isBlocked = false;
-                let tileInfo = '';
-
-                // 方法1: 检查Phaser物理碰撞
-                if (this.wallsLayer) {
-                    const tile = this.wallsLayer.getTileAt(targetPos.x, targetPos.y);
-                    const tileId = tile ? tile.index : -1;
-                    const isCollidable = tileId >= 0 && this.collidableTileIds.has(tileId);
-                    tileInfo = `tileId: ${tileId}, collidable: ${isCollidable}`;
-
-                    // 如果瓦片是可碰撞的，阻止移动
-                    if (isCollidable) {
-                        isBlocked = true;
-                    }
-                } else {
-                    tileInfo = 'no wallsLayer found';
-                }
-
-                // 方法2: 如果Phaser检测没有阻止，再检查GridEngine
-                if (!isBlocked) {
-                    try {
-                        isBlocked = this.gridEngine.isTileBlocked(targetPos);
-                    } catch (e) {
-                        // GridEngine检测失败，使用Phaser检测结果
-                    }
-                }
-
-                console.log(`Move attempt: ${currentDirection}, from (${currentPos.x},${currentPos.y}) to (${targetPos.x},${targetPos.y}), blocked: ${isBlocked}, ${tileInfo}`);
-
-                // 只有在没有碰撞时才移动
-                if (!isBlocked) {
-                    this.gridEngine.move('cat', currentDirection); // 发起按方向的离散步进
-                } else {
-                    console.log(`Movement blocked by collision at (${targetPos.x}, ${targetPos.y})`);
-                }
+            if (!this.gridEngine.isMoving('cat')) {
+                this.gridEngine.move('cat', currentDirection);
             }
         }
-        // 手动寻路相关属性
-        this.manualPathfinding = {
-            target: null,
-            path: [],
-            currentStep: 0,
-            isActive: false,
-            lastMoveTime: 0, // 记录上次移动的时间
-        };
+        // 移除手动寻路状态
 
         // 更新相机与像素对齐
         const cam = this.cameras?.main;
@@ -1317,297 +1085,5 @@ export default class GameScene extends Scene {
         this.catSprite.setPosition(Math.round(this.catSprite.x), Math.round(this.catSprite.y));
     }
 
-    // 手动寻路方法 - 简化的寻路算法
-    startManualPathfinding(target) {
-        const currentPos = this.gridEngine.getPosition('cat');
-        console.log(`Starting manual pathfinding from (${currentPos.x}, ${currentPos.y}) to (${target.x}, ${target.y})`);
-
-        // 使用简单的直线寻路
-        const path = this.getSimplePath(currentPos, target);
-
-        this.manualPathfinding = {
-            target: target,
-            path: path,
-            currentStep: 0,
-            isActive: true,
-        };
-
-        console.log(`Manual pathfinding path:`, path);
-    }
-
-    // 简化的A*寻路算法
-    findPath(start, goal) {
-        const openSet = [start];
-        const cameFrom = new Map();
-        const gScore = new Map();
-        const fScore = new Map();
-
-        // 初始化
-        gScore.set(`${start.x},${start.y}`, 0);
-        fScore.set(`${start.x},${start.y}`, this.heuristic(start, goal));
-
-        while (openSet.length > 0) {
-            // 找到fScore最小的节点
-            let current = openSet[0];
-            let currentIndex = 0;
-            for (let i = 1; i < openSet.length; i++) {
-                const currentF = fScore.get(`${openSet[i].x},${openSet[i].y}`) || Infinity;
-                const bestF = fScore.get(`${current.x},${current.y}`) || Infinity;
-                if (currentF < bestF) {
-                    current = openSet[i];
-                    currentIndex = i;
-                }
-            }
-
-            // 移除当前节点
-            openSet.splice(currentIndex, 1);
-
-            // 检查是否到达目标
-            if (current.x === goal.x && current.y === goal.y) {
-                return this.reconstructPath(cameFrom, current);
-            }
-
-            // 检查所有邻居
-            const neighbors = this.getNeighbors(current);
-            for (const neighbor of neighbors) {
-                const neighborKey = `${neighbor.x},${neighbor.y}`;
-                const tentativeG = (gScore.get(`${current.x},${current.y}`) || 0) + 1;
-
-                if (!gScore.has(neighborKey) || tentativeG < gScore.get(neighborKey)) {
-                    cameFrom.set(neighborKey, current);
-                    gScore.set(neighborKey, tentativeG);
-                    fScore.set(neighborKey, tentativeG + this.heuristic(neighbor, goal));
-
-                    if (!openSet.some(n => n.x === neighbor.x && n.y === neighbor.y)) {
-                        openSet.push(neighbor);
-                    }
-                }
-            }
-        }
-
-        // 如果没有找到路径，返回简单的直线路径
-        return this.getSimplePath(start, goal);
-    }
-
-    // 启发式函数（曼哈顿距离）
-    heuristic(a, b) {
-        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-    }
-
-    // 获取邻居节点
-    getNeighbors(pos) {
-        const neighbors = [];
-        const directions = [
-            { x: 0, y: -1 }, // up
-            { x: 0, y: 1 },  // down
-            { x: -1, y: 0 }, // left
-            { x: 1, y: 0 },  // right
-            { x: -1, y: -1 }, // up-left
-            { x: 1, y: -1 },  // up-right
-            { x: -1, y: 1 },  // down-left
-            { x: 1, y: 1 }    // down-right
-        ];
-
-        for (const dir of directions) {
-            const neighbor = { x: pos.x + dir.x, y: pos.y + dir.y };
-
-            // 检查边界
-            if (neighbor.x < 0 || neighbor.y < 0) continue;
-
-            // 检查碰撞
-            if (this.isPositionBlocked(neighbor)) continue;
-
-            neighbors.push(neighbor);
-        }
-
-        return neighbors;
-    }
-
-    // 检查位置是否被阻挡
-    isPositionBlocked(pos) {
-        if (this.wallsLayer) {
-            const tile = this.wallsLayer.getTileAt(pos.x, pos.y);
-            const tileId = tile ? tile.index : -1;
-            return tileId >= 0 && this.collidableTileIds.has(tileId);
-        }
-        return false;
-    }
-
-    // 重构路径
-    reconstructPath(cameFrom, current) {
-        const path = [current];
-        let currentKey = `${current.x},${current.y}`;
-
-        while (cameFrom.has(currentKey)) {
-            current = cameFrom.get(currentKey);
-            path.unshift(current);
-            currentKey = `${current.x},${current.y}`;
-        }
-
-        return path.slice(1); // 移除起始位置
-    }
-
-    // 简单路径（备用方案）
-    getSimplePath(start, goal) {
-        const path = [];
-        let current = { ...start };
-
-        console.log(`Generating simple path from (${start.x}, ${start.y}) to (${goal.x}, ${goal.y})`);
-
-        // 先水平移动
-        while (current.x !== goal.x) {
-            current.x += current.x < goal.x ? 1 : -1;
-            if (!this.isPositionBlocked(current)) {
-                path.push({ ...current });
-                console.log(`Added horizontal step: (${current.x}, ${current.y})`);
-            } else {
-                console.log(`Horizontal path blocked at (${current.x}, ${current.y})`);
-                // 尝试绕行
-                const alternative = this.findAlternativePath(current, goal, 'horizontal');
-                if (alternative.length > 0) {
-                    path.push(...alternative);
-                    current = alternative[alternative.length - 1];
-                } else {
-                    break; // 如果无法绕行，停止
-                }
-            }
-        }
-
-        // 再垂直移动
-        while (current.y !== goal.y) {
-            current.y += current.y < goal.y ? 1 : -1;
-            if (!this.isPositionBlocked(current)) {
-                path.push({ ...current });
-                console.log(`Added vertical step: (${current.x}, ${current.y})`);
-            } else {
-                console.log(`Vertical path blocked at (${current.x}, ${current.y})`);
-                // 尝试绕行
-                const alternative = this.findAlternativePath(current, goal, 'vertical');
-                if (alternative.length > 0) {
-                    path.push(...alternative);
-                    current = alternative[alternative.length - 1];
-                } else {
-                    break; // 如果无法绕行，停止
-                }
-            }
-        }
-
-        console.log(`Generated path with ${path.length} steps:`, path);
-        return path;
-    }
-
-    // 寻找替代路径
-    findAlternativePath(current, goal, direction) {
-        const alternatives = [];
-
-        if (direction === 'horizontal') {
-            // 尝试向上或向下绕行
-            const up = { x: current.x, y: current.y - 1 };
-            const down = { x: current.x, y: current.y + 1 };
-
-            if (!this.isPositionBlocked(up)) {
-                alternatives.push(up);
-                // 尝试继续水平移动
-                const next = { x: current.x + (current.x < goal.x ? 1 : -1), y: up.y };
-                if (!this.isPositionBlocked(next)) {
-                    alternatives.push(next);
-                }
-            } else if (!this.isPositionBlocked(down)) {
-                alternatives.push(down);
-                // 尝试继续水平移动
-                const next = { x: current.x + (current.x < goal.x ? 1 : -1), y: down.y };
-                if (!this.isPositionBlocked(next)) {
-                    alternatives.push(next);
-                }
-            }
-        } else if (direction === 'vertical') {
-            // 尝试向左或向右绕行
-            const left = { x: current.x - 1, y: current.y };
-            const right = { x: current.x + 1, y: current.y };
-
-            if (!this.isPositionBlocked(left)) {
-                alternatives.push(left);
-                // 尝试继续垂直移动
-                const next = { x: left.x, y: current.y + (current.y < goal.y ? 1 : -1) };
-                if (!this.isPositionBlocked(next)) {
-                    alternatives.push(next);
-                }
-            } else if (!this.isPositionBlocked(right)) {
-                alternatives.push(right);
-                // 尝试继续垂直移动
-                const next = { x: right.x, y: current.y + (current.y < goal.y ? 1 : -1) };
-                if (!this.isPositionBlocked(next)) {
-                    alternatives.push(next);
-                }
-            }
-        }
-
-        return alternatives;
-    }
-
-    // 执行手动寻路的下一步
-    executeManualPathfindingStep() {
-        console.log(`Pathfinding check: isActive=${this.manualPathfinding.isActive}, currentStep=${this.manualPathfinding.currentStep}, pathLength=${this.manualPathfinding.path.length}`);
-
-        if (!this.manualPathfinding.isActive || this.manualPathfinding.currentStep >= this.manualPathfinding.path.length) {
-            if (this.manualPathfinding.isActive) {
-                console.log('Manual pathfinding completed successfully');
-            }
-            this.manualPathfinding.isActive = false;
-            return;
-        }
-
-        const currentTime = this.time.now;
-
-        // 检查是否在移动中，或者距离上次移动时间太短
-        if (this.gridEngine.isMoving('cat')) {
-            console.log('Character is still moving, waiting...');
-            return;
-        }
-
-        // 如果距离上次移动时间太短，等待一下
-        if (currentTime - this.manualPathfinding.lastMoveTime < 100) {
-            console.log('Waiting for move cooldown...');
-            return;
-        }
-
-        const nextStep = this.manualPathfinding.path[this.manualPathfinding.currentStep];
-        const currentPos = this.gridEngine.getPosition('cat');
-
-        console.log(`Executing pathfinding step ${this.manualPathfinding.currentStep + 1}/${this.manualPathfinding.path.length}: moving to (${nextStep.x}, ${nextStep.y})`);
-        console.log(`Current position: (${currentPos.x}, ${currentPos.y}), Target: (${nextStep.x}, ${nextStep.y})`);
-
-        // 计算移动方向
-        const dx = nextStep.x - currentPos.x;
-        const dy = nextStep.y - currentPos.y;
-        let direction = '';
-
-        if (dx > 0 && dy === 0) direction = 'right';
-        else if (dx < 0 && dy === 0) direction = 'left';
-        else if (dx === 0 && dy > 0) direction = 'down';
-        else if (dx === 0 && dy < 0) direction = 'up';
-        else if (dx > 0 && dy > 0) direction = 'down-right';
-        else if (dx > 0 && dy < 0) direction = 'up-right';
-        else if (dx < 0 && dy > 0) direction = 'down-left';
-        else if (dx < 0 && dy < 0) direction = 'up-left';
-
-        console.log(`Calculated direction: ${direction} (dx: ${dx}, dy: ${dy})`);
-
-        if (direction) {
-            // 再次检查目标位置是否有碰撞（双重保险）
-            if (!this.isPositionBlocked(nextStep)) {
-                this.gridEngine.move('cat', direction);
-                this.manualPathfinding.currentStep++;
-                this.manualPathfinding.lastMoveTime = currentTime;
-                console.log(`Moving ${direction} to (${nextStep.x}, ${nextStep.y}) - step ${this.manualPathfinding.currentStep}/${this.manualPathfinding.path.length}`);
-                console.log(`After move: isActive=${this.manualPathfinding.isActive}, currentStep=${this.manualPathfinding.currentStep}, pathLength=${this.manualPathfinding.path.length}`);
-            } else {
-                console.log(`Pathfinding blocked at (${nextStep.x}, ${nextStep.y}) - stopping`);
-                this.manualPathfinding.isActive = false;
-            }
-        } else {
-            console.log('Invalid direction calculated - stopping pathfinding');
-            this.manualPathfinding.isActive = false;
-        }
-    }
+    // 移除所有手动寻路与非 Phaser 碰撞相关方法
 }

@@ -118,10 +118,25 @@ src/app/topdown/
 - **功能**：游戏的核心逻辑
 - **职责**：
   - 角色移动和动画
-  - 碰撞检测
+  - 碰撞检测（基于 GridEngine 的瓦片阻挡）
   - 敌人 AI
   - 物品系统
   - 场景切换
+
+### 碰撞与图层处理（Phaser Arcade Physics 主导）
+
+- 在 Tiled 中为阻挡瓦片设置 `ge_collide: true`（瓦片级或图层级）。
+- 运行时由 `MapLoader` 调用 `layer.setCollisionByProperty({ ge_collide: true })` 或将整层非空瓦片设为碰撞，从而使 Phaser Arcade Physics 识别碰撞瓦片；
+- `GameScene` 会将主角与所有图层建立 `this.physics.add.collider`，由 Arcade Physics 负责“停步/阻挡”；
+- 仍然收集 `collidableTileIds` 作为兜底与调试用途；图层选择优先 `collision` 层，否则选择首个包含碰撞瓦片的层（用于拾取与可视化）。
+
+### 点击/触摸自动寻路（避障，基于 Phaser 碰撞）
+
+- 点击或触摸地图会触发自动寻路到目标瓦块；
+- 若目标瓦块为碰撞物（不可走），会在其周围搜索最近的“可走且可达”的瓦块作为替代目标；
+- 寻路算法采用 A*（4 向，禁止对角穿墙），“是否可走”的判断完全取决于 Phaser 瓦片的 `tile.collides`；
+- 每一步移动前再次以 `tile.collides` 校验阻挡；
+- 目标瓦块会以高亮方块显示，并在到达或中断时自动隐藏。
 
 ## 使用方法
 

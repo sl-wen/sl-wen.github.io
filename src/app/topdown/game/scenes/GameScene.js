@@ -92,6 +92,13 @@ export default class GameScene extends Scene {
     npcSprites = null;
     farmManager = null;
     farmlandGraphics = null;
+    manualPathfinding = {
+        target: null,
+        path: [],
+        currentStep: 0,
+        isActive: false,
+        lastMoveTime: 0,
+    };
 
     init(data) {
         this.initData = data;
@@ -444,7 +451,8 @@ export default class GameScene extends Scene {
             });
         }
 
-        // 将物理碰撞绑定到主角与所有图层
+        // 通过 Phaser Arcade Physics 启用主角与图层的碰撞；
+        // 实际的“停步/阻挡”由物理碰撞生效（GridEngine 负责发起网格移动）。
         createdLayers.forEach((layer) => {
             this.physics.add.collider(this.catSprite, layer);
         });
@@ -671,63 +679,25 @@ export default class GameScene extends Scene {
             );
         }
 
-        // 参照参考项目：简化碰撞配置
-        // 调试：显示所有图层名称
-        console.log('All available layers:');
-        createdLayers.forEach((layer, index) => {
-            console.log(`  Layer ${index}: ${layer.layer.name}`);
-        });
-
-        // 找到主要的碰撞图层（优先选择Collision图层）
-        let wallsLayer = createdLayers.find(layer => {
-            const layerName = layer.layer.name ? layer.layer.name.toLowerCase() : '';
-            return layerName === 'collision'; // 优先选择专门的Collision图层
-        });
-
-        // 如果没有Collision图层，选择Fence图层
-        if (!wallsLayer) {
-            wallsLayer = createdLayers.find(layer => {
-                const layerName = layer.layer.name ? layer.layer.name.toLowerCase() : '';
-                return layerName === 'fence';
-            });
-        }
-
-        // 如果还没有，选择HouseWalls图层
-        if (!wallsLayer) {
-            wallsLayer = createdLayers.find(layer => {
-                const layerName = layer.layer.name ? layer.layer.name.toLowerCase() : '';
-                return layerName.includes('wall');
-            });
-        }
-
-        // 保存碰撞瓦片ID集合用于调试
+        // 碰撞/图层选择策略（简化版）：
+        // 1) 优先选择名为 "collision" 的图层
+        // 2) 若不存在，则选择第一个“包含碰撞瓦片ID”的图层
+        // 注：GridEngine 使用 collidableTileIds 进行阻挡，本图层仅用于像素→网格拾取与调试
         this.collidableTileIds = collidableTileIds;
-        this.wallsLayer = wallsLayer;
-
-        console.log('Map loaded successfully');
-        console.log('Total collidable tile IDs:', collidableTileIds.size);
-        console.log('Walls layer found:', wallsLayer ? wallsLayer.layer.name : 'None');
-
-        // 如果没有找到专门的碰撞图层，使用第一个有碰撞瓦片的图层
-        if (!wallsLayer && createdLayers.length > 0) {
-            this.wallsLayer = createdLayers[0]; // 使用第一个图层作为备选
-            console.log('Using first layer as fallback:', this.wallsLayer.layer.name);
-        }
-
-        // 调试：检查选中图层的瓦片情况
-        if (this.wallsLayer) {
-            let tileCount = 0;
-            let collidableCount = 0;
-            this.wallsLayer.forEachTile((tile) => {
-                if (tile && tile.index >= 0) {
-                    tileCount++;
-                    if (this.collidableTileIds.has(tile.index)) {
-                        collidableCount++;
+        let wallsLayer = createdLayers.find(layer => (layer.layer.name || '').toLowerCase() === 'collision');
+        if (!wallsLayer) {
+            wallsLayer = createdLayers.find(layer => {
+                let hasAnyCollidable = false;
+                layer.forEachTile((tile) => {
+                    if (hasAnyCollidable) return;
+                    if (tile && tile.index >= 0 && this.collidableTileIds.has(tile.index)) {
+                        hasAnyCollidable = true;
                     }
-                }
-            });
-            console.log(`Selected layer "${this.wallsLayer.layer.name}" has ${tileCount} tiles, ${collidableCount} collidable`);
+                });
+                return hasAnyCollidable;
+            }) || null;
         }
+        this.wallsLayer = wallsLayer || null;
 
         // 参照参考项目：简化GridEngine配置
         const gridEngineConfig = {
@@ -741,15 +711,7 @@ export default class GameScene extends Scene {
                 },
             ],
             numberOfDirections: 8,
-            // 使用标准的碰撞属性名称
-            collisionTilePropertyName: 'ge_collide',
-            // 关键配置：直接指定碰撞瓦片ID
-            collisionTiles: Array.from(collidableTileIds),
-            // 确保寻路算法正确工作
-            pathfinding: {
-                algorithm: 'A*',
-                considerCosts: false, // 不考虑成本，只考虑碰撞
-            },
+            // 网格移动仅用于动画与步进；碰撞完全依赖 Phaser Arcade Physics
         };
 
         // 调试信息：显示 GridEngine 配置
@@ -860,37 +822,7 @@ export default class GameScene extends Scene {
 
         this.gridEngine.create(map, gridEngineConfig); // 初始化 GridEngine（必须在角色加入后）
 
-        // 参照参考项目：移除手动碰撞设置，让GridEngine自动处理
-        console.log('GridEngine initialized with collisionTilePropertyName: ge_collide');
-
-        // 验证GridEngine初始化
-        console.log('GridEngine initialized successfully');
-        console.log('Cat position after GridEngine init:', this.gridEngine.getPosition('cat'));
-        console.log('Cat facing direction:', this.gridEngine.getFacingDirection('cat'));
-
-        // 测试GridEngine的碰撞检测
-        const testPos = this.gridEngine.getPosition('cat');
-        const testRight = { x: testPos.x + 1, y: testPos.y };
-        const testDown = { x: testPos.x, y: testPos.y + 1 };
-        console.log('GridEngine collision test:');
-        console.log('  Right position blocked:', this.gridEngine.isTileBlocked(testRight));
-        console.log('  Down position blocked:', this.gridEngine.isTileBlocked(testDown));
-
-        // 检查特定位置的瓦片
-        if (this.wallsLayer) {
-            const rightTile = this.wallsLayer.getTileAt(testRight.x, testRight.y);
-            const downTile = this.wallsLayer.getTileAt(testDown.x, testDown.y);
-            console.log('  Right tile ID:', rightTile ? rightTile.index : -1);
-            console.log('  Down tile ID:', downTile ? downTile.index : -1);
-            console.log('  Right tile collidable:', rightTile ? this.collidableTileIds.has(rightTile.index) : false);
-            console.log('  Down tile collidable:', downTile ? this.collidableTileIds.has(downTile.index) : false);
-        }
-
-        // 测试碰撞检测
-        const testPosition = this.gridEngine.getPosition('cat');
-        const canMoveRight = this.gridEngine.isBlocked({ x: testPosition.x + 1, y: testPosition.y });
-        const canMoveDown = this.gridEngine.isBlocked({ x: testPosition.x, y: testPosition.y + 1 });
-        console.log('Collision test - can move right:', !canMoveRight, 'can move down:', !canMoveDown);
+        // GridEngine 负责碰撞与寻路阻挡；此处不再打印冗余调试信息
 
         // 同步初始朝向与待机帧
         if (initialFacingDirection) {
@@ -919,62 +851,56 @@ export default class GameScene extends Scene {
 
             const worldX = pointer.worldX ?? pointer.x; // 获取指针在世界坐标中的 X（若无则退化为屏幕坐标）
             const worldY = pointer.worldY ?? pointer.y; // 获取指针在世界坐标中的 Y（若无则退化为屏幕坐标）
-            const target = { // 目标瓦片的网格坐标（基于 16x16 或 map.tileWidth/tileHeight）
-                x: Math.floor(worldX / map.tileWidth), // 取整到网格 X
-                y: Math.floor(worldY / map.tileHeight), // 取整到网格 Y
+            const desiredTarget = { // 用户点击的网格坐标
+                x: Math.floor(worldX / map.tileWidth),
+                y: Math.floor(worldY / map.tileHeight),
             };
 
             this.isAutoMoving = true; // 标记进入自动寻路模式（用于与手动输入互斥）
-            // 显示目标瓦片高亮
-            const pixelX = target.x * map.tileWidth; // 计算目标像素 X（用于绘制提示）
-            const pixelY = target.y * map.tileHeight; // 计算目标像素 Y（用于绘制提示）
-            if (!this.autoMoveTargetHighlight) { // 若尚未创建高亮指示器，则创建
-                this.autoMoveTargetHighlight = this.add.rectangle(
-                    pixelX + map.tileWidth / 2, // 矩形中心 X（居中到瓦片）
-                    pixelY + map.tileHeight / 2, // 矩形中心 Y（居中到瓦片）
-                    map.tileWidth, // 矩形宽（与瓦片同宽）
-                    map.tileHeight, // 矩形高（与瓦片同高）
-                    0xffff66, // 填充颜色（浅黄）
-                    0.25, // 透明度
-                ).setOrigin(0.5, 0.5).setDepth(1000); // 设置原点与深度，保证覆盖在最上层
-                this.autoMoveTargetHighlight.setBlendMode(Phaser.BlendModes.SCREEN); // 轻微叠加高光效果
-                this.autoMoveTargetHighlight.setStrokeStyle(1, 0xffff99, 0.8); // 添加边框以增强对比度
-            } else { // 已存在则复用并移动到新位置
-                this.autoMoveTargetHighlight.setVisible(true); // 显示高亮
-                this.autoMoveTargetHighlight.setPosition(
-                    pixelX + map.tileWidth / 2, // 更新中心 X
-                    pixelY + map.tileHeight / 2, // 更新中心 Y
-                );
-                this.autoMoveTargetHighlight.setSize(map.tileWidth, map.tileHeight); // 更新尺寸以适配当前地图瓦片大小
-            }
-            // 轻微闪烁以提示
-            this.tweens.add({ // 创建一个 tween 动画
-                targets: this.autoMoveTargetHighlight, // 作用于高亮矩形
-                alpha: { from: 0.25, to: 0.45 }, // 透明度往返变化
-                duration: 400, // 动画时长 400ms
-                yoyo: true, // 往返播放
-                repeat: 2, // 重复 2 次，合计闪烁 3 次
-            });
-            // 检查目标位置是否有碰撞
-            let canMoveToTarget = true;
-            if (this.wallsLayer) {
-                const targetTile = this.wallsLayer.getTileAt(target.x, target.y);
-                const tileId = targetTile ? targetTile.index : -1;
-                const isCollidable = tileId >= 0 && this.collidableTileIds.has(tileId);
-                if (isCollidable) {
-                    canMoveToTarget = false;
-                    console.log(`Click movement blocked: target (${target.x}, ${target.y}) has collision tile ${tileId}`);
-                }
+
+            // 解析最终可达的目标：若原目标被阻挡，则选取其附近最近可达瓦片
+            const startPos = this.gridEngine.getPosition('cat');
+            const effectiveTarget = this.resolveReachableTarget(startPos, desiredTarget);
+
+            if (!effectiveTarget) {
+                // 没有可达目标，隐藏高亮并返回
+                if (this.autoMoveTargetHighlight) this.autoMoveTargetHighlight.setVisible(false);
+                console.log(`No reachable target found near (${desiredTarget.x}, ${desiredTarget.y})`);
+                return;
             }
 
-            // 只有在目标位置没有碰撞时才移动
-            if (canMoveToTarget) {
-                // 不使用GridEngine的moveTo，改为手动移动
-                // 这样可以确保每一步都经过我们的碰撞检测
-                this.startManualPathfinding(target);
+            // 显示最终目标瓦片高亮
+            const pixelX = effectiveTarget.x * map.tileWidth;
+            const pixelY = effectiveTarget.y * map.tileHeight;
+            if (!this.autoMoveTargetHighlight) {
+                this.autoMoveTargetHighlight = this.add.rectangle(
+                    pixelX + map.tileWidth / 2,
+                    pixelY + map.tileHeight / 2,
+                    map.tileWidth,
+                    map.tileHeight,
+                    0xffff66,
+                    0.25,
+                ).setOrigin(0.5, 0.5).setDepth(1000);
+                this.autoMoveTargetHighlight.setBlendMode(Phaser.BlendModes.SCREEN);
+                this.autoMoveTargetHighlight.setStrokeStyle(1, 0xffff99, 0.8);
             } else {
-                console.log(`Cannot move to (${target.x}, ${target.y}) - blocked by collision`);
+                this.autoMoveTargetHighlight.setVisible(true);
+                this.autoMoveTargetHighlight.setPosition(
+                    pixelX + map.tileWidth / 2,
+                    pixelY + map.tileHeight / 2,
+                );
+                this.autoMoveTargetHighlight.setSize(map.tileWidth, map.tileHeight);
             }
+            this.tweens.add({
+                targets: this.autoMoveTargetHighlight,
+                alpha: { from: 0.25, to: 0.45 },
+                duration: 400,
+                yoyo: true,
+                repeat: 2,
+            });
+
+            // 使用手动A*（仅依据 Phaser 瓦片碰撞）寻路到最终目标
+            this.startManualPathfinding(effectiveTarget);
         });
 
         // NPCs
@@ -1299,14 +1225,7 @@ export default class GameScene extends Scene {
                 }
             }
         }
-        // 手动寻路相关属性
-        this.manualPathfinding = {
-            target: null,
-            path: [],
-            currentStep: 0,
-            isActive: false,
-            lastMoveTime: 0, // 记录上次移动的时间
-        };
+        // 手动寻路状态由 startManualPathfinding 控制，这里不重置
 
         // 更新相机与像素对齐
         const cam = this.cameras?.main;
@@ -1317,13 +1236,16 @@ export default class GameScene extends Scene {
         this.catSprite.setPosition(Math.round(this.catSprite.x), Math.round(this.catSprite.y));
     }
 
-    // 手动寻路方法 - 简化的寻路算法
+    // 手动寻路方法 - 使用 A*
     startManualPathfinding(target) {
         const currentPos = this.gridEngine.getPosition('cat');
         console.log(`Starting manual pathfinding from (${currentPos.x}, ${currentPos.y}) to (${target.x}, ${target.y})`);
 
-        // 使用简单的直线寻路
-        const path = this.getSimplePath(currentPos, target);
+        // 使用 A* 寻路，失败则退化为简单路径尝试
+        let path = this.findPath(currentPos, target);
+        if (!path || path.length === 0) {
+            path = this.getSimplePath(currentPos, target);
+        }
 
         this.manualPathfinding = {
             target: target,
@@ -1335,12 +1257,13 @@ export default class GameScene extends Scene {
         console.log(`Manual pathfinding path:`, path);
     }
 
-    // 简化的A*寻路算法
+    // A* 寻路算法（4 向，无对角穿墙）
     findPath(start, goal) {
         const openSet = [start];
         const cameFrom = new Map();
         const gScore = new Map();
         const fScore = new Map();
+        const closed = new Set();
 
         // 初始化
         gScore.set(`${start.x},${start.y}`, 0);
@@ -1361,6 +1284,10 @@ export default class GameScene extends Scene {
 
             // 移除当前节点
             openSet.splice(currentIndex, 1);
+
+            const currentKey = `${current.x},${current.y}`;
+            if (closed.has(currentKey)) continue;
+            closed.add(currentKey);
 
             // 检查是否到达目标
             if (current.x === goal.x && current.y === goal.y) {
@@ -1394,27 +1321,21 @@ export default class GameScene extends Scene {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
     }
 
-    // 获取邻居节点
+    // 获取邻居节点（仅4向，阻止对角穿墙）
     getNeighbors(pos) {
         const neighbors = [];
         const directions = [
-            { x: 0, y: -1 }, // up
-            { x: 0, y: 1 },  // down
-            { x: -1, y: 0 }, // left
-            { x: 1, y: 0 },  // right
-            { x: -1, y: -1 }, // up-left
-            { x: 1, y: -1 },  // up-right
-            { x: -1, y: 1 },  // down-left
-            { x: 1, y: 1 }    // down-right
+            { x: 0, y: -1 },
+            { x: 0, y: 1 },
+            { x: -1, y: 0 },
+            { x: 1, y: 0 },
         ];
 
         for (const dir of directions) {
             const neighbor = { x: pos.x + dir.x, y: pos.y + dir.y };
 
-            // 检查边界
-            if (neighbor.x < 0 || neighbor.y < 0) continue;
-
-            // 检查碰撞
+            // 检查边界与碰撞
+            if (this.isPositionOutOfBounds(neighbor)) continue;
             if (this.isPositionBlocked(neighbor)) continue;
 
             neighbors.push(neighbor);
@@ -1423,14 +1344,80 @@ export default class GameScene extends Scene {
         return neighbors;
     }
 
-    // 检查位置是否被阻挡
+    // 辅助：是否越界
+    isPositionOutOfBounds(pos) {
+        const w = this.map?.width ?? 0;
+        const h = this.map?.height ?? 0;
+        return pos.x < 0 || pos.y < 0 || pos.x >= w || pos.y >= h;
+    }
+
+    // 检查位置是否被阻挡（优先使用 Phaser 图层的 collides 标记；兼容 GridEngine 阻挡）
     isPositionBlocked(pos) {
+        // 边界视为阻挡
+        if (this.isPositionOutOfBounds(pos)) return true;
+
+        // 使用 Phaser 的瓦片 collides 标记
         if (this.wallsLayer) {
             const tile = this.wallsLayer.getTileAt(pos.x, pos.y);
+            if (tile && tile.index >= 0 && tile.collides === true) return true;
+            // 兼容：部分图层未开启 setCollisionByProperty 时，使用 collidableTileIds 兜底
             const tileId = tile ? tile.index : -1;
-            return tileId >= 0 && this.collidableTileIds.has(tileId);
+            if (tileId >= 0 && this.collidableTileIds?.has?.(tileId)) return true;
         }
+
+        // 不再依赖 GridEngine 的阻挡标记
+
         return false;
+    }
+
+    // 解析可达目标：如果 desired 被阻挡，则在其附近寻找最近可移动瓦块（并且从 start 可达）
+    resolveReachableTarget(start, desired) {
+        // 首先检查原目标是否可走
+        if (!this.isPositionBlocked(desired)) {
+            return desired;
+        }
+
+        // 以目标为中心做同心层搜索，优先距离目标最近
+        const maxRadius = 15;
+        const visited = new Set([`${desired.x},${desired.y}`]);
+        const queue = [{ x: desired.x, y: desired.y, d: 0 }];
+
+        while (queue.length > 0) {
+            const current = queue.shift();
+            if (!current) break;
+
+            // 扩展4邻域（围绕目标扩散）
+            const dirs = [
+                { x: 0, y: -1 },
+                { x: 0, y: 1 },
+                { x: -1, y: 0 },
+                { x: 1, y: 0 },
+            ];
+            for (const d of dirs) {
+                const nx = current.x + d.x;
+                const ny = current.y + d.y;
+                const key = `${nx},${ny}`;
+                if (visited.has(key)) continue;
+                visited.add(key);
+                const candidate = { x: nx, y: ny };
+                const dist = Math.abs(nx - desired.x) + Math.abs(ny - desired.y);
+                if (dist > maxRadius) continue;
+                if (this.isPositionOutOfBounds(candidate)) continue;
+
+                // 候选必须是可走
+                if (!this.isPositionBlocked(candidate)) {
+                    // 再检查从 start 是否可达（快速 A*，限制失败时不报错）
+                    const path = this.findPath(start, candidate) || [];
+                    if (path.length > 0) {
+                        return candidate;
+                    }
+                }
+
+                queue.push({ x: nx, y: ny, d: dist });
+            }
+        }
+
+        return null;
     }
 
     // 重构路径
@@ -1554,6 +1541,8 @@ export default class GameScene extends Scene {
                 console.log('Manual pathfinding completed successfully');
             }
             this.manualPathfinding.isActive = false;
+            this.isAutoMoving = false;
+            if (this.autoMoveTargetHighlight) this.autoMoveTargetHighlight.setVisible(false);
             return;
         }
 
@@ -1604,10 +1593,14 @@ export default class GameScene extends Scene {
             } else {
                 console.log(`Pathfinding blocked at (${nextStep.x}, ${nextStep.y}) - stopping`);
                 this.manualPathfinding.isActive = false;
+                this.isAutoMoving = false;
+                if (this.autoMoveTargetHighlight) this.autoMoveTargetHighlight.setVisible(false);
             }
         } else {
             console.log('Invalid direction calculated - stopping pathfinding');
             this.manualPathfinding.isActive = false;
+            this.isAutoMoving = false;
+            if (this.autoMoveTargetHighlight) this.autoMoveTargetHighlight.setVisible(false);
         }
     }
 }

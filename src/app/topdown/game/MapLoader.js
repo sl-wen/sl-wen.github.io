@@ -106,27 +106,30 @@ export default class MapLoader {
                 }
             } catch (_) { /* noop */ }
 
-            // 5) Explicit obstacle tile ids used by existing maps (169,170) + hide when in special layers
+            // 5) Explicit obstacle global tile ids used by existing maps (169,170) + hide when in special layers
             try {
-                const explicitObstacleIds = [169, 170];
+                const explicitObstacleGlobalGids = new Set([169, 170]);
+                // In special layers, hide these tiles while keeping them collidable
                 if (layerData.name === 'Objects' || layerData.name === 'Collision' || layerData.name === 'Farmable') {
-                    explicitObstacleIds.forEach((id) => {
-                        layer.setCollision(id);
-                    });
                     layer.forEachTile((tile) => {
                         if (!tile || tile.index < 0) return;
-                        if (explicitObstacleIds.includes(tile.index)) {
+                        const firstGid = tile.tileset?.firstgid || 0;
+                        const globalGid = firstGid + tile.index;
+                        if (explicitObstacleGlobalGids.has(globalGid)) {
+                            tile.setCollision(true);
                             tile.setVisible(false);
-                            collidableTileIds.add(tile.index);
+                            collidableTileIds.add(globalGid);
                         }
                     });
                 }
-                // Global safety net for these ids
+                // Global safety net for these ids on any layer
                 layer.forEachTile((tile) => {
                     if (!tile || tile.index < 0) return;
-                    if (explicitObstacleIds.includes(tile.index)) {
+                    const firstGid = tile.tileset?.firstgid || 0;
+                    const globalGid = firstGid + tile.index;
+                    if (explicitObstacleGlobalGids.has(globalGid)) {
                         tile.setCollision(true);
-                        collidableTileIds.add(tile.index);
+                        collidableTileIds.add(globalGid);
                     }
                 });
             } catch (_) { /* noop */ }

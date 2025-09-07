@@ -175,7 +175,8 @@ export default class BootScene extends Scene {
      * 包括主地图和各个区域的地图数据
      */
     loadMaps() {
-        // 加载图块集
+        // 加载图块集（说明：瓦片阻挡基于 Tiled 的 ge_collide 属性，
+        // 只要在瓦片或图层标注 ge_collide: true 即可，无需依赖特定 tileset 名称）
         this.load.image('ui_elements', '/game/assets/sprites/maps/tilesets/ui_elements.png');
         // 预加载与 TMX 中 tileset 名称一致的图像（用于 map 动态匹配）
         this.load.image('Grass', '/game/assets/graphics/environment/Grass.png');

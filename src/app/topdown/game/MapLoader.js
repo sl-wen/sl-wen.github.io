@@ -1,8 +1,12 @@
 /**
  * MapLoader
  *
- * Centralizes loading of Tiled tilemaps, tilesets, layers and collision extraction
- * for Phaser 3 + GridEngine.
+ * 统一加载 Tiled 地图（JSON）、图块集、图层，并提取碰撞瓦片 ID，供 Phaser 3 + GridEngine 使用。
+ *
+ * 简化的碰撞策略（推荐）：
+ * 1) 在 Tiled 的“瓦片”或“图层”上设置自定义属性 `ge_collide: true` 作为阻挡依据；
+ * 2) 本模块仅读取上述属性，收集瓦片 ID 到 Set，并返回给上层；
+ * 3) GridEngine 使用 `collisionTiles` 判定移动阻挡；无需额外 Arcade Physics 碰撞配置。
  */
 export default class MapLoader {
     /**
@@ -22,7 +26,6 @@ export default class MapLoader {
      */
     static load(scene, mapKey, options = {}) {
         const { debug = false } = options;
-        const blockingTilesetNames = options.blockingTilesetNames || new Set(['Fences', 'House', 'House Decoration', 'interaction']);
 
         const map = scene.make.tilemap({ key: mapKey });
         const collidableTileIds = new Set();
@@ -53,7 +56,7 @@ export default class MapLoader {
         const tilesetArray = Object.values(addedTilesets);
         const createdLayers = [];
 
-        // Create layers in original order, configure collisions
+        // 按原始顺序创建图层，并从属性中提取碰撞瓦片
         for (let i = 0; i < map.layers.length; i += 1) {
             const layerData = map.layers[i];
             const layer = map.createLayer(i, tilesetArray.length > 0 ? tilesetArray : 'tileset', 0, 0);
@@ -65,13 +68,13 @@ export default class MapLoader {
 
             createdLayers.push(layer);
 
-            // Hide pure collision layers by convention
+            // 约定：名称包含 "collision" 的图层仅用于阻挡，不参与渲染
             const layerNameLower = String(layerData?.name || '').toLowerCase();
             if (layerNameLower.includes('collision')) {
                 layer.setVisible(false);
             }
 
-            // 1) Tile-level property based collisions
+            // 1) 瓦片级：基于瓦片属性 ge_collide: true 的阻挡
             try {
                 layer.setCollisionByProperty({ ge_collide: true });
                 layer.forEachTile((tile) => {
@@ -81,7 +84,7 @@ export default class MapLoader {
                 });
             } catch (_) { /* noop */ }
 
-            // 2) Layer-level ge_collide flag => all non-empty tiles collide
+            // 2) 图层级：若图层属性 ge_collide: true，则该图层所有“非空”瓦片均为阻挡
             try {
                 const hasLayerGeCollide = Array.isArray(layerData.properties)
                     && layerData.properties.some((p) => p?.name === 'ge_collide' && p?.value === true);
@@ -93,52 +96,6 @@ export default class MapLoader {
                         }
                     });
                 }
-            } catch (_) { /* noop */ }
-
-            // 3) Fallback: by tileset name treat as blocking
-            try {
-                layer.forEachTile((tile) => {
-                    const tilesetName = tile?.tileset?.name;
-                    if (!tile || tile.index < 0 || !tilesetName) return;
-                    if (blockingTilesetNames.has(tilesetName)) {
-                        tile.setCollision(true);
-                        collidableTileIds.add(tile.index);
-                    }
-                });
-            } catch (_) { /* noop */ }
-
-            // 4) Apply collision groups from Tiled, if present
-            try {
-                if (typeof layer.setCollisionFromCollisionGroup === 'function') {
-                    layer.setCollisionFromCollisionGroup(true, true);
-                } else if (typeof map.setCollisionFromCollisionGroup === 'function') {
-                    map.setCollisionFromCollisionGroup(true, true, layer);
-                }
-            } catch (_) { /* noop */ }
-
-            // 5) Explicit obstacle tile ids used by existing maps (169,170) + hide when in special layers
-            try {
-                const explicitObstacleIds = [169, 170];
-                if (layerData.name === 'Objects' || layerData.name === 'Collision' || layerData.name === 'Farmable') {
-                    explicitObstacleIds.forEach((id) => {
-                        layer.setCollision(id);
-                    });
-                    layer.forEachTile((tile) => {
-                        if (!tile || tile.index < 0) return;
-                        if (explicitObstacleIds.includes(tile.index)) {
-                            tile.setVisible(false);
-                            collidableTileIds.add(tile.index);
-                        }
-                    });
-                }
-                // Global safety net for these ids
-                layer.forEachTile((tile) => {
-                    if (!tile || tile.index < 0) return;
-                    if (explicitObstacleIds.includes(tile.index)) {
-                        tile.setCollision(true);
-                        collidableTileIds.add(tile.index);
-                    }
-                });
             } catch (_) { /* noop */ }
         }
 

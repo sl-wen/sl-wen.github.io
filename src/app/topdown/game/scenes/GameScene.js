@@ -451,10 +451,8 @@ export default class GameScene extends Scene {
             });
         }
 
-        // 将物理碰撞绑定到主角与所有图层
-        createdLayers.forEach((layer) => {
-            this.physics.add.collider(this.catSprite, layer);
-        });
+        // 不再为主角与图层添加 Arcade Physics 碰撞；
+        // 实际移动阻挡交由 GridEngine 基于 collisionTiles 处理
 
         const npcsKeys = [];
         const dataLayer = map.getObjectLayer('Player'); // Tiled 中的对象层，承载对话、NPC、传送、物品
@@ -678,63 +676,25 @@ export default class GameScene extends Scene {
             );
         }
 
-        // 参照参考项目：简化碰撞配置
-        // 调试：显示所有图层名称
-        console.log('All available layers:');
-        createdLayers.forEach((layer, index) => {
-            console.log(`  Layer ${index}: ${layer.layer.name}`);
-        });
-
-        // 找到主要的碰撞图层（优先选择Collision图层）
-        let wallsLayer = createdLayers.find(layer => {
-            const layerName = layer.layer.name ? layer.layer.name.toLowerCase() : '';
-            return layerName === 'collision'; // 优先选择专门的Collision图层
-        });
-
-        // 如果没有Collision图层，选择Fence图层
-        if (!wallsLayer) {
-            wallsLayer = createdLayers.find(layer => {
-                const layerName = layer.layer.name ? layer.layer.name.toLowerCase() : '';
-                return layerName === 'fence';
-            });
-        }
-
-        // 如果还没有，选择HouseWalls图层
-        if (!wallsLayer) {
-            wallsLayer = createdLayers.find(layer => {
-                const layerName = layer.layer.name ? layer.layer.name.toLowerCase() : '';
-                return layerName.includes('wall');
-            });
-        }
-
-        // 保存碰撞瓦片ID集合用于调试
+        // 碰撞/图层选择策略（简化版）：
+        // 1) 优先选择名为 "collision" 的图层
+        // 2) 若不存在，则选择第一个“包含碰撞瓦片ID”的图层
+        // 注：GridEngine 使用 collidableTileIds 进行阻挡，本图层仅用于像素→网格拾取与调试
         this.collidableTileIds = collidableTileIds;
-        this.wallsLayer = wallsLayer;
-
-        console.log('Map loaded successfully');
-        console.log('Total collidable tile IDs:', collidableTileIds.size);
-        console.log('Walls layer found:', wallsLayer ? wallsLayer.layer.name : 'None');
-
-        // 如果没有找到专门的碰撞图层，使用第一个有碰撞瓦片的图层
-        if (!wallsLayer && createdLayers.length > 0) {
-            this.wallsLayer = createdLayers[0]; // 使用第一个图层作为备选
-            console.log('Using first layer as fallback:', this.wallsLayer.layer.name);
-        }
-
-        // 调试：检查选中图层的瓦片情况
-        if (this.wallsLayer) {
-            let tileCount = 0;
-            let collidableCount = 0;
-            this.wallsLayer.forEachTile((tile) => {
-                if (tile && tile.index >= 0) {
-                    tileCount++;
-                    if (this.collidableTileIds.has(tile.index)) {
-                        collidableCount++;
+        let wallsLayer = createdLayers.find(layer => (layer.layer.name || '').toLowerCase() === 'collision');
+        if (!wallsLayer) {
+            wallsLayer = createdLayers.find(layer => {
+                let hasAnyCollidable = false;
+                layer.forEachTile((tile) => {
+                    if (hasAnyCollidable) return;
+                    if (tile && tile.index >= 0 && this.collidableTileIds.has(tile.index)) {
+                        hasAnyCollidable = true;
                     }
-                }
-            });
-            console.log(`Selected layer "${this.wallsLayer.layer.name}" has ${tileCount} tiles, ${collidableCount} collidable`);
+                });
+                return hasAnyCollidable;
+            }) || null;
         }
+        this.wallsLayer = wallsLayer || null;
 
         // 参照参考项目：简化GridEngine配置
         const gridEngineConfig = {
@@ -867,37 +827,7 @@ export default class GameScene extends Scene {
 
         this.gridEngine.create(map, gridEngineConfig); // 初始化 GridEngine（必须在角色加入后）
 
-        // 参照参考项目：移除手动碰撞设置，让GridEngine自动处理
-        console.log('GridEngine initialized with collisionTilePropertyName: ge_collide');
-
-        // 验证GridEngine初始化
-        console.log('GridEngine initialized successfully');
-        console.log('Cat position after GridEngine init:', this.gridEngine.getPosition('cat'));
-        console.log('Cat facing direction:', this.gridEngine.getFacingDirection('cat'));
-
-        // 测试GridEngine的碰撞检测
-        const testPos = this.gridEngine.getPosition('cat');
-        const testRight = { x: testPos.x + 1, y: testPos.y };
-        const testDown = { x: testPos.x, y: testPos.y + 1 };
-        console.log('GridEngine collision test:');
-        console.log('  Right position blocked:', this.gridEngine.isTileBlocked(testRight));
-        console.log('  Down position blocked:', this.gridEngine.isTileBlocked(testDown));
-
-        // 检查特定位置的瓦片
-        if (this.wallsLayer) {
-            const rightTile = this.wallsLayer.getTileAt(testRight.x, testRight.y);
-            const downTile = this.wallsLayer.getTileAt(testDown.x, testDown.y);
-            console.log('  Right tile ID:', rightTile ? rightTile.index : -1);
-            console.log('  Down tile ID:', downTile ? downTile.index : -1);
-            console.log('  Right tile collidable:', rightTile ? this.collidableTileIds.has(rightTile.index) : false);
-            console.log('  Down tile collidable:', downTile ? this.collidableTileIds.has(downTile.index) : false);
-        }
-
-        // 测试碰撞检测
-        const testPosition = this.gridEngine.getPosition('cat');
-        const canMoveRight = this.gridEngine.isBlocked({ x: testPosition.x + 1, y: testPosition.y });
-        const canMoveDown = this.gridEngine.isBlocked({ x: testPosition.x, y: testPosition.y + 1 });
-        console.log('Collision test - can move right:', !canMoveRight, 'can move down:', !canMoveDown);
+        // GridEngine 负责碰撞与寻路阻挡；此处不再打印冗余调试信息
 
         // 同步初始朝向与待机帧
         if (initialFacingDirection) {

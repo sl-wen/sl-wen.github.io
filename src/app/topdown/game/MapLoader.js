@@ -59,7 +59,8 @@ export default class MapLoader {
         // 按原始顺序创建图层，并从属性中提取碰撞瓦片
         for (let i = 0; i < map.layers.length; i += 1) {
             const layerData = map.layers[i];
-            const layer = map.createLayer(i, tilesetArray.length > 0 ? tilesetArray : 'tileset', 0, 0);
+            const layerIdentifier = layerData?.name ?? i;
+            const layer = map.createLayer(layerIdentifier, tilesetArray.length > 0 ? tilesetArray : 'tileset', 0, 0);
             if (!layer) {
                 // eslint-disable-next-line no-console
                 console.error('[MapLoader] Failed to create layer:', layerData?.name);

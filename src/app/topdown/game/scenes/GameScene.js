@@ -711,15 +711,7 @@ export default class GameScene extends Scene {
                 },
             ],
             numberOfDirections: 8,
-            // 使用标准的碰撞属性名称
-            collisionTilePropertyName: 'ge_collide',
-            // 关键配置：直接指定碰撞瓦片ID
-            collisionTiles: Array.from(collidableTileIds),
-            // 确保寻路算法正确工作
-            pathfinding: {
-                algorithm: 'A*',
-                considerCosts: false, // 不考虑成本，只考虑碰撞
-            },
+            // 网格移动仅用于动画与步进；碰撞完全依赖 Phaser Arcade Physics
         };
 
         // 调试信息：显示 GridEngine 配置
@@ -907,7 +899,7 @@ export default class GameScene extends Scene {
                 repeat: 2,
             });
 
-            // 使用手动A*寻路到最终目标
+            // 使用手动A*（仅依据 Phaser 瓦片碰撞）寻路到最终目标
             this.startManualPathfinding(effectiveTarget);
         });
 
@@ -1373,10 +1365,7 @@ export default class GameScene extends Scene {
             if (tileId >= 0 && this.collidableTileIds?.has?.(tileId)) return true;
         }
 
-        // GridEngine 阻挡（如果可用）
-        try {
-            if (typeof this.gridEngine?.isTileBlocked === 'function' && this.gridEngine.isTileBlocked(pos)) return true;
-        } catch (_) { /* noop */ }
+        // 不再依赖 GridEngine 的阻挡标记
 
         return false;
     }

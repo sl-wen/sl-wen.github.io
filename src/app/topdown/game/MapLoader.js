@@ -97,6 +97,11 @@ export default class MapLoader {
                     });
                 }
             } catch (_) { /* noop */ }
+
+            // 确保 Phaser 的碰撞体被 Arcade Physics 感知
+            if (typeof layer.setCollisionFromCollisionGroup === 'function') {
+                try { layer.setCollisionFromCollisionGroup(true, true); } catch (_) { /* noop */ }
+            }
         }
 
         return {

@@ -123,12 +123,12 @@ src/app/topdown/
   - 物品系统
   - 场景切换
 
-### 碰撞与图层处理（简化）
+### 碰撞与图层处理（Phaser Arcade Physics 主导）
 
-- 在 Tiled 中为“会阻挡角色移动”的瓦片设置自定义属性 `ge_collide: true`。
-- 启动时自动收集所有图块集中带有碰撞属性的瓦片 ID，传给 GridEngine 的 `collisionTiles`。
-- 代码会优先选择名为 `collision` 的图层作为“碰撞参考层”；若不存在，则选择第一个包含碰撞瓦片的图层。该图层仅用于像素→网格拾取与调试，不参与实际物理碰撞。
-- 实际移动阻挡由 GridEngine 根据 `collisionTiles` 判定，无需再额外配置 Arcade Physics 碰撞。
+- 在 Tiled 中为阻挡瓦片设置 `ge_collide: true`（瓦片级或图层级）。
+- 运行时由 `MapLoader` 调用 `layer.setCollisionByProperty({ ge_collide: true })` 或将整层非空瓦片设为碰撞，从而使 Phaser Arcade Physics 识别碰撞瓦片；
+- `GameScene` 会将主角与所有图层建立 `this.physics.add.collider`，由 Arcade Physics 负责“停步/阻挡”；
+- 仍然收集 `collidableTileIds` 作为兜底与调试用途；图层选择优先 `collision` 层，否则选择首个包含碰撞瓦片的层（用于拾取与可视化）。
 
 ### 点击/触摸自动寻路（避障）
 

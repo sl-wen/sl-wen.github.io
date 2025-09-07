@@ -451,8 +451,11 @@ export default class GameScene extends Scene {
             });
         }
 
-        // 不再为主角与图层添加 Arcade Physics 碰撞；
-        // 实际移动阻挡交由 GridEngine 基于 collisionTiles 处理
+        // 通过 Phaser Arcade Physics 启用主角与图层的碰撞；
+        // 实际的“停步/阻挡”由物理碰撞生效（GridEngine 负责发起网格移动）。
+        createdLayers.forEach((layer) => {
+            this.physics.add.collider(this.catSprite, layer);
+        });
 
         const npcsKeys = [];
         const dataLayer = map.getObjectLayer('Player'); // Tiled 中的对象层，承载对话、NPC、传送、物品
@@ -1356,16 +1359,18 @@ export default class GameScene extends Scene {
         return pos.x < 0 || pos.y < 0 || pos.x >= w || pos.y >= h;
     }
 
-    // 检查位置是否被阻挡（考虑地图边界、碰撞图块、GridEngine 阻挡）
+    // 检查位置是否被阻挡（优先使用 Phaser 图层的 collides 标记；兼容 GridEngine 阻挡）
     isPositionBlocked(pos) {
         // 边界视为阻挡
         if (this.isPositionOutOfBounds(pos)) return true;
 
-        // 图块碰撞
+        // 使用 Phaser 的瓦片 collides 标记
         if (this.wallsLayer) {
             const tile = this.wallsLayer.getTileAt(pos.x, pos.y);
+            if (tile && tile.index >= 0 && tile.collides === true) return true;
+            // 兼容：部分图层未开启 setCollisionByProperty 时，使用 collidableTileIds 兜底
             const tileId = tile ? tile.index : -1;
-            if (tileId >= 0 && this.collidableTileIds.has(tileId)) return true;
+            if (tileId >= 0 && this.collidableTileIds?.has?.(tileId)) return true;
         }
 
         // GridEngine 阻挡（如果可用）

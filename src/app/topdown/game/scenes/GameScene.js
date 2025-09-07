@@ -62,6 +62,7 @@ import {
 } from '../constants';
 import InputManager from '../InputManager';
 import { createInteractiveGameObject } from '../utils';
+import MapLoader from '../MapLoader';
 
 // 将 8 向方向归一为 4 向（用于动画/朝向显示）
 let lastCardinal = 'down';
@@ -378,48 +379,9 @@ export default class GameScene extends Scene {
         // 初始化输入管理器
         this.inputManager = new InputManager(this);
 
-        // Map 地图加载：根据 `mapKey` 创建 tilemap，并动态注册 tileset
-        const map = this.make.tilemap({ key: mapKey });
-
-        // 添加调试信息
-        console.log('Loading map:', mapKey);
-        console.log('Map tilesets:', map.tilesets);
-        console.log('Map layers:', map.layers);
-
-        // 动态添加图块集，支持多个图块集（名称需与 Tiled 中一致）
-        const addedTilesets = {};
-        if (map.tilesets && map.tilesets.length > 0) {
-            map.tilesets.forEach((tileset) => {
-                const tilesetName = tileset.name;
-                console.log('Adding tileset:', tilesetName);
-                // 跳过图片路径，这些是多图块集的组成部分
-                if (tilesetName.includes('../../graphics/objects/')) {
-                    console.log('Skipping individual object image:', tilesetName);
-                    return;
-                }
-
-                // 加载 interaction tileset，因为需要它的碰撞数据
-                if (tilesetName === 'interaction') {
-                    console.log('Loading interaction tileset for collision data');
-                    // 继续加载，不跳过
-                }
-
-                try {
-                    addedTilesets[tilesetName] = map.addTilesetImage(tilesetName, tilesetName);
-                } catch (e) {
-                    console.warn('Failed to add tileset by name, ensure preloaded:', tilesetName, e);
-                }
-            });
-        } else {
-            // 默认添加基础图块集（兼容旧地图）
-            console.log('No tilesets found, using default');
-            addedTilesets['tileset'] = map.addTilesetImage('tileset', 'tileset');
-        }
-
-        if (isDebugMode) {
-            window.phaserGame = game;
-        }
-        // 需要在更新期查询前方图块与交互环境，因此总是持有 map 引用
+        // 使用 MapLoader 统一加载地图和碰撞数据
+        const { map, layers: createdLayers, collidableTileIds } = MapLoader.load(this, mapKey, { debug: isDebugMode });
+        if (isDebugMode) { window.phaserGame = game; }
         this.map = map;
 
         // cat 主角：初始属性、碰撞盒与交互体
@@ -482,153 +444,10 @@ export default class GameScene extends Scene {
             });
         }
 
-        const elementsLayers = this.add.group();
-        // 收集所有应视为阻挡的瓦片索引（按 tileset 名称，比如 Fences）
-        const collidableTileIds = new Set();
-        // 使用实际已添加的 tileset 列表创建图层，避免因名称不匹配导致不渲染
-        const tilesetArray = Object.values(addedTilesets);
-        console.log('Available tilesets:', Object.keys(addedTilesets));
-        console.log('Tileset array:', tilesetArray);
-
-        for (let i = 0; i < map.layers.length; i++) {
-            const layerData = map.layers[i];
-            console.log(`Creating layer ${i}: ${layerData.name}, visible: ${layerData.visible}`);
-
-            const layer = map.createLayer(
-                i,
-                tilesetArray.length > 0 ? tilesetArray : 'tileset',
-                0,
-                0
-            );
-
-            if (layer) {
-                console.log(`Layer ${i} (${layerData.name}) created successfully`);
-                const layerNameLower = String(layerData?.name || '').toLowerCase();
-
-                // 处理 interaction 瓦片：不显示但有碰撞属性
-                if (layerData.name === 'Objects' || layerData.name === 'Collision' || layerData.name === 'Farmable') {
-                    console.log(`Processing interaction tiles in ${layerData.name} layer`);
-
-                    // 隐藏这些瓦片的显示
-                    let interactionTileCount = 0;
-                    layer.forEachTile((tile) => {
-                        if (tile.index >= 169 && tile.index <= 170) {
-                            tile.setVisible(false); // 隐藏显示
-                            interactionTileCount++;
-                        }
-                    });
-
-                    console.log(`Found ${interactionTileCount} interaction tiles in ${layerData.name}, hidden but collision enabled`);
-                }
-
-                // 基于瓦片属性为该图层设置碰撞：凡是带有 ge_collide=true 的瓦片都会阻挡
-                try {
-                    layer.setCollisionByProperty({ ge_collide: true });
-                    // 收集带有 ge_collide 属性的瓦片索引到 GridEngine 的碰撞列表
-                    let geCollideTileCount = 0;
-                    layer.forEachTile((tile) => {
-                        if (tile && tile.index >= 0 && tile.properties?.ge_collide) {
-                            collidableTileIds.add(tile.index);
-                            geCollideTileCount++;
-                        }
-                    });
-                    if (geCollideTileCount > 0) {
-                        console.log(`Found ${geCollideTileCount} tiles with ge_collide=true in layer ${layerData.name}`);
-                    }
-                } catch (_) { /* noop */ }
-
-                // 检查图层级别的 ge_collide 属性
-                const layerHasGeCollide = layerData.properties?.some(prop => prop.name === 'ge_collide' && prop.value === true);
-                if (layerHasGeCollide) {
-                    console.log(`Layer ${layerData.name} has ge_collide=true at layer level`);
-                    // 如果图层级别有 ge_collide=true，则将该图层的所有非空瓦片都视为碰撞
-                    layer.forEachTile((tile) => {
-                        if (tile && tile.index >= 0) {
-                            // Arcade 物理需要在瓦片上设置碰撞标记
-                            tile.setCollision(true);
-                            collidableTileIds.add(tile.index);
-                        }
-                    });
-                }
-
-                // 兼容未在地图中标注 ge_collide 的情况：
-                // 将来自指定 tileset 的瓦片（如 Fences/House/interaction）统一视为阻挡
-                const blockingTilesetNames = new Set(['Fences', 'House', 'House Decoration', 'interaction']);
-                try {
-                    layer.forEachTile((tile) => {
-                        const tilesetName = tile?.tileset?.name;
-                        if (!tile || tile.index < 0 || !tilesetName) return;
-                        if (blockingTilesetNames.has(tilesetName)) {
-                            tile.setCollision(true);
-                            collidableTileIds.add(tile.index);
-                        }
-                    });
-                } catch (_) { /* noop */ }
-
-                // 特别处理 map.json 的命名图层：collision / fences（不依赖属性）
-                if (layerNameLower.includes('collision') || layerNameLower.includes('fence')) {
-                    console.log(`Enabling collision for layer by name: ${layerData.name}`);
-                    try {
-                        // 隐藏纯碰撞图层的显示（collision），围栏通常需要显示
-                        if (layerNameLower.includes('collision')) {
-                            layer.setVisible(false);
-                        }
-                        // 对该图层的所有非空瓦片启用碰撞
-                        layer.setCollisionByExclusion([-1]);
-                        layer.forEachTile((tile) => {
-                            if (tile && tile.index >= 0) {
-                                collidableTileIds.add(tile.index);
-                            }
-                        });
-                    } catch (_) { /* noop */ }
-                }
-
-                (layer.layer.properties || []).forEach((property) => {
-                    const { value, name } = property;
-
-                    if (name === 'type' && value === 'elements') {
-                        elementsLayers.add(layer);
-                    }
-                });
-
-                this.physics.add.collider(this.catSprite, layer);
-
-                // 在添加碰撞检测后，为 interaction 瓦片设置碰撞属性
-                if (layerData.name === 'Objects' || layerData.name === 'Collision' || layerData.name === 'Farmable') {
-                    console.log(`Setting collision for interaction tiles in ${layerData.name} layer`);
-                    // 使用 tileset 碰撞组：优先调用 layer API，兼容旧版本则回退到 map API
-                    try {
-                        if (typeof layer.setCollisionFromCollisionGroup === 'function') {
-                            layer.setCollisionFromCollisionGroup(true, true);
-                        } else if (typeof map.setCollisionFromCollisionGroup === 'function') {
-                            map.setCollisionFromCollisionGroup(true, true, layer);
-                        }
-                    } catch (_) { /* noop */ }
-
-                    // 显式为指定索引的瓦片应用碰撞（Tiled 未设置 collisionGroup 时的兜底方案）
-                    const obstacleTileIds = [169, 170];
-                    try {
-                        if (typeof layer.setCollision === 'function') {
-                            layer.setCollision(obstacleTileIds);
-                        }
-                        obstacleTileIds.forEach((id) => collidableTileIds.add(id));
-                        console.log(`Applied explicit collision for tile IDs ${obstacleTileIds.join(', ')} on layer ${layerData.name}`);
-                    } catch (_) { /* noop */ }
-                }
-                // 终极兜底：逐瓦片设置 169/170 的碰撞，确保无论在哪个图层都可阻挡
-                try {
-                    layer.forEachTile((tile) => {
-                        if (!tile || tile.index < 0) return;
-                        if (tile.index === 169 || tile.index === 170) {
-                            tile.setCollision(true);
-                            collidableTileIds.add(tile.index);
-                        }
-                    });
-                } catch (_) { /* noop */ }
-            } else {
-                console.error(`Failed to create layer ${i}: ${layerData.name}`);
-            }
-        }
+        // 将物理碰撞绑定到主角与所有图层
+        createdLayers.forEach((layer) => {
+            this.physics.add.collider(this.catSprite, layer);
+        });
 
         const npcsKeys = [];
         const dataLayer = map.getObjectLayer('Player'); // Tiled 中的对象层，承载对话、NPC、传送、物品

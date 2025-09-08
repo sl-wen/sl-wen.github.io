@@ -71,6 +71,25 @@ export default class MapLoader {
                 layer.setVisible(false);
             }
 
+            // Special-case: ensure Fence layer is collidable
+            // Some maps may not have tile properties set, so we enforce collisions by layer name
+            if (layerNameLower === 'fence') {
+                try {
+                    layer.forEachTile((tile) => {
+                        if (tile && tile.index >= 0) {
+                            tile.setCollision(true);
+                            // Also mark a property so engines that rely on properties can detect it
+                            // Note: Phaser Tile properties are mutable at runtime
+                            // eslint-disable-next-line no-param-reassign
+                            tile.properties = tile.properties || {};
+                            // eslint-disable-next-line no-param-reassign
+                            tile.properties.ge_collide = true;
+                            collidableTileIds.add(tile.index);
+                        }
+                    });
+                } catch (_) { /* noop */ }
+            }
+
             // 1) Tile-level property based collisions
             try {
                 layer.setCollisionByProperty({ ge_collide: true });

@@ -18,11 +18,6 @@
  *      mapKey: 'your_map_key_from_BootScene',
  *    });
  * 3. 地图资源需在 `BootScene` 预加载，并确保 Tiled 中 tileset 名称与此处 `addTilesetImage` 匹配。
- * 4. 想要新增 NPC/敌人/物品/传送门：在 Tiled 的对象层 `Player` 中放置对象并配置属性：
- *    - dialog: 值为角色 key（与 React `dialogs` 对应）
- *    - npcData: 形如 `npc_1:random;1000;4;down`
- *    - itemData: 形如 `coin:`、`sword:`
- *    - teleportTo: 形如 `map_key:10,12`
  * 5. 输入与移动：
  *    - 键盘 WASD/方向键 与 触摸（虚拟摇杆/动作按钮）均通过 `InputManager` 统一处理。
  *    - 在 `update()` 中读取当前方向并调用 `gridEngine.move('cat', direction)`。
@@ -35,24 +30,21 @@
  * - 启动顺序：先在 `BootScene` 预加载资源与 tilemap，再在 `MainMenuScene` 进入 `GameScene`。
  * - 场景入参：通过 `this.scene.start('GameScene', { catStatus, mapKey })` 传入角色状态与地图 key。
  * - 依赖系统：
- *   1) GridEngine 用于网格化移动、寻路与移动事件订阅。
+ *   1) GridEngine 用于网格化移动。
  *   2) InputManager 统一键盘/手柄/触屏输入，提供“JustDown”与当前方向枚举。
  *   3) Phaser Physics（Arcade）用于碰撞检测、重叠触发器（对话/道具/元素/敌人）。
  *   4) React UI 通过 window 自定义事件监听游戏状态（血量、金币、动作上下文、对话）。
  * - Tiled 规范：
  *   - tileset 名称需与 `BootScene` 中 `this.load.image(key)` 的 key 保持一致。
- *   - 对象层名固定为 `Player`，对象属性键使用：`dialog`、`npcData`、`itemData`、`teleportTo`。
+ *   - 对象层名固定为 `Player`，对象属性键使用：`dialog`、`itemData`。
  * - 自定义事件（供 React 侧监听）：
  *   - `cat-coin`：detail: { catCoins: number|null }
  *   - `action-context`：detail: { context: 'talk'|'interact'|'none' }
  *   - `new-dialog`：detail: { characterName: string }；完成事件为 `${characterName}-dialog-finished`
  * - 常用调试：将 Phaser 物理 debug 设为 true，可在全局 window 访问 `phaserGame` 与可视化碰撞体。
- * - 地图切换：通过 `teleportTo` 自动淡出并重启当前场景，参数带到新地图，落点与朝向自动计算。
  *
  * 注意事项与陷阱：
  * - Tiled 图层若未绑定 tileset 名称，代码会回退到默认 `tileset`，需保证存在此 key。
- * - 箱子推挤：目标落点若任一图层有 `ge_collide`，则判为不可推进。
- * - 砍草掉落：瓦片移除需使用 TilemapLayer API（removeTileAt），避免直接修改 tile 属性导致冻结。
  * - 自动寻路：用户手动输入会打断 `moveTo`，并隐藏落点高亮。
  */
 import { Scene } from 'phaser';

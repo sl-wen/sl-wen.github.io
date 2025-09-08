@@ -280,7 +280,7 @@ function App() {
       physics: {
         default: 'arcade',                   // 物理引擎：街机物理
         arcade: {
-          debug: true,                       // 启用物理调试模式
+          debug: false,                       // 启用物理调试模式
         },
       },
       plugins: {

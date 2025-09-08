@@ -721,7 +721,7 @@ export default class GameScene extends Scene {
             console.log(`Selected layer "${this.wallsLayer.layer.name}" has ${tileCount} tiles, ${collidableCount} collidable`);
         }
 
-        // 参照参考项目：简化GridEngine配置
+        // 参照参考项目：简化GridEngine配置（移除GridEngine的碰撞设置，完全依赖Phaser Arcade Physics）
         const gridEngineConfig = {
             characters: [
                 {
@@ -733,22 +733,9 @@ export default class GameScene extends Scene {
                 },
             ],
             numberOfDirections: 8,
-            // 使用标准的碰撞属性名称
-            collisionTilePropertyName: 'ge_collide',
-            // 关键配置：直接指定碰撞瓦片ID
-            collisionTiles: Array.from(collidableTileIds),
-            // 确保寻路算法正确工作
-            pathfinding: {
-                algorithm: 'A*',
-                considerCosts: false, // 不考虑成本，只考虑碰撞
-            },
         };
 
-        // 调试信息：显示 GridEngine 配置
-        console.log('GridEngine config:', gridEngineConfig);
-        console.log('Total collidable tile IDs collected:', collidableTileIds.size);
-        console.log('Map tile size:', map.tileWidth, 'x', map.tileHeight);
-        console.log('Map dimensions:', map.width, 'x', map.height);
+        console.log('GridEngine config (no collision managed by GridEngine):', gridEngineConfig);
 
         // 监听保存快照请求：React 设置页会触发
         const handleRequestSave = () => {
@@ -864,9 +851,7 @@ export default class GameScene extends Scene {
         const testPos = this.gridEngine.getPosition('cat');
         const testRight = { x: testPos.x + 1, y: testPos.y };
         const testDown = { x: testPos.x, y: testPos.y + 1 };
-        console.log('GridEngine collision test:');
-        console.log('  Right position blocked:', this.gridEngine.isTileBlocked(testRight));
-        console.log('  Down position blocked:', this.gridEngine.isTileBlocked(testDown));
+        console.log('Phaser collision test only (GridEngine collision disabled)');
 
         // 检查特定位置的瓦片
         if (this.wallsLayer) {
@@ -880,9 +865,7 @@ export default class GameScene extends Scene {
 
         // 测试碰撞检测
         const testPosition = this.gridEngine.getPosition('cat');
-        const canMoveRight = this.gridEngine.isBlocked({ x: testPosition.x + 1, y: testPosition.y });
-        const canMoveDown = this.gridEngine.isBlocked({ x: testPosition.x, y: testPosition.y + 1 });
-        console.log('Collision test - can move right:', !canMoveRight, 'can move down:', !canMoveDown);
+        console.log('Collision test uses Phaser tile.collides now. Sample position:', testPosition);
 
         // 同步初始朝向与待机帧
         if (initialFacingDirection) {
@@ -1270,13 +1253,7 @@ export default class GameScene extends Scene {
                 }
 
                 // 方法2: 如果Phaser检测没有阻止，再检查GridEngine
-                if (!isBlocked) {
-                    try {
-                        isBlocked = this.gridEngine.isTileBlocked(targetPos);
-                    } catch (e) {
-                        // GridEngine检测失败，使用Phaser检测结果
-                    }
-                }
+                // 移除 GridEngine 瓦片阻挡查询，完全依赖 Phaser 碰撞
 
                 console.log(`Move attempt: ${currentDirection}, from (${currentPos.x},${currentPos.y}) to (${targetPos.x},${targetPos.y}), blocked: ${isBlocked}, ${tileInfo}`);
 

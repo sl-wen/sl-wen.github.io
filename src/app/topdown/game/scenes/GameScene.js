@@ -85,6 +85,15 @@ export default class GameScene extends Scene {
     farmManager = null;
     farmlandGraphics = null;
 
+    // 手动寻路状态（生命周期：create 初始化一次）
+    manualPathfinding = {
+        target: null,
+        path: [],
+        currentStep: 0,
+        isActive: false,
+        lastMoveTime: 0,
+    };
+
     init(data) {
         this.initData = data;
     }
@@ -941,11 +950,18 @@ export default class GameScene extends Scene {
                 }
             }
 
-            // 只有在目标位置没有碰撞时才移动
+            // 只有在目标位置没有碰撞时才尝试寻路
             if (canMoveToTarget) {
-                // 不使用GridEngine的moveTo，改为手动移动
-                // 这样可以确保每一步都经过我们的碰撞检测
-                this.startManualPathfinding(target);
+                // 使用 A* 寻路；若不可达则不启动自动寻路
+                const start = this.gridEngine.getPosition('cat');
+                const path = this.findPath(start, target);
+                if (Array.isArray(path) && path.length > 0 && this.isPathReachable(path)) {
+                    this.startManualPathfinding(target, path);
+                } else {
+                    this.isAutoMoving = false;
+                    if (this.autoMoveTargetHighlight) this.autoMoveTargetHighlight.setVisible(false);
+                    console.log(`No path to (${target.x}, ${target.y})`);
+                }
             } else {
                 console.log(`Cannot move to (${target.x}, ${target.y}) - blocked by collision`);
             }
@@ -1265,14 +1281,7 @@ export default class GameScene extends Scene {
                 }
             }
         }
-        // 手动寻路相关属性
-        this.manualPathfinding = {
-            target: null,
-            path: [],
-            currentStep: 0,
-            isActive: false,
-            lastMoveTime: 0, // 记录上次移动的时间
-        };
+        // 手动寻路相关属性（在 create 顶部初始化，不要在 update 每帧重置）
 
         // 更新相机与像素对齐
         const cam = this.cameras?.main;
@@ -1284,21 +1293,14 @@ export default class GameScene extends Scene {
     }
 
     // 手动寻路方法 - 简化的寻路算法
-    startManualPathfinding(target) {
+    startManualPathfinding(target, path) {
         const currentPos = this.gridEngine.getPosition('cat');
-        console.log(`Starting manual pathfinding from (${currentPos.x}, ${currentPos.y}) to (${target.x}, ${target.y})`);
+        console.log(`Starting manual pathfinding from (${currentPos.x}, ${currentPos.y}) to (${target.x}, ${target.y}) with ${path?.length ?? 0} steps`);
 
-        // 使用简单的直线寻路
-        const path = this.getSimplePath(currentPos, target);
-
-        this.manualPathfinding = {
-            target: target,
-            path: path,
-            currentStep: 0,
-            isActive: true,
-        };
-
-        console.log(`Manual pathfinding path:`, path);
+        this.manualPathfinding.target = target;
+        this.manualPathfinding.path = Array.isArray(path) ? path : [];
+        this.manualPathfinding.currentStep = 0;
+        this.manualPathfinding.isActive = this.manualPathfinding.path.length > 0;
     }
 
     // 简化的A*寻路算法
@@ -1333,8 +1335,8 @@ export default class GameScene extends Scene {
                 return this.reconstructPath(cameFrom, current);
             }
 
-            // 检查所有邻居
-            const neighbors = this.getNeighbors(current);
+            // 检查所有邻居（A*），包含对角但防止穿越角落
+            const neighbors = this.getNeighbors(current, true);
             for (const neighbor of neighbors) {
                 const neighborKey = `${neighbor.x},${neighbor.y}`;
                 const tentativeG = (gScore.get(`${current.x},${current.y}`) || 0) + 1;
@@ -1351,8 +1353,8 @@ export default class GameScene extends Scene {
             }
         }
 
-        // 如果没有找到路径，返回简单的直线路径
-        return this.getSimplePath(start, goal);
+        // 没有路径
+        return [];
     }
 
     // 启发式函数（曼哈顿距离）
@@ -1361,32 +1363,54 @@ export default class GameScene extends Scene {
     }
 
     // 获取邻居节点
-    getNeighbors(pos) {
+    getNeighbors(pos, allowDiagonal = true) {
         const neighbors = [];
-        const directions = [
+        const cardinal = [
             { x: 0, y: -1 }, // up
             { x: 0, y: 1 },  // down
             { x: -1, y: 0 }, // left
             { x: 1, y: 0 },  // right
+        ];
+        const diagonals = [
             { x: -1, y: -1 }, // up-left
             { x: 1, y: -1 },  // up-right
             { x: -1, y: 1 },  // down-left
-            { x: 1, y: 1 }    // down-right
+            { x: 1, y: 1 },   // down-right
         ];
 
-        for (const dir of directions) {
-            const neighbor = { x: pos.x + dir.x, y: pos.y + dir.y };
-
-            // 检查边界
-            if (neighbor.x < 0 || neighbor.y < 0) continue;
-
-            // 检查碰撞
-            if (this.isPositionBlocked(neighbor)) continue;
-
+        const tryPush = (nx, ny) => {
+            const neighbor = { x: nx, y: ny };
+            if (neighbor.x < 0 || neighbor.y < 0) return;
+            if (this.isPositionBlocked(neighbor)) return;
             neighbors.push(neighbor);
+        };
+
+        // 4向
+        for (const d of cardinal) {
+            tryPush(pos.x + d.x, pos.y + d.y);
+        }
+
+        // 斜向：允许时，且不穿角（要求两个相邻的正交格都不阻挡）
+        if (allowDiagonal) {
+            for (const d of diagonals) {
+                const nx = pos.x + d.x;
+                const ny = pos.y + d.y;
+                const passX = !this.isPositionBlocked({ x: pos.x + d.x, y: pos.y });
+                const passY = !this.isPositionBlocked({ x: pos.x, y: pos.y + d.y });
+                if (passX && passY) {
+                    tryPush(nx, ny);
+                }
+            }
         }
 
         return neighbors;
+    }
+
+    // 路径可达性检查（防御：空路径或被阻挡终点判为不可达）
+    isPathReachable(path) {
+        if (!Array.isArray(path) || path.length === 0) return false;
+        const last = path[path.length - 1];
+        return !this.isPositionBlocked(last);
     }
 
     // 检查位置是否被阻挡
@@ -1542,19 +1566,19 @@ export default class GameScene extends Scene {
         console.log(`Executing pathfinding step ${this.manualPathfinding.currentStep + 1}/${this.manualPathfinding.path.length}: moving to (${nextStep.x}, ${nextStep.y})`);
         console.log(`Current position: (${currentPos.x}, ${currentPos.y}), Target: (${nextStep.x}, ${nextStep.y})`);
 
-        // 计算移动方向
-        const dx = nextStep.x - currentPos.x;
-        const dy = nextStep.y - currentPos.y;
+        // 计算移动方向（仅允许一步）
+        const dx = Math.sign(nextStep.x - currentPos.x);
+        const dy = Math.sign(nextStep.y - currentPos.y);
         let direction = '';
 
-        if (dx > 0 && dy === 0) direction = 'right';
-        else if (dx < 0 && dy === 0) direction = 'left';
-        else if (dx === 0 && dy > 0) direction = 'down';
-        else if (dx === 0 && dy < 0) direction = 'up';
-        else if (dx > 0 && dy > 0) direction = 'down-right';
-        else if (dx > 0 && dy < 0) direction = 'up-right';
-        else if (dx < 0 && dy > 0) direction = 'down-left';
-        else if (dx < 0 && dy < 0) direction = 'up-left';
+        if (dx === 1 && dy === 0) direction = 'right';
+        else if (dx === -1 && dy === 0) direction = 'left';
+        else if (dx === 0 && dy === 1) direction = 'down';
+        else if (dx === 0 && dy === -1) direction = 'up';
+        else if (dx === 1 && dy === 1) direction = 'down-right';
+        else if (dx === 1 && dy === -1) direction = 'up-right';
+        else if (dx === -1 && dy === 1) direction = 'down-left';
+        else if (dx === -1 && dy === -1) direction = 'up-left';
 
         console.log(`Calculated direction: ${direction} (dx: ${dx}, dy: ${dy})`);
 

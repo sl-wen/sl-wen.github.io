@@ -59,8 +59,8 @@ const defaultGameSize = { width: 400, height: 300, multiplier: 1, isMobile: fals
  * 负责游戏画布的显示和定位
  */
 const GameContentWrapper = styled('div')(({ theme, gameWidth, gameHeight }) => ({
-  width: '100%',
-  height: '80vh',
+  width: '100vw',
+  height: '100vh',
   margin: 'auto',
   padding: 0,
   overflow: 'hidden',
@@ -70,8 +70,8 @@ const GameContentWrapper = styled('div')(({ theme, gameWidth, gameHeight }) => (
   alignItems: 'center',
   justifyContent: 'center',
   // 让容器能够更好地利用空间
-  maxWidth: '90vw',
-  maxHeight: '80vh',
+  maxWidth: '100vw',
+  maxHeight: '100vh',
   '& canvas': {
     imageRendering: 'pixelated',
     msInterpolationMode: 'nearest-neighbor',

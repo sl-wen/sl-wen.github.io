@@ -1587,22 +1587,41 @@ export default class GameScene extends Scene {
         const dy = Math.sign(nextStep.y - currentPos.y);
         let direction = '';
 
-        if (dx === 1 && dy === 0) direction = 'right';
-        else if (dx === -1 && dy === 0) direction = 'left';
-        else if (dx === 0 && dy === 1) direction = 'down';
-        else if (dx === 0 && dy === -1) direction = 'up';
-        else if (dx === 1 && dy === 1) direction = 'down-right';
-        else if (dx === 1 && dy === -1) direction = 'up-right';
-        else if (dx === -1 && dy === 1) direction = 'down-left';
-        else if (dx === -1 && dy === -1) direction = 'up-left';
+        // 自动寻路禁止斜向：当需要对角时，拆分为两次正交移动（优先水平）
+        if (dx !== 0 && dy !== 0) {
+            // 先尝试水平迈出一步，如果被阻挡则尝试垂直
+            const firstOrthogonal = { x: currentPos.x + dx, y: currentPos.y };
+            const secondOrthogonal = { x: currentPos.x, y: currentPos.y + dy };
+
+            if (!this.isPositionBlocked(firstOrthogonal)) {
+                direction = dx === 1 ? 'right' : 'left';
+            } else if (!this.isPositionBlocked(secondOrthogonal)) {
+                direction = dy === 1 ? 'down' : 'up';
+            } else {
+                // 两个正交方向都被阻挡，无法继续
+                console.log(`Pathfinding blocked at both orthogonal steps from (${currentPos.x}, ${currentPos.y}) towards (${nextStep.x}, ${nextStep.y})`);
+                this.manualPathfinding.isActive = false;
+            }
+        } else {
+            if (dx === 1 && dy === 0) direction = 'right';
+            else if (dx === -1 && dy === 0) direction = 'left';
+            else if (dx === 0 && dy === 1) direction = 'down';
+            else if (dx === 0 && dy === -1) direction = 'up';
+        }
 
         console.log(`Calculated direction: ${direction} (dx: ${dx}, dy: ${dy})`);
 
         if (direction) {
             // 再次检查目标位置是否有碰撞（双重保险）
             if (!this.isPositionBlocked(nextStep)) {
+                // 注意：当遇到对角拆分时，这里第一步只是迈向对角目标的正交一步，
+                // 我们不增加 currentStep，下一帧会继续朝同一个 nextStep 前进，最终实现两次正交抵达。
+                // 非对角情况则正常前进一步并递增步数。
+                const isDiagonalMove = (dx !== 0 && dy !== 0);
                 this.gridEngine.move('cat', direction);
-                this.manualPathfinding.currentStep++;
+                if (!isDiagonalMove) {
+                    this.manualPathfinding.currentStep++;
+                }
                 this.manualPathfinding.lastMoveTime = currentTime;
                 console.log(`Moving ${direction} to (${nextStep.x}, ${nextStep.y}) - step ${this.manualPathfinding.currentStep}/${this.manualPathfinding.path.length}`);
                 console.log(`After move: isActive=${this.manualPathfinding.isActive}, currentStep=${this.manualPathfinding.currentStep}, pathLength=${this.manualPathfinding.path.length}`);

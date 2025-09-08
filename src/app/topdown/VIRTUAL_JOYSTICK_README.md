@@ -26,9 +26,13 @@
 3. **移动范围**: 摇杆移动范围限制在35像素内
 4. **自动回中**: 松开手指后摇杆自动回到中心位置
 
+> 显示条件：`hasGameStarted && gameSize.isMobile` 为真时才渲染虚拟摇杆
+
 ### 动作控制
 1. **触摸动作按钮**: 点击红色圆形按钮执行动作
 2. **视觉反馈**: 按钮按下时会有缩放和颜色变化效果
+
+> 显示条件：`hasGameStarted && gameSize.isMobile` 为真时才渲染动作按钮
 
 ## 技术实现
 
@@ -46,6 +50,12 @@ src/app/topdown/game/
 - **统一管理**: InputManager统一处理键盘和触摸输入
 - **事件驱动**: 通过CustomEvent在组件间通信
 - **优先级**: 虚拟摇杆输入优先级高于键盘输入
+
+#### 事件约定（React ↔ Phaser）
+- `virtual-joystick-direction`：当方向改变时由 React 派发
+  - detail: `{ direction: 'up'|'down'|'left'|'right'|'up-left'|'up-right'|'down-left'|'down-right'|'none', dx?, dy?, angle? }`
+- `action-button-pressed`：点击动作按钮时由 React 派发
+- `action-context`：由游戏场景告知当前动作语义（talk/interact/plant/water/harvest），用于渲染按钮图标/文案
 
 ### 触摸事件处理
 - **触摸开始**: 记录触摸位置，激活摇杆

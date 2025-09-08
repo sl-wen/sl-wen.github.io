@@ -14,9 +14,19 @@
  * 使用方法：
  * 1. 启动开发服务器：npm run dev
  * 2. 访问：http://localhost:3000/topdown
- * 3. 使用键盘 WASD/方向键移动角色
- * 4. 使用空格键/动作按钮进行交互
- * 5. 触摸屏用户可使用虚拟摇杆和动作按钮
+ * 3. 地图导出（Tiled → JSON）：npm run tmx:json:default（输出到 public/topdown/game/map.json）
+ * 4. 资源路径：图片/音频/图集统一从 public/game/assets/ 提供
+ * 5. 使用键盘 WASD/方向键移动角色；空格键/动作按钮交互
+ * 6. 移动端 UI 门控：仅在“开始游戏”后且设备为移动端时渲染摇杆与动作按钮
+ * 7. 自动保存：场景触发 autosave-request 事件，React 侧节流保存；设置弹窗可手动保存
+ * 
+ * 事件总线（React ↔ Phaser）约定：
+ * - new-dialog / <character>-dialog-finished：显示/结束对话
+ * - menu-items / menu-item-selected：渲染菜单/选择结果
+ * - cat-coin：更新金币；action-context：更新动作语义
+ * - virtual-joystick-direction / action-button-pressed：移动/动作输入
+ * - inventory-update / open-seed-select / seed-selected / seed-select-cancel：背包/种子流程
+ * - request-save-snapshot / save-snapshot-ready / autosave-request：存档与自动保存
  */
 
 import { styled } from '@mui/material/styles';

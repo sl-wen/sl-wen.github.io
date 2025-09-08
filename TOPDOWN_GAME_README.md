@@ -6,6 +6,15 @@
 
 这是一个基于 **Phaser.js** 和 **React** 的俯视角角色扮演游戏，采用像素风格设计，支持键盘和触摸屏操作。
 
+## 最新式样要点（2025/Q1）
+
+- 资源路径统一：所有图片/音频/图集统一从 `public/game/assets/` 提供。
+- 地图来源：Tiled 地图请将 `src/app/topdown/game/map.tmx` 导出为 JSON，并放置到 `public/topdown/game/map.json`。
+  - 已提供脚本：`npm run tmx:json:default` 会自动将 TMX 转 JSON 到正确位置。
+- 事件总线：React 与 Phaser 通过 `window.dispatchEvent`/`window.addEventListener` 的 CustomEvent 通信。
+- 移动端 UI 门控：虚拟摇杆与动作按钮仅在「点击开始」且设备为移动端时显示。
+- 自动保存：游戏触发 `autosave-request` 节流保存；手动保存通过设置弹窗触发 Supabase 持久化。
+
 ## 游戏特性
 
 ### 🎮 核心功能
@@ -44,6 +53,16 @@ http://localhost:3000/topdown
 - 通过导航栏点击 "topdown" 链接
 - 直接输入 URL 地址
 
+### 4. 地图导出与路径
+
+1. 在 Tiled 中编辑 `src/app/topdown/game/map.tmx`
+2. 运行脚本导出到公开目录：
+```
+npm run tmx:json:default
+```
+3. 确认生成文件存在：`public/topdown/game/map.json`
+4. 运行游戏后由 `BootScene` 通过 `this.load.tilemapTiledJSON('map', '/topdown/game/map.json')` 加载
+
 ## 技术架构
 
 ### 文件结构
@@ -81,6 +100,27 @@ src/app/topdown/
 - **动画库**：Framer Motion
 - **样式系统**：TailwindCSS 3
 - **构建工具**：Next.js
+
+### 事件总览（React ↔ Phaser）
+
+- 对话相关：
+  - `new-dialog` → React 显示对话框
+  - `<character>-dialog-finished` → 对话完成（由 React 派发）
+- 菜单相关：
+  - `menu-items` → React 渲染菜单项
+  - `menu-item-selected` → 选择菜单项（由 React 派发）
+- 角色与 HUD：
+  - `cat-coin` → 更新金币数
+  - `action-context` → 更新右下角按钮语义：talk/interact/plant/water/harvest
+- 输入与移动：
+  - `virtual-joystick-direction` → 摇杆方向，detail: `{ direction, dx?, dy?, angle? }`
+  - `action-button-pressed` → 动作按钮按下
+- 背包与种子：
+  - `inventory-update` → 背包同步
+  - `open-seed-select` / `seed-selected` / `seed-select-cancel`
+- 存档：
+  - `autosave-request` → 节流自动保存请求（由场景触发）
+  - `request-save-snapshot` / `save-snapshot-ready` → 快照请求/回应
 
 ### 核心组件说明
 
@@ -123,6 +163,11 @@ src/app/topdown/
   - 物品系统
   - 场景切换
 
+#### 6. BootScene.js - 启动与资源加载
+- 地图加载：优先从 `public/topdown/game/map.json` 加载导出的 Tiled JSON
+- 图集/图块：从 `public/game/assets/` 读取图片与图集 JSON
+- 进度条：内置加载进度与提示文本
+
 ## 使用方法
 
 ### 🎮 游戏控制
@@ -135,6 +180,7 @@ src/app/topdown/
 #### 触摸屏操作
 - **移动**：拖拽左下角虚拟摇杆
 - **动作**：点击右下角动作按钮
+  - 注意：仅在「开始游戏」后且设备为移动端时渲染（`hasGameStarted && gameSize.isMobile`）
 
 ### 🎯 游戏目标
 1. **探索世界**：在开放地图中自由移动
@@ -173,6 +219,12 @@ export const calculateGameSize = () => {
   let height = 270;  // 修改基础高度
   // ... 其他逻辑
 };
+```
+
+#### 自定义地图来源
+若需要切换地图文件位置，请同步修改 `BootScene.js` 中：
+```
+this.load.tilemapTiledJSON('map', '/topdown/game/map.json');
 ```
 
 ## 开发指南

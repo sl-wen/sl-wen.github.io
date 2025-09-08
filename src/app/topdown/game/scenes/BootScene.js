@@ -292,9 +292,9 @@ export default class BootScene extends Scene {
         this.anims.create(createWalk('left'));
         this.anims.create(createWalk('right'));
 
-        // idle 动画使用 0/1 双帧循环
+        // idle 动画使用 0/1 双帧循环（避免与静态纹理 key 冲突，统一使用 cat_idle_anim_* 作为动画 key）
         const createIdle = (dir) => ({
-            key: `cat_idle_${dir}`,
+            key: `cat_idle_anim_${dir}`,
             frames: [
                 { key: `cat_idle_${dir}` },
                 { key: `cat_idle_${dir}_1` },

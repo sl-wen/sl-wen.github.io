@@ -65,6 +65,9 @@ export default class MapLoader {
 
             createdLayers.push(layer);
 
+            // Ensure deterministic draw order via depth matching original layer index
+            try { layer.setDepth(i); } catch (_) { /* noop */ }
+
             // Hide pure collision layers by convention
             const layerNameLower = String(layerData?.name || '').toLowerCase();
             if (layerNameLower.includes('collision')) {

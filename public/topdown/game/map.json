@@ -12078,6 +12078,11 @@
       "type": "tilelayer",
       "properties": [
         {
+          "name": "collides",
+          "type": "bool",
+          "value": true
+        },
+        {
           "name": "ge_collide",
           "type": "bool",
           "value": true

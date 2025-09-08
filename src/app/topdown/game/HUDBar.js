@@ -1,13 +1,13 @@
-import React from 'react';
 import { styled } from '@mui/material/styles';
 
-const Bar = styled('div')(({ multiplier }) => ({
-  position: 'absolute',
+const Bar = styled('div')(({ multiplier, gameWidth }) => ({
+  position: 'fixed',
   top: `${8 * multiplier}px`,
   left: '50%',
   transform: 'translateX(-50%)',
-  width: '100%',
-  maxWidth: '100%',
+  // 限制最大宽度，避免超宽屏下按钮跑到两端不可见
+  width: `${Math.min(Math.max(320, gameWidth || 320), 1280)}px`,
+  maxWidth: '100vw',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
@@ -32,14 +32,14 @@ const PixelButton = styled('button')(({ multiplier }) => ({
 }));
 
 const HUDBar = ({ gameSize, avatarUrl, onAvatarClick, onSettingsClick }) => {
-  const { multiplier } = gameSize;
+  const { multiplier, width: gameWidth } = gameSize;
   return (
-    <Bar multiplier={multiplier}>
+    <Bar multiplier={multiplier} gameWidth={gameWidth}>
       <PixelButton multiplier={multiplier} onClick={onAvatarClick}>
         👜
       </PixelButton>
       <PixelButton multiplier={multiplier} onClick={onSettingsClick}>
-        ⚙ 
+        ⚙
       </PixelButton>
     </Bar>
   );

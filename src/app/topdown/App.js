@@ -415,6 +415,32 @@ function App() {
     });
   };
 
+  // 将任意对象安全转为可序列化 JSON（移除函数/undefined/Infinity，处理 Map/Set）
+  const sanitizeForJson = useCallback((input) => {
+    try {
+      const cache = new WeakSet();
+      const result = JSON.parse(
+        JSON.stringify(
+          input,
+          (key, value) => {
+            if (typeof value === 'function' || typeof value === 'symbol') return undefined;
+            if (typeof value === 'number' && (!Number.isFinite(value) || Number.isNaN(value))) return null;
+            if (value && typeof value === 'object') {
+              if (cache.has(value)) return undefined; // 断开循环引用
+              cache.add(value);
+              if (value instanceof Map) return Object.fromEntries(value);
+              if (value instanceof Set) return Array.from(value);
+            }
+            return value;
+          }
+        )
+      );
+      return result;
+    } catch (_) {
+      return null;
+    }
+  }, []);
+
   // 统一保存逻辑（支持手动与自动保存）
   const lastAutosaveRef = useRef(0);
   const savingRef = useRef(false);
@@ -422,30 +448,30 @@ function App() {
     if (savingRef.current) return; // 防重入
     try {
       savingRef.current = true;
-      const snapshot = await requestSaveSnapshot();
+      const rawSnapshot = await requestSaveSnapshot();
+      const snapshot = sanitizeForJson(rawSnapshot) ?? {};
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
-        const { data: updatedRows, error: updateError } = await supabase
+        const derivedUsername =
+          (user.user_metadata && (user.user_metadata.user_name || user.user_metadata.preferred_username)) ||
+          (user.email ? user.email.split('@')[0] : null) ||
+          `player_${String(user.id).slice(0, 8)}`;
+
+        // 使用 upsert 基于 user_id 冲突更新 farmdata，保证幂等
+        // 若后端列有约束要求为 JSON 数组，则将对象包裹为数组
+        const farmdataPayload = Array.isArray(snapshot) ? snapshot : [snapshot];
+
+        const { data: upserted, error: upsertError } = await supabase
           .from('profiles')
-          .update({ farmdata: snapshot })
-          .eq('user_id', user.id)
-          .select('user_id');
-        if (updateError) throw updateError;
-
-        // 若未匹配到用户资料，则补插一条（首登或资料缺失场景）
-        if (!updatedRows || updatedRows.length === 0) {
-          const derivedUsername =
-            (user.user_metadata && (user.user_metadata.user_name || user.user_metadata.preferred_username)) ||
-            (user.email ? user.email.split('@')[0] : null) ||
-            `player_${String(user.id).slice(0, 8)}`;
-
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert([{ user_id: user.id, username: derivedUsername, farmdata: snapshot }]);
-          if (insertError) throw insertError;
-        }
+          .upsert(
+            [{ user_id: user.id, username: derivedUsername, farmdata: farmdataPayload }],
+            { onConflict: 'user_id' }
+          )
+          .select('user_id, farmdata');
+        if (upsertError) throw upsertError;
+        console.log('Supabase upsert OK:', upserted?.length ? upserted[0] : upserted);
         const local = JSON.parse(localStorage.getItem('userProfile') || '{}');
         local.farmdata = snapshot;
         localStorage.setItem('userProfile', JSON.stringify(local));
@@ -454,6 +480,7 @@ function App() {
         const local = JSON.parse(localStorage.getItem('userProfile') || '{}');
         local.farmdata = snapshot;
         localStorage.setItem('userProfile', JSON.stringify(local));
+        console.warn('未登录：已仅保存到 localStorage，不会写入 Supabase');
       }
       if (!opts.silent) setShowSettings(false);
     } catch (e) {
@@ -491,8 +518,8 @@ function App() {
           {/* 这里将渲染 Phaser 游戏画布 */}
         </GameContentWrapper>
 
-        {/* HUD 顶栏：头像+设置 */}
-        {hasGameStarted && (
+        {/* HUD 顶栏：头像+设置（PC端始终显示；移动端在开始后显示）*/}
+        {((!gameSize.isMobile) || hasGameStarted) && (
           <HUDBar
             gameSize={{ width: gameSize.width, height: gameSize.height, multiplier: gameSize.multiplier }}
             avatarUrl={userProfile?.avatar_url}

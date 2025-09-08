@@ -66,11 +66,23 @@ export default class MainMenuScene extends Scene {
                     try {
                         const local = JSON.parse(localStorage.getItem('userProfile') || '{}');
                         if (local && local.farmdata) {
-                            farmSave = local.farmdata.farmSave || local.farmdata;
+                            const fd = Array.isArray(local.farmdata) ? (local.farmdata[0] || {}) : local.farmdata;
+                            farmSave = fd.farmSave || fd;
                             // 兼容性：允许 farmdata 根层含 mapKey/catStatus
-                            mapKey = local.farmdata.mapKey || mapKey;
-                            if (local.farmdata.catStatus) {
-                                catStatus = { ...catStatus, ...local.farmdata.catStatus };
+                            mapKey = fd.mapKey || mapKey;
+                            if (fd.catStatus) {
+                                const normalizeFacing = (dir) => {
+                                    if (!dir) return 'down';
+                                    if (dir === 'up' || dir === 'right' || dir === 'down' || dir === 'left') return dir;
+                                    const s = String(dir);
+                                    if (s.includes('up')) return 'up';
+                                    if (s.includes('down')) return 'down';
+                                    if (s.includes('left')) return 'left';
+                                    if (s.includes('right')) return 'right';
+                                    return 'down';
+                                };
+                                const incoming = fd.catStatus;
+                                catStatus = { ...catStatus, ...incoming, facingDirection: normalizeFacing(incoming.facingDirection) };
                             }
                         }
                     } catch (_) { /* ignore */ }

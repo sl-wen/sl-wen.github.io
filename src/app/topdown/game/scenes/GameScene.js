@@ -398,7 +398,7 @@ export default class GameScene extends Scene {
             // 使用 idle 动画 key 作为初始纹理（单帧），随后播放循环 idle 动画
             .sprite(initialPosition.x * map.tileWidth, initialPosition.y * map.tileHeight, `cat_idle_${initialFacingDirection || 'down'}`)
             .setDepth(1);
-        try { this.catSprite.anims.play(`cat_idle_${initialFacingDirection || 'down'}`); } catch (_) { /* noop */ }
+        try { this.catSprite.anims.play(`cat_idle_anim_${initialFacingDirection || 'down'}`); } catch (_) { /* noop */ }
         this.catSprite.coin = catCoin;
 
         this.catSprite.haveSword = catHaveSword;
@@ -467,7 +467,7 @@ export default class GameScene extends Scene {
                 const waterGroup = this.add.group();
                 waterLayer.forEachTile((tile) => {
                     if (tile && tile.index > 0) {
-                        const spr = this.add.sprite(tile.pixelX, tile.pixelY, 'water_0').setOrigin(0, 0).setDepth(-1);
+                        const spr = this.add.sprite(tile.pixelX, tile.pixelY, 'water_0').setOrigin(0, 0).setDepth((waterLayer.depth || 0) + 0.1);
                         spr.anims.play('water_anim');
                         waterGroup.add(spr);
                     }
@@ -1027,7 +1027,7 @@ export default class GameScene extends Scene {
         this.gridEngine.movementStopped().subscribe(({ charId, direction }) => {
             const dir4 = toCardinal(direction ?? this.gridEngine.getFacingDirection(charId));
             if (charId === 'cat') {
-                const idleKey = `cat_idle_${dir4}`;
+                const idleKey = `cat_idle_anim_${dir4}`;
                 if (this.catSprite.anims.currentAnim?.key !== idleKey || !this.catSprite.anims.isPlaying) {
                     try { this.catSprite.anims.play(idleKey, true); } catch (_) { /* noop */ }
                 }
@@ -1054,7 +1054,7 @@ export default class GameScene extends Scene {
                     const anim = this.catSprite.anims;
                     if (anim.currentAnim?.key !== key || !anim.isPlaying) anim.play(key);
                 } else {
-                    const idleKey = `cat_idle_${dir4}`;
+                    const idleKey = `cat_idle_anim_${dir4}`;
                     const anim = this.catSprite.anims;
                     if (anim.currentAnim?.key !== idleKey || !anim.isPlaying) {
                         try { anim.play(idleKey); } catch (_) { /* noop */ }
@@ -1320,7 +1320,7 @@ export default class GameScene extends Scene {
     }
 
     // 简化的A*寻路算法
-    findPath(start, goal) {
+    findPath(start, goal, allowDiagonal = false) {
         const openSet = [start];
         const cameFrom = new Map();
         const gScore = new Map();
@@ -1351,8 +1351,8 @@ export default class GameScene extends Scene {
                 return this.reconstructPath(cameFrom, current);
             }
 
-            // 检查所有邻居（A*），包含对角但防止穿越角落
-            const neighbors = this.getNeighbors(current, true);
+            // 检查所有邻居（A*）；默认仅4向（不允许对角）
+            const neighbors = this.getNeighbors(current, allowDiagonal);
             for (const neighbor of neighbors) {
                 const neighborKey = `${neighbor.x},${neighbor.y}`;
                 const tentativeG = (gScore.get(`${current.x},${current.y}`) || 0) + 1;
@@ -1379,7 +1379,7 @@ export default class GameScene extends Scene {
     }
 
     // 获取邻居节点
-    getNeighbors(pos, allowDiagonal = true) {
+    getNeighbors(pos, allowDiagonal = false) {
         const neighbors = [];
         const cardinal = [
             { x: 0, y: -1 }, // up

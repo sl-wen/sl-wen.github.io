@@ -37,10 +37,13 @@
  * - Tiled 规范：
  *   - tileset 名称需与 `BootScene` 中 `this.load.image(key)` 的 key 保持一致。
  *   - 对象层名固定为 `Player`，对象属性键使用：`dialog`、`itemData`。
- * - 自定义事件（供 React 侧监听）：
- *   - `cat-coin`：detail: { catCoins: number|null }
- *   - `action-context`：detail: { context: 'talk'|'interact'|'none' }
- *   - `new-dialog`：detail: { characterName: string }；完成事件为 `${characterName}-dialog-finished`
+ * - 自定义事件（React ↔ Phaser）：
+ *   - 对话：`new-dialog` → 显示；`${characterName}-dialog-finished` → 关闭
+ *   - 菜单：`menu-items` / `menu-item-selected`
+ *   - HUD：`cat-coin`（金币）、`action-context`（talk/interact/plant/water/harvest）
+ *   - 输入：`virtual-joystick-direction`、`action-button-pressed`
+ *   - 背包/种子：`inventory-update`、`open-seed-select`、`seed-selected`、`seed-select-cancel`
+ *   - 存档：`request-save-snapshot`、`save-snapshot-ready`、`autosave-request`
  * - 常用调试：将 Phaser 物理 debug 设为 true，可在全局 window 访问 `phaserGame` 与可视化碰撞体。
  *
  * 注意事项与陷阱：
@@ -115,6 +118,7 @@ export default class GameScene extends Scene {
 
     calculatePreviousTeleportPosition() {
         // 计算传送前玩家的“上一格”位置，用于从目的地回传时的落点与朝向
+        // 规则：取当前网格坐标并反向偏移一格，保证回到原门口附近
         const currentPosition = this.gridEngine.getPosition('cat');
         const facingDirection = this.gridEngine.getFacingDirection('cat');
 
@@ -158,6 +162,7 @@ export default class GameScene extends Scene {
 
     getFramesForAnimation(assetKey, animation) {
         // 从精灵图集中筛选指定动画前缀的帧，并按名称排序
+        // 例如：assetKey=coin, animation=idle → 取 coin_idle_0..N
         return this.anims.generateFrameNames(assetKey)
             .filter((frame) => {
                 if (frame.frame.includes(`${assetKey}_${animation}`)) {
@@ -172,6 +177,7 @@ export default class GameScene extends Scene {
 
     createPlayerwalkAnimation(assetKey, animationName) {
         // 角色/NPC 的行走循环动画（上/右/下/左），若不存在则创建
+        // 帧序列采用 walk1 → idle1 → walk2，形成轻微摆动效果
         const animationKey = `${assetKey}_${animationName}`;
         if (!this.anims.exists(animationKey)) {
             this.anims.create({
@@ -190,6 +196,7 @@ export default class GameScene extends Scene {
 
     getStopFrame(direction, spriteKey) {
         // 根据朝向返回该精灵的“站立”帧
+        // 若运行环境找不到完整纹理 key，将回退为帧名 setFrame
         switch (direction) {
             case 'up':
                 return `${spriteKey}_idle_up`;
@@ -277,6 +284,7 @@ export default class GameScene extends Scene {
      * 2) 面前是可交互箱子/宝箱 => 'interact'
      */
     updateActionContext() {
+        // 依据主角面前的对象更新交互语义，驱动右下角按钮的图标/文案
         if (!this.catSprite || !this.map) return;
         let nextContext = 'none';
 
@@ -288,7 +296,7 @@ export default class GameScene extends Scene {
             nextContext = 'talk';
         } else {
             // 2) 检测面前一格是否为箱子或其它可交互图块
-            const front = this.getFrontPixelPosition();
+            const front = this.getFrontPixelPosition(); // 面前一格像素坐标
             const isInteractable = this.map.layers?.some((layer) => {
                 const t = layer.tilemapLayer.getTileAtWorldXY(front.x, front.y);
                 return t?.properties?.ge_collide || t?.properties?.interactable;
@@ -378,10 +386,10 @@ export default class GameScene extends Scene {
         camera.fadeIn(SCENE_FADE_TIME);
 
         // 初始化输入管理器
-        this.inputManager = new InputManager(this);
+        this.inputManager = new InputManager(this); // 统一接入键盘与虚拟摇杆/按钮
 
         // 使用 MapLoader 统一加载地图和碰撞数据
-        const { map, layers: createdLayers, collidableTileIds } = MapLoader.load(this, mapKey, { debug: isDebugMode });
+        const { map, layers: createdLayers, collidableTileIds } = MapLoader.load(this, mapKey, { debug: isDebugMode }); // 地图与碰撞数据
         if (isDebugMode) { window.phaserGame = game; }
         this.map = map;
 
@@ -434,7 +442,7 @@ export default class GameScene extends Scene {
         );
 
         // Items 物品组：金币的待机动画
-        this.itemsSprites = this.add.group();
+        this.itemsSprites = this.add.group(); // 物品容器组（金币、剑等）
 
         if (!this.anims.exists('coin_idle')) {
             this.anims.create({
@@ -469,7 +477,7 @@ export default class GameScene extends Scene {
         } catch (_) { /* noop */ }
 
         const npcsKeys = [];
-        const dataLayer = map.getObjectLayer('Player'); // Tiled 中的对象层，承载对话、NPC、传送、物品
+        const dataLayer = map.getObjectLayer('Player'); // Tiled 对象层：承载对话、NPC、传送、物品等
         console.log('Data layer:', dataLayer);
         console.log('Data layer objects:', dataLayer?.objects);
 
@@ -621,11 +629,11 @@ export default class GameScene extends Scene {
 
                             const overlapCollider = this.physics.add.overlap(this.catSprite, customCollider, () => {
                                 console.log('cat entered teleport, teleporting to:', teleportToMapKey, teleportToX, teleportToY);
-                                // camera.stopFollow();
+                                // 停止跟随等可选动作（此处保留注释，按需启用）
                                 this.physics.world.removeCollider(overlapCollider);
                                 const facingDirection = this.gridEngine.getFacingDirection('cat');
                                 camera.fadeOut(SCENE_FADE_TIME);
-                                // this.scene.pause();
+                                // 可选：暂停当前场景，避免异步操作期间输入
                                 this.isTeleporting = true;
                                 this.isAutoMoving = false;
                                 if (this.autoMoveTargetHighlight) {
@@ -790,7 +798,7 @@ export default class GameScene extends Scene {
             window.removeEventListener('request-save-snapshot', handleRequestSave);
         });
 
-        // 自动保存事件触发工具
+        // 自动保存事件触发工具（节流由 React 负责）
         const triggerAutosave = () => {
             try {
                 const evt = new CustomEvent('autosave-request');

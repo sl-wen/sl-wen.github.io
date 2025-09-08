@@ -4,6 +4,10 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
 // 动态导入游戏组件，避免 SSR 问题
+// 使用说明：
+// - 访问路径 /topdown
+// - 地图：运行 npm run tmx:json:default 导出到 public/topdown/game/map.json
+// - 移动端 UI：点击“开始”后才显示摇杆与动作按钮
 const TopDownGame = dynamic(() => import('./App'), {
   ssr: false,
   loading: () => (

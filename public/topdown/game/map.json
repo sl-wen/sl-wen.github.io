@@ -12076,6 +12076,13 @@
       "name": "Fence",
       "opacity": 1,
       "type": "tilelayer",
+      "properties": [
+        {
+          "name": "ge_collide",
+          "type": "bool",
+          "value": true
+        }
+      ],
       "visible": true,
       "width": 50,
       "x": 0,

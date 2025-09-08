@@ -191,6 +191,11 @@ export default class BootScene extends Scene {
         this.load.image('House', '/game/assets/graphics/environment/House.png');
         this.load.image('House Decoration', '/game/assets/graphics/environment/House Decoration.png');
 
+        // 水动画帧（0-3）
+        for (let i = 0; i <= 3; i += 1) {
+            this.load.image(`water_${i}`, `/game/assets/graphics/water/${i}.png`);
+        }
+
         // 新地图（Tiled JSON，建议从 topdown/game/map.tmx 导出为 map.json 放置于 /public/topdown/game/）
         this.load.tilemapTiledJSON('map', '/topdown/game/map.json');
 
@@ -211,6 +216,8 @@ export default class BootScene extends Scene {
             }
             // 待机帧（取 idle 目录下的 0.png）
             this.load.image(`cat_idle_${dir}`, `/game/assets/graphics/character/${dir}_idle/0.png`);
+            // 待机帧补充：idle 目录下的 1.png（用于循环动画）
+            this.load.image(`cat_idle_${dir}_1`, `/game/assets/graphics/character/${dir}_idle/1.png`);
         });
     }
 
@@ -285,10 +292,30 @@ export default class BootScene extends Scene {
         this.anims.create(createWalk('left'));
         this.anims.create(createWalk('right'));
 
-        // idle 动画作为单帧占位，便于使用 anims.play 同一接口
-        this.anims.create({ key: 'cat_idle_down', frames: [{ key: 'cat_idle_down' }], frameRate: 1 });
-        this.anims.create({ key: 'cat_idle_up', frames: [{ key: 'cat_idle_up' }], frameRate: 1 });
-        this.anims.create({ key: 'cat_idle_left', frames: [{ key: 'cat_idle_left' }], frameRate: 1 });
-        this.anims.create({ key: 'cat_idle_right', frames: [{ key: 'cat_idle_right' }], frameRate: 1 });
+        // idle 动画使用 0/1 双帧循环
+        const createIdle = (dir) => ({
+            key: `cat_idle_${dir}`,
+            frames: [
+                { key: `cat_idle_${dir}` },
+                { key: `cat_idle_${dir}_1` },
+            ],
+            frameRate: 2,
+            repeat: -1,
+            yoyo: true,
+        });
+
+        this.anims.create(createIdle('down'));
+        this.anims.create(createIdle('up'));
+        this.anims.create(createIdle('left'));
+        this.anims.create(createIdle('right'));
+
+        // 水面动画
+        this.anims.create({
+            key: 'water_anim',
+            frames: [0, 1, 2, 3].map((i) => ({ key: `water_${i}` })),
+            frameRate: 6,
+            repeat: -1,
+            yoyo: false,
+        });
     }
 }

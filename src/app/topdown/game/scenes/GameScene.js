@@ -874,8 +874,8 @@ export default class GameScene extends Scene {
             const downTile = this.wallsLayer.getTileAt(testDown.x, testDown.y);
             console.log('  Right tile ID:', rightTile ? rightTile.index : -1);
             console.log('  Down tile ID:', downTile ? downTile.index : -1);
-            console.log('  Right tile collidable:', rightTile ? this.collidableTileIds.has(rightTile.index) : false);
-            console.log('  Down tile collidable:', downTile ? this.collidableTileIds.has(downTile.index) : false);
+            console.log('  Right tile collides (Phaser):', Boolean(rightTile && rightTile.collides));
+            console.log('  Down tile collides (Phaser):', Boolean(downTile && downTile.collides));
         }
 
         // 测试碰撞检测
@@ -951,11 +951,10 @@ export default class GameScene extends Scene {
             let canMoveToTarget = true;
             if (this.wallsLayer) {
                 const targetTile = this.wallsLayer.getTileAt(target.x, target.y);
-                const tileId = targetTile ? targetTile.index : -1;
-                const isCollidable = tileId >= 0 && this.collidableTileIds.has(tileId);
+                const isCollidable = Boolean(targetTile && targetTile.collides);
                 if (isCollidable) {
                     canMoveToTarget = false;
-                    console.log(`Click movement blocked: target (${target.x}, ${target.y}) has collision tile ${tileId}`);
+                    console.log(`Click movement blocked: target (${target.x}, ${target.y}) collides (Phaser)`);
                 }
             }
 
@@ -1260,11 +1259,9 @@ export default class GameScene extends Scene {
                 // 方法1: 检查Phaser物理碰撞
                 if (this.wallsLayer) {
                     const tile = this.wallsLayer.getTileAt(targetPos.x, targetPos.y);
-                    const tileId = tile ? tile.index : -1;
-                    const isCollidable = tileId >= 0 && this.collidableTileIds.has(tileId);
-                    tileInfo = `tileId: ${tileId}, collidable: ${isCollidable}`;
+                    const isCollidable = Boolean(tile && tile.collides);
+                    tileInfo = `tileId: ${tile ? tile.index : -1}, phaserCollides: ${isCollidable}`;
 
-                    // 如果瓦片是可碰撞的，阻止移动
                     if (isCollidable) {
                         isBlocked = true;
                     }
@@ -1419,8 +1416,7 @@ export default class GameScene extends Scene {
     isPositionBlocked(pos) {
         if (this.wallsLayer) {
             const tile = this.wallsLayer.getTileAt(pos.x, pos.y);
-            const tileId = tile ? tile.index : -1;
-            return tileId >= 0 && this.collidableTileIds.has(tileId);
+            return Boolean(tile && tile.collides);
         }
         return false;
     }

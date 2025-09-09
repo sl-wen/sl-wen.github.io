@@ -48,6 +48,8 @@ import GameMenu from "./game/GameMenu";
 import HUDBar from "./game/HUDBar";
 import InventoryModal from "./game/InventoryModal";
 import SettingsModal from "./game/SettingsModal";
+import Quickbar from "./game/Quickbar";
+import RadialMenu from "./game/RadialMenu";
 import { calculateGameSize } from "./game/utils";
 import VirtualJoystick from "./game/VirtualJoystick";
 
@@ -183,6 +185,10 @@ function App() {
   const [showInventory, setShowInventory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [inventorySelectMode, setInventorySelectMode] = useState(false);
+  const [timeText, setTimeText] = useState('--:--');
+  const [weatherIcon, setWeatherIcon] = useState('☀');
+  const [preferredSeedId, setPreferredSeedId] = useState(null);
+  const [showSeedRadial, setShowSeedRadial] = useState(false);
 
   /**
    * 处理对话完成事件
@@ -383,6 +389,17 @@ function App() {
     };
     window.addEventListener('open-seed-select', openSeedSelectListener);
 
+    // 时间与天气
+    const timeWeatherListener = ({ detail }) => {
+      const t = detail?.time || '--:--';
+      const w = (detail?.weather === 'rain') ? '🌧'
+        : (detail?.weather === 'wind') ? '🍃'
+        : '☀';
+      setTimeText(t);
+      setWeatherIcon(w);
+    };
+    window.addEventListener('time-weather', timeWeatherListener);
+
     // 清理事件监听器
     return () => {
       window.removeEventListener('new-dialog', dialogBoxEventListener);
@@ -391,6 +408,7 @@ function App() {
       window.removeEventListener('action-context', actionContextEventListener);
       window.removeEventListener('inventory-update', inventoryListener);
       window.removeEventListener('open-seed-select', openSeedSelectListener);
+      window.removeEventListener('time-weather', timeWeatherListener);
     };
   }, [setCharacterName, setMessages]);
 
@@ -401,6 +419,7 @@ function App() {
     } catch (e) { }
     setShowInventory(false);
     setInventorySelectMode(false);
+    setPreferredSeedId(seedId || null);
   };
 
   const requestSaveSnapshot = () => {
@@ -525,6 +544,8 @@ function App() {
             avatarUrl={userProfile?.avatar_url}
             onAvatarClick={() => setShowInventory(true)}
             onSettingsClick={() => setShowSettings(true)}
+            timeText={timeText}
+            weatherIcon={weatherIcon}
           />
         )}
 
@@ -627,6 +648,40 @@ function App() {
               }
               setShowInventory(false);
             }}
+          />
+        )}
+
+        {/* 快捷栏（工具/种子） */}
+        {hasGameStarted && (
+          <Quickbar
+            gameSize={{ width: gameSize.width, height: gameSize.height, multiplier: gameSize.multiplier }}
+            seedSummary={{ total: (inventory?.tags?.seeds ? Object.values(inventory.tags.seeds.items).reduce((s, it) => s + (it?.count || 0), 0) : 0) }}
+            selectedSeedId={preferredSeedId}
+            onOpenSeedMenu={() => setShowSeedRadial(true)}
+            onSelectWater={() => {
+              try {
+                const evt = new CustomEvent('preferred-tool', { detail: { tool: 'water' } });
+                window.dispatchEvent(evt);
+              } catch (e) {}
+            }}
+          />
+        )}
+
+        {/* 径向菜单：快速选择种子 */}
+        {hasGameStarted && showSeedRadial && (
+          <RadialMenu
+            gameSize={{ width: gameSize.width, height: gameSize.height, multiplier: gameSize.multiplier }}
+            items={Object.values(inventory?.tags?.seeds?.items || {}).map(it => ({ id: it.id, label: it.name, count: it.count }))}
+            selectedId={preferredSeedId}
+            onSelect={(id) => {
+              setPreferredSeedId(id);
+              setShowSeedRadial(false);
+              try {
+                const evt = new CustomEvent('preferred-seed', { detail: { seedId: id } });
+                window.dispatchEvent(evt);
+              } catch (e) {}
+            }}
+            onClose={() => setShowSeedRadial(false)}
           />
         )}
 

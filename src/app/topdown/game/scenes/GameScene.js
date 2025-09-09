@@ -58,6 +58,8 @@ import {
 import InputManager from '../InputManager';
 import MapLoader from '../MapLoader';
 import { createInteractiveGameObject } from '../utils';
+import FarmManager from '../farming/FarmManager';
+import TimeWeatherManager from '../TimeWeatherManager';
 
 // 将 8 向方向归一为 4 向（用于动画/朝向显示）
 let lastCardinal = 'down';
@@ -87,6 +89,8 @@ export default class GameScene extends Scene {
     npcSprites = null;
     farmManager = null;
     farmlandGraphics = null;
+    nightOverlay = null;
+    lastSoilOverlayRedraw = 0;
 
     // 手动寻路状态（生命周期：create 初始化一次）
     manualPathfinding = {
@@ -392,6 +396,39 @@ export default class GameScene extends Scene {
         const { map, layers: createdLayers, collidableTileIds } = MapLoader.load(this, mapKey, { debug: isDebugMode }); // 地图与碰撞数据
         if (isDebugMode) { window.phaserGame = game; }
         this.map = map;
+
+        // 初始化农场管理器（从存档恢复或创建新的），并从 Tiled 的 Farmable 图层注册可种植地块
+        const tileSize = map?.tileWidth || 16;
+        try {
+            this.farmManager = farmSave
+                ? FarmManager.fromSave(this, farmSave, { tileSize })
+                : new FarmManager(this, { tileSize });
+
+            const farmableLayer = createdLayers.find(l => (l.layer?.name || '').toLowerCase() === 'farmable');
+            if (farmableLayer) {
+                farmableLayer.forEachTile((tile) => {
+                    if (tile && tile.index >= 0) {
+                        this.farmManager.addFarmlandRect(tile.x, tile.y, 1, 1);
+                    }
+                });
+            }
+
+            // 同步一次背包到 UI（确保 HUD 初始显示正确）
+            if (typeof this.farmManager.dispatchInventoryUpdate === 'function') {
+                this.farmManager.dispatchInventoryUpdate();
+            }
+        } catch (_) { /* noop */ }
+
+        // 时间与天气管理器 + 夜幕覆盖层
+        this.timeWeather = new TimeWeatherManager(this, { minutePerSecond: 1, startHour: 8 });
+        this.timeWeather.setSpeed('normal');
+        this.nightOverlay = this.add.rectangle(0, 0, this.scale.gameSize.width, this.scale.gameSize.height, 0x000000, 0.0)
+            .setOrigin(0, 0)
+            .setDepth(2000)
+            .setScrollFactor(0);
+        // 数字键切换时间倍率
+        const keys = this.input.keyboard.addKeys({ ONE: Phaser.Input.Keyboard.KeyCodes.ONE, TWO: Phaser.Input.Keyboard.KeyCodes.TWO, THREE: Phaser.Input.Keyboard.KeyCodes.THREE });
+        this.timeSpeedKeys = keys;
 
         // cat 主角：初始属性、碰撞盒与交互体
         this.catSprite = this.physics.add
@@ -1177,6 +1214,43 @@ export default class GameScene extends Scene {
                 npc.setFrame(this.getStopFrame(this.getOppositeDirection(facingDirection), characterName));
             }
         });
+
+        // 处理选择种子与取消选择事件（来自 React 背包弹窗）
+        const handleSeedSelected = ({ detail }) => {
+            try {
+                if (!this.seedSelectPending || !detail) return;
+                const seedId = detail.seedId;
+                const { tileX, tileY } = this.seedSelectPending;
+                this.farmManager?.plant?.(tileX, tileY, seedId);
+            } finally {
+                this.seedSelectPending = null;
+            }
+        };
+
+        const handleSeedSelectCancel = () => {
+            this.seedSelectPending = null;
+        };
+
+        window.addEventListener('seed-selected', handleSeedSelected);
+        window.addEventListener('seed-select-cancel', handleSeedSelectCancel);
+
+        // 优先种子/工具偏好
+        const handlePreferredSeed = ({ detail }) => {
+            this.preferredSeedId = detail?.seedId || null;
+        };
+        const handlePreferredTool = ({ detail }) => {
+            this.preferredTool = detail?.tool || null; // 'water' 等
+        };
+        window.addEventListener('preferred-seed', handlePreferredSeed);
+        window.addEventListener('preferred-tool', handlePreferredTool);
+
+        // 清理事件监听
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            try { window.removeEventListener('seed-selected', handleSeedSelected); } catch (_) { }
+            try { window.removeEventListener('seed-select-cancel', handleSeedSelectCancel); } catch (_) { }
+            try { window.removeEventListener('preferred-seed', handlePreferredSeed); } catch (_) { }
+            try { window.removeEventListener('preferred-tool', handlePreferredTool); } catch (_) { }
+        });
     }
 
     update() { // 每帧更新循环（由 Phaser 驱动）
@@ -1188,6 +1262,8 @@ export default class GameScene extends Scene {
         ) {
             return; // 阻止进一步逻辑，避免与动画/切场冲突
         }
+
+        const deltaMs = this.game.loop.delta;
 
         this.catActionCollider.update(); // 同步/存在/对象碰撞体到主角位置与朝向
         // 根据周围环境更新交互按钮图标（对话 / 宝箱/箱子 / 攻击）
@@ -1214,12 +1290,21 @@ export default class GameScene extends Scene {
                     if (this.seedSelectPending) {
                         return;
                     }
-                    // 记录待种植地块，打开背包选择种子
-                    this.seedSelectPending = { tileX, tileY };
-                    try {
-                        const evt = new CustomEvent('open-seed-select');
-                        window.dispatchEvent(evt);
-                    } catch (_) { /* noop */ }
+                    // 若已有偏好种子则直接种植，否则弹出选择
+                    if (this.preferredSeedId) {
+                        const ok = this.farmManager.plant(tileX, tileY, this.preferredSeedId);
+                        if (!ok) {
+                            this.seedSelectPending = { tileX, tileY };
+                            try { window.dispatchEvent(new CustomEvent('open-seed-select')); } catch (_) {}
+                        }
+                    } else {
+                        // 记录待种植地块，打开背包选择种子
+                        this.seedSelectPending = { tileX, tileY };
+                        try {
+                            const evt = new CustomEvent('open-seed-select');
+                            window.dispatchEvent(evt);
+                        } catch (_) { /* noop */ }
+                    }
                 } else if (context === 'water') {
                     const ok = this.farmManager.water(tileX, tileY);
                     if (!ok) {
@@ -1306,6 +1391,56 @@ export default class GameScene extends Scene {
             cam.scrollY = Math.round(cam.scrollY);
         }
         this.catSprite.setPosition(Math.round(this.catSprite.x), Math.round(this.catSprite.y));
+
+        // 时间/天气推进与夜幕强度
+        if (this.timeWeather) {
+            // 时间倍率快捷键
+            if (this.timeSpeedKeys?.ONE?.isDown) this.timeWeather.setSpeed('slow');
+            else if (this.timeSpeedKeys?.TWO?.isDown) this.timeWeather.setSpeed('normal');
+            else if (this.timeSpeedKeys?.THREE?.isDown) this.timeWeather.setSpeed('fast');
+
+            this.timeWeather.update(deltaMs);
+            const alpha = this.timeWeather.getNightAlpha();
+            if (this.nightOverlay) {
+                // 自适应画布尺寸变化
+                this.nightOverlay.setSize(this.scale.gameSize.width, this.scale.gameSize.height);
+                this.nightOverlay.setAlpha(alpha);
+            }
+
+            // 天气对土壤湿度影响
+            if (this.farmManager) {
+                if (this.timeWeather.weather === 'rain') this.farmManager.rainTick(0.4 * (deltaMs / 1000));
+                else this.farmManager.evaporateTick(0.2 * (deltaMs / 1000));
+            }
+
+            // 简易土壤可视化（每 0.75s 重绘一次）
+            this.lastSoilOverlayRedraw += deltaMs;
+            if (this.lastSoilOverlayRedraw >= 750) {
+                this.lastSoilOverlayRedraw = 0;
+                try {
+                    if (!this.farmlandGraphics) {
+                        this.farmlandGraphics = this.add.graphics().setDepth(5);
+                    }
+                    this.farmlandGraphics.clear();
+                    this.farmManager?.farmland?.forEach?.((key) => {
+                        const [txStr, tyStr] = key.split(',');
+                        const tx = Number.parseInt(txStr, 10);
+                        const ty = Number.parseInt(tyStr, 10);
+                        const soil = this.farmManager.getSoil(tx, ty);
+                        // 映射湿度到颜色：干(红)→湿(蓝绿)
+                        const m = soil.moisture ?? 0;
+                        const r = Math.round(255 * Math.max(0, (100 - m) / 100));
+                        const g = Math.round(180 * Math.min(1, m / 100));
+                        const b = Math.round(200 * Math.min(1, m / 100));
+                        const color = (r << 16) | (g << 8) | b;
+                        const px = tx * (this.map?.tileWidth || 16);
+                        const py = ty * (this.map?.tileHeight || 16);
+                        this.farmlandGraphics.fillStyle(color, 0.12);
+                        this.farmlandGraphics.fillRect(px, py, this.map?.tileWidth || 16, this.map?.tileHeight || 16);
+                    });
+                } catch (_) { /* noop */ }
+            }
+        }
     }
 
     // 手动寻路方法 - 简化的寻路算法

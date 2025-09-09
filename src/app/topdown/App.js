@@ -48,6 +48,8 @@ import GameMenu from "./game/GameMenu";
 import HUDBar from "./game/HUDBar";
 import InventoryModal from "./game/InventoryModal";
 import SettingsModal from "./game/SettingsModal";
+import Quickbar from "./game/Quickbar";
+import RadialMenu from "./game/RadialMenu";
 import { calculateGameSize } from "./game/utils";
 import VirtualJoystick from "./game/VirtualJoystick";
 
@@ -185,6 +187,8 @@ function App() {
   const [inventorySelectMode, setInventorySelectMode] = useState(false);
   const [timeText, setTimeText] = useState('--:--');
   const [weatherIcon, setWeatherIcon] = useState('☀');
+  const [preferredSeedId, setPreferredSeedId] = useState(null);
+  const [showSeedRadial, setShowSeedRadial] = useState(false);
 
   /**
    * 处理对话完成事件
@@ -415,6 +419,7 @@ function App() {
     } catch (e) { }
     setShowInventory(false);
     setInventorySelectMode(false);
+    setPreferredSeedId(seedId || null);
   };
 
   const requestSaveSnapshot = () => {
@@ -643,6 +648,40 @@ function App() {
               }
               setShowInventory(false);
             }}
+          />
+        )}
+
+        {/* 快捷栏（工具/种子） */}
+        {hasGameStarted && (
+          <Quickbar
+            gameSize={{ width: gameSize.width, height: gameSize.height, multiplier: gameSize.multiplier }}
+            seedSummary={{ total: (inventory?.tags?.seeds ? Object.values(inventory.tags.seeds.items).reduce((s, it) => s + (it?.count || 0), 0) : 0) }}
+            selectedSeedId={preferredSeedId}
+            onOpenSeedMenu={() => setShowSeedRadial(true)}
+            onSelectWater={() => {
+              try {
+                const evt = new CustomEvent('preferred-tool', { detail: { tool: 'water' } });
+                window.dispatchEvent(evt);
+              } catch (e) {}
+            }}
+          />
+        )}
+
+        {/* 径向菜单：快速选择种子 */}
+        {hasGameStarted && showSeedRadial && (
+          <RadialMenu
+            gameSize={{ width: gameSize.width, height: gameSize.height, multiplier: gameSize.multiplier }}
+            items={Object.values(inventory?.tags?.seeds?.items || {}).map(it => ({ id: it.id, label: it.name, count: it.count }))}
+            selectedId={preferredSeedId}
+            onSelect={(id) => {
+              setPreferredSeedId(id);
+              setShowSeedRadial(false);
+              try {
+                const evt = new CustomEvent('preferred-seed', { detail: { seedId: id } });
+                window.dispatchEvent(evt);
+              } catch (e) {}
+            }}
+            onClose={() => setShowSeedRadial(false)}
           />
         )}
 

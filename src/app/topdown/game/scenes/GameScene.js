@@ -1234,10 +1234,22 @@ export default class GameScene extends Scene {
         window.addEventListener('seed-selected', handleSeedSelected);
         window.addEventListener('seed-select-cancel', handleSeedSelectCancel);
 
+        // 优先种子/工具偏好
+        const handlePreferredSeed = ({ detail }) => {
+            this.preferredSeedId = detail?.seedId || null;
+        };
+        const handlePreferredTool = ({ detail }) => {
+            this.preferredTool = detail?.tool || null; // 'water' 等
+        };
+        window.addEventListener('preferred-seed', handlePreferredSeed);
+        window.addEventListener('preferred-tool', handlePreferredTool);
+
         // 清理事件监听
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             try { window.removeEventListener('seed-selected', handleSeedSelected); } catch (_) { }
             try { window.removeEventListener('seed-select-cancel', handleSeedSelectCancel); } catch (_) { }
+            try { window.removeEventListener('preferred-seed', handlePreferredSeed); } catch (_) { }
+            try { window.removeEventListener('preferred-tool', handlePreferredTool); } catch (_) { }
         });
     }
 
@@ -1278,12 +1290,21 @@ export default class GameScene extends Scene {
                     if (this.seedSelectPending) {
                         return;
                     }
-                    // 记录待种植地块，打开背包选择种子
-                    this.seedSelectPending = { tileX, tileY };
-                    try {
-                        const evt = new CustomEvent('open-seed-select');
-                        window.dispatchEvent(evt);
-                    } catch (_) { /* noop */ }
+                    // 若已有偏好种子则直接种植，否则弹出选择
+                    if (this.preferredSeedId) {
+                        const ok = this.farmManager.plant(tileX, tileY, this.preferredSeedId);
+                        if (!ok) {
+                            this.seedSelectPending = { tileX, tileY };
+                            try { window.dispatchEvent(new CustomEvent('open-seed-select')); } catch (_) {}
+                        }
+                    } else {
+                        // 记录待种植地块，打开背包选择种子
+                        this.seedSelectPending = { tileX, tileY };
+                        try {
+                            const evt = new CustomEvent('open-seed-select');
+                            window.dispatchEvent(evt);
+                        } catch (_) { /* noop */ }
+                    }
                 } else if (context === 'water') {
                     const ok = this.farmManager.water(tileX, tileY);
                     if (!ok) {

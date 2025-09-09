@@ -58,6 +58,7 @@ import {
 import InputManager from '../InputManager';
 import MapLoader from '../MapLoader';
 import { createInteractiveGameObject } from '../utils';
+import FarmManager from '../farming/FarmManager';
 
 // 将 8 向方向归一为 4 向（用于动画/朝向显示）
 let lastCardinal = 'down';
@@ -392,6 +393,28 @@ export default class GameScene extends Scene {
         const { map, layers: createdLayers, collidableTileIds } = MapLoader.load(this, mapKey, { debug: isDebugMode }); // 地图与碰撞数据
         if (isDebugMode) { window.phaserGame = game; }
         this.map = map;
+
+        // 初始化农场管理器（从存档恢复或创建新的），并从 Tiled 的 Farmable 图层注册可种植地块
+        const tileSize = map?.tileWidth || 16;
+        try {
+            this.farmManager = farmSave
+                ? FarmManager.fromSave(this, farmSave, { tileSize })
+                : new FarmManager(this, { tileSize });
+
+            const farmableLayer = createdLayers.find(l => (l.layer?.name || '').toLowerCase() === 'farmable');
+            if (farmableLayer) {
+                farmableLayer.forEachTile((tile) => {
+                    if (tile && tile.index >= 0) {
+                        this.farmManager.addFarmlandRect(tile.x, tile.y, 1, 1);
+                    }
+                });
+            }
+
+            // 同步一次背包到 UI（确保 HUD 初始显示正确）
+            if (typeof this.farmManager.dispatchInventoryUpdate === 'function') {
+                this.farmManager.dispatchInventoryUpdate();
+            }
+        } catch (_) { /* noop */ }
 
         // cat 主角：初始属性、碰撞盒与交互体
         this.catSprite = this.physics.add
@@ -1176,6 +1199,31 @@ export default class GameScene extends Scene {
                 this.gridEngine.stopMovement(characterName);
                 npc.setFrame(this.getStopFrame(this.getOppositeDirection(facingDirection), characterName));
             }
+        });
+
+        // 处理选择种子与取消选择事件（来自 React 背包弹窗）
+        const handleSeedSelected = ({ detail }) => {
+            try {
+                if (!this.seedSelectPending || !detail) return;
+                const seedId = detail.seedId;
+                const { tileX, tileY } = this.seedSelectPending;
+                this.farmManager?.plant?.(tileX, tileY, seedId);
+            } finally {
+                this.seedSelectPending = null;
+            }
+        };
+
+        const handleSeedSelectCancel = () => {
+            this.seedSelectPending = null;
+        };
+
+        window.addEventListener('seed-selected', handleSeedSelected);
+        window.addEventListener('seed-select-cancel', handleSeedSelectCancel);
+
+        // 清理事件监听
+        this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+            try { window.removeEventListener('seed-selected', handleSeedSelected); } catch (_) { }
+            try { window.removeEventListener('seed-select-cancel', handleSeedSelectCancel); } catch (_) { }
         });
     }
 

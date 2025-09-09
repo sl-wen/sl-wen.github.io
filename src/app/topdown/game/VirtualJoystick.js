@@ -31,11 +31,11 @@ import { styled } from '@mui/material/styles';
  */
 const JoystickContainer = styled('div')(({ theme, gameSize }) => ({
   position: 'fixed',
-  bottom: '120px',
+  bottom: '100px',
   left: '20px',
   zIndex: 1000,
-  width: '160px', // 从120px增加到160px，提供更大的操作区域
-  height: '160px', // 从120px增加到160px，提供更大的操作区域
+  width: '120px', // 120px，提供更大的操作区域
+  height: '120px', // 120px，提供更大的操作区域
   touchAction: 'none',        // 禁用默认触摸行为
   userSelect: 'none',         // 禁用文本选择
   WebkitUserSelect: 'none',   // Webkit 浏览器兼容性

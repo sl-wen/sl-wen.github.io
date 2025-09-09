@@ -89,7 +89,7 @@ const Header: React.FC = () => {
   // 根据用户状态动态组合导航项
   const navItems =
     mounted && userProfile
-      ? [...baseNavItems.slice(0, 4), ...userNavItems, baseNavItems[4]]
+      ? [...baseNavItems.slice(0, 5), ...userNavItems, baseNavItems[5]]
       : baseNavItems;
 
   // 在组件挂载之前返回占位内容 - 避免布局偏移

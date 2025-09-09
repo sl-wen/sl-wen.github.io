@@ -299,7 +299,7 @@ export default class BootScene extends Scene {
                 { key: `cat_idle_${dir}` },
                 { key: `cat_idle_${dir}_1` },
             ],
-            frameRate: 2,
+            frameRate: 1,
             repeat: -1,
             yoyo: true,
         });

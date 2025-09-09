@@ -1,93 +1,93 @@
-## Topdown Farm Game — Development Todo & Status
+## Topdown 农场游戏 — 开发待办与进度
 
-Last updated: <!-- AUTO-UPDATE-DATE -->
+最后更新：2025-09-09
 
-### Legend
-- [ ] Planned
-- [~] In progress
-- [x] Done
-
----
-
-### 0. Project Setup
-- [x] Phaser 3 + GridEngine + Arcade configured (App, plugins, physics)
-- [x] Scene skeletons: `BootScene`, `MainMenuScene`, `GameScene`, `GameOverScene`
-- [x] Tiled integration: tilesets, layers, collisions, object layers
-- [x] React UI bridge: event bus (dialogs, HUD, inventory, save)
-
-### 1. Core Gameplay Loop
-- [x] Grid-based movement with animations (4-dir mapped from 8-dir)
-- [x] Camera follow + bounds + pixel rounding
-- [x] Interaction targeting (NPC, objects, farm tiles)
-- [x] Action system: plant, water, harvest, pickup
-- [x] Items: coins, sword demo, overlap pickup
-
-### 2. Farming System
-- [x] `FarmManager` model (crops, inventory, seeds/water/fruits)
-- [x] `Crop` growth stages (1–5), watering timer, harvest yield
-- [x] Save/restore farm state; sync to UI via `inventory-update`
-- [x] Register farmable tiles from Tiled `Farmable` layer
-- [x] Seed selection flow (`open-seed-select` → `seed-selected`/cancel)
-- [~] Soil states (moisture/fertility values, visuals)
-
-### 3. Time & Weather
-- [~] Day-night cycle with adjustable time speeds
-- [ ] Weather system (rain/sun/windy) affecting moisture/mood
-- [ ] HUD indicators for time, weather, season hooks
-
-### 4. UI/UX (PC & Mobile)
-- [x] Responsive HUD bar (avatar, settings)
-- [x] Cat coins HUD (top-right)
-- [x] Dialogs and menu overlay (start/exit)
-- [x] Virtual joystick + action button (mobile only when started)
-- [ ] Quickbar + radial menus for tools/seeds
-
-### 5. Systems & Content
-- [ ] Crafting (two-step recipes, workstations)
-- [ ] Building placement (grid snap, rotate, align, theme sets)
-- [ ] Decoration themes with set bonuses, beauty scoring
-- [ ] Livestock (mood impacts yields)
-- [ ] Helpers (NPC/pets) job system via GridEngine
-- [ ] Order board + selling/economy loop
-- [ ] Automation: sprinklers, spreaders, movers, warehouse
-- [ ] Assistant routing for collection/delivery
-
-### 6. Events & Meta
-- [ ] Daily/weekly task board with rewards
-- [ ] Seasonal events framework + mini-game hooks
-- [ ] Photo mode + seasonal album
-
-### 7. Tech & Ops
-- [x] Save/load + autosave + cloud-ready abstraction (Supabase profile)
-- [ ] Optimization: atlases, pooling, culling, LOD
-- [ ] Accessibility: colorblind palettes, haptics toggle
-- [ ] Audio layering: music/SFX/ambience mix
-- [ ] Playtest pipeline + privacy/telemetry toggles
-- [ ] Balance: growth times, rewards, pacing
-- [ ] Beta builds (PC & mobile)
+### 图例
+- [ ] 计划中
+- [~] 进行中
+- [x] 已完成
 
 ---
 
-### Milestones
-- M1: Core movement + farming loop + UI bridge — [x]
-- M2: Time/weather + soil states + quickbar/radial — [~]
-- M3: Crafting/placement/decor — [ ]
-- M4: Livestock/helpers/automation — [ ]
-- M5: Events/album/task board — [ ]
-- M6: Optimization/accessibility/audio — [ ]
-- M7: Balance/playtest/beta builds — [ ]
+### 0. 项目搭建
+- [x] 集成 Phaser 3 + GridEngine + Arcade（App、插件、物理）
+- [x] 场景骨架：`BootScene`、`MainMenuScene`、`GameScene`、`GameOverScene`
+- [x] Tiled 集成：图块集、图层、碰撞、对象层
+- [x] React UI 桥接：事件总线（对话、HUD、背包、存档）
+
+### 1. 核心玩法循环
+- [x] 网格移动与动画（8 向输入映射为 4 向动画）
+- [x] 相机跟随 + 边界 + 像素对齐
+- [x] 交互判定（NPC、物体、耕地）
+- [x] 动作系统：种植、浇水、收获、拾取
+- [x] 物品：金币、剑示例，重叠拾取
+
+### 2. 耕作系统
+- [x] `FarmManager`（作物、背包，种子/水/果实）
+- [x] `Crop` 生长阶段（1–5），浇水计时，收获产出
+- [x] 农场存档/恢复；通过 `inventory-update` 同步 UI
+- [x] 从 Tiled `Farmable` 图层注册可种植地块
+- [x] 种子选择流程（`open-seed-select` → `seed-selected`/取消）
+- [~] 土壤状态（湿度/肥力数值与可视化）
+
+### 3. 时间与天气
+- [~] 昼夜循环与时间倍率
+- [ ] 天气系统（晴/雨/风）影响湿度/心情
+- [ ] HUD 显示时间/天气/季节占位
+
+### 4. UI/UX（PC 与移动）
+- [x] 自适应 HUD（头像、设置）
+- [x] 金币 HUD（右上）
+- [x] 对话与菜单覆盖层（开始/退出）
+- [x] 虚拟摇杆 + 动作按钮（移动端开始后显示）
+- [ ] 快捷栏与径向菜单（工具/种子）
+
+### 5. 系统与内容
+- [ ] 制作系统（两步配方、工作台）
+- [ ] 建造摆放（网格吸附、旋转、对齐、主题套装）
+- [ ] 装饰主题与套装加成、美观评分
+- [ ] 畜牧（心情影响产量）
+- [ ] 助手（NPC/宠物）基于 GridEngine 的任务系统
+- [ ] 订单板 + 售卖/经济循环
+- [ ] 自动化：喷灌、撒播、搬运、仓库
+- [ ] 助手路径：采集/投递路线
+
+### 6. 活动与长期目标
+- [ ] 日/周任务板与奖励
+- [ ] 季节活动框架 + 小游戏挂钩
+- [ ] 摄影模式 + 季节相册
+
+### 7. 技术与运维
+- [x] 存档/读档 + 自动保存 + 云端抽象（Supabase profile）
+- [ ] 性能优化：图集、对象池、裁剪、LOD
+- [ ] 可访问性：色盲调色板、触感开关
+- [ ] 音频分层：音乐/SFX/环境 混音
+- [ ] 测试反馈流程 + 隐私/遥测开关
+- [ ] 数值平衡：生长时间、奖励、节奏
+- [ ] Beta 构建（PC 与移动）
 
 ---
 
-### Notes / Decisions
-- Collisions: prefer Phaser tile collisions; GridEngine handles movement.
-- Farmable tiles sourced from Tiled `Farmable` layer (tile presence ⇒ plantable).
-- Autosave throttled at React layer; scene emits `autosave-request`.
+### 里程碑
+- M1：核心移动 + 农场循环 + UI 桥接 — [x]
+- M2：时间/天气 + 土壤状态 + 快捷栏/径向 — [~]
+- M3：制作/建造/装饰 — [ ]
+- M4：畜牧/助手/自动化 — [ ]
+- M5：活动/相册/任务板 — [ ]
+- M6：优化/可访问性/音频 — [ ]
+- M7：平衡/测试反馈/Beta — [ ]
 
 ---
 
-### Next Up (Active Sprint)
-1) Day-night cycle with speed controls
-2) Weather impacts on soil moisture
-3) Soil visuals (moisture/fertility) and simple numbers
+### 备注 / 设计决策
+- 碰撞：优先使用 Phaser 瓦片碰撞；GridEngine 负责移动。
+- 耕地：从 Tiled `Farmable` 图层读取（有瓦片即可种）。
+- 自动保存：场景发出 `autosave-request`；React 侧做节流。
+
+---
+
+### 下一步（当前迭代）
+1) 实现昼夜循环与时间倍率
+2) 雨天影响土壤湿度（含简单 UI 提示）
+3) 土壤湿度/肥力的可视化与基础数值
 

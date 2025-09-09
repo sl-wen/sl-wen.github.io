@@ -21,6 +21,9 @@ export default class FarmManager {
         /** @type {Map<string, Crop>} 当前已种植作物 key:`x,y` => Crop */
         this.crops = new Map();
 
+        /** 土壤状态：key:`x,y` => { moisture:0..100, fertility:0..100 } */
+        this.soil = new Map();
+
         /**
          * 背包（按分类/Tag）
          * - seeds: 各类种子
@@ -63,6 +66,9 @@ export default class FarmManager {
         for (let ty = y; ty < y + height; ty += 1) {
             for (let tx = x; tx < x + width; tx += 1) {
                 this.farmland.add(`${tx},${ty}`);
+                if (!this.soil.has(`${tx},${ty}`)) {
+                    this.soil.set(`${tx},${ty}`, { moisture: 40, fertility: 60 });
+                }
             }
         }
     }
@@ -179,6 +185,11 @@ export default class FarmManager {
         const crop = this.getCrop(tileX, tileY);
         crop.water(this.growthMsPerStage);
         this.decreaseItem('misc', 'water', 1);
+        // 同步土壤湿度
+        const k = `${tileX},${tileY}`;
+        const s = this.soil.get(k) || { moisture: 0, fertility: 60 };
+        s.moisture = Math.min(100, s.moisture + 30);
+        this.soil.set(k, s);
         this.dispatchInventoryUpdate();
         try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
         return true;
@@ -267,6 +278,30 @@ export default class FarmManager {
         } catch (_) {
             // 忽略 SSR 场景
         }
+    }
+
+    /**
+     * 雨滴与蒸发 tick：批量调整湿度
+     */
+    rainTick(amount = 0.5) {
+        this.farmland.forEach((key) => {
+            const s = this.soil.get(key) || { moisture: 0, fertility: 60 };
+            s.moisture = Math.min(100, s.moisture + amount);
+            this.soil.set(key, s);
+        });
+    }
+
+    evaporateTick(amount = 0.2) {
+        this.farmland.forEach((key) => {
+            const s = this.soil.get(key) || { moisture: 0, fertility: 60 };
+            s.moisture = Math.max(0, s.moisture - amount);
+            this.soil.set(key, s);
+        });
+    }
+
+    /** 查询土壤状态（用于可视化或交互提示） */
+    getSoil(tileX, tileY) {
+        return this.soil.get(`${tileX},${tileY}`) || { moisture: 0, fertility: 60 };
     }
 }
 

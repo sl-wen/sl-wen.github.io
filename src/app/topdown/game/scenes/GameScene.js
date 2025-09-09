@@ -59,6 +59,7 @@ import InputManager from '../InputManager';
 import MapLoader from '../MapLoader';
 import { createInteractiveGameObject } from '../utils';
 import FarmManager from '../farming/FarmManager';
+import TimeWeatherManager from '../TimeWeatherManager';
 
 // 将 8 向方向归一为 4 向（用于动画/朝向显示）
 let lastCardinal = 'down';
@@ -88,6 +89,8 @@ export default class GameScene extends Scene {
     npcSprites = null;
     farmManager = null;
     farmlandGraphics = null;
+    nightOverlay = null;
+    lastSoilOverlayRedraw = 0;
 
     // 手动寻路状态（生命周期：create 初始化一次）
     manualPathfinding = {
@@ -415,6 +418,17 @@ export default class GameScene extends Scene {
                 this.farmManager.dispatchInventoryUpdate();
             }
         } catch (_) { /* noop */ }
+
+        // 时间与天气管理器 + 夜幕覆盖层
+        this.timeWeather = new TimeWeatherManager(this, { minutePerSecond: 1, startHour: 8 });
+        this.timeWeather.setSpeed('normal');
+        this.nightOverlay = this.add.rectangle(0, 0, this.scale.gameSize.width, this.scale.gameSize.height, 0x000000, 0.0)
+            .setOrigin(0, 0)
+            .setDepth(2000)
+            .setScrollFactor(0);
+        // 数字键切换时间倍率
+        const keys = this.input.keyboard.addKeys({ ONE: Phaser.Input.Keyboard.KeyCodes.ONE, TWO: Phaser.Input.Keyboard.KeyCodes.TWO, THREE: Phaser.Input.Keyboard.KeyCodes.THREE });
+        this.timeSpeedKeys = keys;
 
         // cat 主角：初始属性、碰撞盒与交互体
         this.catSprite = this.physics.add
@@ -1237,6 +1251,8 @@ export default class GameScene extends Scene {
             return; // 阻止进一步逻辑，避免与动画/切场冲突
         }
 
+        const deltaMs = this.game.loop.delta;
+
         this.catActionCollider.update(); // 同步/存在/对象碰撞体到主角位置与朝向
         // 根据周围环境更新交互按钮图标（对话 / 宝箱/箱子 / 攻击）
         this.updateActionContext(); // 推送到 React 的 action-context
@@ -1354,6 +1370,56 @@ export default class GameScene extends Scene {
             cam.scrollY = Math.round(cam.scrollY);
         }
         this.catSprite.setPosition(Math.round(this.catSprite.x), Math.round(this.catSprite.y));
+
+        // 时间/天气推进与夜幕强度
+        if (this.timeWeather) {
+            // 时间倍率快捷键
+            if (this.timeSpeedKeys?.ONE?.isDown) this.timeWeather.setSpeed('slow');
+            else if (this.timeSpeedKeys?.TWO?.isDown) this.timeWeather.setSpeed('normal');
+            else if (this.timeSpeedKeys?.THREE?.isDown) this.timeWeather.setSpeed('fast');
+
+            this.timeWeather.update(deltaMs);
+            const alpha = this.timeWeather.getNightAlpha();
+            if (this.nightOverlay) {
+                // 自适应画布尺寸变化
+                this.nightOverlay.setSize(this.scale.gameSize.width, this.scale.gameSize.height);
+                this.nightOverlay.setAlpha(alpha);
+            }
+
+            // 天气对土壤湿度影响
+            if (this.farmManager) {
+                if (this.timeWeather.weather === 'rain') this.farmManager.rainTick(0.4 * (deltaMs / 1000));
+                else this.farmManager.evaporateTick(0.2 * (deltaMs / 1000));
+            }
+
+            // 简易土壤可视化（每 0.75s 重绘一次）
+            this.lastSoilOverlayRedraw += deltaMs;
+            if (this.lastSoilOverlayRedraw >= 750) {
+                this.lastSoilOverlayRedraw = 0;
+                try {
+                    if (!this.farmlandGraphics) {
+                        this.farmlandGraphics = this.add.graphics().setDepth(5);
+                    }
+                    this.farmlandGraphics.clear();
+                    this.farmManager?.farmland?.forEach?.((key) => {
+                        const [txStr, tyStr] = key.split(',');
+                        const tx = Number.parseInt(txStr, 10);
+                        const ty = Number.parseInt(tyStr, 10);
+                        const soil = this.farmManager.getSoil(tx, ty);
+                        // 映射湿度到颜色：干(红)→湿(蓝绿)
+                        const m = soil.moisture ?? 0;
+                        const r = Math.round(255 * Math.max(0, (100 - m) / 100));
+                        const g = Math.round(180 * Math.min(1, m / 100));
+                        const b = Math.round(200 * Math.min(1, m / 100));
+                        const color = (r << 16) | (g << 8) | b;
+                        const px = tx * (this.map?.tileWidth || 16);
+                        const py = ty * (this.map?.tileHeight || 16);
+                        this.farmlandGraphics.fillStyle(color, 0.12);
+                        this.farmlandGraphics.fillRect(px, py, this.map?.tileWidth || 16, this.map?.tileHeight || 16);
+                    });
+                } catch (_) { /* noop */ }
+            }
+        }
     }
 
     // 手动寻路方法 - 简化的寻路算法

@@ -31,13 +31,28 @@ const PixelButton = styled('button')(({ multiplier }) => ({
   pointerEvents: 'auto',
 }));
 
-const HUDBar = ({ gameSize, avatarUrl, onAvatarClick, onSettingsClick }) => {
+const Info = styled('div')(({ multiplier }) => ({
+  imageRendering: 'pixelated',
+  fontFamily: '"Press Start 2P"',
+  fontSize: `${8 * multiplier}px`,
+  color: '#fff',
+  pointerEvents: 'none',
+  display: 'flex',
+  gap: `${6 * multiplier}px`,
+  alignItems: 'center',
+}));
+
+const HUDBar = ({ gameSize, avatarUrl, onAvatarClick, onSettingsClick, timeText, weatherIcon }) => {
   const { multiplier, width: gameWidth } = gameSize;
   return (
     <Bar multiplier={multiplier} gameWidth={gameWidth}>
       <PixelButton multiplier={multiplier} onClick={onAvatarClick}>
         👜
       </PixelButton>
+      <Info multiplier={multiplier}>
+        <span>{weatherIcon || '☀'}</span>
+        <span>{timeText || '--:--'}</span>
+      </Info>
       <PixelButton multiplier={multiplier} onClick={onSettingsClick}>
         ⚙
       </PixelButton>

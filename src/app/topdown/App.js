@@ -183,6 +183,8 @@ function App() {
   const [showInventory, setShowInventory] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [inventorySelectMode, setInventorySelectMode] = useState(false);
+  const [timeText, setTimeText] = useState('--:--');
+  const [weatherIcon, setWeatherIcon] = useState('☀');
 
   /**
    * 处理对话完成事件
@@ -383,6 +385,17 @@ function App() {
     };
     window.addEventListener('open-seed-select', openSeedSelectListener);
 
+    // 时间与天气
+    const timeWeatherListener = ({ detail }) => {
+      const t = detail?.time || '--:--';
+      const w = (detail?.weather === 'rain') ? '🌧'
+        : (detail?.weather === 'wind') ? '🍃'
+        : '☀';
+      setTimeText(t);
+      setWeatherIcon(w);
+    };
+    window.addEventListener('time-weather', timeWeatherListener);
+
     // 清理事件监听器
     return () => {
       window.removeEventListener('new-dialog', dialogBoxEventListener);
@@ -391,6 +404,7 @@ function App() {
       window.removeEventListener('action-context', actionContextEventListener);
       window.removeEventListener('inventory-update', inventoryListener);
       window.removeEventListener('open-seed-select', openSeedSelectListener);
+      window.removeEventListener('time-weather', timeWeatherListener);
     };
   }, [setCharacterName, setMessages]);
 
@@ -525,6 +539,8 @@ function App() {
             avatarUrl={userProfile?.avatar_url}
             onAvatarClick={() => setShowInventory(true)}
             onSettingsClick={() => setShowSettings(true)}
+            timeText={timeText}
+            weatherIcon={weatherIcon}
           />
         )}
 

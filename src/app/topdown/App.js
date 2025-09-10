@@ -47,9 +47,9 @@ import DialogBox from "./game/DialogBox";
 import GameMenu from "./game/GameMenu";
 import HUDBar from "./game/HUDBar";
 import InventoryModal from "./game/InventoryModal";
-import SettingsModal from "./game/SettingsModal";
 import Quickbar from "./game/Quickbar";
 import RadialMenu from "./game/RadialMenu";
+import SettingsModal from "./game/SettingsModal";
 import TimeControlPanel from "./game/TimeControlPanel";
 import { calculateGameSize } from "./game/utils";
 import VirtualJoystick from "./game/VirtualJoystick";
@@ -397,8 +397,8 @@ function App() {
       const t = detail?.time || '--:--';
       const w = (detail?.weather === 'rain') ? '🌧'
         : (detail?.weather === 'wind') ? '🍃'
-        : (detail?.weather === 'snow') ? '❄'
-        : '☀';
+          : (detail?.weather === 'snow') ? '❄'
+            : '☀';
       setTimeText(t);
       setWeatherIcon(w);
       setTimeInfo(detail || {});
@@ -678,7 +678,7 @@ function App() {
               try {
                 const evt = new CustomEvent('preferred-tool', { detail: { tool: 'water' } });
                 window.dispatchEvent(evt);
-              } catch (e) {}
+              } catch (e) { }
             }}
           />
         )}
@@ -695,7 +695,7 @@ function App() {
               try {
                 const evt = new CustomEvent('preferred-seed', { detail: { seedId: id } });
                 window.dispatchEvent(evt);
-              } catch (e) {}
+              } catch (e) { }
             }}
             onClose={() => setShowSeedRadial(false)}
           />

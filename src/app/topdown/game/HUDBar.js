@@ -44,7 +44,7 @@ const Bar = styled('div')(({ multiplier, gameWidth }) => ({
   left: '50%',                         // 水平居中定位
   transform: 'translateX(-50%)',       // 通过变换实现真正的水平居中
   // 限制最大宽度，避免超宽屏下按钮跑到两端不可见
-  width: `${Math.min(Math.max(320, gameWidth || 320), 1280)}px`,  // 动态宽度计算
+  width: `${Math.min(Math.max(350, gameWidth || 350), 1280)}px`,  // 动态宽度计算
   maxWidth: '100vw',                   // 不超过视窗宽度
   display: 'flex',                     // 弹性布局
   justifyContent: 'space-between',     // 左右分布对齐
@@ -129,19 +129,19 @@ const Info = styled('div')(({ multiplier }) => ({
 const HUDBar = ({ gameSize, avatarUrl, onAvatarClick, onSettingsClick, onTimeClick, timeText, weatherIcon }) => {
   // 从游戏尺寸对象中提取缩放倍数和游戏宽度
   const { multiplier, width: gameWidth } = gameSize;
-  
+
   return (
     <Bar multiplier={multiplier} gameWidth={gameWidth}>
       {/* 左侧：背包/库存按钮 */}
       <PixelButton multiplier={multiplier} onClick={onAvatarClick}>
         👜 {/* 背包图标，点击打开库存界面 */}
       </PixelButton>
-      
+
       {/* 中央：游戏信息显示区域（可点击打开时间控制面板） */}
-      <PixelButton 
-        multiplier={multiplier} 
+      <PixelButton
+        multiplier={multiplier}
         onClick={onTimeClick}
-        style={{ 
+        style={{
           backgroundColor: 'rgba(0, 0, 0, 0.7)',
           borderColor: '#666',
           color: '#fff'
@@ -150,7 +150,7 @@ const HUDBar = ({ gameSize, avatarUrl, onAvatarClick, onSettingsClick, onTimeCli
         <span style={{ marginRight: `${4 * multiplier}px` }}>{weatherIcon || '☀'}</span>
         <span>{timeText || '--:--'}</span>
       </PixelButton>
-      
+
       {/* 右侧：设置按钮 */}
       <PixelButton multiplier={multiplier} onClick={onSettingsClick}>
         ⚙ {/* 设置图标，点击打开设置菜单 */}

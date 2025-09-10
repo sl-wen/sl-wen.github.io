@@ -22,8 +22,8 @@
  * - direction 可能的值：'up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right', null
  */
 
-import React, { useEffect, useRef, useState } from 'react';
 import { styled } from '@mui/material/styles';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * 摇杆容器样式组件
@@ -31,7 +31,7 @@ import { styled } from '@mui/material/styles';
  */
 const JoystickContainer = styled('div')(({ theme, gameSize }) => ({
   position: 'fixed',
-  bottom: '100px',
+  bottom: '150px',
   left: '20px',
   zIndex: 1000,
   width: '120px', // 120px，提供更大的操作区域
@@ -75,7 +75,7 @@ const JoystickStick = styled('div')(({ theme, isActive, position }) => ({
   transform: `translate(-50%, -50%) translate(${position.x}px, ${position.y}px)`,
   transition: isActive ? 'none' : 'all 0.2s ease-out', // 非激活状态下的平滑过渡
   cursor: 'pointer',
-  boxShadow: isActive 
+  boxShadow: isActive
     ? '0 0 20px rgba(255, 255, 255, 0.6)'    // 激活状态下的发光效果
     : '0 2px 10px rgba(0, 0, 0, 0.3)',       // 非激活状态下的阴影
 }));
@@ -91,7 +91,7 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
   const [isActive, setIsActive] = useState(false);           // 摇杆是否处于激活状态
   const [position, setPosition] = useState({ x: 0, y: 0 }); // 摇杆手柄的当前位置
   const [currentDirection, setCurrentDirection] = useState(null); // 当前检测到的方向
-  
+
   // 引用和状态管理
   const containerRef = useRef(null);        // 容器 DOM 引用
   const isDragging = useRef(false);         // 是否正在拖拽
@@ -115,19 +115,19 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
       e.preventDefault();
       const touch = e.touches[0];
       const rect = container.getBoundingClientRect();
-      
+
       // 计算摇杆中心位置
       centerPos.current = {
         x: rect.width / 2,
         y: rect.height / 2
       };
-      
+
       // 记录触摸开始位置
       startPos.current = {
         x: touch.clientX - rect.left,
         y: touch.clientY - rect.top
       };
-      
+
       setIsActive(true);
       isDragging.current = true;
     };
@@ -142,29 +142,29 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
 
       const touch = e.touches[0];
       const rect = container.getBoundingClientRect();
-      
+
       // 计算触摸位置相对于摇杆中心的偏移
       const touchX = touch.clientX - rect.left;
       const touchY = touch.clientY - rect.top;
-      
+
       // 计算偏移量
       const deltaX = touchX - centerPos.current.x;
       const deltaY = touchY - centerPos.current.y;
-      
+
       // 限制摇杆移动范围（最大半径）
       const maxRadius = 40;
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-      
+
       if (distance > maxRadius) {
         const angle = Math.atan2(deltaY, deltaX);
         const limitedX = Math.cos(angle) * maxRadius;
         const limitedY = Math.sin(angle) * maxRadius;
-        
+
         setPosition({ x: limitedX, y: limitedY });
       } else {
         setPosition({ x: deltaX, y: deltaY });
       }
-      
+
       // 检测方向并更新
       updateDirection(deltaX, deltaY);
     };
@@ -216,19 +216,19 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
     const handleMouseDown = (e) => {
       e.preventDefault();
       const rect = container.getBoundingClientRect();
-      
+
       // 计算摇杆中心位置
       centerPos.current = {
         x: rect.width / 2,
         y: rect.height / 2
       };
-      
+
       // 记录鼠标按下位置
       startPos.current = {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top
       };
-      
+
       setIsActive(true);
       isDragging.current = true;
     };
@@ -241,29 +241,29 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
       if (!isDragging.current) return;
 
       const rect = container.getBoundingClientRect();
-      
+
       // 计算鼠标位置相对于摇杆中心的偏移
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
-      
+
       // 计算偏移量
       const deltaX = mouseX - centerPos.current.x;
       const deltaY = mouseY - centerPos.current.y;
-      
+
       // 限制摇杆移动范围（最大半径）
       const maxRadius = 40;
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-      
+
       if (distance > maxRadius) {
         const angle = Math.atan2(deltaY, deltaX);
         const limitedX = Math.cos(angle) * maxRadius;
         const limitedY = Math.sin(angle) * maxRadius;
-        
+
         setPosition({ x: limitedX, y: limitedY });
       } else {
         setPosition({ x: deltaX, y: deltaY });
       }
-      
+
       // 检测方向并更新
       updateDirection(deltaX, deltaY);
     };
@@ -341,10 +341,10 @@ const VirtualJoystick = ({ onDirectionChange, gameSize }) => {
   return (
     <JoystickContainer ref={containerRef} gameSize={gameSize}>
       <JoystickBase>
-        
+
         {/* 摇杆手柄 */}
-        <JoystickStick 
-          isActive={isActive} 
+        <JoystickStick
+          isActive={isActive}
           position={position}
         />
       </JoystickBase>

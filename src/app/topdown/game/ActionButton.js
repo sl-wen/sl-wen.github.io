@@ -23,8 +23,8 @@
  * - 支持触摸和鼠标两种输入方式
  */
 
-import React, { useEffect, useRef, useState } from 'react';
 import { styled } from '@mui/material/styles';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * 动作按钮容器样式组件
@@ -32,7 +32,7 @@ import { styled } from '@mui/material/styles';
  */
 const ActionButtonContainer = styled('div')(({ theme, gameSize }) => ({
   position: 'fixed',
-  bottom: '100px',
+  bottom: '150px',
   right: '20px',
   zIndex: 1000,
   width: '120px',  // 120px，提供更大的触摸区域
@@ -51,7 +51,7 @@ const ActionButtonBase = styled('div')(({ theme, isPressed }) => ({
   width: '100%',
   height: '100%',
   borderRadius: '50%',
-  backgroundColor: isPressed 
+  backgroundColor: isPressed
     ? 'rgba(255, 100, 100, 0.8)'    // 按下状态：更深的红色
     : 'rgba(255, 100, 100, 0.6)',   // 正常状态：较浅的红色
   border: '2px solid rgba(255, 255, 255, 0.8)', // 白色边框
@@ -63,7 +63,7 @@ const ActionButtonBase = styled('div')(({ theme, isPressed }) => ({
   cursor: 'pointer',
   transition: 'all 0.1s ease-out',   // 平滑的过渡动画
   transform: isPressed ? 'scale(0.95)' : 'scale(1)', // 按下时缩小效果
-  boxShadow: isPressed 
+  boxShadow: isPressed
     ? '0 0 20px rgba(255, 100, 100, 0.6)'    // 按下状态：发光效果
     : '0 2px 10px rgba(0, 0, 0, 0.3)',       // 正常状态：阴影效果
 }));
@@ -91,7 +91,7 @@ const ButtonIcon = styled('div')(({ theme }) => ({
 const ActionButton = ({ onAction, gameSize, icon = '💬', label = 'talk' }) => {
   // 组件状态管理
   const [isPressed, setIsPressed] = useState(false);  // 按钮是否被按下
-  
+
   // 引用和状态管理
   const containerRef = useRef(null);        // 容器 DOM 引用
   const isTouching = useRef(false);         // 是否正在触摸
@@ -158,7 +158,7 @@ const ActionButton = ({ onAction, gameSize, icon = '💬', label = 'talk' }) => 
     // 添加触摸事件监听器
     container.addEventListener('touchstart', handleTouchStart, { passive: false });
     container.addEventListener('touchend', handleTouchEnd, { passive: false });
-    
+
     // 添加鼠标事件监听器（用于开发测试和桌面设备）
     container.addEventListener('mousedown', handleMouseDown);
     container.addEventListener('mouseup', handleMouseUp);

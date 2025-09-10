@@ -56,6 +56,7 @@ import {
     SCENE_FADE_TIME,
 } from '../constants';
 import FarmManager from '../farming/FarmManager';
+import FarmlandIcon from '../FarmlandIcon';
 import InputManager from '../InputManager';
 import MapLoader from '../MapLoader';
 import TimeWeatherManager from '../TimeWeatherManager';
@@ -90,6 +91,7 @@ export default class GameScene extends Scene {
     autoMoveTargetHighlight = null;
     npcSprites = null;
     farmManager = null;
+    farmlandIcons = new Map(); // 存储耕地图标 key: "x,y" => FarmlandIcon
 
 
 
@@ -475,6 +477,9 @@ export default class GameScene extends Scene {
             if (typeof this.farmManager.dispatchInventoryUpdate === 'function') {
                 this.farmManager.dispatchInventoryUpdate();
             }
+            
+            // 设置耕地图标点击事件监听
+            this.events.on('farmland-icon-clicked', this.handleFarmlandIconClick, this);
         } catch (_) { /* noop */ }
 
         // 时间与天气管理器
@@ -1566,6 +1571,14 @@ export default class GameScene extends Scene {
                     this.farmManager.evaporateTick(weatherEffect.evaporation * (deltaMs / 1000));
                 }
             }
+            
+            // 定期更新耕地图标（每5秒更新一次）
+            if (!this.lastIconUpdate) this.lastIconUpdate = 0;
+            this.lastIconUpdate += deltaMs;
+            if (this.lastIconUpdate >= 5000) {
+                this.lastIconUpdate = 0;
+                this.updateFarmlandIcons();
+            }
 
 
         }
@@ -1947,12 +1960,244 @@ export default class GameScene extends Scene {
         };
         return effects[weather] || effects.clear;
     }
-
-
-
+    
     /**
-     * 添加默认光源（示例）
+     * 处理耕地图标点击事件
      */
+    handleFarmlandIconClick(data) {
+        const { tileX, tileY, actionType } = data;
+        
+        // 获取玩家当前位置
+        const playerPos = this.gridEngine.getPosition('cat');
+        
+        // 计算目标位置（紧邻耕地的位置）
+        const targetPos = this.findAdjacentPosition(tileX, tileY, playerPos);
+        
+        if (targetPos) {
+            // 自动移动到目标位置
+            this.autoMoveToPosition(targetPos.x, targetPos.y, () => {
+                // 到达后执行对应动作
+                this.executeAction(actionType, tileX, tileY);
+            });
+        }
+    }
+    
+    /**
+     * 找到紧邻耕地的可到达位置
+     */
+    findAdjacentPosition(tileX, tileY, playerPos) {
+        const directions = [
+            { x: 0, y: -1, dir: 'up' },    // 上
+            { x: 0, y: 1, dir: 'down' },   // 下
+            { x: -1, y: 0, dir: 'left' },  // 左
+            { x: 1, y: 0, dir: 'right' }   // 右
+        ];
+        
+        // 按距离排序，选择最近的可到达位置
+        const validPositions = directions
+            .map(dir => ({
+                x: tileX + dir.x,
+                y: tileY + dir.y,
+                dir: dir.dir,
+                distance: Math.abs(playerPos.x - (tileX + dir.x)) + Math.abs(playerPos.y - (tileY + dir.y))
+            }))
+            .filter(pos => {
+                // 检查位置是否可到达（不在碰撞层上）
+                return this.gridEngine.isBlocked({ x: pos.x, y: pos.y }) === false;
+            })
+            .sort((a, b) => a.distance - b.distance);
+        
+        return validPositions.length > 0 ? validPositions[0] : null;
+    }
+    
+    /**
+     * 自动移动到指定位置并执行回调
+     */
+    autoMoveToPosition(targetX, targetY, callback) {
+        // 设置自动移动状态
+        this.isAutoMoving = true;
+        
+        // 使用GridEngine的moveTo功能
+        this.gridEngine.moveTo('cat', { x: targetX, y: targetY });
+        
+        // 监听移动完成事件
+        const onMoveFinished = () => {
+            this.isAutoMoving = false;
+            this.gridEngine.off('movementFinished', onMoveFinished);
+            if (callback) {
+                callback();
+            }
+        };
+        
+        this.gridEngine.on('movementFinished', onMoveFinished);
+    }
+    
+    /**
+     * 执行对应的农场动作
+     */
+    executeAction(actionType, tileX, tileY) {
+        // 计算面向方向
+        const playerPos = this.gridEngine.getPosition('cat');
+        const direction = this.calculateDirection(playerPos, { x: tileX, y: tileY });
+        
+        // 执行对应动作
+        switch (actionType) {
+            case 'plant':
+                this.performPlantAction(tileX, tileY, direction);
+                break;
+            case 'water':
+                this.performWaterAction(tileX, tileY, direction);
+                break;
+            case 'harvest':
+                this.performHarvestAction(tileX, tileY, direction);
+                break;
+        }
+        
+        // 动作完成后更新图标
+        setTimeout(() => {
+            this.updateFarmlandIcons();
+        }, 1000);
+    }
+    
+    /**
+     * 计算面向方向
+     */
+    calculateDirection(from, to) {
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        
+        if (Math.abs(dx) > Math.abs(dy)) {
+            return dx > 0 ? 'right' : 'left';
+        } else {
+            return dy > 0 ? 'down' : 'up';
+        }
+    }
+    
+    /**
+     * 执行种植动作
+     */
+    performPlantAction(tileX, tileY, direction) {
+        // 播放种植动画
+        this.playActionAnimation('plant', direction, () => {
+            // 执行种植逻辑
+            if (this.farmManager && this.preferredSeedId) {
+                const success = this.farmManager.plant(tileX, tileY, this.preferredSeedId);
+                if (success) {
+                    console.log(`种植成功在 (${tileX}, ${tileY})`);
+                }
+            }
+        });
+    }
+    
+    /**
+     * 执行浇水动作
+     */
+    performWaterAction(tileX, tileY, direction) {
+        // 播放浇水动画
+        this.playActionAnimation('water', direction, () => {
+            // 执行浇水逻辑
+            if (this.farmManager) {
+                const success = this.farmManager.water(tileX, tileY);
+                if (success) {
+                    console.log(`浇水成功在 (${tileX}, ${tileY})`);
+                }
+            }
+        });
+    }
+    
+    /**
+     * 执行收获动作
+     */
+    performHarvestAction(tileX, tileY, direction) {
+        // 播放收获动画
+        this.playActionAnimation('hoe', direction, () => {
+            // 执行收获逻辑
+            if (this.farmManager) {
+                const yieldCount = this.farmManager.harvest(tileX, tileY);
+                if (yieldCount > 0) {
+                    console.log(`收获成功在 (${tileX}, ${tileY})，获得 ${yieldCount} 个物品`);
+                }
+            }
+        });
+    }
+    
+    /**
+     * 播放动作动画
+     */
+    playActionAnimation(actionType, direction, callback) {
+        if (!this.catSprite) return;
+        
+        // 设置面向方向
+        this.gridEngine.turnTowards('cat', direction);
+        
+        // 创建动画帧
+        const frames = [];
+        for (let i = 0; i <= 3; i++) {
+            frames.push({ key: `cat_${actionType}_${direction}_${i}`, duration: 150 });
+        }
+        
+        // 创建并播放动画
+        const animKey = `cat_${actionType}_${direction}`;
+        
+        if (!this.anims.exists(animKey)) {
+            this.anims.create({
+                key: animKey,
+                frames: frames,
+                frameRate: 8,
+                repeat: 0
+            });
+        }
+        
+        this.catSprite.play(animKey);
+        
+        // 动画完成后执行回调
+        this.catSprite.once('animationcomplete', () => {
+            // 恢复idle状态
+            this.catSprite.setTexture(`cat_idle_${direction}`);
+            if (callback) {
+                callback();
+            }
+        });
+    }
+    
+    /**
+     * 更新耕地图标显示
+     */
+    updateFarmlandIcons() {
+        // 清除现有图标
+        this.farmlandIcons.forEach(icon => icon.destroy());
+        this.farmlandIcons.clear();
+        
+        if (!this.farmManager) return;
+        
+        // 为每个耕地创建适当的图标
+        this.farmManager.farmland.forEach((key) => {
+            const [txStr, tyStr] = key.split(',');
+            const tx = Number.parseInt(txStr, 10);
+            const ty = Number.parseInt(tyStr, 10);
+            
+            const crop = this.farmManager.getCrop(tx, ty);
+            let actionType = null;
+            
+            if (!crop && this.farmManager.getTotalSeedsCount?.() > 0) {
+                // 空地且有种子 -> 显示种植图标
+                actionType = 'plant';
+            } else if (crop && crop.canHarvest()) {
+                // 作物可收获 -> 显示收获图标
+                actionType = 'harvest';
+            } else if (crop && !crop.watered && crop.stage < 5 && this.farmManager.getWaterCount?.() > 0) {
+                // 作物需要浇水 -> 显示浇水图标
+                actionType = 'water';
+            }
+            
+            if (actionType) {
+                const icon = new FarmlandIcon(this, tx, ty, actionType, {
+                    tileSize: this.map?.tileWidth || 64
+                });
+                this.farmlandIcons.set(key, icon);
+            }
+        });
+    }
 
 }
 

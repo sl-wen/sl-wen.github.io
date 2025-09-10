@@ -152,6 +152,16 @@ export default class BootScene extends Scene {
             );
             // 更新百分比文本
             percentText.setText(`${Number.parseInt(value * 100, 10)}%`);
+            
+            // 浇水动画帧 0-3
+            for (let i = 0; i <= 3; i += 1) {
+                this.load.image(`cat_water_${dir}_${i}`, `/game/assets/graphics/character/${dir}_water/${i}.png`);
+            }
+            
+            // 收获动画帧 0-3
+            for (let i = 0; i <= 3; i += 1) {
+                this.load.image(`cat_hoe_${dir}_${i}`, `/game/assets/graphics/character/${dir}_hoe/${i}.png`);
+            }
         });
 
         // 监听文件加载事件

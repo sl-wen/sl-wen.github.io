@@ -21,3 +21,50 @@ export const COIN_INDEX = 192;             // 金币图块索引
 export const NPC_MOVEMENT_RANDOM = 'random';  // NPC 随机移动
 export const NPC_MOVEMENT_STILL = 'still';    // NPC 静止不动
 
+// 时间系统常量
+export const TIME_SPEEDS = {
+    PAUSED: 0,
+    SLOW: 0.5,
+    NORMAL: 1,
+    FAST: 3,
+    VERY_FAST: 6,
+    ULTRA_FAST: 12
+};
+
+// 时间控制键位映射
+export const TIME_CONTROL_KEYS = {
+    PAUSE: 'ZERO',      // 0 键 - 暂停
+    SLOW: 'ONE',        // 1 键 - 慢速
+    NORMAL: 'TWO',      // 2 键 - 正常
+    FAST: 'THREE',      // 3 键 - 快速
+    VERY_FAST: 'FOUR',  // 4 键 - 很快
+    ULTRA_FAST: 'FIVE'  // 5 键 - 极快
+};
+
+// 昼夜循环常量
+export const DAY_PHASES = {
+    DAWN: 'dawn',
+    MORNING: 'morning', 
+    NOON: 'noon',
+    AFTERNOON: 'afternoon',
+    DUSK: 'dusk',
+    NIGHT: 'night',
+    MIDNIGHT: 'midnight'
+};
+
+// 季节常量
+export const SEASONS = {
+    SPRING: 'spring',
+    SUMMER: 'summer',
+    AUTUMN: 'autumn', 
+    WINTER: 'winter'
+};
+
+// 天气类型常量
+export const WEATHER_TYPES = {
+    CLEAR: 'clear',
+    RAIN: 'rain',
+    WIND: 'wind',
+    SNOW: 'snow'
+};
+

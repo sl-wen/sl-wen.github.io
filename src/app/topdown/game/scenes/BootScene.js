@@ -196,6 +196,11 @@ export default class BootScene extends Scene {
             this.load.image(`water_${i}`, `/game/assets/graphics/water/${i}.png`);
         }
 
+        // 雨滴动画帧（0-2）
+        for (let i = 0; i <= 2; i += 1) {
+            this.load.image(`raindrop_${i}`, `/game/assets/graphics/rain/drops/${i}.png`);
+        }
+
         // 新地图（Tiled JSON，建议从 topdown/game/map.tmx 导出为 map.json 放置于 /public/topdown/game/）
         this.load.tilemapTiledJSON('map', '/topdown/game/map.json');
 
@@ -314,6 +319,15 @@ export default class BootScene extends Scene {
             key: 'water_anim',
             frames: [0, 1, 2, 3].map((i) => ({ key: `water_${i}` })),
             frameRate: 6,
+            repeat: -1,
+            yoyo: false,
+        });
+
+        // 雨滴动画
+        this.anims.create({
+            key: 'rain_drop_anim',
+            frames: [0, 1, 2].map((i) => ({ key: `raindrop_${i}` })),
+            frameRate: 8,
             repeat: -1,
             yoyo: false,
         });

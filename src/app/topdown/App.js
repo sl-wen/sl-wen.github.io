@@ -50,6 +50,7 @@ import InventoryModal from "./game/InventoryModal";
 import SettingsModal from "./game/SettingsModal";
 import Quickbar from "./game/Quickbar";
 import RadialMenu from "./game/RadialMenu";
+import TimeControlPanel from "./game/TimeControlPanel";
 import { calculateGameSize } from "./game/utils";
 import VirtualJoystick from "./game/VirtualJoystick";
 
@@ -189,6 +190,8 @@ function App() {
   const [weatherIcon, setWeatherIcon] = useState('☀');
   const [preferredSeedId, setPreferredSeedId] = useState(null);
   const [showSeedRadial, setShowSeedRadial] = useState(false);
+  const [timeInfo, setTimeInfo] = useState({});
+  const [showTimePanel, setShowTimePanel] = useState(false);
 
   /**
    * 处理对话完成事件
@@ -394,9 +397,11 @@ function App() {
       const t = detail?.time || '--:--';
       const w = (detail?.weather === 'rain') ? '🌧'
         : (detail?.weather === 'wind') ? '🍃'
+        : (detail?.weather === 'snow') ? '❄'
         : '☀';
       setTimeText(t);
       setWeatherIcon(w);
+      setTimeInfo(detail || {});
     };
     window.addEventListener('time-weather', timeWeatherListener);
 
@@ -411,6 +416,16 @@ function App() {
       window.removeEventListener('time-weather', timeWeatherListener);
     };
   }, [setCharacterName, setMessages]);
+
+  // 处理时间倍率变化
+  const handleTimeSpeedChange = useCallback((speed) => {
+    try {
+      const evt = new CustomEvent('time-speed-change', { detail: { speed } });
+      window.dispatchEvent(evt);
+    } catch (e) {
+      console.error('Failed to dispatch time speed change event:', e);
+    }
+  }, []);
 
   const handleSeedSelected = (seedId) => {
     try {
@@ -544,6 +559,7 @@ function App() {
             avatarUrl={userProfile?.avatar_url}
             onAvatarClick={() => setShowInventory(true)}
             onSettingsClick={() => setShowSettings(true)}
+            onTimeClick={() => setShowTimePanel(!showTimePanel)}
             timeText={timeText}
             weatherIcon={weatherIcon}
           />
@@ -682,6 +698,17 @@ function App() {
               } catch (e) {}
             }}
             onClose={() => setShowSeedRadial(false)}
+          />
+        )}
+
+        {/* 时间控制面板 */}
+        {hasGameStarted && (
+          <TimeControlPanel
+            gameSize={{ width: gameSize.width, height: gameSize.height, multiplier: gameSize.multiplier }}
+            timeInfo={timeInfo}
+            onSpeedChange={handleTimeSpeedChange}
+            visible={showTimePanel}
+            position="top-right"
           />
         )}
 

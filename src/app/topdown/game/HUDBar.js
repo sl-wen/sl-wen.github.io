@@ -110,6 +110,7 @@ const Info = styled('div')(({ multiplier }) => ({
  * @param {string} props.avatarUrl - 用户头像 URL（当前未使用，预留扩展）
  * @param {Function} props.onAvatarClick - 背包按钮点击回调函数
  * @param {Function} props.onSettingsClick - 设置按钮点击回调函数
+ * @param {Function} props.onTimeClick - 时间控制按钮点击回调函数
  * @param {string} props.timeText - 游戏时间文本，格式如 "08:30"
  * @param {string} props.weatherIcon - 天气图标，如 "☀" "🌧" "💨"
  * 
@@ -120,11 +121,12 @@ const Info = styled('div')(({ multiplier }) => ({
  *   gameSize={{ multiplier: 2, width: 480 }}
  *   onAvatarClick={() => setShowInventory(true)}
  *   onSettingsClick={() => setShowSettings(true)}
+ *   onTimeClick={() => setShowTimePanel(true)}
  *   timeText="08:30"
  *   weatherIcon="☀"
  * />
  */
-const HUDBar = ({ gameSize, avatarUrl, onAvatarClick, onSettingsClick, timeText, weatherIcon }) => {
+const HUDBar = ({ gameSize, avatarUrl, onAvatarClick, onSettingsClick, onTimeClick, timeText, weatherIcon }) => {
   // 从游戏尺寸对象中提取缩放倍数和游戏宽度
   const { multiplier, width: gameWidth } = gameSize;
   
@@ -135,11 +137,19 @@ const HUDBar = ({ gameSize, avatarUrl, onAvatarClick, onSettingsClick, timeText,
         👜 {/* 背包图标，点击打开库存界面 */}
       </PixelButton>
       
-      {/* 中央：游戏信息显示区域 */}
-      <Info multiplier={multiplier}>
-        <span>{weatherIcon || '☀'}</span>  {/* 天气图标，默认为太阳 */}
-        <span>{timeText || '--:--'}</span> {/* 游戏时间，默认为占位符 */}
-      </Info>
+      {/* 中央：游戏信息显示区域（可点击打开时间控制面板） */}
+      <PixelButton 
+        multiplier={multiplier} 
+        onClick={onTimeClick}
+        style={{ 
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          borderColor: '#666',
+          color: '#fff'
+        }}
+      >
+        <span style={{ marginRight: `${4 * multiplier}px` }}>{weatherIcon || '☀'}</span>
+        <span>{timeText || '--:--'}</span>
+      </PixelButton>
       
       {/* 右侧：设置按钮 */}
       <PixelButton multiplier={multiplier} onClick={onSettingsClick}>

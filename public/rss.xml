@@ -2,547 +2,148 @@
                      <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
                         <channel>
                             <title>slwen blog</title>
-                            <link>http://121.40.215.235</link>
+                            <link>https://slwen.cn</link>
                             <description>鱼鱼的博客</description>
                             <language>zh-cn</language>
                             <generator>Node+Supabase RSS自生成</generator>
-                            <lastBuildDate>Mon, 23 Jun 2025 09:15:03 GMT</lastBuildDate>
+                            <lastBuildDate>Wed, 10 Sep 2025 09:00:03 GMT</lastBuildDate>
                                 
         <item>
-            <title><![CDATA[table]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=5f1c3a97-c629-4a5f-b031-35df31292d13</link>
-            <description><![CDATA[<pre><code>-- 用户任务进度表 (user_tasks)
-CREATE TABLE user_tasks (
-    usertask_id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id),
-    task_id UUID REFERENCES tasks(task_id),
-    current_count INTEGER DEFAULT 0,
-    is_claimed BOOLEAN DEFAULT false, -- 是否已领取奖励
-    claimed_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone(&#39;utc&#39;::text, now()),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone(&#39;utc&#39;::text, now())
-);
-</code></pre>
+            <title><![CDATA[img]]></title>
+            <link>https://slwen.cn/article/ec26f0d2-52f6-4b2b-9c25-44b5acd1b88c</link>
+            <description><![CDATA[<p><a href="https://imgtopixel.art/">https://imgtopixel.art/</a></p>
+<p><a href="https://deepwiki.com/">https://deepwiki.com/</a></p>
 ]]></description>
-            <author>slwen</author>
-            <category>table</category>
-            <pubDate>Mon, 09 Jun 2025 02:43:23 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=5f1c3a97-c629-4a5f-b031-35df31292d13</guid>
-            <lastBuildDate>Mon, 23 Jun 2025 09:08:34 GMT</lastBuildDate>
+            <author>sl-wen@outlook.com</author>
+            <category>img</category>
+<category>tool</category>
+            <pubDate>Thu, 04 Sep 2025 08:00:08 GMT</pubDate>
+            <guid isPermaLink="false">https://slwen.cn/article/ec26f0d2-52f6-4b2b-9c25-44b5acd1b88c</guid>
+            <lastBuildDate>Thu, 04 Sep 2025 08:12:13 GMT</lastBuildDate>
         </item>
 
         <item>
-            <title><![CDATA[task]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=c3e79c51-8dd3-4799-993d-2b91dd059143</link>
-            <description><![CDATA[<h2>等级划分</h2>
-<table>
-<thead>
-<tr>
-<th align="left">等级</th>
-<th align="center">称号</th>
-<th align="center">所需经验值</th>
-<th align="right">升级奖励(币)</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">1</td>
-<td align="center">新手</td>
-<td align="center">0</td>
-<td align="right">-</td>
-</tr>
-<tr>
-<td align="left">2</td>
-<td align="center">学徒</td>
-<td align="center">100</td>
-<td align="right">50</td>
-</tr>
-<tr>
-<td align="left">3</td>
-<td align="center">进阶者</td>
-<td align="center">300</td>
-<td align="right">100</td>
-</tr>
-<tr>
-<td align="left">4</td>
-<td align="center">实践者</td>
-<td align="center">600</td>
-<td align="right">150</td>
-</tr>
-<tr>
-<td align="left">5</td>
-<td align="center">专家</td>
-<td align="center">1,000</td>
-<td align="right">200</td>
-</tr>
-<tr>
-<td align="left">6</td>
-<td align="center">大师</td>
-<td align="center">2,000</td>
-<td align="right">300</td>
-</tr>
-<tr>
-<td align="left">7</td>
-<td align="center">权威</td>
-<td align="center">4,000</td>
-<td align="right">500</td>
-</tr>
-<tr>
-<td align="left">8</td>
-<td align="center">宗师</td>
-<td align="center">8,000</td>
-<td align="right">800</td>
-</tr>
-<tr>
-<td align="left">9</td>
-<td align="center">传奇</td>
-<td align="center">15,000</td>
-<td align="right">1,200</td>
-</tr>
-<tr>
-<td align="left">10</td>
-<td align="center">殿堂级</td>
-<td align="center">30,000</td>
-<td align="right">2,000</td>
-</tr>
-</tbody></table>
-<h2>等级特权</h2>
-<table>
-<thead>
-<tr>
-<th align="left">等级</th>
-<th align="center">每日登录币</th>
-<th align="center">每日登录经验</th>
-<th align="center">文章发布币倍率</th>
-<th align="center">文章发布经验倍率</th>
-<th align="right">特殊权限</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">1</td>
-<td align="center">10</td>
-<td align="center">10</td>
-<td align="center">1.0x</td>
-<td align="center">1.0x</td>
-<td align="right">基础功能</td>
-</tr>
-<tr>
-<td align="left">2</td>
-<td align="center">12</td>
-<td align="center">12</td>
-<td align="center">1.1x</td>
-<td align="center">1.1x</td>
-<td align="right">自定义头像</td>
-</tr>
-<tr>
-<td align="left">3</td>
-<td align="center">15</td>
-<td align="center">15</td>
-<td align="center">1.2x</td>
-<td align="center">1.2x</td>
-<td align="right">文章置顶(1篇)</td>
-</tr>
-<tr>
-<td align="left">4</td>
-<td align="center">18</td>
-<td align="center">18</td>
-<td align="center">1.3x</td>
-<td align="center">1.3x</td>
-<td align="right">特殊表情包</td>
-</tr>
-<tr>
-<td align="left">5</td>
-<td align="center">22</td>
-<td align="center">22</td>
-<td align="center">1.5x</td>
-<td align="center">1.5x</td>
-<td align="right">专属徽章</td>
-</tr>
-<tr>
-<td align="left">6</td>
-<td align="center">26</td>
-<td align="center">26</td>
-<td align="center">1.8x</td>
-<td align="center">1.8x</td>
-<td align="right">文章置顶(3篇)</td>
-</tr>
-<tr>
-<td align="left">7</td>
-<td align="center">30</td>
-<td align="center">30</td>
-<td align="center">2.0x</td>
-<td align="center">2.0x</td>
-<td align="right">自定义主题</td>
-</tr>
-<tr>
-<td align="left">8</td>
-<td align="center">35</td>
-<td align="center">35</td>
-<td align="center">2.5x</td>
-<td align="center">2.5x</td>
-<td align="right">内容优先展示</td>
-</tr>
-<tr>
-<td align="left">9</td>
-<td align="center">40</td>
-<td align="center">40</td>
-<td align="center">3.0x</td>
-<td align="center">3.0x</td>
-<td align="right">专属版块</td>
-</tr>
-<tr>
-<td align="left">10</td>
-<td align="center">50</td>
-<td align="center">50</td>
-<td align="center">4.0x</td>
-<td align="center">4.0x</td>
-<td align="right">内容审核权限</td>
-</tr>
-</tbody></table>
-<h2>2.2 行为奖励系统</h2>
-<h3>基础行为奖励</h3>
-<table>
-<thead>
-<tr>
-<th align="left">行为</th>
-<th align="center">获得币</th>
-<th align="center">获得经验</th>
-<th align="center">冷却时间</th>
-<th align="right">每日上限</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">每日首次登录</td>
-<td align="center">基于等级</td>
-<td align="center">基于等级</td>
-<td align="center">24小时</td>
-<td align="right">1次</td>
-</tr>
-<tr>
-<td align="left">连续登录奖励</td>
-<td align="center">+2/天 (最多+10)</td>
-<td align="center">+2/天 (最多+10)</td>
-<td align="center">-</td>
-<td align="right">-</td>
-</tr>
-<tr>
-<td align="left">发布文章</td>
-<td align="center">20 × 等级倍率</td>
-<td align="center">30 × 等级倍率</td>
-<td align="center">-</td>
-<td align="right">5篇</td>
-</tr>
-<tr>
-<td align="left">文章获赞</td>
-<td align="center">2/赞</td>
-<td align="center">3/赞</td>
-<td align="center">-</td>
-<td align="right">100赞</td>
-</tr>
-<tr>
-<td align="left">文章被收藏</td>
-<td align="center">5/次</td>
-<td align="center">8/次</td>
-<td align="center">-</td>
-<td align="right">50次</td>
-</tr>
-<tr>
-<td align="left">文章被分享</td>
-<td align="center">3/次</td>
-<td align="center">5/次</td>
-<td align="center">-</td>
-<td align="right">30次</td>
-</tr>
-<tr>
-<td align="left">评论文章</td>
-<td align="center">1</td>
-<td align="center">2</td>
-<td align="center">-</td>
-<td align="right">20条</td>
-</tr>
-<tr>
-<td align="left">回复评论</td>
-<td align="center">1</td>
-<td align="center">1</td>
-<td align="center">-</td>
-<td align="right">30条</td>
-</tr>
-</tbody></table>
-<h3>高质量内容奖励</h3>
-<table>
-<thead>
-<tr>
-<th align="left">内容质量</th>
-<th align="center">额外币奖励</th>
-<th align="center">额外经验奖励</th>
-<th align="right">判定机制</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">优质文章</td>
-<td align="center">50</td>
-<td align="center">100</td>
-<td align="right">系统+人工审核</td>
-</tr>
-<tr>
-<td align="left">热门文章</td>
-<td align="center">100</td>
-<td align="center">200</td>
-<td align="right">24小时内阅读&gt;1000</td>
-</tr>
-<tr>
-<td align="left">精华文章</td>
-<td align="center">200</td>
-<td align="center">400</td>
-<td align="right">管理员评定</td>
-</tr>
-</tbody></table>
-<h2>2.3 任务系统</h2>
-<h3>日常任务</h3>
-<table>
-<thead>
-<tr>
-<th align="left">任务</th>
-<th align="center">获得币</th>
-<th align="center">获得经验</th>
-<th align="right">刷新周期</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">每日登录</td>
-<td align="center">基于等级</td>
-<td align="center">基于等级</td>
-<td align="right">每日</td>
-</tr>
-<tr>
-<td align="left">发布1篇文章</td>
-<td align="center">15</td>
-<td align="center">20</td>
-<td align="right">每日</td>
-</tr>
-<tr>
-<td align="left">评论3篇文章</td>
-<td align="center">10</td>
-<td align="center">15</td>
-<td align="right">每日</td>
-</tr>
-<tr>
-<td align="left">为5篇文章点赞</td>
-<td align="center">5</td>
-<td align="center">10</td>
-<td align="right">每日</td>
-</tr>
-</tbody></table>
-<h3>周常任务</h3>
-<table>
-<thead>
-<tr>
-<th align="left">任务</th>
-<th align="center">获得币</th>
-<th align="center">获得经验</th>
-<th align="right">刷新周期</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">连续登录7天</td>
-<td align="center">50</td>
-<td align="center">70</td>
-<td align="right">每周</td>
-</tr>
-<tr>
-<td align="left">发布3篇文章</td>
-<td align="center">60</td>
-<td align="center">80</td>
-<td align="right">每周</td>
-</tr>
-<tr>
-<td align="left">文章获得50个赞</td>
-<td align="center">40</td>
-<td align="center">60</td>
-<td align="right">每周</td>
-</tr>
-<tr>
-<td align="left">分享5篇文章到社交媒体</td>
-<td align="center">30</td>
-<td align="center">50</td>
-<td align="right">每周</td>
-</tr>
-</tbody></table>
-<h3>成就任务</h3>
-<table>
-<thead>
-<tr>
-<th align="left">成就</th>
-<th align="center">获得币</th>
-<th align="center">获得经验</th>
-<th align="right">条件</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">内容创作者</td>
-<td align="center">100</td>
-<td align="center">200</td>
-<td align="right">发布10篇文章</td>
-</tr>
-<tr>
-<td align="left">受欢迎作家</td>
-<td align="center">300</td>
-<td align="center">500</td>
-<td align="right">累计获得1000个赞</td>
-</tr>
-<tr>
-<td align="left">社区活跃者</td>
-<td align="center">200</td>
-<td align="center">300</td>
-<td align="right">发表500条评论</td>
-</tr>
-<tr>
-<td align="left">持之以恒</td>
-<td align="center">500</td>
-<td align="center">800</td>
-<td align="right">连续登录30天</td>
-</tr>
-<tr>
-<td align="left">影响力大师</td>
-<td align="center">1000</td>
-<td align="center">2000</td>
-<td align="right">文章被分享1000次</td>
-</tr>
-</tbody></table>
+            <title><![CDATA[game]]></title>
+            <link>https://slwen.cn/article/6ef75b25-8bd3-471e-82ea-944f634f568f</link>
+            <description><![CDATA[<pre><code>https://pablo.gg/en/game
+</code></pre>
+<pre><code>https://github.com/blopa/top-down-react-phaser-game/tree/main
+</code></pre>
+<pre><code>https://github.com/blopa/top-down-react-phaser-game-template
+</code></pre>
+<pre><code>https://github.com/Aze1204/Sprout-Lands
+</code></pre>
+<pre><code>https://github.com/heart6622/PyDew_Valley_heart
+</code></pre>
 ]]></description>
-            <author>slwen</author>
-            <category>task</category>
-            <pubDate>Fri, 06 Jun 2025 09:31:25 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=c3e79c51-8dd3-4799-993d-2b91dd059143</guid>
-            <lastBuildDate>Thu, 12 Jun 2025 08:17:56 GMT</lastBuildDate>
+            <author>sl-wen@outlook.com</author>
+            
+            <pubDate>Mon, 25 Aug 2025 07:44:22 GMT</pubDate>
+            <guid isPermaLink="false">https://slwen.cn/article/6ef75b25-8bd3-471e-82ea-944f634f568f</guid>
+            <lastBuildDate>Fri, 05 Sep 2025 07:10:17 GMT</lastBuildDate>
         </item>
 
         <item>
-            <title><![CDATA[CSS]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=c6667a8f-2982-4154-b6b0-b66baf08f734</link>
-            <description><![CDATA[<h1>CSS笔记</h1>
-<hr>
-<h2>盒模型</h2>
-<p><img src="https://pengfeiw.github.io/images/blog/92.jpg" alt="盒模型" title="标题">
-margin：外边距</p>
-<ul>
-<li>margin-top</li>
-<li>margin-bottom</li>
-<li>margin-left</li>
-<li>margin-right
-border：边框</li>
-<li>border: 1px 宽度</li>
-<li>border-radius: 8px;转角弧度</li>
-<li>border-color: #d0d0d0;边框颜色</li>
-<li>border-bottom: 1px solid black;1像素实线黑色边框
-padding：内边距</li>
-<li>padding: 20px; /* 容器内边距20px */
-content：内容</li>
-<li>content: &#39;✓&#39;;</li>
-</ul>
-<hr>
-<h2>选择器</h2>
-<ul>
-<li>通配选择器</li>
-</ul>
-<pre><code>* {
-    margin: 0;
-    padding: 0;
-}
-</code></pre>
-<ul>
-<li>类型选择器/标记选择器</li>
-</ul>
-<pre><code>p {
-    font-size: 18px;
-    font-weight: bold;
-}
-</code></pre>
-<ul>
-<li>类选择器<br> 一个html元素可以有0个或者多个类名 空格分开
-<code>&lt;p class=&quot;p1 bold&quot;&gt;This is a statment.&lt;p&gt;</code></li>
-</ul>
-<pre><code>.bold {
-    color: red;
-}
-</code></pre>
-<ul>
-<li>ID选择器
-<code>&lt;p id=&quot;p1&quot;&gt;This is first paragraph.&lt;/p&gt;</code></li>
-</ul>
-<pre><code>#p1 {
-    color: red;
-}
-</code></pre>
-<ul>
-<li>属性选择器
-html元素可以设置属性，例如上面的class和id都是html元素的属性，我们也可以添加更多的属性
-<code>&lt;p att1=&quot;1&quot; att2=&quot;2&quot; att3=&quot;3&quot;&gt;This is a paragraph.&lt;/p&gt;</code></li>
-</ul>
-<pre><code>[att=&#39;attValue&#39;] {
-    color: red;
-}
-/* 匹配href属性值以“https”开头的元素 */
-[href^=&#39;https&#39;] {
-  color: green;
-}
-</code></pre>
-<ul>
-<li>组合选择器
-一个规则，并不一定只设置一个选择器，可以设置多个选择器，用逗号隔开即可。</li>
-</ul>
-<pre><code>p,
-a,
-#id,
-.class {
-    color: red;
-}
-</code></pre>
-<hr>
-<ul>
-<li>伪类
-伪类（Pseudo-classes），使元素在不同状态下，应用不同的样式规则。<br>当鼠标悬浮在元素上时，可以使用:hover指定规则应用于这个状态。</li>
-</ul>
-<pre><code>// 当鼠标悬浮在段落p上时，颜色为红色
-p:hover {
-    color: red
-}
-</code></pre>
-<ul>
-<li>伪元素
-伪元素是一个附加至选择器末的关键词，允许你对被选择元素的特定部分修改样式。使用伪元素，就好像你在html页面中插入了一个新的元素。伪元素用双冒号::表示。</li>
-</ul>
-<pre><code>/*会应用到类名为my-element的元素，在该元素前插入Prefix-文字*/
-.my-element::before {
-  content: &#39;Prefix - &#39;;
-}
-</code></pre>
-<hr>
-<ul>
-<li>组合器<blockquote>
-<p>后代选择器 : 用空格（ ）表示，匹配父元素后代子孙节点中的元素，例如div p匹配div中所有的段落，不一定是儿子结点，也可以是孙子结点。
-相邻下一个兄弟节点：用+表示，匹配同级节点的紧邻下一个元素。例如div+p匹配div后面与该div紧邻着的段落，p与div之间不能有其他元素。
-后面所有的兄弟节点：用~表示，匹配同级节点的后面的元素，不要求是紧邻的元素。例如div~p匹配div后面所有同级的&lt;P&gt;元素。
-子选择器：用&gt;表示，匹配某个元素的孩子结点。例如div&gt;p表示div中所有p孩子元素。</p>
-</blockquote>
-</li>
-<li>复合选择器</li>
-</ul>
-<pre><code>/*将规则应用于类名为cls的&lt;a&gt;元素*/
-a.cls {
-    color: red;
-}
+            <title><![CDATA[2]]></title>
+            <link>https://slwen.cn/article/a80aebf1-3feb-46b8-9aed-2678f95d68ca</link>
+            <description><![CDATA[<p><a href="https://www.codebuddy.ai/login?platform=CLI&state=6737c4dc7e6c7674ac60101c1b95fc43b3d6b7e6ac7f5665671ca373c492ee6b_1757471893">https://www.codebuddy.ai/login?platform=CLI&amp;state=6737c4dc7e6c7674ac60101c1b95fc43b3d6b7e6ac7f5665671ca373c492ee6b_1757471893</a></p>
+]]></description>
+            <author>sl-wen</author>
+            <category>3</category>
+            <pubDate>Mon, 25 Aug 2025 06:24:30 GMT</pubDate>
+            <guid isPermaLink="false">https://slwen.cn/article/a80aebf1-3feb-46b8-9aed-2678f95d68ca</guid>
+            <lastBuildDate>Wed, 10 Sep 2025 02:39:34 GMT</lastBuildDate>
+        </item>
+
+        <item>
+            <title><![CDATA[1]]></title>
+            <link>https://slwen.cn/article/eb389b1c-6733-44dc-abb2-ede20cccb303</link>
+            <description><![CDATA[<pre><code>            PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHBsaXN0ClBVQkxJQyAiLS8vQXBwbGUgQ29tcHV0ZXIvL0RURCBQTElTVCAxLjAvL0VOIgogICAgICAgImh0dHA6Ly93d3cuYXBwbGUuY29tL0RURHMvUHJvcGVydHlMaXN0LTEuMC5kdGQiPgo8cGxpc3QgdmVyc2lvbj0iMS4wIj4KIDxkaWN0PgogIDxrZXk+cmF3ZGF0YTwva2V5PgogIDxzdHJpbmc+Jmx0Oz94bWwgdmVyc2lvbj0mcXVvdDsxLjAmcXVvdDsgZW5jb2Rpbmc9JnF1b3Q7VVRGLTgmcXVvdDs/Jmd0OwombHQ7IURPQ1RZUEUgcGxpc3QKUFVCTElDICZxdW90Oy0vL0FwcGxlIENvbXB1dGVyLy9EVEQgUExJU1QgMS4wLy9FTiZxdW90OwogICAgICAgJnF1b3Q7aHR0cDovL3d3dy5hcHBsZS5jb20vRFREcy9Qcm9wZXJ0eUxpc3QtMS4wLmR0ZCZxdW90OyZndDsKJmx0O3BsaXN0IHZlcnNpb249JnF1b3Q7MS4wJnF1b3Q7Jmd0OwogJmx0O2RpY3QmZ3Q7CiAgJmx0O2tleSZndDtjb21wdXRlcklkJmx0Oy9rZXkmZ3Q7CiAgJmx0O3N0cmluZyZndDsyYjFlZGU2NTljZGY3MGM1ZDcxMDM0ZDc0ZjU5NzdmYiZsdDsvc3RyaW5nJmd0OwogICZsdDtrZXkmZ3Q7ZXhwaXJ5RGF0ZSZsdDsva2V5Jmd0OwogICZsdDtzdHJpbmcmZ3Q7MjAyNS0wOS0xMCZsdDsvc3RyaW5nJmd0OwogICZsdDtrZXkmZ3Q7ZmxvYXRpbmcmbHQ7L2tleSZndDsKICAmbHQ7c3RyaW5nJmd0OyZsdDsvc3RyaW5nJmd0OwogICZsdDtrZXkmZ3Q7ZnJlZVVwZGF0ZXNVbnRpbCZsdDsva2V5Jmd0OwogICZsdDtzdHJpbmcmZ3Q7Mjk5OS0wMS0wMSZsdDsvc3RyaW5nJmd0OwogICZsdDtrZXkmZ3Q7bGljZW5zZUNyZWF0ZWQmbHQ7L2tleSZndDsKICAmbHQ7c3RyaW5nJmd0OzIwMjUtMDktMDMmbHQ7L3N0cmluZyZndDsKICAmbHQ7a2V5Jmd0O2xpY2Vuc2VJZCZsdDsva2V5Jmd0OwogICZsdDtzdHJpbmcmZ3Q7YTEzNTJhYzFmNWQ0NThmZjA0MTlhODYxNmFiMGE1NWMmbHQ7L3N0cmluZyZndDsKICAmbHQ7a2V5Jmd0O2xpY2Vuc2VLZXkmbHQ7L2tleSZndDsKICAmbHQ7c3RyaW5nJmd0OyZsdDsvc3RyaW5nJmd0OwogICZsdDtrZXkmZ3Q7bGljZW5zZUtleVBsYWluJmx0Oy9rZXkmZ3Q7CiAgJmx0O3N0cmluZyZndDsmbHQ7L3N0cmluZyZndDsKICAmbHQ7a2V5Jmd0O2xpY2Vuc2VUeXBlJmx0Oy9rZXkmZ3Q7CiAgJmx0O3N0cmluZyZndDt0cmlhbCZsdDsvc3RyaW5nJmd0OwogICZsdDtrZXkmZ3Q7bGljZW5zZWUmbHQ7L2tleSZndDsKICAmbHQ7c3RyaW5nJmd0O3RyaWFsIHVzZXImbHQ7L3N0cmluZyZndDsKICAmbHQ7a2V5Jmd0O21heEFjdGl2YXRpb25zJmx0Oy9rZXkmZ3Q7CiAgJmx0O3N0cmluZyZndDsxJmx0Oy9zdHJpbmcmZ3Q7CiAgJmx0O2tleSZndDtwcm9kdWN0Jmx0Oy9rZXkmZ3Q7CiAgJmx0O3N0cmluZyZndDtUZXh0dXJlUGFja2VyJmx0Oy9zdHJpbmcmZ3Q7CiAgJmx0O2tleSZndDtTaWduYXR1cmUmbHQ7L2tleSZndDsKICAmbHQ7ZGF0YSZndDtOYzBIRUM4c1ZoVDROcFBJOUszYU9uWUZZWUFmZVJoRG1wTHZhdmRTaDYwc3FIYVlZb0R4WUE5aXBrNUxPNVRMWmlCS3JvZ1RKMzFoY1BCZFZXUjEyMGU1UUdFZVNOLy9lRmwydDZIb0xKbmlUNEswdG1hbzl2cVUyOU5XME1DT0pEWDR3M1U0UE8wMnpuWEdhT3dkRWlhTTJRbmc5d081K2VPWHVhcFlyWEk9Jmx0Oy9kYXRhJmd0OwogJmx0Oy9kaWN0Jmd0OwombHQ7L3BsaXN0Jmd0OwoKPC9zdHJpbmc+CiAgPGtleT5udW1BY3RpdmF0aW9uczwva2V5PgogIDxpbnRlZ2VyPjE8L2ludGVnZXI+CiAgPGtleT5saWNlbnNlZTwva2V5PgogIDxzdHJpbmc+dHJpYWwgdXNlcjwvc3RyaW5nPgogIDxrZXk+bWF4QWN0aXZhdGlvbnM8L2tleT4KICA8aW50ZWdlcj4xPC9pbnRlZ2VyPgogIDxrZXk+ZnJlZVVwZGF0ZXNVbnRpbDwva2V5PgogIDxzdHJpbmc+Mjk5OS0wMS0wMTwvc3RyaW5nPgogIDxrZXk+ZXhwaXJ5RGF0ZTwva2V5PgogIDxzdHJpbmc+MjAyNS0wOS0xMDwvc3RyaW5nPgogIDxrZXk+Y29tcHV0ZXJJZDwva2V5PgogIDxzdHJpbmc+MmIxZWRlNjU5Y2RmNzBjNWQ3MTAzNGQ3NGY1OTc3ZmI8L3N0cmluZz4KICA8a2V5PnByb2R1Y3Q8L2tleT4KICA8c3RyaW5nPlRleHR1cmVQYWNrZXI8L3N0cmluZz4KICA8a2V5PmxpY2Vuc2VUeXBlPC9rZXk+CiAgPHN0cmluZz50cmlhbDwvc3RyaW5nPgogIDxrZXk+ZmxvYXRpbmc8L2tleT4KICA8c3RyaW5nPmZhbHNlPC9zdHJpbmc+CiA8L2RpY3Q+CjwvcGxpc3Q+Cgo=
+        
 </code></pre>
 ]]></description>
-            <author>slwen</author>
-            <category>css</category>
-            <pubDate>Fri, 06 Jun 2025 08:36:13 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=c6667a8f-2982-4154-b6b0-b66baf08f734</guid>
-            <lastBuildDate>Wed, 18 Jun 2025 14:31:32 GMT</lastBuildDate>
+            <author>sl-wen@outlook.com</author>
+            <category>1</category>
+            <pubDate>Mon, 25 Aug 2025 06:23:24 GMT</pubDate>
+            <guid isPermaLink="false">https://slwen.cn/article/eb389b1c-6733-44dc-abb2-ede20cccb303</guid>
+            <lastBuildDate>Wed, 03 Sep 2025 05:30:35 GMT</lastBuildDate>
+        </item>
+
+        <item>
+            <title><![CDATA[Linux]]></title>
+            <link>https://slwen.cn/article/1cfceba1-33ed-44c4-a954-c3b3e33fe7a7</link>
+            <description><![CDATA[<h3>实时监控日志输出</h3>
+<pre><code>sudo journalctl -u novel -f
+</code></pre>
+<h3>只看最近 100 行</h3>
+<pre><code>sudo journalctl -u novel -n 100
+</code></pre>
+<h3>看服务状态和最近日志</h3>
+<pre><code>sudo systemctl status novel             
+</code></pre>
+<h3>用ps查进程</h3>
+<pre><code>ps aux | grep novel
+</code></pre>
+<h3>关闭进程 PID</h3>
+<pre><code>sudo kill &lt;PID&gt;
+</code></pre>
+<h3>停止服务</h3>
+<pre><code>sudo systemctl stop blog novel 
+</code></pre>
+<h3>启动服务</h3>
+<pre><code>sudo systemctl start blog novel
+</code></pre>
+<h3>创建Python虚拟环境</h3>
+<pre><code>python3 -m venv venv
+</code></pre>
+<h3>激活虚拟环境</h3>
+<pre><code>source venv/bin/activate
+</code></pre>
+<h3>権限付与 root</h3>
+<pre><code>sudo su -
+</code></pre>
+<h3>書込み権限</h3>
+<pre><code>chmod -R 777 /opt/
+chmod -R 755 /opt/
+</code></pre>
+<h3>権限付与</h3>
+<pre><code>sudo chown -R apache:apache /usr/local/
+</code></pre>
+<h3>権限view</h3>
+<pre><code>ll
+</code></pre>
+<h3>削除</h3>
+<pre><code>rm -rf /usr/local/
+</code></pre>
+<h3>copy</h3>
+<pre><code>cp -pr /usr/local/ /usr/local/lib/
+</code></pre>
+<h3>rename</h3>
+<pre><code>mv /usr/local/lib/a /usr/local/lib/a_20250116
+</code></pre>
+<h3>view</h3>
+<pre><code>cat /usr/local/1.txt
+</code></pre>
+<h3>view log 200</h3>
+<pre><code>tail -200 /var/log/error.log
+</code></pre>
+<h3>再起動</h3>
+<pre><code>service httpd restart
+</code></pre>
+<h3>查看内存占用</h3>
+<pre><code>ps aux --sort=-%mem | head -10
+</code></pre>
+]]></description>
+            <author>sl-wen</author>
+            <category>Linux</category>
+            <pubDate>Thu, 14 Aug 2025 01:53:23 GMT</pubDate>
+            <guid isPermaLink="false">https://slwen.cn/article/1cfceba1-33ed-44c4-a954-c3b3e33fe7a7</guid>
+            <lastBuildDate>Fri, 15 Aug 2025 09:08:02 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[阿里云]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</link>
+            <link>https://slwen.cn/article/0df38f6b-760b-449f-88bf-1b5d6ebeb95e</link>
             <description><![CDATA[<pre><code>ssh root@121.40.215.235
 </code></pre>
 <pre><code>cd /usr/share/nginx/html/
@@ -556,74 +157,38 @@ git push
             <author>slwen</author>
             <category>ali</category>
             <pubDate>Wed, 04 Jun 2025 09:24:26 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=0df38f6b-760b-449f-88bf-1b5d6ebeb95e</guid>
-            <lastBuildDate>Mon, 23 Jun 2025 09:09:59 GMT</lastBuildDate>
-        </item>
-
-        <item>
-            <title><![CDATA[feed]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=384236e7-b4f0-45bb-ba67-3beae150f3e3</link>
-            <description><![CDATA[<p>This message is used to verify that this feed (feedId:147823966754130944) belongs to me (userId:76466871819188224). Join me in enjoying the next generation information browser <a href="https://follow.is">https://follow.is</a>.</p>
-]]></description>
-            <author>slwen</author>
-            
-            <pubDate>Wed, 04 Jun 2025 03:03:41 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=384236e7-b4f0-45bb-ba67-3beae150f3e3</guid>
-            <lastBuildDate>Fri, 06 Jun 2025 07:35:51 GMT</lastBuildDate>
+            <guid isPermaLink="false">https://slwen.cn/article/0df38f6b-760b-449f-88bf-1b5d6ebeb95e</guid>
+            <lastBuildDate>Mon, 30 Jun 2025 12:26:07 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[糖果屋]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=81e8730c-6150-46a0-8c34-62b635823fde</link>
+            <link>https://slwen.cn/article/81e8730c-6150-46a0-8c34-62b635823fde</link>
             <description><![CDATA[<p><a href="https://akilar.top/">https://akilar.top/</a></p>
 ]]></description>
             <author>Admin</author>
             
             <pubDate>Wed, 21 May 2025 15:59:37 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=81e8730c-6150-46a0-8c34-62b635823fde</guid>
-            <lastBuildDate>Mon, 02 Jun 2025 14:52:52 GMT</lastBuildDate>
-        </item>
-
-        <item>
-            <title><![CDATA[feed]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=d7062406-00fb-4be4-9c95-cc8c4b01228e</link>
-            <description><![CDATA[<p>feedid:147823966754130944+userId:76466871819188224</p>
-]]></description>
-            <author>Admin</author>
-            
-            <pubDate>Wed, 21 May 2025 06:15:49 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=d7062406-00fb-4be4-9c95-cc8c4b01228e</guid>
-            <lastBuildDate>Sun, 01 Jun 2025 03:46:05 GMT</lastBuildDate>
-        </item>
-
-        <item>
-            <title><![CDATA[负载]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=2db1fd10-661b-4718-bda1-c293da163f04</link>
-            <description><![CDATA[<p><a href="http://121.40.215.235/">http://121.40.215.235/</a></p>
-]]></description>
-            <author>Admin</author>
-            <category>服务器</category>
-            <pubDate>Sun, 18 May 2025 13:11:27 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=2db1fd10-661b-4718-bda1-c293da163f04</guid>
-            <lastBuildDate>Wed, 11 Jun 2025 14:35:55 GMT</lastBuildDate>
+            <guid isPermaLink="false">https://slwen.cn/article/81e8730c-6150-46a0-8c34-62b635823fde</guid>
+            <lastBuildDate>Wed, 23 Jul 2025 14:13:45 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[每日摘要]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=91ebc7f9-3486-4f94-9c02-2d457fb9237c</link>
+            <link>https://slwen.cn/article/91ebc7f9-3486-4f94-9c02-2d457fb9237c</link>
             <description><![CDATA[<pre><code>除去睡眠，人的一生有一万多天。但是人与人之间的区别就在于，你究竟是活了一万多天，还是仅仅活了一天，却重复了一万多次。
 </code></pre>
 ]]></description>
             <author>slwen</author>
             <category>摘要</category>
             <pubDate>Wed, 14 May 2025 06:02:57 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=91ebc7f9-3486-4f94-9c02-2d457fb9237c</guid>
-            <lastBuildDate>Fri, 20 Jun 2025 02:55:13 GMT</lastBuildDate>
+            <guid isPermaLink="false">https://slwen.cn/article/91ebc7f9-3486-4f94-9c02-2d457fb9237c</guid>
+            <lastBuildDate>Wed, 23 Jul 2025 14:11:17 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[bat]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=d5791554-2c7d-460b-bb2d-18c1c8c4482a</link>
+            <link>https://slwen.cn/article/d5791554-2c7d-460b-bb2d-18c1c8c4482a</link>
             <description><![CDATA[<h1>bat命令入门与高级技巧详解</h1>
 <p>这里为您介绍一下基础的bat命令知道及详细的bat命令使用方法，让我们使用bat命令解决windows当中一些需要手动操作的问题</p>
 <h2>第一章 批处理基础</h2>
@@ -1042,13 +607,13 @@ ECHO 处于关闭状态。</p>
             <author>sl-wen</author>
             <category>bat</category>
             <pubDate>Fri, 28 Mar 2025 05:41:00 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=d5791554-2c7d-460b-bb2d-18c1c8c4482a</guid>
-            <lastBuildDate>Wed, 18 Jun 2025 15:24:57 GMT</lastBuildDate>
+            <guid isPermaLink="false">https://slwen.cn/article/d5791554-2c7d-460b-bb2d-18c1c8c4482a</guid>
+            <lastBuildDate>Mon, 21 Jul 2025 15:23:26 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[file_list]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=efbabc47-885d-4b69-8b3f-18910918475a</link>
+            <link>https://slwen.cn/article/efbabc47-885d-4b69-8b3f-18910918475a</link>
             <description><![CDATA[<h3>file_list.bat</h3>
 <pre><code class="language-script">@echo off
 chcp 65001 &gt;nul
@@ -1079,13 +644,13 @@ exit
             <category>bat</category>
 <category>file_list</category>
             <pubDate>Fri, 28 Mar 2025 02:35:16 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=efbabc47-885d-4b69-8b3f-18910918475a</guid>
-            <lastBuildDate>Wed, 04 Jun 2025 09:26:37 GMT</lastBuildDate>
+            <guid isPermaLink="false">https://slwen.cn/article/efbabc47-885d-4b69-8b3f-18910918475a</guid>
+            <lastBuildDate>Wed, 02 Jul 2025 14:35:13 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[releasetool]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=f1726200-b88d-4344-8e29-95da55a3a058</link>
+            <link>https://slwen.cn/article/f1726200-b88d-4344-8e29-95da55a3a058</link>
             <description><![CDATA[<pre><code class="language-shell">cp -pr /usr/local/lib/XXXX /usr/local/lib/$1
 cd /usr/local/lib/XXXX/
 sudo chown -R root:root /usr/local/lib/XXXX
@@ -1114,13 +679,13 @@ echo $3&quot;リリース完了しました(&quot;$2&quot;)&quot;
             <category>releasetool</category>
 <category>release</category>
             <pubDate>Thu, 20 Mar 2025 06:46:29 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=f1726200-b88d-4344-8e29-95da55a3a058</guid>
-            <lastBuildDate>Tue, 10 Jun 2025 13:05:38 GMT</lastBuildDate>
+            <guid isPermaLink="false">https://slwen.cn/article/f1726200-b88d-4344-8e29-95da55a3a058</guid>
+            <lastBuildDate>Sat, 19 Jul 2025 13:55:33 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[laminas-migration]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=5ba1df80-3e15-4f10-aa84-c32d7d170dbe</link>
+            <link>https://slwen.cn/article/5ba1df80-3e15-4f10-aa84-c32d7d170dbe</link>
             <description><![CDATA[<h2>参照</h2>
 <pre><code>https://docs.laminas.dev/migration/
 </code></pre>
@@ -1170,56 +735,13 @@ composer remove phpunit/php-token-stream phpunit/phpunit-mock-objects
             <category>laminas</category>
 <category>php</category>
             <pubDate>Thu, 20 Mar 2025 06:43:22 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=5ba1df80-3e15-4f10-aa84-c32d7d170dbe</guid>
-            <lastBuildDate>Wed, 18 Jun 2025 15:44:13 GMT</lastBuildDate>
-        </item>
-
-        <item>
-            <title><![CDATA[Linux]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=652b63b8-f77d-4657-be41-79152a8b4eee</link>
-            <description><![CDATA[<h3>権限付与 root</h3>
-<pre><code>sudo su -
-</code></pre>
-<h3>書込み権限</h3>
-<pre><code>chmod -R 777 /opt/
-chmod -R 755 /opt/
-</code></pre>
-<h3>権限付与</h3>
-<pre><code>sudo chown -R apache:apache /usr/local/
-</code></pre>
-<h3>権限view</h3>
-<pre><code>ll
-</code></pre>
-<h3>削除</h3>
-<pre><code>rm -rf /usr/local/
-</code></pre>
-<h3>copy</h3>
-<pre><code>cp -pr /usr/local/ /usr/local/lib/
-</code></pre>
-<h3>rename</h3>
-<pre><code>mv /usr/local/lib/a /usr/local/lib/a_20250116
-</code></pre>
-<h3>view</h3>
-<pre><code>cat /usr/local/1.txt
-</code></pre>
-<h3>view log 200</h3>
-<pre><code>tail -200 /var/log/error.log
-</code></pre>
-<h3>再起動</h3>
-<pre><code>service httpd restart
-</code></pre>
-]]></description>
-            <author>Admin</author>
-            <category>Linux</category>
-<category>command</category>
-            <pubDate>Wed, 19 Mar 2025 03:28:40 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=652b63b8-f77d-4657-be41-79152a8b4eee</guid>
-            <lastBuildDate>Thu, 12 Jun 2025 08:17:58 GMT</lastBuildDate>
+            <guid isPermaLink="false">https://slwen.cn/article/5ba1df80-3e15-4f10-aa84-c32d7d170dbe</guid>
+            <lastBuildDate>Thu, 10 Jul 2025 03:18:18 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[git]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=88456219-d82e-4326-ae41-94952b07162b</link>
+            <link>https://slwen.cn/article/88456219-d82e-4326-ae41-94952b07162b</link>
             <description><![CDATA[<h1>安装和配置 Git</h1>
 <h5>首先，需要在本地计算机上安装 Git。安装完成后，可以通过配置用户名和邮箱来初始化 Git 仓库。</h5>
 <ul>
@@ -1298,19 +820,19 @@ git push</p>
 <p>git clone</p>
 </blockquote>
 </li>
-<li><p>commitの打ち消し</p>
+<li><p>commit取消</p>
 <blockquote>
-<p>git revert &lt;コミットのハッシュ値&gt;</p>
+<p>git revert <hash></p>
 </blockquote>
 </li>
-<li><p>コミットメッセージの修正</p>
+<li><p>commit message修改</p>
 <blockquote>
-<p>git commit --amend &quot;新しいコミットメッセージ&quot;</p>
+<p>git commit --amend &quot;new message&quot;</p>
 </blockquote>
 </li>
-<li><p>pushの取り消し</p>
+<li><p>push取消</p>
 <blockquote>
-<p>git reset --hard &lt;戻したいコミットのハッシュ値&gt;
+<p>git reset --hard <hash>
 git push -f</p>
 </blockquote>
 </li>
@@ -1330,13 +852,13 @@ git push -f</p>
             <author>slwen</author>
             <category>git</category>
             <pubDate>Tue, 18 Mar 2025 08:25:15 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=88456219-d82e-4326-ae41-94952b07162b</guid>
-            <lastBuildDate>Wed, 11 Jun 2025 09:17:51 GMT</lastBuildDate>
+            <guid isPermaLink="false">https://slwen.cn/article/88456219-d82e-4326-ae41-94952b07162b</guid>
+            <lastBuildDate>Mon, 11 Aug 2025 08:18:11 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[release]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=bbf63406-eb88-4a60-b51d-3defcb72def1</link>
+            <link>https://slwen.cn/article/bbf63406-eb88-4a60-b51d-3defcb72def1</link>
             <description><![CDATA[<ul>
 <li>git init</li>
 <li>git remote add origin <a href="mailto:git@github.com">git@github.com</a>:sl-wen/so-novel.git</li>
@@ -1357,13 +879,13 @@ git push -f</p>
             <author>slwen</author>
             <category>release</category>
             <pubDate>Tue, 18 Mar 2025 08:18:44 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=bbf63406-eb88-4a60-b51d-3defcb72def1</guid>
-            <lastBuildDate>Tue, 10 Jun 2025 13:07:36 GMT</lastBuildDate>
+            <guid isPermaLink="false">https://slwen.cn/article/bbf63406-eb88-4a60-b51d-3defcb72def1</guid>
+            <lastBuildDate>Sat, 19 Jul 2025 13:55:42 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[SSH設定]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=41559f85-4f2d-4133-9960-410fe42154df</link>
+            <link>https://slwen.cn/article/41559f85-4f2d-4133-9960-410fe42154df</link>
             <description><![CDATA[<p>root権限に変更する</p>
 <pre><code>sudo su -
 </code></pre>
@@ -1387,7 +909,7 @@ rm -rf ~/.ssh/id_rsa.pub
 <pre><code>cat ~/.ssh/id_rsa.pub
 </code></pre>
 <p>SSHキー内容をコピーする
-GitHubにSSHキーを設定する</p>
+GitHubにSSHキーを設定する1</p>
 <pre><code>・GitHubのsetting画面にSSHキーを追加する
 </code></pre>
 <p>接続テスト</p>
@@ -1397,13 +919,13 @@ GitHubにSSHキーを設定する</p>
             <author>slwen</author>
             <category>SSH</category>
             <pubDate>Tue, 18 Mar 2025 08:14:34 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=41559f85-4f2d-4133-9960-410fe42154df</guid>
-            <lastBuildDate>Fri, 13 Jun 2025 07:12:46 GMT</lastBuildDate>
+            <guid isPermaLink="false">https://slwen.cn/article/41559f85-4f2d-4133-9960-410fe42154df</guid>
+            <lastBuildDate>Sat, 19 Jul 2025 13:58:21 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[PHPLibrary]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=81132e66-c9a1-4e48-8247-ed8d6ac91169</link>
+            <link>https://slwen.cn/article/81132e66-c9a1-4e48-8247-ed8d6ac91169</link>
             <description><![CDATA[<ul>
 <li>composer/pcre</li>
 <li>composer/semver</li>
@@ -1468,13 +990,13 @@ GitHubにSSHキーを設定する</p>
             <category>Library</category>
 <category>php</category>
             <pubDate>Tue, 18 Mar 2025 08:07:23 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=81132e66-c9a1-4e48-8247-ed8d6ac91169</guid>
-            <lastBuildDate>Mon, 23 Jun 2025 03:31:36 GMT</lastBuildDate>
+            <guid isPermaLink="false">https://slwen.cn/article/81132e66-c9a1-4e48-8247-ed8d6ac91169</guid>
+            <lastBuildDate>Fri, 18 Jul 2025 03:42:42 GMT</lastBuildDate>
         </item>
 
         <item>
             <title><![CDATA[Markdown语法详解]]></title>
-            <link>http://121.40.215.235/pages/article.html?post_id=027ccc92-34a8-423c-93a9-4ae6dae69a5a</link>
+            <link>https://slwen.cn/article/027ccc92-34a8-423c-93a9-4ae6dae69a5a</link>
             <description><![CDATA[<p>以下为Markdown语法详解，结构清晰，涵盖常用语法及扩展功能：</p>
 <hr>
 <h3>标题</h3>
@@ -1675,8 +1197,8 @@ ___
             <author>sl-wen</author>
             <category>markdown</category>
             <pubDate>Fri, 08 Mar 2024 00:00:00 GMT</pubDate>
-            <guid isPermaLink="false">http://121.40.215.235/pages/article.html?post_id=027ccc92-34a8-423c-93a9-4ae6dae69a5a</guid>
-            <lastBuildDate>Wed, 18 Jun 2025 15:24:18 GMT</lastBuildDate>
+            <guid isPermaLink="false">https://slwen.cn/article/027ccc92-34a8-423c-93a9-4ae6dae69a5a</guid>
+            <lastBuildDate>Sat, 19 Jul 2025 14:08:06 GMT</lastBuildDate>
         </item>
                         </channel>
                      </rss>

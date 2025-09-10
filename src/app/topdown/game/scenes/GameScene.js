@@ -60,6 +60,8 @@ import MapLoader from '../MapLoader';
 import { createInteractiveGameObject } from '../utils';
 import FarmManager from '../farming/FarmManager';
 import TimeWeatherManager from '../TimeWeatherManager';
+import WeatherEffectsManager from '../WeatherEffectsManager';
+import LightingSystem from '../LightingSystem';
 
 // 将 8 向方向归一为 4 向（用于动画/朝向显示）
 let lastCardinal = 'down';
@@ -475,15 +477,52 @@ export default class GameScene extends Scene {
             }
         } catch (_) { /* noop */ }
 
-        // 时间与天气管理器 + 夜幕覆盖层
-        this.timeWeather = new TimeWeatherManager(this, { minutePerSecond: 1, startHour: 8 });
+        // 时间与天气管理器
+        this.timeWeather = new TimeWeatherManager(this, { 
+            minutePerSecond: 1, 
+            startHour: 8,
+            startDay: 1,
+            startSeason: 'spring'
+        });
         this.timeWeather.setSpeed('normal');
+        
+        // 天气效果管理器
+        this.weatherEffects = new WeatherEffectsManager(this);
+        
+        // 光照系统
+        this.lightingSystem = new LightingSystem(this);
+        
+        // 从地图添加光源（如果地图有Lights对象层）
+        try {
+            this.lightingSystem.addLightsFromMap(map);
+        } catch (_) {
+            // 如果没有光源层，添加一些默认光源作为示例
+            this.addDefaultLights();
+        }
+        
+        // 创建夜幕覆盖层（支持颜色变化）
         this.nightOverlay = this.add.rectangle(0, 0, this.scale.gameSize.width, this.scale.gameSize.height, 0x000000, 0.0)
             .setOrigin(0, 0)
             .setDepth(2000)
             .setScrollFactor(0);
-        // 数字键切换时间倍率
-        const keys = this.input.keyboard.addKeys({ ONE: Phaser.Input.Keyboard.KeyCodes.ONE, TWO: Phaser.Input.Keyboard.KeyCodes.TWO, THREE: Phaser.Input.Keyboard.KeyCodes.THREE });
+        
+        // 创建环境光覆盖层（用于不同时间的色调）
+        this.ambientOverlay = this.add.rectangle(0, 0, this.scale.gameSize.width, this.scale.gameSize.height, 0xffffff, 0.0)
+            .setOrigin(0, 0)
+            .setDepth(1999)
+            .setScrollFactor(0)
+            .setBlendMode(Phaser.BlendModes.MULTIPLY);
+        
+        // 数字键切换时间倍率（扩展更多快捷键）
+        const keys = this.input.keyboard.addKeys({
+            ZERO: Phaser.Input.Keyboard.KeyCodes.ZERO,
+            ONE: Phaser.Input.Keyboard.KeyCodes.ONE,
+            TWO: Phaser.Input.Keyboard.KeyCodes.TWO,
+            THREE: Phaser.Input.Keyboard.KeyCodes.THREE,
+            FOUR: Phaser.Input.Keyboard.KeyCodes.FOUR,
+            FIVE: Phaser.Input.Keyboard.KeyCodes.FIVE,
+            T: Phaser.Input.Keyboard.KeyCodes.T  // T键显示/隐藏时间面板
+        });
         this.timeSpeedKeys = keys;
 
         // cat 主角：初始属性、碰撞盒与交互体
@@ -886,9 +925,27 @@ export default class GameScene extends Scene {
         };
         window.addEventListener('request-save-snapshot', handleRequestSave);
 
+        // 监听时间速度变化事件（从UI面板触发）
+        const handleTimeSpeedChange = ({ detail }) => {
+            if (this.timeWeather && typeof detail.speed === 'number') {
+                this.timeWeather.setSpeed(detail.speed);
+            }
+        };
+        window.addEventListener('time-speed-change', handleTimeSpeedChange);
+
+        // 监听时间跳转事件
+        const handleTimeJump = ({ detail }) => {
+            if (this.timeWeather && detail.hour !== undefined) {
+                this.timeWeather.setTime(detail.hour, detail.minute || 0);
+            }
+        };
+        window.addEventListener('time-jump', handleTimeJump);
+
         // 清理事件监听
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             window.removeEventListener('request-save-snapshot', handleRequestSave);
+            window.removeEventListener('time-speed-change', handleTimeSpeedChange);
+            window.removeEventListener('time-jump', handleTimeJump);
         });
 
         // 自动保存事件触发工具（节流由 React 负责）
@@ -1485,53 +1542,88 @@ export default class GameScene extends Scene {
         }
         this.catSprite.setPosition(Math.round(this.catSprite.x), Math.round(this.catSprite.y));
 
-        // 时间/天气推进与夜幕强度
+        // 时间/天气推进与光照效果
         if (this.timeWeather) {
-            // 时间倍率快捷键
-            if (this.timeSpeedKeys?.ONE?.isDown) this.timeWeather.setSpeed('slow');
-            else if (this.timeSpeedKeys?.TWO?.isDown) this.timeWeather.setSpeed('normal');
-            else if (this.timeSpeedKeys?.THREE?.isDown) this.timeWeather.setSpeed('fast');
+            // 时间倍率快捷键控制
+            if (Phaser.Input.Keyboard.JustDown(this.timeSpeedKeys?.ZERO)) this.timeWeather.setSpeed(0);      // 暂停
+            else if (Phaser.Input.Keyboard.JustDown(this.timeSpeedKeys?.ONE)) this.timeWeather.setSpeed(0.5);   // 慢速
+            else if (Phaser.Input.Keyboard.JustDown(this.timeSpeedKeys?.TWO)) this.timeWeather.setSpeed(1);     // 正常
+            else if (Phaser.Input.Keyboard.JustDown(this.timeSpeedKeys?.THREE)) this.timeWeather.setSpeed(3);   // 快速
+            else if (Phaser.Input.Keyboard.JustDown(this.timeSpeedKeys?.FOUR)) this.timeWeather.setSpeed(6);    // 很快
+            else if (Phaser.Input.Keyboard.JustDown(this.timeSpeedKeys?.FIVE)) this.timeWeather.setSpeed(12);   // 极快
 
+            // 更新时间系统
             this.timeWeather.update(deltaMs);
-            const alpha = this.timeWeather.getNightAlpha();
+            
+            // 获取当前时间信息
+            const timeInfo = this.timeWeather.getTimeInfo();
+            
+            // 更新夜幕覆盖层
             if (this.nightOverlay) {
-                // 自适应画布尺寸变化
                 this.nightOverlay.setSize(this.scale.gameSize.width, this.scale.gameSize.height);
-                this.nightOverlay.setAlpha(alpha);
+                this.nightOverlay.setAlpha(timeInfo.nightAlpha);
+            }
+            
+            // 更新环境光覆盖层
+            if (this.ambientOverlay) {
+                this.ambientOverlay.setSize(this.scale.gameSize.width, this.scale.gameSize.height);
+                const color = timeInfo.ambientColor;
+                const hexColor = (color.r << 16) | (color.g << 8) | color.b;
+                this.ambientOverlay.setFillStyle(hexColor);
+                
+                // 根据时间阶段调整环境光强度
+                const intensity = this.getAmbientIntensity(timeInfo.phase);
+                this.ambientOverlay.setAlpha(intensity);
+            }
+
+            // 更新天气效果
+            if (this.weatherEffects) {
+                this.weatherEffects.updateWeather(timeInfo.weather, timeInfo.weatherIntensity, deltaMs);
+                
+                // 特殊天气效果
+                if (timeInfo.weather === 'rain' && Math.random() < 0.001) {
+                    // 偶尔闪电（0.1%概率每帧）
+                    this.weatherEffects.createLightningEffect();
+                    
+                    // 闪电时添加临时光效
+                    if (this.lightingSystem) {
+                        const playerPos = this.gridEngine.getPosition('cat');
+                        const lightX = playerPos.x * (this.map?.tileWidth || 16) + Math.random() * 200 - 100;
+                        const lightY = playerPos.y * (this.map?.tileHeight || 16) + Math.random() * 200 - 100;
+                        this.lightingSystem.addTemporaryLight(lightX, lightY, {
+                            radius: 200,
+                            intensity: 1.5,
+                            duration: 200,
+                            color: 0xaaccff
+                        });
+                    }
+                }
+            }
+
+            // 更新光照系统
+            if (this.lightingSystem && this.catSprite) {
+                const playerPos = {
+                    x: this.catSprite.x,
+                    y: this.catSprite.y
+                };
+                this.lightingSystem.update(timeInfo.nightAlpha, timeInfo.phase, playerPos);
             }
 
             // 天气对土壤湿度影响
             if (this.farmManager) {
-                if (this.timeWeather.weather === 'rain') this.farmManager.rainTick(0.4 * (deltaMs / 1000));
-                else this.farmManager.evaporateTick(0.2 * (deltaMs / 1000));
+                const weatherEffect = this.getWeatherEffect(timeInfo.weather, timeInfo.weatherIntensity);
+                if (weatherEffect.rain > 0) {
+                    this.farmManager.rainTick(weatherEffect.rain * (deltaMs / 1000));
+                } else {
+                    this.farmManager.evaporateTick(weatherEffect.evaporation * (deltaMs / 1000));
+                }
             }
 
             // 简易土壤可视化（每 0.75s 重绘一次）
             this.lastSoilOverlayRedraw += deltaMs;
             if (this.lastSoilOverlayRedraw >= 750) {
                 this.lastSoilOverlayRedraw = 0;
-                try {
-                    if (!this.farmlandGraphics) {
-                        this.farmlandGraphics = this.add.graphics().setDepth(5);
-                    }
-                    this.farmlandGraphics.clear();
-                    this.farmManager?.farmland?.forEach?.((key) => {
-                        const [txStr, tyStr] = key.split(',');
-                        const tx = Number.parseInt(txStr, 10);
-                        const ty = Number.parseInt(tyStr, 10);
-                        const soil = this.farmManager.getSoil(tx, ty);
-                        // 映射湿度到颜色：干(红)→湿(蓝绿)
-                        const m = soil.moisture ?? 0;
-                        const r = Math.round(255 * Math.max(0, (100 - m) / 100));
-                        const g = Math.round(180 * Math.min(1, m / 100));
-                        const b = Math.round(200 * Math.min(1, m / 100));
-                        const color = (r << 16) | (g << 8) | b;
-                        const px = tx * (this.map?.tileWidth || 16);
-                        const py = ty * (this.map?.tileHeight || 16);
-                        this.farmlandGraphics.fillStyle(color, 0.12);
-                        this.farmlandGraphics.fillRect(px, py, this.map?.tileWidth || 16, this.map?.tileHeight || 16);
-                    });
-                } catch (_) { /* noop */ }
+                this.updateSoilVisualization();
             }
         }
     }
@@ -1885,6 +1977,107 @@ export default class GameScene extends Scene {
             console.log('Invalid direction calculated - stopping pathfinding');
             this.manualPathfinding.isActive = false;
         }
+    }
+
+    /**
+     * 获取环境光强度
+     * @param {string} phase 时间阶段
+     * @returns {number} 强度值 (0-1)
+     */
+    getAmbientIntensity(phase) {
+        const intensities = {
+            dawn: 0.3,
+            morning: 0.1,
+            noon: 0.0,
+            afternoon: 0.15,
+            dusk: 0.4,
+            night: 0.2,
+            midnight: 0.1
+        };
+        return intensities[phase] || 0.1;
+    }
+
+    /**
+     * 获取天气效果参数
+     * @param {string} weather 天气类型
+     * @param {number} intensity 天气强度
+     * @returns {object} 天气效果参数
+     */
+    getWeatherEffect(weather, intensity = 0.5) {
+        const effects = {
+            clear: { rain: 0, evaporation: 0.2 },
+            rain: { rain: 0.8 * intensity, evaporation: 0.05 },
+            wind: { rain: 0, evaporation: 0.4 * intensity },
+            snow: { rain: 0.3 * intensity, evaporation: 0.1 }
+        };
+        return effects[weather] || effects.clear;
+    }
+
+    /**
+     * 更新土壤可视化
+     */
+    updateSoilVisualization() {
+        try {
+            if (!this.farmlandGraphics) {
+                this.farmlandGraphics = this.add.graphics().setDepth(5);
+            }
+            this.farmlandGraphics.clear();
+            
+            this.farmManager?.farmland?.forEach?.((key) => {
+                const [txStr, tyStr] = key.split(',');
+                const tx = Number.parseInt(txStr, 10);
+                const ty = Number.parseInt(tyStr, 10);
+                const soil = this.farmManager.getSoil(tx, ty);
+                
+                // 映射湿度到颜色：干(红)→湿(蓝绿)
+                const m = soil.moisture ?? 0;
+                const r = Math.round(255 * Math.max(0, (100 - m) / 100));
+                const g = Math.round(180 * Math.min(1, m / 100));
+                const b = Math.round(200 * Math.min(1, m / 100));
+                const color = (r << 16) | (g << 8) | b;
+                
+                const px = tx * (this.map?.tileWidth || 16);
+                const py = ty * (this.map?.tileHeight || 16);
+                
+                // 根据作物状态调整透明度
+                const crop = this.farmManager.getCrop(tx, ty);
+                const alpha = crop ? 0.08 : 0.12;
+                
+                this.farmlandGraphics.fillStyle(color, alpha);
+                this.farmlandGraphics.fillRect(px, py, this.map?.tileWidth || 16, this.map?.tileHeight || 16);
+            });
+        } catch (_) { /* noop */ }
+    }
+
+    /**
+     * 添加默认光源（示例）
+     */
+    addDefaultLights() {
+        if (!this.lightingSystem || !this.map) return;
+        
+        const tileW = this.map.tileWidth || 16;
+        const tileH = this.map.tileHeight || 16;
+        
+        // 在地图的几个位置添加火把光源作为示例
+        const lightPositions = [
+            { x: 10, y: 8 },   // 左上角
+            { x: 25, y: 8 },   // 右上角  
+            { x: 10, y: 20 },  // 左下角
+            { x: 25, y: 20 }   // 右下角
+        ];
+        
+        lightPositions.forEach((pos, index) => {
+            this.lightingSystem.addLight(
+                `default_torch_${index}`,
+                pos.x * tileW,
+                pos.y * tileH,
+                'torch',
+                {
+                    radius: 80,
+                    intensity: 0.9
+                }
+            );
+        });
     }
 }
 

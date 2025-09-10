@@ -138,9 +138,9 @@ export default class MapLoader {
                 }
             } catch (_) { /* noop */ }
 
-            // 5) Explicit obstacle tile ids used by existing maps (169,170) + hide when in special layers
+            // 5) Explicit obstacle tile ids used by existing maps (170) + hide when in special layers
             try {
-                const explicitObstacleIds = [169, 170];
+                const explicitObstacleIds = [170];
                 if (layerData.name === 'Objects' || layerData.name === 'Collision' || layerData.name === 'Farmable') {
                     explicitObstacleIds.forEach((id) => {
                         layer.setCollision(id);

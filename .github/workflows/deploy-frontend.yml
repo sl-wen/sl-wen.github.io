@@ -37,7 +37,7 @@ jobs:
           
           # 停止前端服务
           echo "停止blog服务..."
-          sudo systemctl stop blog || echo "服务已停止"
+          sudo systemctl stop blog novel || echo "服务已停止"
           
           # 拉取最新代码
           echo "拉取最新前端代码..."
@@ -63,17 +63,17 @@ jobs:
           
           # 启动前端服务
           echo "启动前端服务..."
-          sudo systemctl start blog
+          sudo systemctl start blog novel
           
           # 快速检查服务状态
           echo "检查服务状态..."
           sleep 5
           
-          if sudo systemctl is-active --quiet blog; then
+          if sudo systemctl is-active --quiet blog novel; then
             echo "✅ 前端服务启动成功"
           else
             echo "❌ 前端服务启动失败"
-            sudo systemctl status blog --no-pager
+            sudo systemctl status blog novel --no-pager
             exit 1
           fi
           
@@ -94,7 +94,7 @@ jobs:
           
           echo "=== 前端部署完成 ==="
           echo "时间: $(date)"
-          echo "服务状态: $(sudo systemctl is-active blog)"
+          echo "服务状态: $(sudo systemctl is-active blog novel)"
           echo "当前提交: $(git log --oneline -n 1)"
           echo "内存使用: $(free -h | grep Mem | awk '{print $3 "/" $2}')"
           echo "🎉 前端部署成功完成！" 

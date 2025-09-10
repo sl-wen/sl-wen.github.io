@@ -98,73 +98,16 @@ export default class TimeWeatherManager {
      * 根据时间计算夜幕强度（0..0.8）
      */
     getNightAlpha() {
-        const m = this.timeOfDayMin;
-        const phase = this.getCurrentPhase();
-        
-        // 不同阶段的光照强度
-        const lightingConfig = {
-            dawn: { alpha: 0.3, transition: true },      // 黎明：轻微暗化
-            morning: { alpha: 0.0, transition: false },   // 上午：完全明亮
-            noon: { alpha: 0.0, transition: false },      // 正午：完全明亮
-            afternoon: { alpha: 0.1, transition: false }, // 下午：轻微暗化
-            dusk: { alpha: 0.4, transition: true },       // 黄昏：中度暗化
-            night: { alpha: 0.6, transition: false },     // 夜晚：高度暗化
-            midnight: { alpha: 0.8, transition: false }   // 深夜：最大暗化
-        };
-        
-        const config = lightingConfig[phase] || { alpha: 0.0, transition: false };
-        
-        // 如果在过渡阶段，计算渐变
-        if (config.transition) {
-            const phaseInfo = this.dayPhases[phase];
-            const progress = (m - phaseInfo.start) / (phaseInfo.end - phaseInfo.start);
-            
-            if (phase === 'dawn') {
-                // 黎明：从深夜的暗逐渐变亮
-                return 0.8 * (1 - progress);
-            } else if (phase === 'dusk') {
-                // 黄昏：从明亮逐渐变暗
-                return 0.6 * progress;
-            }
-        }
-        
-        return config.alpha;
+        // 返回0，完全禁用夜晚覆盖层
+        return 0.0;
     }
 
     /**
      * 获取环境光颜色
      */
     getAmbientColor() {
-        const phase = this.getCurrentPhase();
-        const season = this.getSeason();
-        
-        // 基础颜色配置
-        const colors = {
-            dawn: { r: 255, g: 200, b: 150 },      // 温暖的橙色
-            morning: { r: 255, g: 255, b: 255 },   // 纯白
-            noon: { r: 255, g: 255, b: 240 },      // 略带黄的白
-            afternoon: { r: 255, g: 240, b: 200 }, // 温暖的黄
-            dusk: { r: 255, g: 150, b: 100 },      // 深橙色
-            night: { r: 100, g: 150, b: 255 },     // 冷蓝色
-            midnight: { r: 50, g: 100, b: 200 }    // 深蓝色
-        };
-        
-        // 季节调整
-        const seasonModifiers = {
-            spring: { r: 1.0, g: 1.1, b: 1.0 },   // 略微偏绿
-            summer: { r: 1.1, g: 1.0, b: 0.9 },   // 略微偏暖
-            autumn: { r: 1.2, g: 0.9, b: 0.7 },   // 偏橙红
-            winter: { r: 0.9, g: 0.9, b: 1.2 }    // 偏冷蓝
-        };
-        
-        const baseColor = colors[phase] || colors.morning;
-        const modifier = seasonModifiers[season] || seasonModifiers.spring;
-        
-        return {
-            r: Math.min(255, Math.round(baseColor.r * modifier.r)),
-            g: Math.min(255, Math.round(baseColor.g * modifier.g)),
-            b: Math.min(255, Math.round(baseColor.b * modifier.b))
-        };
+        // 返回纯白色，不受时间和季节影响
+        return { r: 255, g: 255, b: 255 };
     }
 
     /**

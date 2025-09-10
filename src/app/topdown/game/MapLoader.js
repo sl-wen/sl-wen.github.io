@@ -223,7 +223,7 @@ export default class MapLoader {
             // 步骤8：处理特定障碍物瓦片ID（兼容现有地图）
             // 某些现有地图使用特定的瓦片ID（如170）作为障碍物标识
             try {
-                const explicitObstacleIds = [170]; // 硬编码的障碍物瓦片ID列表
+                const explicitObstacleIds = [169, 170]; // 硬编码的障碍物瓦片ID列表
                 
                 // 在特殊图层中隐藏这些障碍物瓦片并启用碰撞
                 if (layerData.name === 'Objects' || layerData.name === 'Collision' || layerData.name === 'Farmable') {

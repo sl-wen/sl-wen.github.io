@@ -26,11 +26,11 @@ export default class Crop {
         this._timer = null;       // Phaser 定时器
 
         // 渲染精灵
-        const pixelX = this.tileX * this.tileSize;
-        const pixelY = (this.tileY + 1) * this.tileSize; // 以瓦片左下对齐
+        const pixelX = this.tileX * this.tileSize + this.tileSize / 2;
+        const pixelY = this.tileY * this.tileSize + this.tileSize / 2;
         this.sprite = scene.add.sprite(pixelX, pixelY, 'farmplants', this._frameName())
-            .setOrigin(0, 1)
-            .setDepth(1);
+            .setOrigin(0.5, 0.5) // 居中显示
+            .setDepth(100); // 提高深度确保作物显示在地图图层之上
     }
 
     _frameName() {

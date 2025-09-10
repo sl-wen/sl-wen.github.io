@@ -80,11 +80,11 @@ export const createInteractiveGameObject = (
  *   - multiplier: 缩放倍数
  * 
  * 计算逻辑：
- * 1. 设置基础游戏尺寸（16:9 比例）
- * 2. 根据窗口大小计算合适的缩放倍数
- * 3. 确保最小倍数为 2，保证在手机上的可读性
- * 4. 如果倍数大于 1，进一步扩展尺寸以更好地利用屏幕空间
- * 5. 保持像素完美，扩展的尺寸是 16 的倍数
+ * 1. 检测设备类型（移动设备 vs PC）
+ * 2. 移动设备：使用屏幕宽度的45%、高度的35%（相对较小的游戏画面）
+ * 3. PC设备：使用屏幕的100%宽度和100%高度（全屏显示）
+ * 4. 确保尺寸是偶数，避免像素偏移问题
+ * 5. 返回计算后的尺寸和缩放倍数
  * 
  * 使用示例：
  * const { width, height, multiplier } = calculateGameSize();
@@ -98,9 +98,9 @@ export const calculateGameSize = () => {
     let width, height, scale;
 
     if (isMobile) {
-        // 手机端设置 - 使用屏幕尺寸
-        width = Math.floor(window.innerWidth * 0.9);   // 使用屏幕宽度的90%
-        height = Math.floor(window.innerHeight * 0.7); // 使用屏幕高度的70%
+        // 手机端设置 - 使用屏幕尺寸的50%（缩小游戏画面）
+        width = Math.floor(window.innerWidth * 0.45);  // 使用屏幕宽度的45%（原90%的50%）
+        height = Math.floor(window.innerHeight * 0.35); // 使用屏幕高度的35%（原70%的50%）
         scale = 1; // 直接使用屏幕尺寸，不需要额外缩放
 
     } else {

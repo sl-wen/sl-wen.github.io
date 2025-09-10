@@ -164,9 +164,21 @@ export default class GameScene extends Scene {
         }
     }
 
+    /**
+     * 从精灵图集中获取动画帧序列
+     * 
+     * 用于从 TextureAtlas 中筛选出特定动画的所有帧
+     * 并按帧编号排序，确保动画播放顺序正确
+     * 
+     * @param {string} assetKey - 资源键名（精灵图集名称）
+     * @param {string} animation - 动画名称（如 'idle', 'walk'）
+     * @returns {Array} 排序后的动画帧数组
+     * 
+     * 示例：
+     * - assetKey='coin', animation='idle' → 返回 ['coin_idle_0', 'coin_idle_1', ...]
+     * - assetKey='cat', animation='walk' → 返回 ['cat_walk_0', 'cat_walk_1', ...]
+     */
     getFramesForAnimation(assetKey, animation) {
-        // 从精灵图集中筛选指定动画前缀的帧，并按名称排序
-        // 例如：assetKey=coin, animation=idle → 取 coin_idle_0..N
         return this.anims.generateFrameNames(assetKey)
             .filter((frame) => {
                 if (frame.frame.includes(`${assetKey}_${animation}`)) {
@@ -179,9 +191,23 @@ export default class GameScene extends Scene {
             .sort((a, b) => (a.frame < b.frame ? -1 : 1));
     }
 
+    /**
+     * 创建角色行走动画
+     * 
+     * 为角色或 NPC 创建四方向行走动画（上/右/下/左）
+     * 如果动画已存在则跳过创建，避免重复定义
+     * 
+     * 动画帧序列设计：walk1 → idle1 → walk2 → idle1（yoyo）
+     * 这种设计形成轻微的摆动效果，让行走看起来更自然
+     * 
+     * @param {string} assetKey - 角色资源键名
+     * @param {string} animationName - 动画名称（如 'walk_up', 'walk_down'）
+     * 
+     * 要求的帧命名规范：
+     * - walk帧：{assetKey}_{animationName}_1, {assetKey}_{animationName}_2
+     * - idle帧：{assetKey}_{idleName}_1 (idleName = animationName.replace('walk', 'idle'))
+     */
     createPlayerwalkAnimation(assetKey, animationName) {
-        // 角色/NPC 的行走循环动画（上/右/下/左），若不存在则创建
-        // 帧序列采用 walk1 → idle1 → walk2，形成轻微摆动效果
         const animationKey = `${assetKey}_${animationName}`;
         if (!this.anims.exists(animationKey)) {
             this.anims.create({
@@ -371,8 +397,38 @@ export default class GameScene extends Scene {
         window.dispatchEvent(customEvent);
     }
 
+    /**
+     * 场景创建方法 - GameScene 的核心初始化入口
+     * 
+     * 这是 Phaser 场景的标准生命周期方法，在场景启动时自动调用
+     * 负责完整的游戏世界初始化，包括：
+     * 
+     * 1. 地图系统初始化
+     *    - 使用 MapLoader 加载 Tiled 地图
+     *    - 配置图层、图块集、碰撞检测
+     *    - 创建水面动画、农场系统
+     * 
+     * 2. 角色系统初始化  
+     *    - 创建主角精灵和碰撞体
+     *    - 解析并创建 NPC
+     *    - 设置角色动画和移动逻辑
+     * 
+     * 3. 交互系统初始化
+     *    - 解析 Tiled 对象层中的交互元素
+     *    - 创建对话触发器、传送门、物品
+     *    - 设置碰撞检测和重叠事件
+     * 
+     * 4. 游戏系统初始化
+     *    - 初始化 GridEngine 网格移动系统
+     *    - 设置相机跟随和边界
+     *    - 配置输入处理和 UI 事件
+     * 
+     * 5. 辅助系统初始化
+     *    - 时间天气系统
+     *    - 寻路和自动移动   
+     *    - 调试和性能监控
+     */
     create() {
-        // 场景创建入口：加载地图、创建角色/NPC、设置相机、动画与碰撞
         const camera = this.cameras.main;
         const { game } = this.sys;
         const isDebugMode = this.physics.config.debug;
@@ -1253,8 +1309,45 @@ export default class GameScene extends Scene {
         });
     }
 
-    update() { // 每帧更新循环（由 Phaser 驱动）
-        // 帧更新：根据状态早退；从 InputManager 取当前方向驱动网格移动
+    /**
+     * 每帧更新方法 - 游戏主循环
+     * 
+     * 这是 Phaser 场景的标准生命周期方法，每帧自动调用（通常60FPS）
+     * 负责处理所有需要实时更新的游戏逻辑：
+     * 
+     * 1. 状态检查与早期退出
+     *    - 检查传送、对话等阻塞状态
+     *    - 避免在特殊状态下处理移动输入
+     * 
+     * 2. 输入处理与角色移动
+     *    - 从 InputManager 获取当前输入方向
+     *    - 处理手动输入与自动寻路的优先级
+     *    - 执行 GridEngine 移动命令
+     * 
+     * 3. 交互系统更新
+     *    - 更新角色碰撞体位置
+     *    - 检测周围可交互对象
+     *    - 更新 ActionContext 通知 UI
+     * 
+     * 4. 农场系统更新
+     *    - 处理种植、浇水、收获操作
+     *    - 更新作物生长状态
+     *    - 处理土壤湿度变化
+     * 
+     * 5. 环境系统更新
+     *    - 时间天气系统推进
+     *    - 夜幕覆盖效果更新
+     *    - 土壤可视化重绘
+     * 
+     * 6. 寻路系统更新
+     *    - 执行自动寻路步骤
+     *    - 处理路径阻塞和重新规划
+     * 
+     * 7. 渲染优化
+     *    - 像素对齐处理
+     *    - 相机平滑跟随
+     */
+    update() {
 
         if ( // 全局状态拦截：传送/攻击/对话时不处理移动
             this.isTeleporting
@@ -1443,7 +1536,15 @@ export default class GameScene extends Scene {
         }
     }
 
-    // 手动寻路方法 - 简化的寻路算法
+    /**
+     * 启动手动寻路
+     * 
+     * 初始化自动寻路状态，开始按照给定路径移动角色
+     * 这是点击地图移动功能的核心实现
+     * 
+     * @param {Object} target - 目标位置 {x, y}
+     * @param {Array} path - 路径点数组，每个元素为 {x, y} 坐标
+     */
     startManualPathfinding(target, path) {
         const currentPos = this.gridEngine.getPosition('cat');
         console.log(`Starting manual pathfinding from (${currentPos.x}, ${currentPos.y}) to (${target.x}, ${target.y}) with ${path?.length ?? 0} steps`);
@@ -1454,7 +1555,23 @@ export default class GameScene extends Scene {
         this.manualPathfinding.isActive = this.manualPathfinding.path.length > 0;
     }
 
-    // 简化的A*寻路算法
+    /**
+     * A* 寻路算法实现
+     * 
+     * 使用 A* 算法在网格地图上寻找从起点到终点的最短路径
+     * 考虑地图中的碰撞障碍物，返回可行的路径点序列
+     * 
+     * 算法特点：
+     * - 使用曼哈顿距离作为启发函数
+     * - 支持4向或8向移动（通过 allowDiagonal 控制）
+     * - 自动避开碰撞瓦片
+     * - 返回不包含起点的路径序列
+     * 
+     * @param {Object} start - 起点坐标 {x, y}
+     * @param {Object} goal - 终点坐标 {x, y}  
+     * @param {boolean} allowDiagonal - 是否允许对角线移动
+     * @returns {Array} 路径点数组，失败时返回空数组
+     */
     findPath(start, goal, allowDiagonal = false) {
         const openSet = [start];
         const cameFrom = new Map();
@@ -1770,3 +1887,142 @@ export default class GameScene extends Scene {
         }
     }
 }
+
+/**
+ * ================================
+ * GameScene 系统架构详细说明
+ * ================================
+ * 
+ * GameScene 是整个游戏的核心场景，采用模块化设计，各系统职责分明：
+ * 
+ * ## 核心系统架构
+ * 
+ * ### 1. 地图系统 (MapLoader)
+ * - **职责**: 加载 Tiled 地图，配置图层和碰撞
+ * - **特点**: 支持多图块集、多层碰撞检测策略
+ * - **使用**: `MapLoader.load(scene, mapKey, options)`
+ * - **输出**: 地图实例、图层数组、碰撞瓦片ID集合
+ * 
+ * ### 2. 输入系统 (InputManager)  
+ * - **职责**: 统一处理键盘、触摸、虚拟摇杆输入
+ * - **特点**: 支持8方向移动、JustDown事件检测
+ * - **集成**: 与 GridEngine 无缝对接
+ * - **扩展**: 支持自定义按键映射
+ * 
+ * ### 3. 移动系统 (GridEngine)
+ * - **职责**: 网格化角色移动、碰撞检测
+ * - **特点**: 支持多角色、动画同步、寻路
+ * - **配置**: 角色速度、偏移、移动方向数
+ * - **事件**: movementStarted, movementStopped, directionChanged
+ * 
+ * ### 4. 交互系统
+ * - **对话系统**: 基于碰撞体重叠检测，支持多角色对话
+ * - **物品系统**: 金币收集、道具获取、状态更新  
+ * - **传送系统**: 场景间无缝切换，状态保持
+ * - **农场系统**: 种植、浇水、收获，土壤管理
+ * 
+ * ### 5. 动画系统
+ * - **角色动画**: 4方向行走、待机动画
+ * - **环境动画**: 水面波纹、作物生长
+ * - **UI动画**: 场景淡入淡出、高亮提示
+ * - **同步机制**: 与 GridEngine 移动事件联动
+ * 
+ * ### 6. 寻路系统
+ * - **A*算法**: 智能路径规划，避开障碍物
+ * - **点击移动**: 触摸/鼠标点击自动寻路
+ * - **冲突处理**: 手动输入优先，自动取消寻路
+ * - **可视化**: 目标高亮、路径预览
+ * 
+ * ### 7. 农场系统 (FarmManager)
+ * - **土地管理**: 耕地注册、状态追踪
+ * - **作物系统**: 种植、生长、收获循环
+ * - **资源管理**: 种子、水、工具库存
+ * - **环境影响**: 天气对土壤湿度的影响
+ * 
+ * ### 8. 时间天气系统 (TimeWeatherManager)
+ * - **时间流逝**: 可调节的时间倍率
+ * - **昼夜循环**: 动态光照、夜幕效果  
+ * - **天气系统**: 晴雨切换、环境影响
+ * - **UI同步**: 时间显示、天气图标
+ * 
+ * ## 事件通信架构
+ * 
+ * ### Phaser ↔ React 通信
+ * ```javascript
+ * // Phaser → React (游戏状态更新)
+ * window.dispatchEvent(new CustomEvent('cat-coin', { detail: { catCoins } }));
+ * window.dispatchEvent(new CustomEvent('action-context', { detail: { context } }));
+ * 
+ * // React → Phaser (UI操作响应)  
+ * window.addEventListener('seed-selected', handleSeedSelected);
+ * window.addEventListener('virtual-joystick-direction', handleJoystick);
+ * ```
+ * 
+ * ### 内部事件流
+ * ```javascript
+ * // GridEngine → 动画系统
+ * this.gridEngine.movementStarted().subscribe(({ charId, direction }) => {
+ *     // 播放行走动画
+ * });
+ * 
+ * // 碰撞检测 → 交互系统
+ * this.physics.add.overlap(colliderA, colliderB, (objA, objB) => {
+ *     // 触发对话/物品收集
+ * });
+ * ```
+ * 
+ * ## 性能优化策略
+ * 
+ * ### 1. 对象池管理
+ * - 重用精灵对象，减少GC压力
+ * - 动态创建/销毁非常用元素
+ * 
+ * ### 2. 碰撞优化
+ * - 分层碰撞检测，避免不必要的计算
+ * - 使用空间分区优化大地图性能
+ * 
+ * ### 3. 渲染优化
+ * - 像素对齐，避免亚像素渲染
+ * - 深度排序，确保正确的渲染顺序
+ * - 视锥剔除，只渲染可见区域
+ * 
+ * ### 4. 内存管理
+ * - 及时清理事件监听器
+ * - 场景切换时释放不需要的资源
+ * - 使用弱引用避免内存泄漏
+ * 
+ * ## 调试与开发工具
+ * 
+ * ### 调试模式启用
+ * ```javascript
+ * // 在 BootScene 中启用物理调试
+ * physics: { default: 'arcade', arcade: { debug: true } }
+ * 
+ * // MapLoader 调试信息
+ * MapLoader.load(this, 'map', { debug: true });
+ * ```
+ * 
+ * ### 常用调试技巧
+ * - `window.phaserGame` - 全局游戏实例访问
+ * - 数字键1/2/3 - 时间倍率切换
+ * - 控制台输出详细的状态信息
+ * - 碰撞体可视化边界显示
+ * 
+ * ## 扩展指南
+ * 
+ * ### 添加新的交互类型
+ * 1. 在 Tiled 对象层添加自定义属性
+ * 2. 在 `dataLayer.objects` 遍历中添加处理逻辑
+ * 3. 创建对应的碰撞体和事件处理器
+ * 
+ * ### 集成新的游戏系统
+ * 1. 创建独立的管理器类（参考 FarmManager）
+ * 2. 在 `create()` 中初始化系统
+ * 3. 在 `update()` 中更新系统状态
+ * 4. 通过事件与其他系统通信
+ * 
+ * ### 性能监控
+ * - 使用 Phaser 内置的性能面板
+ * - 监控帧率、内存使用、绘制调用
+ * - 定期进行性能测试和优化
+ */

@@ -1,24 +1,59 @@
 /**
- * MapLoader
- *
- * Centralizes loading of Tiled tilemaps, tilesets, layers and collision extraction
- * for Phaser 3 + GridEngine.
+ * 地图加载器 MapLoader
+ * 
+ * 统一处理 Tiled 地图的加载、图块集配置、图层创建和碰撞检测
+ * 专为 Phaser 3 + GridEngine 架构设计
+ * 
+ * 主要功能：
+ * - 加载 Tiled 导出的 JSON 地图文件
+ * - 自动配置图块集和图层
+ * - 提取碰撞瓦片信息
+ * - 支持调试模式输出详细信息
+ * 
+ * 使用方法：
+ * 1. 在 BootScene 中预加载地图：
+ *    this.load.tilemapTiledJSON('map', '/topdown/game/map.json');
+ * 2. 在 GameScene 中加载地图：
+ *    const { map, layers, collidableTileIds } = MapLoader.load(this, 'map', { debug: true });
+ * 
+ * 注意事项：
+ * - 图块集名称必须与预加载的资源键名一致
+ * - 支持多图块集的复合地图
+ * - 自动处理碰撞属性和图层深度设置
  */
 export default class MapLoader {
     /**
-     * Load a Tiled map (exported JSON) and configure collisions.
-     *
-     * @param {Phaser.Scene} scene
-     * @param {string} mapKey - Key preloaded via scene.load.tilemapTiledJSON
-     * @param {object} options
-     * @param {boolean} [options.debug=false]
-     * @param {Set<string>} [options.blockingTilesetNames]
-     * @returns {{
-     *   map: Phaser.Tilemaps.Tilemap,
-     *   tilesets: Record<string, Phaser.Tilemaps.Tileset>,
-     *   layers: Phaser.Tilemaps.TilemapLayer[],
-     *   collidableTileIds: Set<number>
-     * }}
+     * 加载 Tiled 地图并配置碰撞检测
+     * 
+     * 这是 MapLoader 的核心方法，负责完整的地图加载流程
+     * 
+     * @param {Phaser.Scene} scene - 游戏场景实例
+     * @param {string} mapKey - 地图资源键名（需在 BootScene 中预加载）
+     * @param {Object} options - 配置选项
+     * @param {boolean} [options.debug=false] - 是否启用调试模式
+     * @param {Set<string>} [options.blockingTilesetNames] - 需要设置碰撞的图块集名称
+     * 
+     * @returns {Object} 地图加载结果对象
+     * @returns {Phaser.Tilemaps.Tilemap} returns.map - 加载的地图实例
+     * @returns {Record<string, Phaser.Tilemaps.Tileset>} returns.tilesets - 图块集映射表
+     * @returns {Phaser.Tilemaps.TilemapLayer[]} returns.layers - 创建的图层数组
+     * @returns {Set<number>} returns.collidableTileIds - 可碰撞瓦片ID集合
+     * 
+     * 使用示例：
+     * ```javascript
+     * // 在 GameScene.create() 中调用
+     * const { map, layers, collidableTileIds } = MapLoader.load(this, 'map', { 
+     *   debug: true,
+     *   blockingTilesetNames: new Set(['Walls', 'Obstacles'])
+     * });
+     * 
+     * // 使用返回的数据
+     * this.map = map;
+     * this.collidableTileIds = collidableTileIds;
+     * layers.forEach(layer => {
+     *   this.physics.add.collider(this.player, layer);
+     * });
+     * ```
      */
     static load(scene, mapKey, options = {}) {
         const { debug = false } = options;

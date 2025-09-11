@@ -19,6 +19,10 @@ node_modules/
 *.log
 *.cache
 *.txt
+rss.xml
+sitemap.xml
+fallback*.js
+workbox*.js
 package-lock.json
 
 # IDE 和编辑器文件

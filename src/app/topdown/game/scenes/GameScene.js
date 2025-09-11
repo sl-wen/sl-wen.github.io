@@ -477,7 +477,7 @@ export default class GameScene extends Scene {
             if (typeof this.farmManager.dispatchInventoryUpdate === 'function') {
                 this.farmManager.dispatchInventoryUpdate();
             }
-            
+
             // 设置耕地图标点击事件监听
             this.events.on('farmland-icon-clicked', this.handleFarmlandIconClick, this);
         } catch (_) { /* noop */ }
@@ -598,13 +598,12 @@ export default class GameScene extends Scene {
 
         const npcsKeys = [];
         const dataLayer = map.getObjectLayer('Player'); // Tiled 对象层：承载对话、NPC、传送、物品等
-        console.log('Data layer:', dataLayer);
-        console.log('Data layer objects:', dataLayer?.objects);
+
 
         if (dataLayer && dataLayer.objects) {
             dataLayer.objects.forEach((data) => {
                 const { properties, x, y } = data;
-                console.log('Processing object at:', x, y, 'with properties:', properties);
+
 
                 if (!properties || !Array.isArray(properties) || properties.length === 0) {
                     return;
@@ -612,7 +611,7 @@ export default class GameScene extends Scene {
 
                 properties.forEach((property) => {
                     const { name, type, value } = property;
-                    console.log('Property:', name, type, value);
+
 
                     switch (name) {
                         case 'dialog': {
@@ -726,7 +725,7 @@ export default class GameScene extends Scene {
                         }
 
                         case 'teleportTo': { // 传送门：到达重叠即触发，淡出后重启场景到目标地图
-                            console.log('Found teleport object at:', x, y, 'with value:', value);
+
 
                             const customCollider = createInteractiveGameObject(
                                 this,
@@ -745,10 +744,10 @@ export default class GameScene extends Scene {
                                 y: teleportToY,
                             } = this.extractTeleportDataFromTiled(value);
 
-                            console.log('Teleport data:', { teleportToMapKey, teleportToX, teleportToY });
+
 
                             const overlapCollider = this.physics.add.overlap(this.catSprite, customCollider, () => {
-                                console.log('cat entered teleport, teleporting to:', teleportToMapKey, teleportToX, teleportToY);
+
                                 // 停止跟随等可选动作（此处保留注释，按需启用）
                                 this.physics.world.removeCollider(overlapCollider);
                                 const facingDirection = this.gridEngine.getFacingDirection('cat');
@@ -820,10 +819,7 @@ export default class GameScene extends Scene {
 
         // 参照参考项目：简化碰撞配置
         // 调试：显示所有图层名称
-        console.log('All available layers:');
-        createdLayers.forEach((layer, index) => {
-            console.log(`  Layer ${index}: ${layer.layer.name}`);
-        });
+
 
         // 找到主要的碰撞图层（优先选择Collision图层）
         let wallsLayer = createdLayers.find(layer => {
@@ -851,14 +847,12 @@ export default class GameScene extends Scene {
         this.collidableTileIds = collidableTileIds;
         this.wallsLayer = wallsLayer;
 
-        console.log('Map loaded successfully');
-        console.log('Total collidable tile IDs:', collidableTileIds.size);
-        console.log('Walls layer found:', wallsLayer ? wallsLayer.layer.name : 'None');
+
 
         // 如果没有找到专门的碰撞图层，使用第一个有碰撞瓦片的图层
         if (!wallsLayer && createdLayers.length > 0) {
             this.wallsLayer = createdLayers[0]; // 使用第一个图层作为备选
-            console.log('Using first layer as fallback:', this.wallsLayer.layer.name);
+
         }
 
         // 调试：检查选中图层的瓦片情况
@@ -873,7 +867,7 @@ export default class GameScene extends Scene {
                     }
                 }
             });
-            console.log(`Selected layer "${this.wallsLayer.layer.name}" has ${tileCount} tiles, ${collidableCount} collidable`);
+
         }
 
         // 参照参考项目：简化GridEngine配置（移除GridEngine的碰撞设置，完全依赖Phaser Arcade Physics）
@@ -890,7 +884,7 @@ export default class GameScene extends Scene {
             numberOfDirections: 8,
         };
 
-        console.log('GridEngine config (no collision managed by GridEngine):', gridEngineConfig);
+
 
         // 监听保存快照请求：React 设置页会触发
         const handleRequestSave = () => {
@@ -1013,32 +1007,23 @@ export default class GameScene extends Scene {
         this.gridEngine.create(map, gridEngineConfig); // 初始化 GridEngine（必须在角色加入后）
 
         // 参照参考项目：移除手动碰撞设置，让GridEngine自动处理
-        console.log('GridEngine initialized with collisionTilePropertyName: ge_collide');
 
-        // 验证GridEngine初始化
-        console.log('GridEngine initialized successfully');
-        console.log('Cat position after GridEngine init:', this.gridEngine.getPosition('cat'));
-        console.log('Cat facing direction:', this.gridEngine.getFacingDirection('cat'));
 
         // 测试GridEngine的碰撞检测
         const testPos = this.gridEngine.getPosition('cat');
         const testRight = { x: testPos.x + 1, y: testPos.y };
         const testDown = { x: testPos.x, y: testPos.y + 1 };
-        console.log('Phaser collision test only (GridEngine collision disabled)');
+
 
         // 检查特定位置的瓦片
         if (this.wallsLayer) {
             const rightTile = this.wallsLayer.getTileAt(testRight.x, testRight.y);
             const downTile = this.wallsLayer.getTileAt(testDown.x, testDown.y);
-            console.log('  Right tile ID:', rightTile ? rightTile.index : -1);
-            console.log('  Down tile ID:', downTile ? downTile.index : -1);
-            console.log('  Right tile collides (Phaser):', Boolean(rightTile && rightTile.collides));
-            console.log('  Down tile collides (Phaser):', Boolean(downTile && downTile.collides));
+
         }
 
         // 测试碰撞检测
-        const testPosition = this.gridEngine.getPosition('cat');
-        console.log('Collision test uses Phaser tile.collides now. Sample position:', testPosition);
+
 
         // 同步初始朝向与待机帧
         if (initialFacingDirection) {
@@ -1110,7 +1095,7 @@ export default class GameScene extends Scene {
                 const isCollidable = Boolean(targetTile && targetTile.collides);
                 if (isCollidable) {
                     canMoveToTarget = false;
-                    console.log(`Click movement blocked: target (${target.x}, ${target.y}) collides (Phaser)`);
+
                 }
             }
 
@@ -1124,10 +1109,10 @@ export default class GameScene extends Scene {
                 } else {
                     this.isAutoMoving = false;
                     if (this.autoMoveTargetHighlight) this.autoMoveTargetHighlight.setVisible(false);
-                    console.log(`No path to (${target.x}, ${target.y})`);
+
                 }
             } else {
-                console.log(`Cannot move to (${target.x}, ${target.y}) - blocked by collision`);
+
             }
         });
 
@@ -1510,13 +1495,13 @@ export default class GameScene extends Scene {
                 // 方法2: 如果Phaser检测没有阻止，再检查GridEngine
                 // 移除 GridEngine 瓦片阻挡查询，完全依赖 Phaser 碰撞
 
-                console.log(`Move attempt: ${currentDirection}, from (${currentPos.x},${currentPos.y}) to (${targetPos.x},${targetPos.y}), blocked: ${isBlocked}, ${tileInfo}`);
+
 
                 // 只有在没有碰撞时才移动
                 if (!isBlocked) {
                     this.gridEngine.move('cat', currentDirection); // 发起按方向的离散步进
                 } else {
-                    console.log(`Movement blocked by collision at (${targetPos.x}, ${targetPos.y})`);
+
                 }
             }
         }
@@ -1571,7 +1556,7 @@ export default class GameScene extends Scene {
                     this.farmManager.evaporateTick(weatherEffect.evaporation * (deltaMs / 1000));
                 }
             }
-            
+
             // 定期更新耕地图标（每5秒更新一次）
             if (!this.lastIconUpdate) this.lastIconUpdate = 0;
             this.lastIconUpdate += deltaMs;
@@ -1595,7 +1580,7 @@ export default class GameScene extends Scene {
      */
     startManualPathfinding(target, path) {
         const currentPos = this.gridEngine.getPosition('cat');
-        console.log(`Starting manual pathfinding from (${currentPos.x}, ${currentPos.y}) to (${target.x}, ${target.y}) with ${path?.length ?? 0} steps`);
+
 
         this.manualPathfinding.target = target;
         this.manualPathfinding.path = Array.isArray(path) ? path : [];
@@ -1757,16 +1742,16 @@ export default class GameScene extends Scene {
         const path = [];
         let current = { ...start };
 
-        console.log(`Generating simple path from (${start.x}, ${start.y}) to (${goal.x}, ${goal.y})`);
+
 
         // 先水平移动
         while (current.x !== goal.x) {
             current.x += current.x < goal.x ? 1 : -1;
             if (!this.isPositionBlocked(current)) {
                 path.push({ ...current });
-                console.log(`Added horizontal step: (${current.x}, ${current.y})`);
+
             } else {
-                console.log(`Horizontal path blocked at (${current.x}, ${current.y})`);
+
                 // 尝试绕行
                 const alternative = this.findAlternativePath(current, goal, 'horizontal');
                 if (alternative.length > 0) {
@@ -1783,9 +1768,9 @@ export default class GameScene extends Scene {
             current.y += current.y < goal.y ? 1 : -1;
             if (!this.isPositionBlocked(current)) {
                 path.push({ ...current });
-                console.log(`Added vertical step: (${current.x}, ${current.y})`);
+
             } else {
-                console.log(`Vertical path blocked at (${current.x}, ${current.y})`);
+
                 // 尝试绕行
                 const alternative = this.findAlternativePath(current, goal, 'vertical');
                 if (alternative.length > 0) {
@@ -1797,7 +1782,7 @@ export default class GameScene extends Scene {
             }
         }
 
-        console.log(`Generated path with ${path.length} steps:`, path);
+
         return path;
     }
 
@@ -1852,11 +1837,11 @@ export default class GameScene extends Scene {
 
     // 执行手动寻路的下一步
     executeManualPathfindingStep() {
-        console.log(`Pathfinding check: isActive=${this.manualPathfinding.isActive}, currentStep=${this.manualPathfinding.currentStep}, pathLength=${this.manualPathfinding.path.length}`);
+
 
         if (!this.manualPathfinding.isActive || this.manualPathfinding.currentStep >= this.manualPathfinding.path.length) {
             if (this.manualPathfinding.isActive) {
-                console.log('Manual pathfinding completed successfully');
+
             }
             this.manualPathfinding.isActive = false;
             return;
@@ -1866,21 +1851,20 @@ export default class GameScene extends Scene {
 
         // 检查是否在移动中，或者距离上次移动时间太短
         if (this.gridEngine.isMoving('cat')) {
-            console.log('Character is still moving, waiting...');
+
             return;
         }
 
         // 如果距离上次移动时间太短，等待一下
         if (currentTime - this.manualPathfinding.lastMoveTime < 100) {
-            console.log('Waiting for move cooldown...');
+
             return;
         }
 
         const nextStep = this.manualPathfinding.path[this.manualPathfinding.currentStep];
         const currentPos = this.gridEngine.getPosition('cat');
 
-        console.log(`Executing pathfinding step ${this.manualPathfinding.currentStep + 1}/${this.manualPathfinding.path.length}: moving to (${nextStep.x}, ${nextStep.y})`);
-        console.log(`Current position: (${currentPos.x}, ${currentPos.y}), Target: (${nextStep.x}, ${nextStep.y})`);
+
 
         // 计算移动方向（仅允许一步）
         const dx = Math.sign(nextStep.x - currentPos.x);
@@ -1899,7 +1883,7 @@ export default class GameScene extends Scene {
                 direction = dy === 1 ? 'down' : 'up';
             } else {
                 // 两个正交方向都被阻挡，无法继续
-                console.log(`Pathfinding blocked at both orthogonal steps from (${currentPos.x}, ${currentPos.y}) towards (${nextStep.x}, ${nextStep.y})`);
+
                 this.manualPathfinding.isActive = false;
             }
         } else {
@@ -1909,7 +1893,7 @@ export default class GameScene extends Scene {
             else if (dx === 0 && dy === -1) direction = 'up';
         }
 
-        console.log(`Calculated direction: ${direction} (dx: ${dx}, dy: ${dy})`);
+
 
         if (direction) {
             // 再次检查目标位置是否有碰撞（双重保险）
@@ -1923,14 +1907,13 @@ export default class GameScene extends Scene {
                     this.manualPathfinding.currentStep++;
                 }
                 this.manualPathfinding.lastMoveTime = currentTime;
-                console.log(`Moving ${direction} to (${nextStep.x}, ${nextStep.y}) - step ${this.manualPathfinding.currentStep}/${this.manualPathfinding.path.length}`);
-                console.log(`After move: isActive=${this.manualPathfinding.isActive}, currentStep=${this.manualPathfinding.currentStep}, pathLength=${this.manualPathfinding.path.length}`);
+
             } else {
-                console.log(`Pathfinding blocked at (${nextStep.x}, ${nextStep.y}) - stopping`);
+
                 this.manualPathfinding.isActive = false;
             }
         } else {
-            console.log('Invalid direction calculated - stopping pathfinding');
+
             this.manualPathfinding.isActive = false;
         }
     }
@@ -1960,19 +1943,19 @@ export default class GameScene extends Scene {
         };
         return effects[weather] || effects.clear;
     }
-    
+
     /**
      * 处理耕地图标点击事件
      */
     handleFarmlandIconClick(data) {
         const { tileX, tileY, actionType } = data;
-        
+
         // 获取玩家当前位置
         const playerPos = this.gridEngine.getPosition('cat');
-        
+
         // 计算目标位置（紧邻耕地的位置）
         const targetPos = this.findAdjacentPosition(tileX, tileY, playerPos);
-        
+
         if (targetPos) {
             // 自动移动到目标位置
             this.autoMoveToPosition(targetPos.x, targetPos.y, () => {
@@ -1981,7 +1964,7 @@ export default class GameScene extends Scene {
             });
         }
     }
-    
+
     /**
      * 找到紧邻耕地的可到达位置
      */
@@ -1992,7 +1975,7 @@ export default class GameScene extends Scene {
             { x: -1, y: 0, dir: 'left' },  // 左
             { x: 1, y: 0, dir: 'right' }   // 右
         ];
-        
+
         // 按距离排序，选择最近的可到达位置
         const validPositions = directions
             .map(dir => ({
@@ -2006,32 +1989,29 @@ export default class GameScene extends Scene {
                 return this.gridEngine.isBlocked({ x: pos.x, y: pos.y }) === false;
             })
             .sort((a, b) => a.distance - b.distance);
-        
+
         return validPositions.length > 0 ? validPositions[0] : null;
     }
-    
+
     /**
      * 自动移动到指定位置并执行回调
      */
     autoMoveToPosition(targetX, targetY, callback) {
         // 设置自动移动状态
         this.isAutoMoving = true;
-        
+
         // 使用GridEngine的moveTo功能
         this.gridEngine.moveTo('cat', { x: targetX, y: targetY });
-        
-        // 监听移动完成事件
-        const onMoveFinished = () => {
+
+        // 监听移动停止事件（兼容版本：使用 movementStopped Observable）
+        const subscription = this.gridEngine.movementStopped().subscribe(({ charId }) => {
+            if (charId !== 'cat') return;
+            try { subscription.unsubscribe?.(); } catch (_) { /* noop */ }
             this.isAutoMoving = false;
-            this.gridEngine.off('movementFinished', onMoveFinished);
-            if (callback) {
-                callback();
-            }
-        };
-        
-        this.gridEngine.on('movementFinished', onMoveFinished);
+            if (callback) callback();
+        });
     }
-    
+
     /**
      * 执行对应的农场动作
      */
@@ -2039,7 +2019,7 @@ export default class GameScene extends Scene {
         // 计算面向方向
         const playerPos = this.gridEngine.getPosition('cat');
         const direction = this.calculateDirection(playerPos, { x: tileX, y: tileY });
-        
+
         // 执行对应动作
         switch (actionType) {
             case 'plant':
@@ -2052,27 +2032,27 @@ export default class GameScene extends Scene {
                 this.performHarvestAction(tileX, tileY, direction);
                 break;
         }
-        
+
         // 动作完成后更新图标
         setTimeout(() => {
             this.updateFarmlandIcons();
         }, 1000);
     }
-    
+
     /**
      * 计算面向方向
      */
     calculateDirection(from, to) {
         const dx = to.x - from.x;
         const dy = to.y - from.y;
-        
+
         if (Math.abs(dx) > Math.abs(dy)) {
             return dx > 0 ? 'right' : 'left';
         } else {
             return dy > 0 ? 'down' : 'up';
         }
     }
-    
+
     /**
      * 执行种植动作
      */
@@ -2083,12 +2063,12 @@ export default class GameScene extends Scene {
             if (this.farmManager && this.preferredSeedId) {
                 const success = this.farmManager.plant(tileX, tileY, this.preferredSeedId);
                 if (success) {
-                    console.log(`种植成功在 (${tileX}, ${tileY})`);
+
                 }
             }
         });
     }
-    
+
     /**
      * 执行浇水动作
      */
@@ -2099,12 +2079,12 @@ export default class GameScene extends Scene {
             if (this.farmManager) {
                 const success = this.farmManager.water(tileX, tileY);
                 if (success) {
-                    console.log(`浇水成功在 (${tileX}, ${tileY})`);
+
                 }
             }
         });
     }
-    
+
     /**
      * 执行收获动作
      */
@@ -2115,41 +2095,56 @@ export default class GameScene extends Scene {
             if (this.farmManager) {
                 const yieldCount = this.farmManager.harvest(tileX, tileY);
                 if (yieldCount > 0) {
-                    console.log(`收获成功在 (${tileX}, ${tileY})，获得 ${yieldCount} 个物品`);
+
                 }
             }
         });
     }
-    
+
     /**
      * 播放动作动画
      */
     playActionAnimation(actionType, direction, callback) {
         if (!this.catSprite) return;
-        
+
         // 设置面向方向
         this.gridEngine.turnTowards('cat', direction);
-        
-        // 创建动画帧
+
+        // 创建动画帧（仅收集实际存在的贴图，避免缺帧导致异常）
         const frames = [];
         for (let i = 0; i <= 3; i++) {
-            frames.push({ key: `cat_${actionType}_${direction}_${i}`, duration: 150 });
+            const frameKey = `cat_${actionType}_${direction}_${i}`;
+            if (this.textures.exists(frameKey)) {
+                frames.push({ key: frameKey, duration: 150 });
+            }
         }
-        
-        // 创建并播放动画
-        const animKey = `cat_${actionType}_${direction}`;
-        
-        if (!this.anims.exists(animKey)) {
-            this.anims.create({
-                key: animKey,
-                frames: frames,
-                frameRate: 8,
-                repeat: 0
-            });
+        // 如果没有任何帧可用，则直接回调并恢复 idle
+        if (frames.length === 0 && !this.anims.exists(`cat_${actionType}_${direction}`)) {
+            this.catSprite.setTexture(`cat_idle_${direction}`);
+            if (callback) callback();
+            return;
         }
-        
-        this.catSprite.play(animKey);
-        
+
+        // 创建并播放动画（若存在 BootScene 预注册的双帧循环，则优先使用预注册动画）
+        const loopAnimKey = `cat_${actionType}_${direction}`;
+        if (this.anims.exists(loopAnimKey)) {
+            this.catSprite.play(loopAnimKey);
+        } else {
+            // 兜底：动态创建一次性动画，适配现有帧数量
+            const animKey = `${loopAnimKey}_once`;
+            if (frames.length > 0 && !this.anims.exists(animKey)) {
+                this.anims.create({
+                    key: animKey,
+                    frames: frames,
+                    frameRate: 8,
+                    repeat: 0
+                });
+            }
+            if (this.anims.exists(animKey)) {
+                this.catSprite.play(animKey);
+            }
+        }
+
         // 动画完成后执行回调
         this.catSprite.once('animationcomplete', () => {
             // 恢复idle状态
@@ -2159,7 +2154,7 @@ export default class GameScene extends Scene {
             }
         });
     }
-    
+
     /**
      * 更新耕地图标显示
      */
@@ -2167,18 +2162,18 @@ export default class GameScene extends Scene {
         // 清除现有图标
         this.farmlandIcons.forEach(icon => icon.destroy());
         this.farmlandIcons.clear();
-        
+
         if (!this.farmManager) return;
-        
+
         // 为每个耕地创建适当的图标
         this.farmManager.farmland.forEach((key) => {
             const [txStr, tyStr] = key.split(',');
             const tx = Number.parseInt(txStr, 10);
             const ty = Number.parseInt(tyStr, 10);
-            
+
             const crop = this.farmManager.getCrop(tx, ty);
             let actionType = null;
-            
+
             if (!crop && this.farmManager.getTotalSeedsCount?.() > 0) {
                 // 空地且有种子 -> 显示种植图标
                 actionType = 'plant';
@@ -2189,7 +2184,7 @@ export default class GameScene extends Scene {
                 // 作物需要浇水 -> 显示浇水图标
                 actionType = 'water';
             }
-            
+
             if (actionType) {
                 const icon = new FarmlandIcon(this, tx, ty, actionType, {
                     tileSize: this.map?.tileWidth || 64

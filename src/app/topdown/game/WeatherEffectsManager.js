@@ -15,23 +15,23 @@ export default class WeatherEffectsManager {
      */
     constructor(scene) {
         this.scene = scene;
-        
+
         // 粒子系统
         this.rainEmitter = null;
         this.snowEmitter = null;
         this.windEmitter = null;
         this.fogOverlay = null;
-        
+
         // 音效（预留）
         this.rainSound = null;
         this.windSound = null;
         this.thunderSound = null;
-        
+
         // 当前天气状态
         this.currentWeather = 'clear';
         this.currentIntensity = 0.5;
         this.isTransitioning = false;
-        
+
         this.initializeEffects();
     }
 
@@ -68,11 +68,9 @@ export default class WeatherEffectsManager {
             frequency: 30, // 更频繁的雨滴
             quantity: { min: 2, max: 4 }, // 每次发射更多雨滴
             // 轻微旋转模拟风的影响
-            rotation: { min: -0.1, max: 0.1 },
-            // 随机选择雨滴帧以增加变化
-            frame: [0, 1, 2]
+            rotation: { min: -0.1, max: 0.1 }
         });
-        
+
         this.rainEmitter.setDepth(1500);
         this.rainEmitter.stop();
 
@@ -96,10 +94,10 @@ export default class WeatherEffectsManager {
      */
     createRainDropAnimation() {
         // 如果雨滴纹理存在，创建动画
-        if (this.scene.textures.exists('raindrop_0') && 
-            this.scene.textures.exists('raindrop_1') && 
+        if (this.scene.textures.exists('raindrop_0') &&
+            this.scene.textures.exists('raindrop_1') &&
             this.scene.textures.exists('raindrop_2')) {
-            
+
             if (!this.scene.anims.exists('rain_drop_anim')) {
                 this.scene.anims.create({
                     key: 'rain_drop_anim',
@@ -144,7 +142,7 @@ export default class WeatherEffectsManager {
             accelerationX: { min: -10, max: 10 },
             maxVelocityX: 50
         });
-        
+
         this.snowEmitter.setDepth(1500);
         this.snowEmitter.stop();
     }
@@ -173,7 +171,7 @@ export default class WeatherEffectsManager {
             frequency: 80,
             quantity: 3
         });
-        
+
         this.windEmitter.setDepth(1500);
         this.windEmitter.stop();
     }
@@ -183,15 +181,15 @@ export default class WeatherEffectsManager {
      */
     createFogEffect() {
         this.fogOverlay = this.scene.add.rectangle(
-            0, 0, 
-            this.scene.scale.gameSize.width, 
+            0, 0,
+            this.scene.scale.gameSize.width,
             this.scene.scale.gameSize.height,
             0xF5F5F5, 0.0
         )
-        .setOrigin(0, 0)
-        .setDepth(1600)
-        .setScrollFactor(0)
-        .setBlendMode(Phaser.BlendModes.OVERLAY);
+            .setOrigin(0, 0)
+            .setDepth(1600)
+            .setScrollFactor(0)
+            .setBlendMode(Phaser.BlendModes.OVERLAY);
     }
 
     /**
@@ -204,7 +202,7 @@ export default class WeatherEffectsManager {
         if (this.currentWeather !== weather || Math.abs(this.currentIntensity - intensity) > 0.1) {
             this.transitionToWeather(weather, intensity);
         }
-        
+
         // 更新当前天气效果
         this.updateCurrentWeatherEffects(deltaMs);
     }
@@ -216,10 +214,10 @@ export default class WeatherEffectsManager {
      */
     transitionToWeather(newWeather, newIntensity) {
         if (this.isTransitioning) return;
-        
+
         this.isTransitioning = true;
         const oldWeather = this.currentWeather;
-        
+
         // 停止旧天气效果
         this.fadeOutWeather(oldWeather, () => {
             // 启动新天气效果
@@ -238,7 +236,7 @@ export default class WeatherEffectsManager {
      */
     fadeOutWeather(weather, callback) {
         const duration = 2000; // 2秒过渡
-        
+
         switch (weather) {
             case 'rain':
                 if (this.rainEmitter) {
@@ -254,7 +252,7 @@ export default class WeatherEffectsManager {
                     });
                 } else if (callback) callback();
                 break;
-                
+
             case 'snow':
                 if (this.snowEmitter) {
                     this.scene.tweens.add({
@@ -268,7 +266,7 @@ export default class WeatherEffectsManager {
                     });
                 } else if (callback) callback();
                 break;
-                
+
             case 'wind':
                 if (this.windEmitter) {
                     this.scene.tweens.add({
@@ -282,7 +280,7 @@ export default class WeatherEffectsManager {
                     });
                 } else if (callback) callback();
                 break;
-                
+
             default:
                 if (callback) callback();
                 break;
@@ -297,7 +295,7 @@ export default class WeatherEffectsManager {
      */
     fadeInWeather(weather, intensity, callback) {
         const duration = 2000;
-        
+
         switch (weather) {
             case 'rain':
                 if (this.rainEmitter) {
@@ -310,7 +308,7 @@ export default class WeatherEffectsManager {
                     });
                 } else if (callback) callback();
                 break;
-                
+
             case 'snow':
                 if (this.snowEmitter) {
                     this.startSnowEffect(intensity);
@@ -322,7 +320,7 @@ export default class WeatherEffectsManager {
                     });
                 } else if (callback) callback();
                 break;
-                
+
             case 'wind':
                 if (this.windEmitter) {
                     this.startWindEffect(intensity);
@@ -334,7 +332,7 @@ export default class WeatherEffectsManager {
                     });
                 } else if (callback) callback();
                 break;
-                
+
             default:
                 if (callback) callback();
                 break;
@@ -347,31 +345,31 @@ export default class WeatherEffectsManager {
      */
     startRainEffect(intensity) {
         if (!this.rainEmitter) return;
-        
+
         const baseFreq = 30;
         const baseQuantity = 2;
-        
+
         // 根据强度调整雨滴参数
         const config = {
             frequency: Math.max(10, baseFreq / (intensity * 2 + 0.5)),
             quantity: Math.ceil(baseQuantity * (intensity * 2 + 0.5)),
-            speedX: { 
-                min: -40 * (1 + intensity), 
-                max: -20 * (1 + intensity) 
+            speedX: {
+                min: -40 * (1 + intensity),
+                max: -20 * (1 + intensity)
             },
-            speedY: { 
-                min: 300 * (0.8 + intensity * 0.4), 
-                max: 500 * (0.8 + intensity * 0.4) 
+            speedY: {
+                min: 300 * (0.8 + intensity * 0.4),
+                max: 500 * (0.8 + intensity * 0.4)
             },
-            alpha: { 
-                min: 0.4 + intensity * 0.2, 
-                max: 0.7 + intensity * 0.3 
+            alpha: {
+                min: 0.4 + intensity * 0.2,
+                max: 0.7 + intensity * 0.3
             }
         };
-        
+
         this.rainEmitter.setConfig(config);
         this.rainEmitter.start();
-        
+
         // 启动动画雨滴（额外的视觉效果）
         this.startAnimatedRainDrops(intensity);
     }
@@ -386,19 +384,19 @@ export default class WeatherEffectsManager {
             this.animatedRainDrops.forEach(drop => drop.destroy());
         }
         this.animatedRainDrops = [];
-        
+
         // 根据强度创建动画雨滴
         const dropCount = Math.ceil(intensity * 8 + 3);
-        
+
         for (let i = 0; i < dropCount; i++) {
             this.createAnimatedRainDrop(intensity);
         }
-        
+
         // 定时创建新的动画雨滴
         if (this.rainDropTimer) {
             this.rainDropTimer.destroy();
         }
-        
+
         this.rainDropTimer = this.scene.time.addEvent({
             delay: 500 / (intensity + 0.5), // 根据强度调整频率
             callback: () => this.createAnimatedRainDrop(intensity),
@@ -412,28 +410,28 @@ export default class WeatherEffectsManager {
      */
     createAnimatedRainDrop(intensity) {
         if (!this.scene.anims.exists('rain_drop_anim')) return;
-        
+
         const startX = -50 + Math.random() * (this.scene.scale.gameSize.width + 100);
         const startY = -50 - Math.random() * 100;
-        
+
         const rainDrop = this.scene.add.sprite(startX, startY, 'raindrop_0');
         rainDrop.setDepth(1550); // 在粒子效果之上
         rainDrop.setScale(1.5 + Math.random() * 0.5);
         rainDrop.setAlpha(0.7 + intensity * 0.3);
-        
+
         // 播放雨滴动画
         rainDrop.anims.play('rain_drop_anim');
-        
+
         // 添加到管理列表
         this.animatedRainDrops = this.animatedRainDrops || [];
         this.animatedRainDrops.push(rainDrop);
-        
+
         // 移动动画
         const moveSpeed = 400 + intensity * 200;
         const windEffect = -30 - intensity * 20;
         const finalX = startX + windEffect;
         const finalY = this.scene.scale.gameSize.height - 20; // 稍微在地面上方
-        
+
         this.scene.tweens.add({
             targets: rainDrop,
             x: finalX,
@@ -443,7 +441,7 @@ export default class WeatherEffectsManager {
             onComplete: () => {
                 // 创建撞击效果
                 this.createRainSplash(finalX, finalY, intensity);
-                
+
                 // 从列表中移除并销毁
                 const index = this.animatedRainDrops.indexOf(rainDrop);
                 if (index > -1) {
@@ -463,14 +461,14 @@ export default class WeatherEffectsManager {
     createRainSplash(x, y, intensity) {
         // 创建简单的水花效果
         const splashCount = 3 + Math.floor(intensity * 3);
-        
+
         for (let i = 0; i < splashCount; i++) {
             const splash = this.scene.add.graphics();
             splash.fillStyle(0x87CEEB, 0.6);
             splash.fillCircle(0, 0, 1 + Math.random() * 2);
             splash.setPosition(x + (Math.random() - 0.5) * 10, y);
             splash.setDepth(1540);
-            
+
             // 水花飞溅动画
             this.scene.tweens.add({
                 targets: splash,
@@ -484,7 +482,7 @@ export default class WeatherEffectsManager {
                 onComplete: () => splash.destroy()
             });
         }
-        
+
         // 偶尔创建更大的水花
         if (Math.random() < 0.3) {
             const bigSplash = this.scene.add.graphics();
@@ -492,7 +490,7 @@ export default class WeatherEffectsManager {
             bigSplash.fillCircle(0, 0, 3);
             bigSplash.setPosition(x, y);
             bigSplash.setDepth(1540);
-            
+
             this.scene.tweens.add({
                 targets: bigSplash,
                 scaleX: 3,
@@ -513,7 +511,7 @@ export default class WeatherEffectsManager {
             this.animatedRainDrops.forEach(drop => drop.destroy());
             this.animatedRainDrops = [];
         }
-        
+
         if (this.rainDropTimer) {
             this.rainDropTimer.destroy();
             this.rainDropTimer = null;
@@ -526,15 +524,15 @@ export default class WeatherEffectsManager {
      */
     startSnowEffect(intensity) {
         if (!this.snowEmitter) return;
-        
+
         const baseFreq = 100;
         const baseQuantity = 1;
-        
+
         this.snowEmitter.setConfig({
             frequency: baseFreq / (intensity + 0.5),
             quantity: Math.ceil(baseQuantity * (intensity * 1.5 + 0.5))
         });
-        
+
         this.snowEmitter.start();
     }
 
@@ -544,16 +542,16 @@ export default class WeatherEffectsManager {
      */
     startWindEffect(intensity) {
         if (!this.windEmitter) return;
-        
+
         const baseFreq = 80;
         const baseQuantity = 3;
-        
+
         this.windEmitter.setConfig({
             frequency: baseFreq / (intensity + 0.5),
             quantity: Math.ceil(baseQuantity * (intensity + 0.5)),
             speedX: { min: 150 * intensity, max: 300 * (intensity + 0.5) }
         });
-        
+
         this.windEmitter.start();
     }
 
@@ -564,7 +562,7 @@ export default class WeatherEffectsManager {
     updateCurrentWeatherEffects(deltaMs) {
         // 这里可以添加天气效果的实时更新逻辑
         // 比如雨滴的方向随风向变化等
-        
+
         if (this.currentWeather === 'rain' && this.rainEmitter && this.rainEmitter.active) {
             // 可以根据风向调整雨滴角度
             // this.adjustRainDirection();
@@ -582,9 +580,9 @@ export default class WeatherEffectsManager {
             this.scene.scale.gameSize.height,
             0xFFFFFF, 0.8
         )
-        .setOrigin(0, 0)
-        .setDepth(2100)
-        .setScrollFactor(0);
+            .setOrigin(0, 0)
+            .setDepth(2100)
+            .setScrollFactor(0);
 
         // 快速淡出
         this.scene.tweens.add({
@@ -606,20 +604,20 @@ export default class WeatherEffectsManager {
             this.rainEmitter.destroy();
             this.rainEmitter = null;
         }
-        
+
         // 清理动画雨滴
         this.stopAnimatedRainDrops();
-        
+
         if (this.snowEmitter) {
             this.snowEmitter.destroy();
             this.snowEmitter = null;
         }
-        
+
         if (this.windEmitter) {
             this.windEmitter.destroy();
             this.windEmitter = null;
         }
-        
+
         if (this.fogOverlay) {
             this.fogOverlay.destroy();
             this.fogOverlay = null;
@@ -638,19 +636,19 @@ export default class WeatherEffectsManager {
                 x: { min: -100, max: width + 100 }
             });
         }
-        
+
         if (this.snowEmitter) {
             this.snowEmitter.setConfig({
                 x: { min: -50, max: width + 50 }
             });
         }
-        
+
         if (this.windEmitter) {
             this.windEmitter.setConfig({
                 y: { min: 0, max: height }
             });
         }
-        
+
         if (this.fogOverlay) {
             this.fogOverlay.setSize(width, height);
         }

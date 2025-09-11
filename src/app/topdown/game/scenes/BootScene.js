@@ -152,16 +152,7 @@ export default class BootScene extends Scene {
             );
             // 更新百分比文本
             percentText.setText(`${Number.parseInt(value * 100, 10)}%`);
-            
-            // 浇水动画帧 0-3
-            for (let i = 0; i <= 3; i += 1) {
-                this.load.image(`cat_water_${dir}_${i}`, `/game/assets/graphics/character/${dir}_water/${i}.png`);
-            }
-            
-            // 收获动画帧 0-3
-            for (let i = 0; i <= 3; i += 1) {
-                this.load.image(`cat_hoe_${dir}_${i}`, `/game/assets/graphics/character/${dir}_hoe/${i}.png`);
-            }
+
         });
 
         // 监听文件加载事件
@@ -233,6 +224,12 @@ export default class BootScene extends Scene {
             this.load.image(`cat_idle_${dir}`, `/game/assets/graphics/character/${dir}_idle/0.png`);
             // 待机帧补充：idle 目录下的 1.png（用于循环动画）
             this.load.image(`cat_idle_${dir}_1`, `/game/assets/graphics/character/${dir}_idle/1.png`);
+
+            // 工具动作序列（当前素材为 0/1 双帧）
+            for (let i = 0; i <= 1; i += 1) {
+                this.load.image(`cat_water_${dir}_${i}`, `/game/assets/graphics/character/${dir}_water/${i}.png`);
+                this.load.image(`cat_hoe_${dir}_${i}`, `/game/assets/graphics/character/${dir}_hoe/${i}.png`);
+            }
         });
     }
 
@@ -333,13 +330,32 @@ export default class BootScene extends Scene {
             yoyo: false,
         });
 
-        // 雨滴动画
-        this.anims.create({
-            key: 'rain_drop_anim',
-            frames: [0, 1, 2].map((i) => ({ key: `raindrop_${i}` })),
-            frameRate: 8,
+        // 雨滴动画（若只有单帧，跳过动画创建）
+        if (this.textures.exists('raindrop_0') && this.textures.exists('raindrop_1') && this.textures.exists('raindrop_2')) {
+            this.anims.create({
+                key: 'rain_drop_anim',
+                frames: [0, 1, 2].map((i) => ({ key: `raindrop_${i}` })),
+                frameRate: 8,
+                repeat: -1,
+                yoyo: false,
+            });
+        }
+
+        // 工具动作（双帧循环）：water / hoe 四方向
+        const createToolAnim = (tool, dir) => ({
+            key: `cat_${tool}_${dir}`,
+            frames: [
+                { key: `cat_${tool}_${dir}_0` },
+                { key: `cat_${tool}_${dir}_1` },
+            ],
+            frameRate: 6,
             repeat: -1,
-            yoyo: false,
+            yoyo: true,
+        });
+
+        ['down', 'up', 'left', 'right'].forEach((dir) => {
+            this.anims.create(createToolAnim('water', dir));
+            this.anims.create(createToolAnim('hoe', dir));
         });
     }
 }

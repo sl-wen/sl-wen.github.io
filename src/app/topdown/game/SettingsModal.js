@@ -24,7 +24,6 @@
  * - 简洁直观的按钮布局，便于操作
  */
 
-import React from 'react';
 import { styled } from '@mui/material/styles';
 
 /**
@@ -90,6 +89,23 @@ const Close = styled('button')(({ multiplier }) => ({
 }));
 
 /**
+ * 通用按钮样式组件
+ * 与窗口边框风格一致的像素风按钮
+ */
+const Button = styled('button')(({ multiplier }) => ({
+  imageRendering: 'pixelated',
+  fontFamily: '"Press Start 2P"',
+  fontSize: `${8 * multiplier}px`,
+  backgroundColor: '#e2b27e',
+  border: 'solid',
+  borderImage: `url("/game/assets/images/dialog_borderbox.png") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px stretch`,
+  padding: `${6 * multiplier}px ${10 * multiplier}px`,
+  color: '#1b0f0a',
+  cursor: 'pointer',
+  textAlign: 'center'
+}));
+
+/**
  * 设置模态窗口主组件
  * 
  * @param {Object} props - 组件属性
@@ -116,15 +132,15 @@ const Close = styled('button')(({ multiplier }) => ({
 const SettingsModal = ({ gameSize, onSave, onExit, onClose }) => {
   // 从游戏尺寸对象中提取宽度、高度和缩放倍数
   const { width, height, multiplier } = gameSize;
-  
+
   return (
     // 遮罩层：点击遮罩区域关闭设置窗口
     <Overlay multiplier={multiplier} onClick={onClose}>
       {/* 设置窗口：阻止事件冒泡，避免点击窗口内容时关闭 */}
-      <Window 
-        multiplier={multiplier} 
-        width={width} 
-        height={height} 
+      <Window
+        multiplier={multiplier}
+        width={width}
+        height={height}
         onClick={(e) => e.stopPropagation()}
       >
         <Close multiplier={multiplier} onClick={onClose}>×</Close>

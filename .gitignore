@@ -44,3 +44,33 @@ Thumbs.db
 *.dev.js
 *.dev.css
 sw.js
+workbox-*.js
+fallback-*.js
+
+# Next.js
+.next/
+out/
+
+# Vite/Other build caches
+.vite/
+.parcel-cache/
+
+# Tailwind & PostCSS
+*.css.map
+
+# TypeScript
+tsconfig.tsbuildinfo
+
+# Package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+pnpm-store/
+npm-cache/
+npm-debug.log*
+
+# Caches
+.npm-cache/
+.cache/
+.turbo/
+.eslintcache

@@ -24,6 +24,7 @@ sitemap.xml
 fallback*.js
 workbox*.js
 package-lock.json
+tsconfig.tsbuildinfo
 
 # IDE 和编辑器文件
 .idea/

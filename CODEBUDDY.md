@@ -206,3 +206,7 @@ npm run sharp:install
 - 开发环境特定设置
 
 项目使用 Supabase 作为后端服务，请确保在 `src/utils/supabase-config.ts` 中正确配置。
+
+## CodeBuddy Added Memories
+- to memorize
+- User prefers Phaser topdown project; continue development within existing GameScene/FarmManager/FarmlandIcon architecture.

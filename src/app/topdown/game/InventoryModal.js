@@ -56,18 +56,20 @@ const Overlay = styled('div')(({ multiplier }) => ({
  * 根据游戏尺寸动态调整大小
  */
 const Window = styled('div')(({ multiplier, width, height }) => ({
-  imageRendering: 'pixelated',         // 像素化渲染，保持复古风格
-  fontFamily: '"Press Start 2P"',      // 像素游戏字体
-  textTransform: 'uppercase',          // 文字转为大写，增强像素游戏感
-  backgroundColor: '#e2b27e',          // 窗口背景色，与游戏 UI 一致
-  border: 'solid',                     // 实心边框
-  // 使用九宫格边框图片，创建像素风格边框
+  imageRendering: 'pixelated',
+  fontFamily: '"Press Start 2P"',
+  textTransform: 'uppercase',
+  backgroundColor: '#e2b27e',
+  border: 'solid',
   borderImage: `url("/game/assets/images/dialog_borderbox.png") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px stretch`,
-  padding: `${10 * multiplier}px`,     // 内边距，根据缩放倍数调整
-  // 窗口尺寸根据游戏画面大小动态计算
-  minWidth: `${Math.ceil(width * 0.6 * multiplier)}px`,    // 最小宽度为游戏宽度的 60%
-  minHeight: `${Math.ceil(height * 0.5 * multiplier)}px`,  // 最小高度为游戏高度的 50%
-  color: '#1b0f0a',                    // 深棕色文字，与背景形成对比
+  padding: `${10 * multiplier}px`,
+  width: `${Math.ceil(width * 0.7)}px`,
+  height: `${Math.ceil(height * 0.7)}px`,
+  maxWidth: `${Math.ceil(width * 0.9)}px`,
+  maxHeight: `${Math.ceil(height * 0.9)}px`,
+  color: '#1b0f0a',
+  position: 'relative',
+  overflow: 'hidden'
 }));
 
 /**
@@ -87,9 +89,11 @@ const Title = styled('div')(({ multiplier }) => ({
  * 用于容纳多个标签页按钮的水平布局容器
  */
 const Tabs = styled('div')(({ multiplier }) => ({
-  display: 'flex',                     // 弹性布局
-  gap: `${8 * multiplier}px`,          // 标签页之间的间距
-  marginBottom: `${8 * multiplier}px`, // 与下方内容的间距
+  display: 'flex',
+  flexDirection: 'column',
+  gap: `${6 * multiplier}px`,
+  marginRight: `${8 * multiplier}px`,
+  minWidth: `${80 * multiplier}px`
 }));
 
 /**
@@ -118,9 +122,17 @@ const Tab = styled('button')(({ multiplier, active }) => ({
  * 使用 CSS Grid 创建两列布局，用于显示库存物品列表
  */
 const Grid = styled('div')(({ multiplier }) => ({
-  display: 'grid',                      // CSS 网格布局
-  gridTemplateColumns: 'repeat(2, 1fr)', // 两列等宽布局
-  gap: `${8 * multiplier}px`,           // 网格项之间的间距
+  display: 'grid',
+  gridTemplateColumns: `repeat(4, ${24 * multiplier}px)`,
+  gridAutoRows: `${24 * multiplier}px`,
+  gap: `${6 * multiplier}px`,
+  alignContent: 'start',
+  justifyContent: 'start',
+  backgroundColor: '#d8a773',
+  padding: `${8 * multiplier}px`,
+  border: `${multiplier}px solid #79584f`,
+  overflow: 'auto',
+  flex: 1
 }));
 
 /**
@@ -130,12 +142,11 @@ const Grid = styled('div')(({ multiplier }) => ({
  * 支持点击选择功能（在种子选择模式下）
  */
 const Cell = styled('div')(({ multiplier }) => ({
-  backgroundColor: '#cfa67e',           // 单元格背景色，稍深于窗口背景
-  border: `${multiplier}px solid #79584f`, // 深色边框，形成视觉分隔
-  padding: `${8 * multiplier}px`,       // 内边距
-  display: 'flex',                      // 弹性布局
-  alignItems: 'center',                 // 垂直居中对齐
-  justifyContent: 'space-between',      // 左右分布对齐（图标+名称 vs 数量）
+  backgroundColor: '#cfa67e',
+  border: `${multiplier}px solid #79584f`,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center'
 }));
 
 /**
@@ -144,17 +155,18 @@ const Cell = styled('div')(({ multiplier }) => ({
  * 用于关闭库存模态窗口的按钮
  */
 const Close = styled('button')(({ multiplier }) => ({
-  marginTop: `${12 * multiplier}px`,    // 顶部间距，与内容分隔
-  imageRendering: 'pixelated',          // 像素化渲染
-  fontFamily: '"Press Start 2P"',       // 像素游戏字体
-  fontSize: `${8 * multiplier}px`,      // 字体大小
-  backgroundColor: '#e2b27e',           // 按钮背景色
-  border: 'solid',                      // 实心边框
-  // 使用九宫格边框图片
+  position: 'absolute',
+  top: `${6 * multiplier}px`,
+  right: `${6 * multiplier}px`,
+  imageRendering: 'pixelated',
+  fontFamily: '"Press Start 2P"',
+  fontSize: `${8 * multiplier}px`,
+  backgroundColor: '#e2b27e',
+  border: 'solid',
   borderImage: `url("/game/assets/images/dialog_borderbox.png") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px stretch`,
-  padding: `${6 * multiplier}px ${8 * multiplier}px`, // 内边距
-  color: '#1b0f0a',                     // 文字颜色
-  cursor: 'pointer',                    // 鼠标悬停时显示手型光标
+  padding: `${4 * multiplier}px ${6 * multiplier}px`,
+  color: '#1b0f0a',
+  cursor: 'pointer'
 }));
 
 /**
@@ -164,12 +176,12 @@ const Close = styled('button')(({ multiplier }) => ({
  * 为物品图标提供统一的显示区域
  */
 const IconSlot = styled('div')(({ multiplier }) => ({
-  width: `${16 * multiplier}px`,        // 图标槽宽度（16px 基础尺寸）
-  height: `${16 * multiplier}px`,       // 图标槽高度（16px 基础尺寸）
-  display: 'flex',                      // 弹性布局
-  alignItems: 'center',                 // 垂直居中
-  justifyContent: 'center',             // 水平居中
-  imageRendering: 'pixelated',          // 像素化渲染，保持图标清晰
+  width: `${16 * multiplier}px`,
+  height: `${16 * multiplier}px`,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  imageRendering: 'pixelated'
 }));
 
 /**
@@ -178,8 +190,7 @@ const IconSlot = styled('div')(({ multiplier }) => ({
  * 用于显示物品名称，占据剩余空间
  */
 const NameText = styled('span')(({ multiplier }) => ({
-  flex: 1,                              // 占据剩余空间
-  marginLeft: `${6 * multiplier}px`,    // 与图标的间距
+  display: 'none'
 }));
 
 /**
@@ -326,86 +337,61 @@ const InventoryModal = ({ gameSize, inventory, onClose, selectMode = false, sele
         width={width} 
         height={height} 
         onClick={(e) => e.stopPropagation()}
+        style={{ display: 'flex' }}
       >
-        {/* 窗口标题 */}
-        <Title multiplier={multiplier}>背包</Title>
-        
-        {/* 标签页导航 */}
-        <Tabs multiplier={multiplier}>
-          {/* 种子标签页 */}
-          <Tab 
-            multiplier={multiplier} 
-            active={activeTab === 'seeds'} 
-            onClick={() => setActiveTab('seeds')}
-          >
-            🌱 种子{selectMode && '（选择）'} {/* 选择模式下显示提示文字 */}
-          </Tab>
-          
-          {/* 杂物标签页 */}
-          <Tab 
-            multiplier={multiplier} 
-            active={activeTab === 'misc'} 
-            onClick={() => setActiveTab('misc')}
-          >
-            🧰 杂物
-          </Tab>
-          
-          {/* 果实标签页 */}
-          <Tab 
-            multiplier={multiplier} 
-            active={activeTab === 'fruits'} 
-            onClick={() => setActiveTab('fruits')}
-          >
-            🧺 果实
-          </Tab>
-        </Tabs>
-
-        {/* 物品网格显示区域 */}
-        <Grid multiplier={multiplier}>
-          {/* 空列表提示 */}
-          {items.length === 0 && (
-            <Cell multiplier={multiplier}>
-              <span>空</span>
-              <b>x 0</b>
-            </Cell>
-          )}
-          
-          {/* 物品列表渲染 */}
-          {items.map((it) => (
-            <Cell 
-              key={it.id} 
-              multiplier={multiplier} 
-              onClick={() => handleCellClick(it)}
-              style={{ 
-                // 动态光标样式：选择模式下的种子且数量大于0时显示手型光标
-                cursor: selectMode && activeTab === 'seeds' && (it.count ?? 0) > 0 ? 'pointer' : 'default',
-                // 动态透明度：选择模式下数量为0的种子显示为半透明
-                opacity: selectMode && activeTab === 'seeds' && (it.count ?? 0) <= 0 ? 0.6 : 1 
-              }}
-            >
-              {/* 物品信息区域：图标 + 名称 */}
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                {/* 物品图标槽位 */}
+        <Close multiplier={multiplier} onClick={onClose}>
+          ×
+        </Close>
+        <div style={{ display: 'flex', width: '100%', height: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Title multiplier={multiplier}>背包</Title>
+            <Tabs multiplier={multiplier}>
+              <Tab 
+                multiplier={multiplier} 
+                active={activeTab === 'seeds'} 
+                onClick={() => setActiveTab('seeds')}
+              >
+                🌱 种子
+              </Tab>
+              <Tab 
+                multiplier={multiplier} 
+                active={activeTab === 'misc'} 
+                onClick={() => setActiveTab('misc')}
+              >
+                🧰 杂物
+              </Tab>
+              <Tab 
+                multiplier={multiplier} 
+                active={activeTab === 'fruits'} 
+                onClick={() => setActiveTab('fruits')}
+              >
+                🧺 果实
+              </Tab>
+            </Tabs>
+          </div>
+          <Grid multiplier={multiplier}>
+            {items.length === 0 && (
+              <Cell multiplier={multiplier}>
+                <IconSlot multiplier={multiplier}>•</IconSlot>
+              </Cell>
+            )}
+            {items.map((it) => (
+              <Cell 
+                key={it.id} 
+                multiplier={multiplier} 
+                onClick={() => handleCellClick(it)}
+                style={{ 
+                  cursor: selectMode && activeTab === 'seeds' && (it.count ?? 0) > 0 ? 'pointer' : 'default',
+                  opacity: selectMode && activeTab === 'seeds' && (it.count ?? 0) <= 0 ? 0.6 : 1 
+                }}
+              >
                 <IconSlot multiplier={multiplier}>
                   {renderIcon(it.id)}
                 </IconSlot>
-                
-                {/* 物品名称 */}
-                <NameText multiplier={multiplier}>
-                  {it.name || it.id} {/* 显示物品名称，如果没有则显示ID */}
-                </NameText>
-              </div>
-              
-              {/* 物品数量显示 */}
-              <b>x {it.count ?? 0}</b>
-            </Cell>
-          ))}
-        </Grid>
-        
-        {/* 关闭按钮 */}
-        <Close multiplier={multiplier} onClick={onClose}>
-          关闭
-        </Close>
+              </Cell>
+            ))}
+          </Grid>
+        </div>
       </Window>
     </Overlay>
   );

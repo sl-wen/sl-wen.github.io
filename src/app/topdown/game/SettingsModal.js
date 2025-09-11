@@ -50,21 +50,22 @@ const Overlay = styled('div')(({ multiplier }) => ({
  * 使用游戏内对话框边框样式保持风格一致
  */
 const Window = styled('div')(({ multiplier, width, height }) => ({
-  imageRendering: 'pixelated',         // 像素化渲染，保持复古风格
-  fontFamily: '"Press Start 2P"',      // 像素游戏字体
-  textTransform: 'uppercase',          // 文字转为大写
-  backgroundColor: '#e2b27e',          // 窗口背景色，与游戏UI一致
-  border: 'solid',                     // 实心边框
-  // 使用九宫格边框图片，创建像素风格边框
+  imageRendering: 'pixelated',
+  fontFamily: '"Press Start 2P"',
+  textTransform: 'uppercase',
+  backgroundColor: '#e2b27e',
+  border: 'solid',
   borderImage: `url("/game/assets/images/dialog_borderbox.png") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px stretch`,
-  padding: `${10 * multiplier}px`,     // 内边距，根据缩放倍数调整
-  // 窗口尺寸根据游戏画面大小动态计算
-  minWidth: `${Math.ceil(width * 0.4 * multiplier)}px`,    // 最小宽度为游戏宽度的40%
-  minHeight: `${Math.ceil(height * 0.3 * multiplier)}px`,  // 最小高度为游戏高度的30%
-  color: '#1b0f0a',                    // 深棕色文字
-  display: 'flex',                     // 弹性布局
-  flexDirection: 'column',             // 垂直排列
-  gap: `${10 * multiplier}px`,         // 元素间距
+  padding: `${10 * multiplier}px`,
+  width: `${Math.ceil(width * 0.5)}px`,
+  height: `${Math.ceil(height * 0.5)}px`,
+  maxWidth: `${Math.ceil(width * 0.9)}px`,
+  maxHeight: `${Math.ceil(height * 0.9)}px`,
+  color: '#1b0f0a',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: `${10 * multiplier}px`,
+  position: 'relative'
 }));
 
 /**
@@ -73,20 +74,19 @@ const Window = styled('div')(({ multiplier, width, height }) => ({
  * 像素风格的按钮，用于各种设置操作
  * 包括保存、退出、关闭等功能
  */
-const Button = styled('button')(({ multiplier }) => ({
-  imageRendering: 'pixelated',         // 像素化渲染
-  fontFamily: '"Press Start 2P"',      // 像素游戏字体
-  fontSize: `${8 * multiplier}px`,     // 字体大小
-  backgroundColor: '#e2b27e',          // 按钮背景色
-  border: 'solid',                     // 实心边框
-  // 使用九宫格边框图片
+const Close = styled('button')(({ multiplier }) => ({
+  position: 'absolute',
+  top: `${6 * multiplier}px`,
+  right: `${6 * multiplier}px`,
+  imageRendering: 'pixelated',
+  fontFamily: '"Press Start 2P"',
+  fontSize: `${8 * multiplier}px`,
+  backgroundColor: '#e2b27e',
+  border: 'solid',
   borderImage: `url("/game/assets/images/dialog_borderbox.png") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px stretch`,
-  padding: `${6 * multiplier}px ${8 * multiplier}px`, // 内边距
-  color: '#1b0f0a',                    // 文字颜色
-  cursor: 'pointer',                   // 鼠标悬停时显示手型光标
-  display: 'flex',                     // 弹性布局
-  alignItems: 'center',                // 垂直居中
-  justifyContent: 'center',            // 水平居中
+  padding: `${4 * multiplier}px ${6 * multiplier}px`,
+  color: '#1b0f0a',
+  cursor: 'pointer'
 }));
 
 /**
@@ -127,19 +127,12 @@ const SettingsModal = ({ gameSize, onSave, onExit, onClose }) => {
         height={height} 
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 保存按钮：手动保存游戏进度 */}
+        <Close multiplier={multiplier} onClick={onClose}>×</Close>
         <Button multiplier={multiplier} onClick={onSave}>
           💾 保存
         </Button>
-        
-        {/* 退出按钮：退出游戏 */}
         <Button multiplier={multiplier} onClick={onExit}>
           🚪 退出
-        </Button>
-        
-        {/* 关闭按钮：关闭设置窗口 */}
-        <Button multiplier={multiplier} onClick={onClose}>
-          关闭
         </Button>
       </Window>
     </Overlay>

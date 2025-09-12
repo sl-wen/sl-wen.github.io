@@ -57,6 +57,8 @@ export default class FarmManager {
 
         /** 生长配置（每阶段时长 ms）；可按需平衡 */
         this.growthMsPerStage = 5000; // 默认 5s/阶段，加快体验
+        /** 水容量上限（用于“补水”动作） */
+        this.waterCapacity = 20;
     }
 
     /**
@@ -118,6 +120,27 @@ export default class FarmManager {
      */
     getWaterCount() {
         return this.inventory?.tags?.misc?.items?.water?.count || 0;
+    }
+
+    /** 获取水容量上限 */
+    getWaterMaxCount() {
+        return this.waterCapacity;
+    }
+
+    /** 将水量补满到容量上限，返回是否发生变化 */
+    refillWater() {
+        const max = this.getWaterMaxCount();
+        const current = this.getWaterCount();
+        if (current >= max) return false;
+        // 写回到背包
+        if (!this.inventory?.tags?.misc?.items?.water) {
+            if (!this.inventory.tags.misc) this.inventory.tags.misc = { items: {} };
+            this.inventory.tags.misc.items.water = { id: 'water', name: '水', count: 0 };
+        }
+        this.inventory.tags.misc.items.water.count = max;
+        this.dispatchInventoryUpdate();
+        try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
+        return true;
     }
 
     /**

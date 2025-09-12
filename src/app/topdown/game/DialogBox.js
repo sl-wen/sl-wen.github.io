@@ -21,6 +21,7 @@
     
 import { styled } from '@mui/material/styles';
 import { useCallback, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 // 图片资源
 // 注意：dialog_borderbox.png 现在从 public/game/assets/images/dialog_borderbox.png 提供
@@ -77,6 +78,15 @@ const DialogFooter = styled('div')(({ multiplier }) => ({
     position: 'absolute',
     right: `${6 * multiplier}px`,       // 右侧位置
     bottom: `${6 * multiplier}px`,      // 底部位置
+}));
+
+/**
+ * 继续箭头容器
+ */
+const ContinueHint = styled('div')(({ multiplier }) => ({
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: `${3 * multiplier}px`,
 }));
 
 /**
@@ -182,7 +192,16 @@ const DialogBox = ({
 
             {/* 交互提示 */}
             <DialogFooter multiplier={multiplier}>
-                {messageEnded ? '结束' : '继续'}
+                <ContinueHint multiplier={multiplier}>
+                    <span>{messageEnded ? '结束' : '继续'}</span>
+                    <motion.span
+                        initial={{ opacity: 0.2, y: 0 }}
+                        animate={{ opacity: [0.2, 1, 0.2], y: [0, -2, 0] }}
+                        transition={{ duration: 1.2, repeat: Infinity }}
+                    >
+                        ▶
+                    </motion.span>
+                </ContinueHint>
             </DialogFooter>
         </DialogWindow>
     );

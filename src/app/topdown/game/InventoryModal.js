@@ -32,6 +32,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { styled } from '@mui/material/styles';
+import { motion, AnimatePresence } from 'framer-motion';
 
 /**
  * 模态窗口遮罩层样式组件
@@ -146,7 +147,8 @@ const Cell = styled('div')(({ multiplier }) => ({
   border: `${multiplier}px solid #79584f`,
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center'
+  justifyContent: 'center',
+  position: 'relative'
 }));
 
 /**
@@ -182,6 +184,20 @@ const IconSlot = styled('div')(({ multiplier }) => ({
   alignItems: 'center',
   justifyContent: 'center',
   imageRendering: 'pixelated'
+}));
+
+/** 右下角数量徽标 */
+const CountBadge = styled('div')(({ multiplier }) => ({
+  position: 'absolute',
+  right: `${1 * multiplier}px`,
+  bottom: `${1 * multiplier}px`,
+  padding: `${1 * multiplier}px ${2 * multiplier}px`,
+  background: '#5b3b33',
+  color: '#ffe6c9',
+  fontFamily: 'inherit',
+  fontSize: `${6 * multiplier}px`,
+  borderRadius: `${2 * multiplier}px`,
+  lineHeight: 1
 }));
 
 /**
@@ -332,11 +348,17 @@ const InventoryModal = ({ gameSize, inventory, onClose, selectMode = false, sele
     // 遮罩层：点击遮罩区域关闭模态窗口
     <Overlay multiplier={multiplier} onClick={onClose}>
       {/* 主窗口：阻止事件冒泡，避免点击窗口内容时关闭 */}
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.15 }}
+        style={{ display: 'flex' }}
+        onClick={(e) => e.stopPropagation()}
+      >
       <Window 
         multiplier={multiplier} 
         width={width} 
         height={height} 
-        onClick={(e) => e.stopPropagation()}
         style={{ display: 'flex' }}
       >
         <Close multiplier={multiplier} onClick={onClose}>
@@ -388,11 +410,15 @@ const InventoryModal = ({ gameSize, inventory, onClose, selectMode = false, sele
                 <IconSlot multiplier={multiplier}>
                   {renderIcon(it.id)}
                 </IconSlot>
+                {(it.count ?? 0) > 0 && (
+                  <CountBadge multiplier={multiplier}>{it.count}</CountBadge>
+                )}
               </Cell>
             ))}
           </Grid>
         </div>
       </Window>
+      </motion.div>
     </Overlay>
   );
 };

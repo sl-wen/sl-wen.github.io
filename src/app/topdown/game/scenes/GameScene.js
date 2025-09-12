@@ -2205,7 +2205,7 @@ export default class GameScene extends Scene {
      */
     performPlantAction(tileX, tileY, direction) {
         // 播放种植动画
-        this.playActionAnimation('plant', direction, () => {
+        this.playActionAnimation('hoe', direction, () => {
             // 执行种植逻辑
             if (this.farmManager && this.preferredSeedId) {
                 const success = this.farmManager.plant(tileX, tileY, this.preferredSeedId);
@@ -2226,7 +2226,21 @@ export default class GameScene extends Scene {
             if (this.farmManager) {
                 const success = this.farmManager.water(tileX, tileY);
                 if (success) {
-
+                    // 轻微水花粒子
+                    try {
+                        const px = tileX * (this.map?.tileWidth || 16) + (this.map?.tileWidth || 16) / 2;
+                        const py = tileY * (this.map?.tileHeight || 16) + (this.map?.tileHeight || 16) / 2;
+                        const p = this.add.particles(px, py, 'raindrop_0', {
+                            speed: { min: 40, max: 90 },
+                            lifespan: 500,
+                            quantity: 6,
+                            scale: { min: 0.6, max: 1.2 },
+                            alpha: { min: 0.6, max: 1 },
+                            gravityY: 200,
+                        });
+                        p.setDepth(1100);
+                        this.time.delayedCall(600, () => p.destroy());
+                    } catch (_) { /* noop */ }
                 }
             }
         });

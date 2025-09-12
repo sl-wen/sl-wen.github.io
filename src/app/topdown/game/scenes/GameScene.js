@@ -94,6 +94,13 @@ export default class GameScene extends Scene {
     farmManager = null;
     farmlandIcons = new Map(); // 存储耕地图标 key: "x,y" => FarmlandIcon
 
+    // 地图/环境引用
+    createdLayers = null; // MapLoader 创建的图层数组
+    waterLayerRef = null; // Water 图层引用
+
+    // 土壤湿度覆盖
+    soilOverlay = { enabled: false, gfx: null, lastUpdate: 0 };
+
 
 
 
@@ -332,10 +339,15 @@ export default class GameScene extends Scene {
         } else {
             // 2) 检测面前一格是否为箱子或其它可交互图块
             const front = this.getFrontPixelPosition(); // 面前一格像素坐标
-            const isInteractable = this.map.layers?.some((layer) => {
-                const t = layer.tilemapLayer.getTileAtWorldXY(front.x, front.y);
-                return t?.properties?.ge_collide || t?.properties?.interactable;
-            });
+            let isInteractable = false;
+            try {
+                if (Array.isArray(this.createdLayers)) {
+                    isInteractable = this.createdLayers.some((layer) => {
+                        const t = layer.getTileAtWorldXY(front.x, front.y);
+                        return t?.properties?.ge_collide || t?.properties?.interactable;
+                    });
+                }
+            } catch (_) { /* noop */ }
             // 3) 农场交互：面前是否为耕地
             if (this.farmManager) {
                 const tileX = Math.floor(front.x / this.map.tileWidth);
@@ -350,6 +362,8 @@ export default class GameScene extends Scene {
                     } else if (crop && !crop.watered && crop.stage < 5 && this.farmManager.getWaterCount?.() > 0) {
                         nextContext = 'water';
                     }
+                } else if (this.isWaterTileAt(tileX, tileY) && this.farmManager.getWaterCount() < this.farmManager.getWaterMaxCount()) {
+                    nextContext = 'refill';
                 } else if (isInteractable) {
                     nextContext = 'interact';
                 }
@@ -471,6 +485,7 @@ export default class GameScene extends Scene {
         const { map, layers: createdLayers, collidableTileIds } = MapLoader.load(this, mapKey, { debug: isDebugMode }); // 地图与碰撞数据
         if (isDebugMode) { window.phaserGame = game; }
         this.map = map;
+        this.createdLayers = createdLayers;
 
         // 初始化农场管理器（从存档恢复或创建新的），并从 Tiled 的 Farmable 图层注册可种植地块
         const tileSize = map?.tileWidth || 16;
@@ -524,7 +539,8 @@ export default class GameScene extends Scene {
             THREE: Phaser.Input.Keyboard.KeyCodes.THREE,
             FOUR: Phaser.Input.Keyboard.KeyCodes.FOUR,
             FIVE: Phaser.Input.Keyboard.KeyCodes.FIVE,
-            T: Phaser.Input.Keyboard.KeyCodes.T  // T键显示/隐藏时间面板
+            T: Phaser.Input.Keyboard.KeyCodes.T,  // T键显示/隐藏时间面板
+            M: Phaser.Input.Keyboard.KeyCodes.M   // M键切换土壤湿度覆盖
         });
         this.timeSpeedKeys = keys;
 
@@ -608,6 +624,7 @@ export default class GameScene extends Scene {
                     }
                 });
                 this.waterSprites = waterGroup;
+                this.waterLayerRef = waterLayer;
             }
         } catch (_) { /* noop */ }
 
@@ -947,11 +964,24 @@ export default class GameScene extends Scene {
         };
         window.addEventListener('time-jump', handleTimeJump);
 
+        // 新的一天：处理日更逻辑
+        const handleNewDay = () => {
+            try {
+                if (this.farmManager) {
+                    this.farmManager.evaporateTick(5);
+                    this.updateFarmlandIcons();
+                    this.requestSoilOverlayRedraw();
+                }
+            } catch (_) { /* noop */ }
+        };
+        window.addEventListener('new-day', handleNewDay);
+
         // 清理事件监听
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
             window.removeEventListener('request-save-snapshot', handleRequestSave);
             window.removeEventListener('time-speed-change', handleTimeSpeedChange);
             window.removeEventListener('time-jump', handleTimeJump);
+            try { window.removeEventListener('new-day', handleNewDay); } catch (_) { }
         });
 
         // 自动保存事件触发工具（节流由 React 负责）
@@ -1428,7 +1458,7 @@ export default class GameScene extends Scene {
         // 执行农场交互（按键触发）
         if (this.inputManager.isEnterJustDown() || this.inputManager.isSpaceJustDown()) {
             const context = this.currentActionContext;
-            if (context === 'plant' || context === 'water' || context === 'harvest') {
+            if (context === 'plant' || context === 'water' || context === 'harvest' || context === 'refill') {
                 const front = this.getFrontPixelPosition();
                 const tileX = Math.floor(front.x / this.map.tileWidth);
                 const tileY = Math.floor(front.y / this.map.tileHeight);
@@ -1458,11 +1488,18 @@ export default class GameScene extends Scene {
                     if (!ok) {
                         // noop
                     }
+                    this.requestSoilOverlayRedraw();
                 } else if (context === 'harvest') {
                     const yieldCount = this.farmManager.harvest(tileX, tileY);
                     if (yieldCount > 0) {
                         // 将果实转换为金币（示例）：
                         this.catSprite.collectCoin(yieldCount);
+                    }
+                    this.updateFarmlandIcons();
+                } else if (context === 'refill') {
+                    const ok = this.farmManager.refillWater();
+                    if (ok) {
+                        this.updateFarmlandIcons();
                     }
                 }
             }
@@ -1594,8 +1631,10 @@ export default class GameScene extends Scene {
                 const weatherEffect = this.getWeatherEffect(timeInfo.weather, timeInfo.weatherIntensity);
                 if (weatherEffect.rain > 0) {
                     this.farmManager.rainTick(weatherEffect.rain * (deltaMs / 1000));
+                    if (this.soilOverlay.enabled) this.requestSoilOverlayRedraw();
                 } else {
                     this.farmManager.evaporateTick(weatherEffect.evaporation * (deltaMs / 1000));
+                    if (this.soilOverlay.enabled) this.requestSoilOverlayRedraw();
                 }
             }
 
@@ -1608,6 +1647,18 @@ export default class GameScene extends Scene {
             }
 
 
+        }
+
+        // 覆盖层切换与节流重绘
+        if (Phaser.Input.Keyboard.JustDown(this.timeSpeedKeys?.M)) {
+            this.toggleSoilOverlay();
+        }
+        if (this.soilOverlay.enabled) {
+            this.soilOverlay.lastUpdate += deltaMs;
+            if (this.soilOverlay.lastUpdate >= 1000) {
+                this.soilOverlay.lastUpdate = 0;
+                this.redrawSoilOverlay();
+            }
         }
     }
 
@@ -1984,6 +2035,60 @@ export default class GameScene extends Scene {
             snow: { rain: 0.3 * intensity, evaporation: 0.1 }
         };
         return effects[weather] || effects.clear;
+    }
+
+    /** 判定指定瓦片是否为水（基于 Water 图层） */
+    isWaterTileAt(tileX, tileY) {
+        try {
+            if (this.waterLayerRef) {
+                const t = this.waterLayerRef.getTileAt(tileX, tileY);
+                return Boolean(t && t.index >= 0);
+            }
+        } catch (_) { }
+        return false;
+    }
+
+    /** 请求尽快重绘土壤覆盖 */
+    requestSoilOverlayRedraw() {
+        if (this.soilOverlay.enabled) {
+            this.soilOverlay.lastUpdate = 1000;
+        }
+    }
+
+    /** 切换土壤湿度覆盖 */
+    toggleSoilOverlay() {
+        this.soilOverlay.enabled = !this.soilOverlay.enabled;
+        if (this.soilOverlay.enabled) {
+            if (!this.soilOverlay.gfx) {
+                this.soilOverlay.gfx = this.add.graphics();
+                this.soilOverlay.gfx.setScrollFactor(1, 1);
+                this.soilOverlay.gfx.setDepth(1200);
+            }
+            this.redrawSoilOverlay();
+        } else if (this.soilOverlay.gfx) {
+            this.soilOverlay.gfx.clear();
+        }
+    }
+
+    /** 重绘土壤湿度覆盖（蓝色强度按 moisture 比例） */
+    redrawSoilOverlay() {
+        if (!this.soilOverlay.enabled || !this.soilOverlay.gfx) return;
+        if (!this.farmManager) return;
+        const g = this.soilOverlay.gfx;
+        g.clear();
+        const tileW = this.map?.tileWidth || 16;
+        const tileH = this.map?.tileHeight || 16;
+        this.farmManager.farmland.forEach((key) => {
+            const [txStr, tyStr] = key.split(',');
+            const tx = Number.parseInt(txStr, 10);
+            const ty = Number.parseInt(tyStr, 10);
+            const soil = this.farmManager.getSoil(tx, ty);
+            const moisture = Math.max(0, Math.min(100, soil.moisture || 0));
+            const alpha = 0.15 + 0.35 * (moisture / 100);
+            const color = 0x3fa9ff;
+            g.fillStyle(color, alpha);
+            g.fillRect(tx * tileW, ty * tileH, tileW, tileH);
+        });
     }
 
     /**

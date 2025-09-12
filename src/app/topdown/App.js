@@ -635,6 +635,7 @@ function App() {
                   : actionContext === 'plant' ? '🌱'
                     : actionContext === 'water' ? '💧'
                       : actionContext === 'harvest' ? '🧺'
+                        : actionContext === 'refill' ? '🚰'
                         : '•'
             }
             label={
@@ -643,6 +644,7 @@ function App() {
                   : actionContext === 'plant' ? 'Plant'
                     : actionContext === 'water' ? 'Water'
                       : actionContext === 'harvest' ? 'Harvest'
+                        : actionContext === 'refill' ? 'Refill'
                         : ''
             }
           />

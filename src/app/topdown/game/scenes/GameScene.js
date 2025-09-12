@@ -51,10 +51,11 @@
  * - 自动寻路：用户手动输入会打断 `moveTo`，并隐藏落点高亮。
  */
 import { Scene } from 'phaser';
-import { BASE_WIDTH, BASE_HEIGHT, DYNAMIC_DEPTH_BASE } from '../constants';
 import {
+    BASE_HEIGHT, BASE_WIDTH, DYNAMIC_DEPTH_BASE, MAX_INTEGER_ZOOM,
     NPC_MOVEMENT_RANDOM,
     SCENE_FADE_TIME,
+    ZOOM_SCALE
 } from '../constants';
 import FarmManager from '../farming/FarmManager';
 import FarmlandIcon from '../FarmlandIcon';
@@ -470,8 +471,12 @@ export default class GameScene extends Scene {
                 const gameSize = this.scale.gameSize;
                 const zoomX = Math.floor(gameSize.width / BASE_WIDTH) || 1;
                 const zoomY = Math.floor(gameSize.height / BASE_HEIGHT) || 1;
-                const zoom = Math.max(1, Math.min(zoomX, zoomY));
-                camera.setZoom(zoom);
+                let zoom = Math.max(1, Math.min(zoomX, zoomY));
+                if (typeof MAX_INTEGER_ZOOM === 'number' && MAX_INTEGER_ZOOM > 0) {
+                    zoom = Math.min(zoom, MAX_INTEGER_ZOOM);
+                }
+                const scalar = (typeof ZOOM_SCALE === 'number' && ZOOM_SCALE > 0) ? ZOOM_SCALE : 1;
+                camera.setZoom(zoom * scalar);
             } catch (_) { /* noop */ }
         };
         applyIntegerZoom();

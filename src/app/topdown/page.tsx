@@ -25,6 +25,11 @@ export default function TopDownPage() {
 
   useEffect(() => {
     setIsClient(true);
+    // 进入页面时，让 body 进入"全屏占位"模式，隐藏滚动并可用于隐藏 Footer
+    document.body.classList.add('fullscreen-active');
+    return () => {
+      document.body.classList.remove('fullscreen-active');
+    };
   }, []);
 
   if (!isClient) {
@@ -39,7 +44,7 @@ export default function TopDownPage() {
   }
 
   return (
-    <div className="w-full h-screen bg-black flex items-center justify-center overflow-hidden">
+    <div className="w-screen h-screen bg-black flex items-center justify-center overflow-hidden">
       <TopDownGame />
     </div>
   );

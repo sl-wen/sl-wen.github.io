@@ -44,7 +44,7 @@ export const TIME_CONTROL_KEYS = {
 // 昼夜循环常量
 export const DAY_PHASES = {
     DAWN: 'dawn',
-    MORNING: 'morning', 
+    MORNING: 'morning',
     NOON: 'noon',
     AFTERNOON: 'afternoon',
     DUSK: 'dusk',
@@ -56,7 +56,7 @@ export const DAY_PHASES = {
 export const SEASONS = {
     SPRING: 'spring',
     SUMMER: 'summer',
-    AUTUMN: 'autumn', 
+    AUTUMN: 'autumn',
     WINTER: 'winter'
 };
 
@@ -72,6 +72,10 @@ export const WEATHER_TYPES = {
 // 建议基准分辨率（16:9）：在此基础上做整数倍缩放，保持像素清晰
 export const BASE_WIDTH = 480;
 export const BASE_HEIGHT = 270;
+// 限制整数缩放的最大倍数，避免超大屏幕上素材过大
+export const MAX_INTEGER_ZOOM = 2;
+// 额外缩放比例（相对于当前整数缩放），例如 0.25 即缩小为原来的 1/4
+export const ZOOM_SCALE = 0.25;
 
 // 动态对象（角色/NPC/物品）的深度基线
 // 使用 y 作为动态加成：depth = DYNAMIC_DEPTH_BASE + sprite.y

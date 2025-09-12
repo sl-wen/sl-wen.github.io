@@ -1,5 +1,6 @@
 import ConditionalFooter from '@/components/ConditionalFooter';
 import ResourcePreloader from '@/components/ResourcePreloader';
+import RouteVisibility from '@/components/RouteVisibility';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import { AuthProvider } from '@/utils/auth-context';
 import type { Metadata, Viewport } from 'next';
@@ -128,16 +129,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* 认证提供者 - 为整个应用提供用户认证上下文 */}
         <AuthProvider>
           <div className="min-h-screen flex flex-col bg-gray-50">
-            {/* 页面头部导航 */}
-            <Header />
+            {/* 页面头部导航 - 在 /topdown 隐藏 */}
+            <RouteVisibility hideOn={["/topdown"]}>
+              <Header />
+            </RouteVisibility>
 
             {/* 主要内容区域 - 页面内容将在这里渲染 */}
-            <main className="flex-1 w-full max-w-7xl mx-auto h-full my-auto mobile-content">
+            <main className="flex-1 w-full max-w-none mx-auto h-full my-auto mobile-content">
               {children}
             </main>
 
-            {/* 页面底部 - 全屏模式下隐藏 */}
-            <ConditionalFooter />
+            {/* 页面底部 - 在 /topdown 隐藏（并且全屏模式下也会隐藏）*/}
+            <RouteVisibility hideOn={["/topdown"]}>
+              <ConditionalFooter />
+            </RouteVisibility>
 
             {/* 状态消息组件 - 显示全局状态和通知 */}
             <StatusMessages />

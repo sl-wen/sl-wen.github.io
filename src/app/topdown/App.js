@@ -636,7 +636,7 @@ function App() {
                     : actionContext === 'water' ? '💧'
                       : actionContext === 'harvest' ? '🧺'
                         : actionContext === 'refill' ? '🚰'
-                        : '•'
+                          : '•'
             }
             label={
               actionContext === 'talk' ? 'Talk'
@@ -645,7 +645,7 @@ function App() {
                     : actionContext === 'water' ? 'Water'
                       : actionContext === 'harvest' ? 'Harvest'
                         : actionContext === 'refill' ? 'Refill'
-                        : ''
+                          : ''
             }
           />
         )}

@@ -32,7 +32,8 @@ import { useEffect, useRef, useState } from 'react';
  */
 const ActionButtonContainer = styled('div')(({ theme, gameSize }) => ({
   position: 'fixed',
-  bottom: '150px',
+  // Raise for mobile browser bars; include safe-area inset
+  bottom: `calc(180px + env(safe-area-inset-bottom, 0px))`,
   right: '20px',
   zIndex: 1000,
   width: '120px',  // 120px，提供更大的触摸区域

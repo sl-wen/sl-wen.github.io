@@ -809,7 +809,16 @@ export default class GameScene extends Scene {
         }
 
         camera.startFollow(this.catSprite, true, 1, 1);
-        camera.setFollowOffset(0, 0);
+        // Mobile browsers often have bottom toolbars; shift follow target slightly up on mobile
+        try {
+            const ua = navigator.userAgent || '';
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) || (this.scale.gameSize?.width <= 768);
+            // Move camera target up by roughly 10% of viewport height in world pixels
+            const verticalOffset = isMobile ? Math.round((this.scale.gameSize?.height || 0) * 0.1) : 0;
+            camera.setFollowOffset(0, verticalOffset ? -verticalOffset : 0);
+        } catch (_) {
+            camera.setFollowOffset(0, 0);
+        }
         this.cameras.main.setRoundPixels(true);
         camera.setBounds(
             0,

@@ -21,6 +21,8 @@
  * - 支持多图块集的复合地图
  * - 自动处理碰撞属性和图层深度设置
  */
+import { OVERLAY_LAYER_DEPTH } from './constants';
+
 export default class MapLoader {
     /**
      * 加载 Tiled 地图并配置碰撞检测
@@ -112,7 +114,15 @@ export default class MapLoader {
 
             // 设置图层深度，确保渲染顺序与 Tiled 中的图层顺序一致
             // 深度值越大，图层渲染越靠前（覆盖其他图层）
-            try { layer.setDepth(i); } catch (_) { /* 忽略深度设置失败 */ }
+            try {
+                // 覆盖层（上层遮挡，如屋顶/树冠）命名包含 'overlay' 时，设置为较高的深度
+                const isOverlay = String(layerData?.name || '').toLowerCase().includes('overlay');
+                if (isOverlay) {
+                    layer.setDepth(OVERLAY_LAYER_DEPTH + i);
+                } else {
+                    layer.setDepth(i);
+                }
+            } catch (_) { /* 忽略深度设置失败 */ }
 
             // 按命名约定隐藏纯碰撞图层
             // 包含 'collision' 关键词的图层通常用于碰撞检测，不需要显示

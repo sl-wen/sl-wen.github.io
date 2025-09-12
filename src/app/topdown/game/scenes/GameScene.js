@@ -51,6 +51,7 @@
  * - 自动寻路：用户手动输入会打断 `moveTo`，并隐藏落点高亮。
  */
 import { Scene } from 'phaser';
+import { BASE_WIDTH, BASE_HEIGHT, DYNAMIC_DEPTH_BASE } from '../constants';
 import {
     NPC_MOVEMENT_RANDOM,
     SCENE_FADE_TIME,
@@ -449,6 +450,20 @@ export default class GameScene extends Scene {
 
         camera.fadeIn(SCENE_FADE_TIME);
 
+        // 计算并应用整数缩放（像素完美）
+        const applyIntegerZoom = () => {
+            try {
+                const gameSize = this.scale.gameSize;
+                const zoomX = Math.floor(gameSize.width / BASE_WIDTH) || 1;
+                const zoomY = Math.floor(gameSize.height / BASE_HEIGHT) || 1;
+                const zoom = Math.max(1, Math.min(zoomX, zoomY));
+                camera.setZoom(zoom);
+            } catch (_) { /* noop */ }
+        };
+        applyIntegerZoom();
+        // 窗口尺寸变化时，重新计算整数缩放
+        this.scale.on('resize', applyIntegerZoom, this);
+
         // 初始化输入管理器
         this.inputManager = new InputManager(this); // 统一接入键盘与虚拟摇杆/按钮
 
@@ -517,7 +532,7 @@ export default class GameScene extends Scene {
         this.catSprite = this.physics.add
             // 使用 idle 动画 key 作为初始纹理（单帧），随后播放循环 idle 动画
             .sprite(initialPosition.x * map.tileWidth, initialPosition.y * map.tileHeight, `cat_idle_${initialFacingDirection || 'down'}`)
-            .setDepth(1);
+            .setDepth(DYNAMIC_DEPTH_BASE + initialPosition.y * map.tileHeight);
         try { this.catSprite.anims.play(`cat_idle_anim_${initialFacingDirection || 'down'}`); } catch (_) { /* noop */ }
         this.catSprite.coin = catCoin;
 
@@ -693,7 +708,7 @@ export default class GameScene extends Scene {
                                 case 'coin': {
                                     const item = this.physics.add
                                         .sprite(x, y, 'coin')
-                                        .setDepth(1)
+                                        .setDepth(DYNAMIC_DEPTH_BASE + y)
                                         .setOrigin(0, 1);
 
                                     item.itemType = 'coin';
@@ -706,7 +721,7 @@ export default class GameScene extends Scene {
                                     if (!catHaveSword) {
                                         const item = this.physics.add
                                             .sprite(x, y, 'sword')
-                                            .setDepth(1)
+                                            .setDepth(DYNAMIC_DEPTH_BASE + y)
                                             .setOrigin(0, 1);
 
                                         item.itemType = 'sword';
@@ -984,6 +999,7 @@ export default class GameScene extends Scene {
             const npc = this.physics.add.sprite(0, 0, npcKey, `${npcKey}_idle_${facingDirection}`);
             npc.body.setSize(14, 14);
             npc.body.setOffset(9, 13);
+            npc.setDepth(DYNAMIC_DEPTH_BASE + y);
             npcSprites.add(npc);
 
             this.createPlayerwalkAnimation(npcKey, 'walk_up');
@@ -1514,6 +1530,23 @@ export default class GameScene extends Scene {
             cam.scrollY = Math.round(cam.scrollY);
         }
         this.catSprite.setPosition(Math.round(this.catSprite.x), Math.round(this.catSprite.y));
+
+        // Y 深度排序：根据 y 更新主角与 NPC/物体的深度，实现 2.5D 遮挡
+        try {
+            if (this.catSprite) {
+                this.catSprite.setDepth(DYNAMIC_DEPTH_BASE + this.catSprite.y);
+            }
+            if (this.npcSprites?.children?.size > 0) {
+                this.npcSprites.getChildren().forEach((s) => {
+                    if (s && typeof s.y === 'number') s.setDepth(DYNAMIC_DEPTH_BASE + s.y);
+                });
+            }
+            if (this.itemsSprites?.children?.size > 0) {
+                this.itemsSprites.getChildren().forEach((s) => {
+                    if (s && typeof s.y === 'number') s.setDepth(DYNAMIC_DEPTH_BASE + s.y);
+                });
+            }
+        } catch (_) { /* noop */ }
 
         // 时间/天气推进与光照效果
         if (this.timeWeather) {

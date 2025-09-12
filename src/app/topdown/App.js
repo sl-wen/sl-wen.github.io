@@ -282,6 +282,8 @@ function App() {
       parent: 'game-content',               // 游戏画布的父容器 ID
       orientation: Phaser.Scale.LANDSCAPE,  // 游戏方向（横屏）
       localStorageName: 'some-game-title',  // 本地存储键名
+      antialias: false,                     // 禁用抗锯齿，保证像素清晰
+      roundPixels: true,                    // 渲染取整，避免亚像素抖动
       width: gameSize.width,                // 游戏宽度
       height: gameSize.height,              // 游戏高度
       autoRound: true,                      // 自动四舍五入像素位置

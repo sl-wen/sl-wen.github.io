@@ -68,3 +68,15 @@ export const WEATHER_TYPES = {
     SNOW: 'snow'
 };
 
+// 内部分辨率与深度排序常量
+// 建议基准分辨率（16:9）：在此基础上做整数倍缩放，保持像素清晰
+export const BASE_WIDTH = 480;
+export const BASE_HEIGHT = 270;
+
+// 动态对象（角色/NPC/物品）的深度基线
+// 使用 y 作为动态加成：depth = DYNAMIC_DEPTH_BASE + sprite.y
+export const DYNAMIC_DEPTH_BASE = 500;
+
+// 覆盖层（屋顶/树冠/上层遮挡）深度：必须高于动态对象
+export const OVERLAY_LAYER_DEPTH = 5000;
+

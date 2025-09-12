@@ -93,6 +93,7 @@ export default class GameScene extends Scene {
     npcSprites = null;
     farmManager = null;
     farmlandIcons = new Map(); // 存储耕地图标 key: "x,y" => FarmlandIcon
+    selectedFarmlandKey = null; // 当前选中的耕地 key
 
     // 地图/环境引用
     createdLayers = null; // MapLoader 创建的图层数组
@@ -1133,13 +1134,20 @@ export default class GameScene extends Scene {
                 y: Math.floor(worldY / map.tileHeight), // 取整到网格 Y
             };
 
-            // 若点击落在耕地上，仅弹出信息/操作，不触发自动寻路
+            // 若点击落在耕地上，仅显示对应图标，不触发自动寻路
             try {
                 if (this.farmManager && this.farmManager.isFarmland(target.x, target.y)) {
-                    this.openFarmlandInfoPopup(target.x, target.y);
+                    this.selectedFarmlandKey = `${target.x},${target.y}`;
+                    this.updateFarmlandIcons();
                     return;
                 }
             } catch (_) { /* noop */ }
+
+            // 点击非耕地，清除已显示的耕地图标
+            if (this.selectedFarmlandKey) {
+                this.selectedFarmlandKey = null;
+                this.updateFarmlandIcons();
+            }
 
             this.isAutoMoving = true; // 标记进入自动寻路模式（用于与手动输入互斥）
             // 显示目标瓦片高亮
@@ -2124,9 +2132,24 @@ export default class GameScene extends Scene {
      * 处理耕地图标点击事件
      */
     handleFarmlandIconClick(data) {
-        const { tileX, tileY } = data;
-        // 点击耕地图标时只弹出信息弹窗，由用户选择具体动作
-        this.openFarmlandInfoPopup(tileX, tileY);
+        const { tileX, tileY, actionType } = data;
+
+        // 获取玩家当前位置
+        const playerPos = this.gridEngine.getPosition('cat');
+
+        // 计算目标位置（紧邻耕地的位置）
+        const targetPos = this.findAdjacentPosition(tileX, tileY, playerPos);
+
+        if (targetPos) {
+            // 自动移动到目标位置
+            this.autoMoveToPosition(targetPos.x, targetPos.y, () => {
+                // 到达后执行对应动作
+                this.executeAction(actionType, tileX, tileY);
+                // 动作后保持/更新当前选中耕地图标（如有下一步动作）
+                this.selectedFarmlandKey = `${tileX},${tileY}`;
+                this.updateFarmlandIcons();
+            });
+        }
     }
 
     /**
@@ -2397,39 +2420,33 @@ export default class GameScene extends Scene {
      * 更新耕地图标显示
      */
     updateFarmlandIcons() {
-        // 清除现有图标
+        // 仅对当前选中的耕地展示图标
         this.farmlandIcons.forEach(icon => icon.destroy());
         this.farmlandIcons.clear();
 
-        if (!this.farmManager) return;
+        if (!this.farmManager || !this.selectedFarmlandKey) return;
 
-        // 为每个耕地创建适当的图标
-        this.farmManager.farmland.forEach((key) => {
-            const [txStr, tyStr] = key.split(',');
-            const tx = Number.parseInt(txStr, 10);
-            const ty = Number.parseInt(tyStr, 10);
+        const [txStr, tyStr] = this.selectedFarmlandKey.split(',');
+        const tx = Number.parseInt(txStr, 10);
+        const ty = Number.parseInt(tyStr, 10);
 
-            const crop = this.farmManager.getCrop(tx, ty);
-            let actionType = null;
+        const crop = this.farmManager.getCrop(tx, ty);
+        let actionType = null;
 
-            if (!crop && this.farmManager.getTotalSeedsCount?.() > 0) {
-                // 空地且有种子 -> 显示种植图标
-                actionType = 'plant';
-            } else if (crop && crop.canHarvest()) {
-                // 作物可收获 -> 显示收获图标
-                actionType = 'harvest';
-            } else if (crop && !crop.watered && crop.stage < 5 && this.farmManager.getWaterCount?.() > 0) {
-                // 作物需要浇水 -> 显示浇水图标
-                actionType = 'water';
-            }
+        if (!crop && this.farmManager.getTotalSeedsCount?.() > 0) {
+            actionType = 'plant';
+        } else if (crop && crop.canHarvest()) {
+            actionType = 'harvest';
+        } else if (crop && !crop.watered && crop.stage < 5 && this.farmManager.getWaterCount?.() > 0) {
+            actionType = 'water';
+        }
 
-            if (actionType) {
-                const icon = new FarmlandIcon(this, tx, ty, actionType, {
-                    tileSize: this.map?.tileWidth || 64
-                });
-                this.farmlandIcons.set(key, icon);
-            }
-        });
+        if (actionType) {
+            const icon = new FarmlandIcon(this, tx, ty, actionType, {
+                tileSize: this.map?.tileWidth || 64
+            });
+            this.farmlandIcons.set(this.selectedFarmlandKey, icon);
+        }
     }
 
 }

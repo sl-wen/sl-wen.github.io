@@ -50,6 +50,7 @@ import InventoryModal from "./game/InventoryModal";
 import Quickbar from "./game/Quickbar";
 import RadialMenu from "./game/RadialMenu";
 import SettingsModal from "./game/SettingsModal";
+import FarmlandInfoModal from "./game/FarmlandInfoModal";
 import TimeControlPanel from "./game/TimeControlPanel";
 import { calculateGameSize } from "./game/utils";
 import VirtualJoystick from "./game/VirtualJoystick";
@@ -192,6 +193,7 @@ function App() {
   const [showSeedRadial, setShowSeedRadial] = useState(false);
   const [timeInfo, setTimeInfo] = useState({});
   const [showTimePanel, setShowTimePanel] = useState(false);
+  const [farmlandInfo, setFarmlandInfo] = useState(null);
 
   /**
    * 处理对话完成事件
@@ -406,6 +408,14 @@ function App() {
       setTimeInfo(detail || {});
     };
     window.addEventListener('time-weather', timeWeatherListener);
+
+    // 耕地信息弹窗
+    const farmlandInfoListener = ({ detail }) => {
+      setFarmlandInfo(detail || null);
+    };
+    const farmlandInfoCloseListener = () => setFarmlandInfo(null);
+    window.addEventListener('open-farmland-info', farmlandInfoListener);
+    window.addEventListener('close-farmland-info', farmlandInfoCloseListener);
 
     // 清理事件监听器
     return () => {
@@ -723,6 +733,22 @@ function App() {
             onSave={handleSave}
             onExit={() => window.location.reload()}
             onClose={() => setShowSettings(false)}
+          />
+        )}
+
+        {/* 耕地信息弹窗 */}
+        {hasGameStarted && farmlandInfo && (
+          <FarmlandInfoModal
+            info={farmlandInfo}
+            gameSize={{ width: gameSize.width, height: gameSize.height, multiplier: gameSize.multiplier }}
+            onClose={() => setFarmlandInfo(null)}
+            onAction={(actionType) => {
+              try {
+                const evt = new CustomEvent('farmland-action', { detail: { tileX: farmlandInfo.tileX, tileY: farmlandInfo.tileY, actionType } });
+                window.dispatchEvent(evt);
+              } catch (e) { }
+              setFarmlandInfo(null);
+            }}
           />
         )}
       </GameWrapper>

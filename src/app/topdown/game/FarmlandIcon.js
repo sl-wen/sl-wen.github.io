@@ -80,8 +80,10 @@ export default class FarmlandIcon {
         this.background.setInteractive({ useHandCursor: true });
         this.icon.setInteractive({ useHandCursor: true });
         
-        // 点击事件
-        const onClick = () => {
+        // 点击事件（阻止冒泡到场景级 pointerdown，避免触发点击移动）
+        const onClick = (pointer, localX, localY, event) => {
+            try { event?.stopPropagation?.(); } catch (_) {}
+            try { pointer?.event?.stopPropagation?.(); } catch (_) {}
             this.onIconClick();
         };
         

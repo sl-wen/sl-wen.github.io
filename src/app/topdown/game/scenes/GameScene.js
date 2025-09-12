@@ -964,6 +964,26 @@ export default class GameScene extends Scene {
         };
         window.addEventListener('time-jump', handleTimeJump);
 
+        // 监听来自 React 的耕地动作请求
+        this._handleFarmlandAction = ({ detail }) => {
+            try {
+                if (!detail) return;
+                const { tileX, tileY, actionType } = detail;
+                if (typeof tileX !== 'number' || typeof tileY !== 'number') return;
+                if (!this.farmManager?.isFarmland?.(tileX, tileY)) return;
+
+                const playerPos = this.gridEngine.getPosition('cat');
+                const targetPos = this.findAdjacentPosition(tileX, tileY, playerPos);
+                if (targetPos) {
+                    this.autoMoveToPosition(targetPos.x, targetPos.y, () => {
+                        this.executeAction(actionType, tileX, tileY);
+                        try { window.dispatchEvent(new CustomEvent('close-farmland-info')); } catch (_) {}
+                    });
+                }
+            } catch (_) { /* noop */ }
+        };
+        window.addEventListener('farmland-action', this._handleFarmlandAction);
+
         // 新的一天：处理日更逻辑
         const handleNewDay = () => {
             try {
@@ -982,6 +1002,7 @@ export default class GameScene extends Scene {
             window.removeEventListener('time-speed-change', handleTimeSpeedChange);
             window.removeEventListener('time-jump', handleTimeJump);
             try { window.removeEventListener('new-day', handleNewDay); } catch (_) { }
+            try { window.removeEventListener('farmland-action', this._handleFarmlandAction); } catch (_) { }
         });
 
         // 自动保存事件触发工具（节流由 React 负责）
@@ -1100,7 +1121,7 @@ export default class GameScene extends Scene {
         }
 
         // Tap-to-move: 触摸/点击地图自动寻路到目标；若不可达则前往最近可达位置
-        this.input.on('pointerdown', (pointer) => { // 监听指针按下事件（含鼠标与触屏）
+        this.input.on('pointerdown', (pointer, currentlyOver) => { // 监听指针按下事件（含鼠标与触屏）
             if (this.isTeleporting || this.isShowingDialog) { // 传送/对话期间禁用点地移动
                 return; // 直接返回，防止状态冲突
             }
@@ -1111,6 +1132,14 @@ export default class GameScene extends Scene {
                 x: Math.floor(worldX / map.tileWidth), // 取整到网格 X
                 y: Math.floor(worldY / map.tileHeight), // 取整到网格 Y
             };
+
+            // 若点击落在耕地上，仅弹出信息/操作，不触发自动寻路
+            try {
+                if (this.farmManager && this.farmManager.isFarmland(target.x, target.y)) {
+                    this.openFarmlandInfoPopup(target.x, target.y);
+                    return;
+                }
+            } catch (_) { /* noop */ }
 
             this.isAutoMoving = true; // 标记进入自动寻路模式（用于与手动输入互斥）
             // 显示目标瓦片高亮
@@ -2095,21 +2124,9 @@ export default class GameScene extends Scene {
      * 处理耕地图标点击事件
      */
     handleFarmlandIconClick(data) {
-        const { tileX, tileY, actionType } = data;
-
-        // 获取玩家当前位置
-        const playerPos = this.gridEngine.getPosition('cat');
-
-        // 计算目标位置（紧邻耕地的位置）
-        const targetPos = this.findAdjacentPosition(tileX, tileY, playerPos);
-
-        if (targetPos) {
-            // 自动移动到目标位置
-            this.autoMoveToPosition(targetPos.x, targetPos.y, () => {
-                // 到达后执行对应动作
-                this.executeAction(actionType, tileX, tileY);
-            });
-        }
+        const { tileX, tileY } = data;
+        // 点击耕地图标时只弹出信息弹窗，由用户选择具体动作
+        this.openFarmlandInfoPopup(tileX, tileY);
     }
 
     /**
@@ -2133,7 +2150,7 @@ export default class GameScene extends Scene {
             }))
             .filter(pos => {
                 // 检查位置是否可到达（不在碰撞层上）
-                return this.gridEngine.isBlocked({ x: pos.x, y: pos.y }) === false;
+                return !this.isPositionBlocked({ x: pos.x, y: pos.y });
             })
             .sort((a, b) => a.distance - b.distance);
 
@@ -2210,7 +2227,8 @@ export default class GameScene extends Scene {
             if (this.farmManager && this.preferredSeedId) {
                 const success = this.farmManager.plant(tileX, tileY, this.preferredSeedId);
                 if (success) {
-
+                    this.spawnDustAt(tileX, tileY);
+                    this.updateFarmlandIcons();
                 }
             }
         });
@@ -2241,6 +2259,8 @@ export default class GameScene extends Scene {
                         p.setDepth(1100);
                         this.time.delayedCall(600, () => p.destroy());
                     } catch (_) { /* noop */ }
+                    this.requestSoilOverlayRedraw();
+                    this.updateFarmlandIcons();
                 }
             }
         });
@@ -2256,7 +2276,8 @@ export default class GameScene extends Scene {
             if (this.farmManager) {
                 const yieldCount = this.farmManager.harvest(tileX, tileY);
                 if (yieldCount > 0) {
-
+                    this.spawnLeafBurstAt(tileX, tileY);
+                    this.updateFarmlandIcons();
                 }
             }
         });
@@ -2314,6 +2335,62 @@ export default class GameScene extends Scene {
                 callback();
             }
         });
+    }
+
+    /** 土块扬尘效果（种植/翻土） */
+    spawnDustAt(tileX, tileY) {
+        try {
+            const px = tileX * (this.map?.tileWidth || 16) + (this.map?.tileWidth || 16) / 2;
+            const py = tileY * (this.map?.tileHeight || 16) + (this.map?.tileHeight || 16) / 2;
+            if (this.textures.exists('smoke_0')) {
+                const p = this.add.particles(px, py, 'smoke_0', {
+                    speed: { min: 20, max: 50 },
+                    angle: { min: 220, max: 320 },
+                    lifespan: 500,
+                    quantity: 8,
+                    scale: { start: 0.8, end: 0.2 },
+                    alpha: { start: 0.8, end: 0 },
+                    gravityY: -40,
+                });
+                p.setDepth(1100);
+                this.time.delayedCall(500, () => p.destroy());
+            } else {
+                const g = this.add.graphics();
+                g.setDepth(1100);
+                g.fillStyle(0x9b7653, 0.7);
+                g.fillCircle(px, py, 4);
+                this.tweens.add({ targets: g, alpha: 0, scale: 1.6, duration: 400, onComplete: () => g.destroy() });
+            }
+        } catch (_) { /* noop */ }
+    }
+
+    /** 收获叶片飞散效果 */
+    spawnLeafBurstAt(tileX, tileY) {
+        try {
+            const px = tileX * (this.map?.tileWidth || 16) + (this.map?.tileWidth || 16) / 2;
+            const py = tileY * (this.map?.tileHeight || 16) + (this.map?.tileHeight || 16) / 2;
+            if (this.textures.exists('leaf_0')) {
+                const p = this.add.particles(px, py, 'leaf_0', {
+                    speed: { min: 50, max: 120 },
+                    lifespan: 700,
+                    quantity: 10,
+                    scale: { start: 0.9, end: 0.3 },
+                    alpha: { start: 1, end: 0 },
+                    gravityY: 120,
+                    rotate: { min: -90, max: 90 },
+                });
+                p.setDepth(1100);
+                this.time.delayedCall(800, () => p.destroy());
+            } else {
+                const g = this.add.graphics();
+                g.setDepth(1100);
+                g.fillStyle(0x7fbf7f, 1);
+                for (let i = 0; i < 8; i += 1) {
+                    g.fillRect(px + (Math.random() * 10 - 5), py + (Math.random() * 6 - 3), 2, 2);
+                }
+                this.tweens.add({ targets: g, alpha: 0, y: py + 10, duration: 500, onComplete: () => g.destroy() });
+            }
+        } catch (_) { /* noop */ }
     }
 
     /**

@@ -205,6 +205,8 @@ export default class BootScene extends Scene {
         // 新地图（Tiled JSON，建议从 topdown/game/map.tmx 导出为 map.json 放置于 /public/topdown/game/）
         this.load.tilemapTiledJSON('map', '/topdown/game/map.json');
 
+        this.load.tilemapTiledJSON('Objects', '/game/assets/graphics/objects/objects.json');
+
         this.load.tilemapTiledJSON('ui_elements', '/game/assets/sprites/maps/tilesets/ui_elements.json');
     }
 

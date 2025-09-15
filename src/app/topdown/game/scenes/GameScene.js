@@ -1482,6 +1482,22 @@ export default class GameScene extends Scene {
 
         // 执行农场交互（按键触发）
         if (this.inputManager.isEnterJustDown() || this.inputManager.isSpaceJustDown()) {
+            // 优先：若玩家脚下有耕地图标，则等同于“点击图标”（移动端动作按钮与图标功能一致）
+            try {
+                const pos = this.gridEngine.getPosition('cat');
+                const key = `${pos.x},${pos.y}`;
+                const icon = this.farmlandIcons?.get?.(key);
+                if (icon && icon.actionType) {
+                    this.executeAction(icon.actionType, pos.x, pos.y);
+                    // 消费本次动作按钮输入，避免同一帧额外触发面前格子的逻辑
+                    if (this.inputManager && this.inputManager.actionButtonPressed) {
+                        this.inputManager.actionButtonPressed = false;
+                    }
+                    return;
+                }
+            } catch (_) { /* noop */ }
+
+            // 其次：根据面前一格的上下文执行（原有逻辑）
             const context = this.currentActionContext;
             if (context === 'plant' || context === 'water' || context === 'harvest' || context === 'refill') {
                 const front = this.getFrontPixelPosition();

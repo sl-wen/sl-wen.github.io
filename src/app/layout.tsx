@@ -124,6 +124,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
         <link rel="dns-prefetch" href="//ui-avatars.com" />
         <link rel="dns-prefetch" href="//pcwbtcsigmjnrigkfixm.supabase.co" />
+
+        {/* Google AdSense 账户配置 */}
+        <meta name="google-adsense-account" content="ca-pub-1720681484068261" />
       </head>
       <body className={`${inter.className} antialiased`}>
         {/* 认证提供者 - 为整个应用提供用户认证上下文 */}

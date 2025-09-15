@@ -75,7 +75,7 @@ export const BASE_HEIGHT = 270;
 // 限制整数缩放的最大倍数，避免超大屏幕上素材过大
 export const MAX_INTEGER_ZOOM = 2;
 // 额外缩放比例（相对于当前整数缩放），例如 0.25 即缩小为原来的 1/4
-export const ZOOM_SCALE = 0.25;
+export const ZOOM_SCALE = 0.5;
 
 // 动态对象（角色/NPC/物品）的深度基线
 // 使用 y 作为动态加成：depth = DYNAMIC_DEPTH_BASE + sprite.y

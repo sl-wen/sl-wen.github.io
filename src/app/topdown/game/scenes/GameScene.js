@@ -94,6 +94,7 @@ export default class GameScene extends Scene {
     npcSprites = null;
     farmManager = null;
     farmlandIcons = new Map(); // 存储耕地图标 key: "x,y" => FarmlandIcon
+    lastPlayerTile = null; // 记录上一次玩家所在瓦片
 
     // 地图/环境引用
     createdLayers = null; // MapLoader 创建的图层数组
@@ -1367,7 +1368,17 @@ export default class GameScene extends Scene {
                 if (!this.seedSelectPending || !detail) return;
                 const seedId = detail.seedId;
                 const { tileX, tileY } = this.seedSelectPending;
-                this.farmManager?.plant?.(tileX, tileY, seedId);
+                // 仅当玩家仍站在该瓦片上时才执行
+                const pos = this.gridEngine.getPosition('cat');
+                if (pos.x !== tileX || pos.y !== tileY) return;
+                // 播放2帧种植动作，完成后种植
+                const direction = this.gridEngine.getFacingDirection('cat');
+                this.playActionAnimation('hoe', direction, () => {
+                    const planted = this.farmManager?.plant?.(tileX, tileY, seedId);
+                    if (planted) {
+                        this.updateFarmlandIcons();
+                    }
+                });
             } finally {
                 this.seedSelectPending = null;
             }
@@ -1451,6 +1462,15 @@ export default class GameScene extends Scene {
         this.catActionCollider.update(); // 同步/存在/对象碰撞体到主角位置与朝向
         // 根据周围环境更新交互按钮图标（对话 / 宝箱/箱子 / 攻击）
         this.updateActionContext(); // 推送到 React 的 action-context
+
+        // 进入/离开瓦片时更新耕地图标（仅当前瓦片）
+        try {
+            const pos = this.gridEngine.getPosition('cat');
+            if (!this.lastPlayerTile || this.lastPlayerTile.x !== pos.x || this.lastPlayerTile.y !== pos.y) {
+                this.lastPlayerTile = { x: pos.x, y: pos.y };
+                this.updateFarmlandIcons();
+            }
+        } catch (_) { /* noop */ }
 
         // 执行手动寻路
         if (this.manualPathfinding && this.manualPathfinding.isActive) {
@@ -1643,13 +1663,7 @@ export default class GameScene extends Scene {
                 }
             }
 
-            // 定期更新耕地图标（每5秒更新一次）
-            if (!this.lastIconUpdate) this.lastIconUpdate = 0;
-            this.lastIconUpdate += deltaMs;
-            if (this.lastIconUpdate >= 5000) {
-                this.lastIconUpdate = 0;
-                this.updateFarmlandIcons();
-            }
+            // 移除基于时间的批量刷新，交由“瓦片变更/动作完成”触发
 
 
         }
@@ -2101,20 +2115,10 @@ export default class GameScene extends Scene {
      */
     handleFarmlandIconClick(data) {
         const { tileX, tileY, actionType } = data;
-
-        // 获取玩家当前位置
+        // 仅允许对当前所站瓦片执行
         const playerPos = this.gridEngine.getPosition('cat');
-
-        // 计算目标位置（紧邻耕地的位置）
-        const targetPos = this.findAdjacentPosition(tileX, tileY, playerPos);
-
-        if (targetPos) {
-            // 自动移动到目标位置
-            this.autoMoveToPosition(targetPos.x, targetPos.y, () => {
-                // 到达后执行对应动作
-                this.executeAction(actionType, tileX, tileY);
-            });
-        }
+        if (playerPos.x !== tileX || playerPos.y !== tileY) return;
+        this.executeAction(actionType, tileX, tileY);
     }
 
     /**
@@ -2186,9 +2190,7 @@ export default class GameScene extends Scene {
         }
 
         // 动作完成后更新图标
-        setTimeout(() => {
-            this.updateFarmlandIcons();
-        }, 1000);
+        // 图标更新改由各自动作完成回调和瓦片变更触发
     }
 
     /**
@@ -2209,22 +2211,21 @@ export default class GameScene extends Scene {
      * 执行种植动作
      */
     performPlantAction(tileX, tileY, direction) {
-        // 播放种植动画
-        this.playActionAnimation('hoe', direction, () => {
-            // 执行种植逻辑
-            if (this.farmManager && this.preferredSeedId) {
-                const success = this.farmManager.plant(tileX, tileY, this.preferredSeedId);
-                if (success) {
-
-                }
-            }
-        });
+        // 仅当前瓦片有效
+        const pos = this.gridEngine.getPosition('cat');
+        if (pos.x !== tileX || pos.y !== tileY) return;
+        // 点击图标后弹出背包选择种子，再进行种植
+        this.seedSelectPending = { tileX, tileY };
+        try { window.dispatchEvent(new CustomEvent('open-seed-select')); } catch (_) { }
     }
 
     /**
      * 执行浇水动作
      */
     performWaterAction(tileX, tileY, direction) {
+        // 仅当前瓦片有效
+        const pos = this.gridEngine.getPosition('cat');
+        if (pos.x !== tileX || pos.y !== tileY) return;
         // 播放浇水动画
         this.playActionAnimation('water', direction, () => {
             // 执行浇水逻辑
@@ -2247,6 +2248,7 @@ export default class GameScene extends Scene {
                         this.time.delayedCall(600, () => p.destroy());
                     } catch (_) { /* noop */ }
                 }
+                this.updateFarmlandIcons();
             }
         });
     }
@@ -2255,14 +2257,18 @@ export default class GameScene extends Scene {
      * 执行收获动作
      */
     performHarvestAction(tileX, tileY, direction) {
+        // 仅当前瓦片有效
+        const pos = this.gridEngine.getPosition('cat');
+        if (pos.x !== tileX || pos.y !== tileY) return;
         // 播放收获动画
         this.playActionAnimation('hoe', direction, () => {
             // 执行收获逻辑
             if (this.farmManager) {
                 const yieldCount = this.farmManager.harvest(tileX, tileY);
                 if (yieldCount > 0) {
-
+                    // 可在此添加获得特效
                 }
+                this.updateFarmlandIcons();
             }
         });
     }
@@ -2302,7 +2308,7 @@ export default class GameScene extends Scene {
                 this.anims.create({
                     key: animKey,
                     frames: frames,
-                    frameRate: 8,
+                    frameRate: 2, // 一秒 2 帧
                     repeat: 0
                 });
             }
@@ -2331,33 +2337,30 @@ export default class GameScene extends Scene {
 
         if (!this.farmManager) return;
 
-        // 为每个耕地创建适当的图标
-        this.farmManager.farmland.forEach((key) => {
-            const [txStr, tyStr] = key.split(',');
-            const tx = Number.parseInt(txStr, 10);
-            const ty = Number.parseInt(tyStr, 10);
+        // 仅在玩家当前所站瓦片显示一个图标
+        const pos = this.gridEngine.getPosition('cat');
+        const tx = pos.x;
+        const ty = pos.y;
+        if (!this.farmManager.isFarmland(tx, ty)) return; // 非耕地不显示
 
-            const crop = this.farmManager.getCrop(tx, ty);
-            let actionType = null;
+        const crop = this.farmManager.getCrop(tx, ty);
+        let actionType = null;
 
-            if (!crop && this.farmManager.getTotalSeedsCount?.() > 0) {
-                // 空地且有种子 -> 显示种植图标
-                actionType = 'plant';
-            } else if (crop && crop.canHarvest()) {
-                // 作物可收获 -> 显示收获图标
-                actionType = 'harvest';
-            } else if (crop && !crop.watered && crop.stage < 5 && this.farmManager.getWaterCount?.() > 0) {
-                // 作物需要浇水 -> 显示浇水图标
-                actionType = 'water';
-            }
+        if (!crop && this.farmManager.getTotalSeedsCount?.() > 0) {
+            actionType = 'plant';
+        } else if (crop && crop.canHarvest()) {
+            actionType = 'harvest';
+        } else if (crop && !crop.watered && crop.stage < 5 && this.farmManager.getWaterCount?.() > 0) {
+            actionType = 'water';
+        }
 
-            if (actionType) {
-                const icon = new FarmlandIcon(this, tx, ty, actionType, {
-                    tileSize: this.map?.tileWidth || 64
-                });
-                this.farmlandIcons.set(key, icon);
-            }
-        });
+        if (actionType) {
+            const key = `${tx},${ty}`;
+            const icon = new FarmlandIcon(this, tx, ty, actionType, {
+                tileSize: this.map?.tileWidth || 64
+            });
+            this.farmlandIcons.set(key, icon);
+        }
     }
 
 }

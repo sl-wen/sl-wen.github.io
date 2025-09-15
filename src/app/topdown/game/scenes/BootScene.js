@@ -343,16 +343,16 @@ export default class BootScene extends Scene {
             });
         }
 
-        // 工具动作（双帧循环）：water / hoe 四方向
+        // 工具动作（2 帧，1 秒 2 帧，播放一次）：water / hoe 四方向
         const createToolAnim = (tool, dir) => ({
             key: `cat_${tool}_${dir}`,
             frames: [
                 { key: `cat_${tool}_${dir}_0` },
                 { key: `cat_${tool}_${dir}_1` },
             ],
-            frameRate: 6,
-            repeat: -1,
-            yoyo: true,
+            frameRate: 2, // 一秒 2 帧
+            repeat: 0,    // 播放一次
+            yoyo: false,
         });
 
         ['down', 'up', 'left', 'right'].forEach((dir) => {

@@ -64,8 +64,8 @@ const Window = styled('div')(({ multiplier, width, height }) => ({
   border: 'solid',
   borderImage: `url("/game/assets/images/dialog_borderbox.png") 6 / ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px ${6 * multiplier}px stretch`,
   padding: `${10 * multiplier}px`,
-  width: `${Math.ceil(width * 0.7)}px`,
-  height: `${Math.ceil(height * 0.7)}px`,
+  width: `${Math.ceil(width * 0.82)}px`,
+  height: `${Math.ceil(height * 0.78)}px`,
   maxWidth: `${Math.ceil(width * 0.9)}px`,
   maxHeight: `${Math.ceil(height * 0.9)}px`,
   color: '#1b0f0a',
@@ -124,7 +124,7 @@ const Tab = styled('button')(({ multiplier, active }) => ({
  */
 const Grid = styled('div')(({ multiplier }) => ({
   display: 'grid',
-  gridTemplateColumns: `repeat(4, ${24 * multiplier}px)`,
+  gridTemplateColumns: `repeat(5, ${24 * multiplier}px)`,
   gridAutoRows: `${24 * multiplier}px`,
   gap: `${6 * multiplier}px`,
   alignContent: 'start',

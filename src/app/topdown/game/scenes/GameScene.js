@@ -476,7 +476,9 @@ export default class GameScene extends Scene {
                 if (typeof MAX_INTEGER_ZOOM === 'number' && MAX_INTEGER_ZOOM > 0) {
                     zoom = Math.min(zoom, MAX_INTEGER_ZOOM);
                 }
-                const scalar = (typeof ZOOM_SCALE === 'number' && ZOOM_SCALE > 0) ? ZOOM_SCALE : 1;
+                const ua = navigator.userAgent || '';
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) || (this.scale.gameSize?.width <= 768);
+                const scalar = isMobile ? 0.75 : ((typeof ZOOM_SCALE === 'number' && ZOOM_SCALE > 0) ? ZOOM_SCALE : 1);
                 camera.setZoom(zoom * scalar);
             } catch (_) { /* noop */ }
         };
@@ -1479,6 +1481,27 @@ export default class GameScene extends Scene {
 
         // 使用输入管理器处理移动（虚拟摇杆/键盘已统一到 InputManager）
         const currentDirection = this.inputManager.getCurrentDirection(); // 获取当前连续方向（可能为 8 向）
+
+        try {
+            if (this.farmManager && this.waterLayerRef) {
+                const pos = this.gridEngine.getPosition('cat');
+                const neighbors = [
+                    { x: pos.x, y: pos.y - 1 },
+                    { x: pos.x + 1, y: pos.y },
+                    { x: pos.x, y: pos.y + 1 },
+                    { x: pos.x - 1, y: pos.y },
+                ];
+                let nearWater = false;
+                const layer = this.waterLayerRef;
+                for (const n of neighbors) {
+                    const t = layer.getTileAt(n.x, n.y);
+                    if (t && t.index > 0) { nearWater = true; break; }
+                }
+                if (nearWater && this.farmManager.getWaterCount() < this.farmManager.getWaterMaxCount()) {
+                    this.farmManager.refillWater();
+                }
+            }
+        } catch (_) { }
 
         // 执行农场交互（按键触发）
         if (this.inputManager.isEnterJustDown() || this.inputManager.isSpaceJustDown()) {

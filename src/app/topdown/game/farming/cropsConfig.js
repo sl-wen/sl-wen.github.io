@@ -8,10 +8,12 @@ export const cropsConfig = {
     huluobo: {
         displayName: '胡萝卜',
         stages: [4000, 5000, 6000, 7000],
+        matureWindowMs: 60000,
     },
     bailuobo: {
         displayName: '白萝卜',
         stages: [4500, 5500, 6500, 7500],
+        matureWindowMs: 60000,
     },
 };
 
@@ -31,5 +33,11 @@ export function getStageDurationMs(cropKey, stage) {
     const cfg = getCropConfig(cropKey);
     const idx = Math.max(0, Math.min(cfg.stages.length - 1, stage - 1));
     return cfg.stages[idx] || 5000;
+}
+
+/** 获取成熟窗口时长（毫秒） */
+export function getMatureWindowMs(cropKey) {
+    const cfg = getCropConfig(cropKey);
+    return typeof cfg.matureWindowMs === 'number' ? cfg.matureWindowMs : 60000;
 }
 

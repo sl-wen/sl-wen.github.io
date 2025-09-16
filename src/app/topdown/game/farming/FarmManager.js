@@ -6,7 +6,7 @@
  */
 
 import Crop from './Crop';
-import { getStageDurationMs } from './cropsConfig';
+import { getStageDurationMs, getMatureWindowMs, getCropConfig } from './cropsConfig';
 
 export default class FarmManager {
     /**
@@ -230,10 +230,16 @@ export default class FarmManager {
         const crop = this.getCrop(tileX, tileY);
         if (!crop.canHarvest()) return 0;
 
+        // 产量计算：基础2，根据成熟窗口调整（过熟降低1）
+        const now = this.scene?.time?.now ?? Date.now();
+        const matureWindow = getMatureWindowMs(crop.cropKey);
+        let yieldCount = 2;
+        if (crop.matureSinceMs && now - crop.matureSinceMs > matureWindow) {
+            yieldCount = Math.max(1, yieldCount - 1);
+        }
+
         crop.destroy();
         this.crops.delete(`${tileX},${tileY}`);
-        // 简单：收获 2 个对应作物的果实（-5）
-        const yieldCount = 2;
         const fruitId = this.fruitIdFromCropKey(crop.cropKey);
         // 友好名称（可扩展更多作物）
         const cropNames = { huluobo: '胡萝卜', bailuobo: '白萝卜' };
@@ -266,7 +272,21 @@ export default class FarmManager {
 
         // 推进每株作物
         this.crops.forEach((crop, key) => {
-            if (!crop || crop.stage >= 5) return;
+            if (!crop) return;
+            // 枯萎/回退：超出成熟窗口太久则品质下降或回退（这里简单回退为第4阶段并清零进度）
+            if (crop.stage >= 5) {
+                const matureWindow = getMatureWindowMs(crop.cropKey);
+                const now = this.scene?.time?.now ?? Date.now();
+                if (crop.matureSinceMs && now - crop.matureSinceMs > matureWindow * 2) {
+                    // 过熟太久：回退到第4阶段，需要重新成熟
+                    crop.stage = 4;
+                    crop.growthProgressMs = 0;
+                    crop.watered = false;
+                    crop.matureSinceMs = null;
+                    crop._updateSprite?.();
+                }
+                return;
+            }
             const soil = this.soil.get(key) || { moisture: 0, fertility: 60 };
             const mult = calcGrowthMultiplier(soil);
             if (mult <= 0) return;
@@ -281,6 +301,36 @@ export default class FarmManager {
                 try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
             }
         });
+    }
+
+    /**
+     * 多格浇水：根据等级在 pattern 覆盖范围内浇水
+     * @param {number} tileX
+     * @param {number} tileY
+     * @param {number} level 1=1格，2=十字(1格臂长)，3=3x3
+     */
+    waterArea(tileX, tileY, level = 1) {
+        const patterns = {
+            1: [{ x: 0, y: 0 }],
+            2: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }],
+            3: [
+                { x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 },
+                { x: -1, y: 0 }, { x: 0, y: 0 }, { x: 1, y: 0 },
+                { x: -1, y: 1 }, { x: 0, y: 1 }, { x: 1, y: 1 },
+            ],
+        };
+        const offsets = patterns[level] || patterns[1];
+        let wateredCount = 0;
+        for (const o of offsets) {
+            const tx = tileX + o.x;
+            const ty = tileY + o.y;
+            if (!this.isFarmland(tx, ty)) continue;
+            if (!this.hasCrop(tx, ty)) continue;
+            if (this.getWaterCount() <= 0) break;
+            const ok = this.water(tx, ty);
+            if (ok) wateredCount += 1;
+        }
+        return wateredCount;
     }
 
     /**

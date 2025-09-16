@@ -1548,7 +1548,9 @@ export default class GameScene extends Scene {
                         } catch (_) { /* noop */ }
                     }
                 } else if (context === 'water') {
-                    const ok = this.farmManager.water(tileX, tileY);
+                    // 支持多格浇水（默认等级1，可后续从玩家装备读取）
+                    const level = this.preferredTool === 'waterLv3' ? 3 : (this.preferredTool === 'waterLv2' ? 2 : 1);
+                    const ok = level > 1 ? (this.farmManager.waterArea?.(tileX, tileY, level) > 0) : this.farmManager.water(tileX, tileY);
                     if (!ok) {
                         // noop
                     }

@@ -6,6 +6,7 @@
  */
 
 import Crop from './Crop';
+import { getStageDurationMs } from './cropsConfig';
 
 export default class FarmManager {
     /**
@@ -56,9 +57,14 @@ export default class FarmManager {
         };
 
         /** 生长配置（每阶段时长 ms）；可按需平衡 */
-        this.growthMsPerStage = 5000; // 默认 5s/阶段，加快体验
+        this.growthMsPerStage = 5000; // 兼容旧逻辑，现以配置为准
         /** 水容量上限（用于“补水”动作） */
         this.waterCapacity = 20;
+
+        // 集中调度：内部计时累加器（毫秒）
+        this._accumulatorMs = 0;
+        // 成长tick间隔（毫秒）：为减少开销，按固定时间步推进
+        this._tickIntervalMs = 500;
     }
 
     /**
@@ -236,6 +242,45 @@ export default class FarmManager {
         this.dispatchInventoryUpdate();
         try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
         return yieldCount;
+    }
+
+    /**
+     * 集中生长更新：基于湿度/肥力与作物配置推进阶段
+     * @param {number} deltaMs
+     */
+    update(deltaMs) {
+        this._accumulatorMs += deltaMs;
+        if (this._accumulatorMs < this._tickIntervalMs) return;
+        const step = this._tickIntervalMs;
+        this._accumulatorMs -= step;
+
+        // 计算本次成长倍率（湿度/肥力影响）
+        const calcGrowthMultiplier = (soil) => {
+            const moisture = Math.max(0, Math.min(100, soil.moisture || 0));
+            const fertility = Math.max(0, Math.min(100, soil.fertility || 0));
+            // 湿度≥30才增长，≥60全速；<30停滞；<15可考虑缓慢退化（暂不实现）
+            const moistureFactor = moisture < 30 ? 0 : (moisture >= 60 ? 1 : (moisture - 30) / 30);
+            const fertilityFactor = 0.8 + 0.4 * (fertility / 100); // 0.8x - 1.2x
+            return moistureFactor * fertilityFactor;
+        };
+
+        // 推进每株作物
+        this.crops.forEach((crop, key) => {
+            if (!crop || crop.stage >= 5) return;
+            const soil = this.soil.get(key) || { moisture: 0, fertility: 60 };
+            const mult = calcGrowthMultiplier(soil);
+            if (mult <= 0) return;
+            const neededMs = getStageDurationMs(crop.cropKey, crop.stage);
+            if (!Number.isFinite(neededMs) || neededMs <= 0) return;
+
+            // 若本阶段已浇水或湿度足够则增长；这里用湿度控制，忽略 crop.watered 强制要求
+            crop.growthProgressMs += step * mult;
+            if (crop.growthProgressMs >= neededMs) {
+                crop.advanceStage();
+                // 进入新阶段后刷新图标（由场景在某些时机拉取，这里不直接调场景方法）
+                try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
+            }
+        });
     }
 
     /**

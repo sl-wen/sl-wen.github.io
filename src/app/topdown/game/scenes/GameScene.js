@@ -1658,6 +1658,9 @@ export default class GameScene extends Scene {
             }
         } catch (_) { /* noop */ }
 
+        // 推进农场成长（集中调度）
+        try { this.farmManager?.update?.(deltaMs); } catch (_) { }
+
         // 时间/天气推进与光照效果
         if (this.timeWeather) {
             // 时间倍率快捷键控制

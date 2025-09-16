@@ -23,7 +23,10 @@ export default class Crop {
 
         this.stage = 1;           // 1~5（1~4 生长，5 可收获）
         this.watered = false;     // 是否已浇水（用于推进到下一阶段）
-        this._timer = null;       // Phaser 定时器
+        // 集中调度：使用进度累积替代每株定时器
+        this.growthProgressMs = 0; // 当前阶段内已积累的进度（毫秒）
+        this.matureSinceMs = null; // 进入成熟阶段的时间戳（scene.time.now），用于成熟窗口/品质计算
+        this._timer = null;       // 兼容旧存档，后续不再使用
 
         // 渲染精灵
         const pixelX = this.tileX * this.tileSize + this.tileSize / 2;
@@ -48,17 +51,11 @@ export default class Crop {
      * @param {number} durationMs - 推进到下一阶段所需时间
      */
     water(durationMs) {
+        // 新逻辑：仅标记已浇水，由 FarmManager.update 集中推进进度
         if (this.stage >= 5) return; // 已成熟
-        if (this.watered) return;    // 已浇水等待中
-
+        if (this.watered) return;    // 本阶段已浇
         this.watered = true;
-        if (this._timer) {
-            this._timer.remove(false);
-            this._timer = null;
-        }
-        this._timer = this.scene.time.delayedCall(durationMs, () => {
-            this.advanceStage();
-        });
+        // 保留旧版 durationMs 参数以兼容调用方，但不再使用定时器
     }
 
     /**
@@ -68,6 +65,10 @@ export default class Crop {
         if (this.stage >= 5) return;
         this.stage += 1;
         this.watered = false;
+        this.growthProgressMs = 0;
+        if (this.stage >= 5) {
+            this.matureSinceMs = this.scene?.time?.now ?? (typeof Date !== 'undefined' ? Date.now() : 0);
+        }
         this._updateSprite();
     }
 
@@ -98,6 +99,8 @@ export default class Crop {
             stage: this.stage,
             watered: this.watered,
             cropKey: this.cropKey,
+            growthProgressMs: this.growthProgressMs,
+            matureSinceMs: this.matureSinceMs,
         };
     }
 
@@ -108,6 +111,8 @@ export default class Crop {
         const crop = new Crop(scene, data.x, data.y, { ...options, cropKey: data.cropKey || 'bailuobo' });
         crop.stage = data.stage ?? 0;
         crop.watered = data.watered ?? false;
+        crop.growthProgressMs = data.growthProgressMs ?? 0;
+        crop.matureSinceMs = data.matureSinceMs ?? null;
         crop._updateSprite();
         return crop;
     }

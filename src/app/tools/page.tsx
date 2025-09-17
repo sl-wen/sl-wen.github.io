@@ -57,6 +57,14 @@ export default function ToolsPage() {
       isFeatured: true
     },
     {
+      id: 'img2text',
+      title: '图片转文字 (OCR)',
+      description: '提取图片中的中文、英文或数字文本',
+      icon: '🈶',
+      link: '/tools/img2text',
+      isNew: true
+    },
+    {
       id: 'color-picker',
       title: '颜色选择器',
       description: '专业的颜色选择工具，支持多种颜色格式转换',

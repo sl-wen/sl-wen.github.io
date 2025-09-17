@@ -16,6 +16,16 @@ interface Tool {
 export default function ToolsPage() {
   const tools: Tool[] = [
     {
+      id: 'img',
+      title: '图片处理 (img)',
+      description:
+        '裁剪、分辨率/尺寸调整、压缩、格式转换、人物背景去/加、水印去除',
+      icon: '🖼️',
+      link: '/img',
+      isFeatured: true,
+      isNew: true
+    },
+    {
       id: 'novel',
       title: '小说搜索器',
       description: '小说聚合搜索与下载',

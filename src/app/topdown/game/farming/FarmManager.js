@@ -6,6 +6,7 @@
  */
 
 import Crop from './Crop';
+import { getStageDurationMs, getMatureWindowMs, getCropConfig } from './cropsConfig';
 
 export default class FarmManager {
     /**
@@ -56,9 +57,14 @@ export default class FarmManager {
         };
 
         /** 生长配置（每阶段时长 ms）；可按需平衡 */
-        this.growthMsPerStage = 5000; // 默认 5s/阶段，加快体验
+        this.growthMsPerStage = 5000; // 兼容旧逻辑，现以配置为准
         /** 水容量上限（用于“补水”动作） */
         this.waterCapacity = 20;
+
+        // 集中调度：内部计时累加器（毫秒）
+        this._accumulatorMs = 0;
+        // 成长tick间隔（毫秒）：为减少开销，按固定时间步推进
+        this._tickIntervalMs = 500;
     }
 
     /**
@@ -224,10 +230,16 @@ export default class FarmManager {
         const crop = this.getCrop(tileX, tileY);
         if (!crop.canHarvest()) return 0;
 
+        // 产量计算：基础2，根据成熟窗口调整（过熟降低1）
+        const now = this.scene?.time?.now ?? Date.now();
+        const matureWindow = getMatureWindowMs(crop.cropKey);
+        let yieldCount = 2;
+        if (crop.matureSinceMs && now - crop.matureSinceMs > matureWindow) {
+            yieldCount = Math.max(1, yieldCount - 1);
+        }
+
         crop.destroy();
         this.crops.delete(`${tileX},${tileY}`);
-        // 简单：收获 2 个对应作物的果实（-5）
-        const yieldCount = 2;
         const fruitId = this.fruitIdFromCropKey(crop.cropKey);
         // 友好名称（可扩展更多作物）
         const cropNames = { huluobo: '胡萝卜', bailuobo: '白萝卜' };
@@ -236,6 +248,89 @@ export default class FarmManager {
         this.dispatchInventoryUpdate();
         try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
         return yieldCount;
+    }
+
+    /**
+     * 集中生长更新：基于湿度/肥力与作物配置推进阶段
+     * @param {number} deltaMs
+     */
+    update(deltaMs) {
+        this._accumulatorMs += deltaMs;
+        if (this._accumulatorMs < this._tickIntervalMs) return;
+        const step = this._tickIntervalMs;
+        this._accumulatorMs -= step;
+
+        // 计算本次成长倍率（湿度/肥力影响）
+        const calcGrowthMultiplier = (soil) => {
+            const moisture = Math.max(0, Math.min(100, soil.moisture || 0));
+            const fertility = Math.max(0, Math.min(100, soil.fertility || 0));
+            // 湿度≥30才增长，≥60全速；<30停滞；<15可考虑缓慢退化（暂不实现）
+            const moistureFactor = moisture < 30 ? 0 : (moisture >= 60 ? 1 : (moisture - 30) / 30);
+            const fertilityFactor = 0.8 + 0.4 * (fertility / 100); // 0.8x - 1.2x
+            return moistureFactor * fertilityFactor;
+        };
+
+        // 推进每株作物
+        this.crops.forEach((crop, key) => {
+            if (!crop) return;
+            // 枯萎/回退：超出成熟窗口太久则品质下降或回退（这里简单回退为第4阶段并清零进度）
+            if (crop.stage >= 5) {
+                const matureWindow = getMatureWindowMs(crop.cropKey);
+                const now = this.scene?.time?.now ?? Date.now();
+                if (crop.matureSinceMs && now - crop.matureSinceMs > matureWindow * 2) {
+                    // 过熟太久：回退到第4阶段，需要重新成熟
+                    crop.stage = 4;
+                    crop.growthProgressMs = 0;
+                    crop.watered = false;
+                    crop.matureSinceMs = null;
+                    crop._updateSprite?.();
+                }
+                return;
+            }
+            const soil = this.soil.get(key) || { moisture: 0, fertility: 60 };
+            const mult = calcGrowthMultiplier(soil);
+            if (mult <= 0) return;
+            const neededMs = getStageDurationMs(crop.cropKey, crop.stage);
+            if (!Number.isFinite(neededMs) || neededMs <= 0) return;
+
+            // 若本阶段已浇水或湿度足够则增长；这里用湿度控制，忽略 crop.watered 强制要求
+            crop.growthProgressMs += step * mult;
+            if (crop.growthProgressMs >= neededMs) {
+                crop.advanceStage();
+                // 进入新阶段后刷新图标（由场景在某些时机拉取，这里不直接调场景方法）
+                try { window.dispatchEvent(new CustomEvent('autosave-request')); } catch (_) {}
+            }
+        });
+    }
+
+    /**
+     * 多格浇水：根据等级在 pattern 覆盖范围内浇水
+     * @param {number} tileX
+     * @param {number} tileY
+     * @param {number} level 1=1格，2=十字(1格臂长)，3=3x3
+     */
+    waterArea(tileX, tileY, level = 1) {
+        const patterns = {
+            1: [{ x: 0, y: 0 }],
+            2: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }],
+            3: [
+                { x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 },
+                { x: -1, y: 0 }, { x: 0, y: 0 }, { x: 1, y: 0 },
+                { x: -1, y: 1 }, { x: 0, y: 1 }, { x: 1, y: 1 },
+            ],
+        };
+        const offsets = patterns[level] || patterns[1];
+        let wateredCount = 0;
+        for (const o of offsets) {
+            const tx = tileX + o.x;
+            const ty = tileY + o.y;
+            if (!this.isFarmland(tx, ty)) continue;
+            if (!this.hasCrop(tx, ty)) continue;
+            if (this.getWaterCount() <= 0) break;
+            const ok = this.water(tx, ty);
+            if (ok) wateredCount += 1;
+        }
+        return wateredCount;
     }
 
     /**

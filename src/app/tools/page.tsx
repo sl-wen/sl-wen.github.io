@@ -38,7 +38,7 @@ export default function ToolsPage() {
       title: '代码格式化',
       description: '支持多种编程语言的代码格式化和美化工具',
       icon: '🎨',
-      link: '#',
+      link: '/tools/formatter',
       isNew: true
     },
     {
@@ -112,8 +112,16 @@ export default function ToolsPage() {
       title: '文本对比',
       description: '比较两个文本的差异，高亮显示变更内容',
       icon: '📊',
-      link: '#',
-      isComingSoon: true
+      link: '/tools/diff',
+      isNew: true
+    },
+    {
+      id: 'api-tester',
+      title: 'API 测试',
+      description: '构造请求、查看响应头与响应体，支持多种 HTTP 方法',
+      icon: '🧪',
+      link: '/tools/api',
+      isNew: true
     }
   ];
 

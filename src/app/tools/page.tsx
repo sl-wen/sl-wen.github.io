@@ -39,6 +39,14 @@ export default function ToolsPage() {
       link: '#'
     },
     {
+      id: 'img2json',
+      title: '图集转JSON (img2json)',
+      description: '拖拽图集、框选子素材并导出 JSON（含聚合）',
+      icon: '🧩',
+      link: '/img2json',
+      isFeatured: true
+    },
+    {
       id: 'color-picker',
       title: '颜色选择器',
       description: '专业的颜色选择工具，支持多种颜色格式转换',

@@ -1,12 +1,25 @@
 'use client';
+/**
+ * 密码生成器页（/tools/password）
+ *
+ * 功能：
+ * - 基于安全随机源生成包含多字符集的随机密码
+ * - 支持长度与字符集（小写/大写/数字/符号）选择，并评估强度
+ *
+ * 说明：
+ * - 使用 crypto.getRandomValues 作为随机源
+ * - 先保证每个启用字符集至少取 1 个字符，再填充剩余长度并打乱顺序
+ */
 
 import React, { useCallback, useMemo, useState } from 'react';
 import Button from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
+// 生成 [0, max) 的随机整数，使用 Web Crypto 保证随机质量
 function getRandomInt(max: number) { return crypto.getRandomValues(new Uint32Array(1))[0] % max; }
 
 export default function PasswordGeneratorPage() {
+  // 选项与结果
   const [length, setLength] = useState<number>(16);
   const [useLower, setUseLower] = useState<boolean>(true);
   const [useUpper, setUseUpper] = useState<boolean>(true);
@@ -21,6 +34,7 @@ export default function PasswordGeneratorPage() {
     symbols: '!@#$%^&*()-_=+[]{};:,.<>/?'
   }), []);
 
+  // 简易强度评估：字符集数量 + 长度因素
   const strength = useMemo(() => {
     let score = 0;
     if (useLower) score += 1; if (useUpper) score += 1; if (useDigits) score += 1; if (useSymbols) score += 1;
@@ -28,6 +42,7 @@ export default function PasswordGeneratorPage() {
     return ['弱','较弱','一般','较强','强','非常强'][Math.min(5, score)];
   }, [length, useDigits, useLower, useSymbols, useUpper]);
 
+  // 生成密码：覆盖全部已选字符集并随机打乱
   const generate = useCallback(() => {
     const activePools: string[] = [];
     if (useLower) activePools.push(pools.lower);
@@ -45,6 +60,7 @@ export default function PasswordGeneratorPage() {
     setPassword(result.join(''));
   }, [length, pools.digits, pools.lower, pools.symbols, pools.upper, useDigits, useLower, useSymbols, useUpper]);
 
+  // 复制到剪贴板
   const copy = useCallback(async () => { try { await navigator.clipboard.writeText(password); } catch {} }, [password]);
 
   return (

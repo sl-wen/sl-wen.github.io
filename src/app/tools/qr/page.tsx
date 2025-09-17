@@ -1,16 +1,30 @@
 'use client';
+/**
+ * 二维码生成器页（/tools/qr）
+ *
+ * 功能：
+ * - 基于 qrcode 库在 <canvas> 上渲染二维码
+ * - 支持自定义尺寸、前景色、背景色
+ * - 文本输入变更或参数变更自动重绘；支持手动“生成”与下载图片
+ *
+ * 说明：
+ * - 采用动态 import('qrcode')，减小首屏体积
+ * - 通过 canvas.toDataURL 导出 PNG 并触发下载
+ */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
 
 export default function QrGeneratorPage() {
+  // 文本与渲染参数
   const [text, setText] = useState<string>('https://example.com');
   const [size, setSize] = useState<number>(256);
   const [foreground, setForeground] = useState<string>('#000000');
   const [background, setBackground] = useState<string>('#ffffff');
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // 绘制二维码
   const renderQR = useCallback(async () => {
     const QRCode = (await import('qrcode')).default;
     const canvas = canvasRef.current;
@@ -21,8 +35,10 @@ export default function QrGeneratorPage() {
     } as any);
   }, [background, foreground, size, text]);
 
+  // 参数变化自动重绘
   useEffect(() => { renderQR(); }, [renderQR]);
 
+  // 下载 PNG 图片
   const download = useCallback(() => {
     const canvas = canvasRef.current; if (!canvas) return;
     const url = canvas.toDataURL('image/png');

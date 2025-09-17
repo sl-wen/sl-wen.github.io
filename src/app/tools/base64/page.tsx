@@ -1,15 +1,31 @@
 'use client';
+/**
+ * Base64 转换工具页（/tools/base64）
+ *
+ * 功能：
+ * - 文本与 Base64 的双向转换（UTF-8 安全处理）
+ * - 选择文件并输出其 Base64（DataURL 去掉头部前缀）
+ * - 将 Base64 内容解码为二进制并下载
+ * - 一键复制文本结果或文件 Base64
+ *
+ * 说明：
+ * - `btoa` / `atob` 仅支持 ASCII，因此通过 encodeURIComponent/unescape 做 UTF-8 适配
+ * - 文件转 Base64 采用 FileReader.readAsDataURL，然后裁剪逗号后的纯 Base64 体
+ */
 
 import React, { useCallback, useRef, useState } from 'react';
 import Button from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
 
 export default function Base64ToolPage() {
+  // 文本输入与结果输出
   const [text, setText] = useState<string>('');
   const [result, setResult] = useState<string>('');
+  // 文件 Base64 文本
   const [fileB64, setFileB64] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // 文本 → Base64（兼容中文等多字节字符）
   const encodeText = useCallback(() => {
     try {
       setResult(btoa(unescape(encodeURIComponent(text))));
@@ -18,6 +34,7 @@ export default function Base64ToolPage() {
     }
   }, [text]);
 
+  // Base64 → 文本（反向解码）
   const decodeText = useCallback(() => {
     try {
       setResult(decodeURIComponent(escape(atob(text))));
@@ -26,8 +43,10 @@ export default function Base64ToolPage() {
     }
   }, [text]);
 
+  // 打开系统文件选择器
   const pickFile = useCallback(() => fileInputRef.current?.click(), []);
 
+  // 选择文件后读取为 DataURL，并提取纯 Base64 体
   const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -40,6 +59,7 @@ export default function Base64ToolPage() {
     reader.readAsDataURL(file);
   }, []);
 
+  // 将 fileB64 解码为二进制并触发下载
   const downloadDecoded = useCallback(() => {
     if (!fileB64) return;
     const byteChars = atob(fileB64);
@@ -52,6 +72,7 @@ export default function Base64ToolPage() {
     URL.revokeObjectURL(url);
   }, [fileB64]);
 
+  // 复制文本结果（若无文本结果则复制文件 Base64）
   const copy = useCallback(async () => {
     try { await navigator.clipboard.writeText(result || fileB64); } catch {}
   }, [result, fileB64]);

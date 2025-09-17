@@ -1,4 +1,17 @@
 'use client';
+/**
+ * 图片转文字（OCR）页（/tools/img2text）
+ *
+ * 功能：
+ * - 选择本地图片并在客户端进行 OCR 识别
+ * - 支持中文简体、英文或中英混合，且可选择仅识别数字
+ * - 展示识别进度并可复制识别结果
+ *
+ * 说明：
+ * - 动态引入 tesseract.js，避免初始包体积过大
+ * - 通过 worker.setParameters 配置数字白名单
+ * - 处理过程包含加载语言、初始化与识别，结束后销毁 worker
+ */
 
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import Button from '@/components/ui/Button';
@@ -8,6 +21,7 @@ import { Textarea } from '@/components/ui/Textarea';
 type LangOption = 'auto' | 'chi_sim' | 'eng' | 'chi_sim+eng';
 
 export default function Img2TextPage() {
+  // 图片 URL、文件名、语言选项、仅数字开关与状态
   const [imageUrl, setImageUrl] = useState<string>('');
   const [fileName, setFileName] = useState<string>('');
   const [lang, setLang] = useState<LangOption>('chi_sim+eng');

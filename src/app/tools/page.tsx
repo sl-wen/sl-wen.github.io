@@ -1,7 +1,26 @@
 'use client';
+/**
+ * 工具集合页（/tools）
+ *
+ * 职责：渲染所有内置工具的卡片入口，并提供推荐/新品/即将上线等标记，
+ *      以网格形式展示，点击卡片或按钮跳转至具体工具页面。
+ *
+ * 技术要点：
+ * - 纯客户端组件，使用 React 19 + TailwindCSS 3
+ * - 数据来源为静态数组 `tools`，便于后续扩展或改造为服务端配置
+ * - 无复杂业务逻辑，尽量将视图与数据分离，便于维护
+ */
 
 import React from 'react';
 
+/**
+ * 单个工具卡片的数据结构
+ * - id: 唯一标识，用作 React key
+ * - title/description/icon/link: 展示与跳转信息
+ * - isComingSoon: 是否即将上线（禁用交互，置灰样式）
+ * - isFeatured: 是否推荐（高亮描边）
+ * - isNew: 是否新品（绿色角标）
+ */
 interface Tool {
   id: string;
   title: string;
@@ -14,6 +33,7 @@ interface Tool {
 }
 
 export default function ToolsPage() {
+  // 工具清单：新增工具时，按需补充以下字段。link 必须指向现有路由。
   const tools: Tool[] = [
     {
       id: 'img',
@@ -165,6 +185,11 @@ export default function ToolsPage() {
     }
   ];
 
+  /**
+   * 处理卡片点击
+   * 当前仅用于演示（控制台输出），实际跳转通过下方 <a href> 实现。
+   * 若未来希望整卡点击即可跳转，可在此接入 router.push(tool.link)。
+   */
   const handleToolClick = (tool: Tool) => {
     if (tool.isComingSoon) {
       return;
@@ -173,6 +198,11 @@ export default function ToolsPage() {
     console.log(`Opening tool: ${tool.title}`);
   };
 
+  /**
+   * 根据工具属性拼接卡片样式
+   * - 即将上线：降低不透明度并禁用 hover 位移
+   * - 推荐：添加蓝色描边以提升权重
+   */
   const getCardClasses = (tool: Tool) => {
     let baseClasses =
       'group relative bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 cursor-pointer border border-gray-200 dark:border-gray-700';
@@ -193,7 +223,7 @@ export default function ToolsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="container mx-auto px-4 max-w-7xl">
-        {/* 页面标题 */}
+        {/* 页面标题：主标题 + 装饰线条 */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             实用工具集
@@ -202,7 +232,7 @@ export default function ToolsPage() {
           <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto mt-4"></div>
         </div>
 
-        {/* 工具网格 */}
+        {/* 工具网格：自适应响应式列数 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {tools.map((tool) => (
             <div
@@ -210,12 +240,12 @@ export default function ToolsPage() {
               className={getCardClasses(tool)}
               onClick={() => handleToolClick(tool)}
             >
-              {/* 工具图标 */}
+              {/* 工具图标：放大过渡增强动态感 */}
               <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
                 {tool.icon}
               </div>
 
-              {/* 标签 */}
+              {/* 标签：推荐 / 新品 / 即将上线 角标 */}
               <div className="absolute top-4 right-4 flex flex-col gap-2">
                 {tool.isFeatured && (
                   <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs px-2 py-1 rounded-full">
@@ -234,17 +264,17 @@ export default function ToolsPage() {
                 )}
               </div>
 
-              {/* 工具标题 */}
+              {/* 工具标题：hover 时高亮 */}
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {tool.title}
               </h3>
 
-              {/* 工具描述 */}
+              {/* 工具描述：次要信息，柔和色 */}
               <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4 flex-grow">
                 {tool.description}
               </p>
 
-              {/* 工具链接 */}
+              {/* 工具链接：若为即将推出则禁用点击 */}
               <div className="mt-auto">
                 <a
                   href={tool.link}
@@ -269,7 +299,7 @@ export default function ToolsPage() {
                 </a>
               </div>
 
-              {/* 悬浮效果 */}
+              {/* 悬浮效果：仅对可用卡片叠加轻微色彩渐变 */}
               {!tool.isComingSoon && (
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
               )}
@@ -277,7 +307,7 @@ export default function ToolsPage() {
           ))}
         </div>
 
-        {/* 底部说明 */}
+        {/* 底部说明：引导反馈与开源地址 */}
         <div className="text-center mt-16 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             更多工具正在开发中

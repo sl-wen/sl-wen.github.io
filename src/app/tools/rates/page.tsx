@@ -1,4 +1,15 @@
 'use client';
+/**
+ * 实时汇率页（/tools/rates）
+ *
+ * 功能：
+ * - 基于 exchangerate.host 获取最新法币汇率
+ * - 支持选择基准货币、输入金额、筛选目标货币并刷新
+ *
+ * 说明：
+ * - 通过 useEffect 在基准货币变更时自动刷新
+ * - `amount * rate` 即当前金额折算为目标货币的数值
+ */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Button from '@/components/ui/Button';
@@ -13,6 +24,7 @@ type RatesResponse = {
 const COMMONS = ['USD', 'EUR', 'CNY', 'JPY', 'GBP', 'AUD', 'CAD', 'HKD', 'TWD', 'KRW'];
 
 export default function ExchangeRatesPage() {
+  // 基准货币、金额、汇率表、日期、筛选与状态
   const [base, setBase] = useState<string>('USD');
   const [amount, setAmount] = useState<number>(1);
   const [rates, setRates] = useState<Record<string, number>>({});
@@ -21,6 +33,7 @@ export default function ExchangeRatesPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | undefined>();
 
+  // 拉取汇率
   const fetchRates = useCallback(async (selectedBase: string) => {
     setLoading(true);
     setError(undefined);
@@ -39,8 +52,10 @@ export default function ExchangeRatesPage() {
     }
   }, []);
 
+  // 基准货币变化自动刷新
   useEffect(() => { fetchRates(base); }, [base, fetchRates]);
 
+  // 货币列表与筛选
   const currencies = useMemo(() => Object.keys(rates).sort(), [rates]);
   const filtered = useMemo(
     () => currencies.filter((c) => (query ? c.toLowerCase().includes(query.toLowerCase()) : true)),

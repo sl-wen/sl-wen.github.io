@@ -1,8 +1,19 @@
 'use client';
+/**
+ * 房贷计算器页（/tools/mortgage）
+ *
+ * 功能：
+ * - 等额本息还款：根据本金、年利率、年限计算每月还款/总利息/总还款
+ *
+ * 说明：
+ * - 月利率 r = 年利率 / 12；若 r=0 则每月还款=本金/月数
+ * - 公式：m = r*(1+r)^n / ((1+r)^n - 1)
+ */
 
 import React, { useCallback, useMemo, useState } from 'react';
 import { Input } from '@/components/ui/Input';
 
+// 计算等额本息每月还款
 function calcMonthlyPayment(principal: number, annualRate: number, months: number) {
   const r = annualRate / 12;
   if (r === 0) return principal / months;
@@ -11,10 +22,12 @@ function calcMonthlyPayment(principal: number, annualRate: number, months: numbe
 }
 
 export default function MortgageCalculatorPage() {
+  // 输入：本金、年利率、年限
   const [principal, setPrincipal] = useState<number>(1000000);
   const [rate, setRate] = useState<number>(0.045);
   const [years, setYears] = useState<number>(30);
 
+  // 派生：总月数、每月还款、总还款与总利息
   const months = useMemo(() => years * 12, [years]);
   const monthly = useMemo(() => calcMonthlyPayment(principal, rate, months), [months, principal, rate]);
   const total = useMemo(() => monthly * months, [monthly, months]);

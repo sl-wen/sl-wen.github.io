@@ -1,14 +1,29 @@
 'use client';
+/**
+ * JSON 工具页（/tools/json）
+ *
+ * 功能：
+ * - 格式化（pretty print）
+ * - 压缩（去掉空白）
+ * - 校验合法性
+ * - 一键复制与清空
+ *
+ * 说明：
+ * - 依赖原生 JSON.parse / JSON.stringify，异常捕获后显示错误信息
+ * - 输入/输出均使用同一组件 Textarea，便于统一样式与自动伸缩
+ */
 
 import React, { useCallback, useState } from 'react';
 import Button from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
 
 export default function JsonToolPage() {
+  // 输入文本、输出文本与错误提示
   const [input, setInput] = useState<string>('');
   const [output, setOutput] = useState<string>('');
   const [error, setError] = useState<string | undefined>();
 
+  // JSON 格式化
   const formatJson = useCallback(() => {
     try {
       setError(undefined);
@@ -20,6 +35,7 @@ export default function JsonToolPage() {
     }
   }, [input]);
 
+  // JSON 压缩（最小化）
   const minifyJson = useCallback(() => {
     try {
       setError(undefined);
@@ -31,6 +47,7 @@ export default function JsonToolPage() {
     }
   }, [input]);
 
+  // JSON 校验（只给出结果，不修改输出）
   const validateJson = useCallback(() => {
     try {
       JSON.parse(input);
@@ -42,12 +59,14 @@ export default function JsonToolPage() {
     }
   }, [input]);
 
+  // 复制输出
   const copy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(output);
     } catch {}
   }, [output]);
 
+  // 清空全部
   const clearAll = useCallback(() => {
     setInput('');
     setOutput('');

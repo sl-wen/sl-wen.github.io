@@ -1,4 +1,16 @@
 'use client';
+/**
+ * 代码格式化页（/tools/formatter）
+ *
+ * 功能：
+ * - 动态加载 Prettier 与各语言解析器，对输入代码进行格式化
+ * - 支持选择语言或自动识别、并提供常用格式化选项（printWidth、tabWidth 等）
+ * - 将结果复制回输入区以便连续格式化
+ *
+ * 说明：
+ * - 采用动态 import 以避免 SSR 体积与首屏加载压力
+ * - `detectParser` 在自动模式下根据样例启发式选择解析器
+ */
 
 import React, { useCallback, useMemo, useState } from 'react';
 import Button from '@/components/ui/Button';
@@ -41,6 +53,7 @@ export default function CodeFormatterPage() {
     []
   );
 
+  // 根据语言选择或文本特征推断 Prettier parser
   const detectParser = useCallback(
     (lang: Language, sample: string): string => {
       if (lang !== 'auto') {
@@ -69,6 +82,7 @@ export default function CodeFormatterPage() {
     []
   );
 
+  // 执行格式化
   const handleFormat = useCallback(async () => {
     setIsLoading(true);
     setError(undefined);
@@ -101,6 +115,7 @@ export default function CodeFormatterPage() {
     }
   }, [detectParser, inputCode, language, printWidth, tabWidth, useTabs, semi, singleQuote, trailingComma]);
 
+  // 将结果复制回输入区（便于继续格式化）
   const handleSwap = useCallback(() => {
     setInputCode(outputCode);
   }, [outputCode]);

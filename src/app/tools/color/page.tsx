@@ -1,9 +1,21 @@
 'use client';
+/**
+ * 颜色选择器页（/tools/color）
+ *
+ * 功能：
+ * - 在 HEX / RGB / HSL 三种颜色模型之间联动转换
+ * - 支持拾色器与数值输入；展示不同透明度的色块与文本预览
+ *
+ * 说明：
+ * - 通过 useEffect 监听 HEX 与 RGB 的变更，以保持三种模型始终同步
+ * - HSL 的修改通过 onHslChange 统一转换为 RGB，再回写 HEX/HSL
+ */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Button from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
+// 将数值限制在 [min, max] 范围内
 function clamp(n: number, min: number, max: number) { return Math.max(min, Math.min(max, n)); }
 function hexToRgb(hex: string) {
   const m = hex.replace('#','').trim();
@@ -52,6 +64,7 @@ function hslToRgb(h: number, s: number, l: number) {
 }
 
 export default function ColorPickerPage() {
+  // 当前的 HEX/RGB/HSL 值
   const [hex, setHex] = useState<string>('#409eff');
   const [r, setR] = useState<number>(64);
   const [g, setG] = useState<number>(158);
@@ -60,6 +73,7 @@ export default function ColorPickerPage() {
   const [s, setS] = useState<number>(100);
   const [l, setL] = useState<number>(63);
 
+  // 当 HEX 改变时，同步更新 RGB 和 HSL
   useEffect(() => {
     try {
       const { r, g, b } = hexToRgb(hex);
@@ -69,6 +83,7 @@ export default function ColorPickerPage() {
     } catch {}
   }, [hex]);
 
+  // 当 RGB 改变时，回写 HEX 和 HSL，保持一致
   useEffect(() => {
     const hx = rgbToHex(r, g, b);
     setHex(hx);
@@ -76,6 +91,7 @@ export default function ColorPickerPage() {
     setH(h); setS(s); setL(l);
   }, [r, g, b]);
 
+  // 修改 HSL 时，统一转为 RGB，再回写 HEX/HSL
   const onHslChange = useCallback((nh: number, ns: number, nl: number) => {
     const { r, g, b } = hslToRgb(nh, ns, nl);
     setR(r); setG(g); setB(b);

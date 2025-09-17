@@ -1,4 +1,15 @@
 'use client';
+/**
+ * 存款利率计算页（/tools/savings）
+ *
+ * 功能：
+ * - 支持单利与复利两种模式；复利频率可选
+ * - 输出利息与本息合计
+ *
+ * 说明：
+ * - 单利：interest = principal * rate * years
+ * - 复利：total = principal * (1 + rate/freq)^(freq*years)
+ */
 
 import React, { useMemo, useState } from 'react';
 import { Input } from '@/components/ui/Input';
@@ -14,12 +25,14 @@ function calcCompound(principal: number, annualRate: number, years: number, freq
 }
 
 export default function SavingsCalculatorPage() {
+  // 输入与选项
   const [principal, setPrincipal] = useState<number>(10000);
   const [rate, setRate] = useState<number>(0.025);
   const [years, setYears] = useState<number>(3);
   const [freq, setFreq] = useState<number>(12);
   const [isCompound, setIsCompound] = useState<boolean>(true);
 
+  // 根据模式计算结果
   const result = useMemo(() => {
     return isCompound ? calcCompound(principal, rate, years, freq) : calcSimple(principal, rate, years);
   }, [freq, isCompound, principal, rate, years]);

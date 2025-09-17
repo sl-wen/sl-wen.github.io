@@ -1,10 +1,23 @@
 'use client';
+/**
+ * Hash 计算器页（/tools/hash）
+ *
+ * 功能：
+ * - 文本 MD5 / SHA1 / SHA256 哈希计算
+ * - 文件 MD5 / SHA1 / SHA256 哈希计算
+ *
+ * 说明：
+ * - 文本哈希：MD5 使用 spark-md5，SHA 使用 Web Crypto SubtleCrypto.digest
+ * - 文件哈希：读取为 ArrayBuffer 后同理计算（MD5 使用 spark-md5 ArrayBuffer）
+ * - 结果以十六进制小写字符串显示
+ */
 
 import React, { useCallback, useRef, useState } from 'react';
 import Button from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
 import SparkMD5 from 'spark-md5';
 
+// 将文本以 UTF-8 编码后使用 SubtleCrypto 计算哈希
 async function digest(alg: 'SHA-1' | 'SHA-256', text: string) {
   const enc = new TextEncoder();
   const ab = enc.encode(text);
@@ -14,21 +27,26 @@ async function digest(alg: 'SHA-1' | 'SHA-256', text: string) {
 }
 
 export default function HashCalculatorPage() {
+  // 文本输入与三种哈希结果
   const [text, setText] = useState<string>('');
   const [md5, setMd5] = useState<string>('');
   const [sha1, setSha1] = useState<string>('');
   const [sha256, setSha256] = useState<string>('');
+  // 文件计算结果（包含文件名与各哈希）
   const [fileResult, setFileResult] = useState<{ name: string; md5?: string; sha1?: string; sha256?: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // 计算文本哈希
   const calcText = useCallback(async () => {
     setMd5(SparkMD5.hash(text));
     setSha1(await digest('SHA-1', text));
     setSha256(await digest('SHA-256', text));
   }, [text]);
 
+  // 触发系统文件选择器
   const pickFile = useCallback(() => fileInputRef.current?.click(), []);
 
+  // 选择文件后进行哈希计算
   const onFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;

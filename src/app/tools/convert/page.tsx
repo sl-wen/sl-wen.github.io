@@ -1,10 +1,22 @@
 'use client';
+/**
+ * 单位换算页（/tools/convert）
+ *
+ * 功能：
+ * - 支持长度、质量、温度、面积、体积等常见单位换算
+ * - 统一以“SI 标准单位”作为中间层进行转换（toSI / fromSI）
+ *
+ * 说明：
+ * - 改变类别会重置“从/到”单位，默认使用该类别前两个单位
+ * - 温度采用开尔文作为 SI 中间值，注意加减常数的转换关系
+ */
 
 import React, { useCallback, useMemo, useState } from 'react';
 import { Input } from '@/components/ui/Input';
 
 type UnitCategory = 'length' | 'mass' | 'temp' | 'area' | 'volume';
 
+// 各类别单位与与 SI 的双向换算函数
 const UNITS: Record<UnitCategory, { key: string; label: string; toSI: (v: number) => number; fromSI: (v: number) => number }[]> = {
   length: [
     { key: 'm', label: '米 (m)', toSI: (v) => v, fromSI: (v) => v },
@@ -37,6 +49,7 @@ const UNITS: Record<UnitCategory, { key: string; label: string; toSI: (v: number
 };
 
 export default function UnitConverterPage() {
+  // 当前类别、起始与目标单位、输入值
   const [cat, setCat] = useState<UnitCategory>('length');
   const [from, setFrom] = useState<string>('m');
   const [to, setTo] = useState<string>('km');
@@ -44,6 +57,7 @@ export default function UnitConverterPage() {
 
   const units = useMemo(() => UNITS[cat], [cat]);
 
+  // 先转为 SI，再由 SI 转为目标单位
   const converted = useMemo(() => {
     const fromU = units.find((u) => u.key === from);
     const toU = units.find((u) => u.key === to);

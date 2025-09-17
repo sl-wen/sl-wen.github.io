@@ -1,9 +1,21 @@
 'use client';
+/**
+ * 时间戳转换页（/tools/timestamp）
+ *
+ * 功能：
+ * - 显示当前时间（毫秒/秒/格式化）并每秒自动更新
+ * - 在“秒(s)”与“毫秒(ms)”两种模式下进行时间戳与日期的双向转换
+ *
+ * 说明：
+ * - `msMode` 为 true 表示内部时间戳以毫秒为单位，否则以秒为单位
+ * - 输入的日期字符串通过替换 '-' 为 '/' 以兼容 Safari 的 Date 解析
+ */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Button from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
+// 将时间戳格式化为 YYYY-MM-DD HH:mm:ss 字符串
 function formatDate(ts: number) {
   const d = new Date(ts);
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -11,18 +23,24 @@ function formatDate(ts: number) {
 }
 
 export default function TimestampConverterPage() {
+  // 当前时间（毫秒）与显示
   const [now, setNow] = useState<number>(Date.now());
+  // 输入：时间戳与日期字符串
   const [inputTs, setInputTs] = useState<string>(String(Math.floor(Date.now() / 1000)));
   const [inputDate, setInputDate] = useState<string>(formatDate(Date.now()));
+  // 模式：是否使用毫秒
   const [msMode, setMsMode] = useState<boolean>(false);
 
+  // 每秒 tick 更新当前时间
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
 
+  // 衍生：当前秒级时间戳
   const nowSeconds = useMemo(() => Math.floor(now / 1000), [now]);
 
+  // 时间戳 → 日期
   const tsToDate = useCallback(() => {
     const n = Number(inputTs);
     if (!Number.isFinite(n)) return;
@@ -30,6 +48,7 @@ export default function TimestampConverterPage() {
     setInputDate(formatDate(ts));
   }, [inputTs, msMode]);
 
+  // 日期 → 时间戳
   const dateToTs = useCallback(() => {
     const d = new Date(inputDate.replace(/-/g, '/'));
     const ts = d.getTime();

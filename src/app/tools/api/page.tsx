@@ -1,4 +1,15 @@
 'use client';
+/**
+ * API 测试页（/tools/api）
+ *
+ * 功能：
+ * - 构造 HTTP 请求：方法、URL、请求头、请求体
+ * - 显示响应状态、响应头与响应体（自动尝试 JSON 格式化）
+ *
+ * 说明：
+ * - 解析请求头时按每行 `Key: Value` 解析，忽略空行
+ * - 对于 JSON 响应尝试 pretty print，其他类型原样展示
+ */
 
 import React, { useCallback, useMemo, useState } from 'react';
 import Button from '@/components/ui/Button';
@@ -23,6 +34,7 @@ export default function ApiTesterPage() {
     []
   );
 
+  // 将多行请求头字符串解析为对象
   const parseHeaders = useCallback((raw: string): Record<string, string> => {
     const result: Record<string, string> = {};
     raw
@@ -40,6 +52,7 @@ export default function ApiTesterPage() {
     return result;
   }, []);
 
+  // 若为 JSON 字符串，则返回格式化后的字符串
   const tryPretty = useCallback((text: string): string => {
     try {
       const obj = JSON.parse(text);
@@ -49,6 +62,7 @@ export default function ApiTesterPage() {
     }
   }, []);
 
+  // 发送 HTTP 请求并渲染响应
   const sendRequest = useCallback(async () => {
     setLoading(true);
     setError(undefined);

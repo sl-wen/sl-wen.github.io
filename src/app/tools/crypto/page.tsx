@@ -1,4 +1,16 @@
 'use client';
+/**
+ * 加密货币行情页（/tools/crypto）
+ *
+ * 功能：
+ * - 从 Coingecko 公共 API 拉取 Top 市值加密货币行情
+ * - 支持法币单位切换、关键词筛选与手动刷新
+ *
+ * 说明：
+ * - 使用浏览器 fetch 并禁止缓存（cache: 'no-store'）以获取最新数据
+ * - 通过 useEffect 在 vs（法币）变化后自动刷新
+ * - 使用 useMemo 对筛选结果进行派生计算，避免不必要渲染
+ */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Button from '@/components/ui/Button';
@@ -14,12 +26,14 @@ type Ticker = {
 };
 
 export default function CryptoPricesPage() {
+  // 选中的法币、行情列表与筛选关键词
   const [vs, setVs] = useState<string>('usd');
   const [list, setList] = useState<Ticker[]>([]);
   const [query, setQuery] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | undefined>();
 
+  // 拉取价格列表
   const fetchPrices = useCallback(async () => {
     setLoading(true);
     setError(undefined);
@@ -46,8 +60,10 @@ export default function CryptoPricesPage() {
     }
   }, [vs]);
 
+  // 货币单位变更后自动刷新
   useEffect(() => { fetchPrices(); }, [fetchPrices]);
 
+  // 关键词过滤（名称与代码，忽略大小写）
   const filtered = useMemo(
     () => list.filter((c) => (query ? (c.name + c.symbol).toLowerCase().includes(query.toLowerCase()) : true)),
     [list, query]

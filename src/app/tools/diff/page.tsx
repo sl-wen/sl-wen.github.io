@@ -1,4 +1,15 @@
 'use client';
+/**
+ * 文本对比页（/tools/diff）
+ *
+ * 功能：
+ * - 轻量逐行 diff：同一行位置若不同，则视为左侧删除、右侧新增
+ * - 清空输入按钮
+ *
+ * 说明：
+ * - 未引入第三方 diff 库，算法简单但够用；如需更精准可替换为 diff-match-patch
+ * - 结果区使用不同背景色指示新增/删除/相同
+ */
 
 import React, { useMemo, useState } from 'react';
 import Button from '@/components/ui/Button';

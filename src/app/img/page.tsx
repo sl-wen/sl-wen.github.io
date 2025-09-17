@@ -8,11 +8,19 @@ import { removeBackground } from '@imgly/background-removal';
 
 type ImageFormat = 'image/png' | 'image/jpeg' | 'image/webp' | 'image/avif';
 
+type ImgItem = {
+  id: string;
+  name: string;
+  originalUrl: string; // object URL of original upload
+  editedUrl: string | null; // data URL or object URL of current edits
+  bgUrl: string | null; // object URL of background image if any
+};
+
 type BrushMode = 'none' | 'erase' | 'restore' | 'blur' | 'clone';
 
 export default function ImgToolPage() {
-  const [fileName, setFileName] = useState<string>('image');
-  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
+  const [items, setItems] = useState<ImgItem[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [bgImage, setBgImage] = useState<HTMLImageElement | null>(null);
   const [format, setFormat] = useState<ImageFormat>('image/png');
@@ -31,6 +39,18 @@ export default function ImgToolPage() {
   const overlayRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const bgFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const currentItem = useMemo(() => (currentIndex >= 0 ? items[currentIndex] : null), [items, currentIndex]);
+
+  const loadHtmlImage = useCallback((src: string, cb: (img: HTMLImageElement) => void) => {
+    const img = new Image();
+    img.onload = () => cb(img);
+    img.onerror = () => {
+      // noop
+    };
+    img.crossOrigin = 'anonymous';
+    img.src = src;
+  }, []);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -86,29 +106,77 @@ export default function ImgToolPage() {
     draw();
   }, [draw]);
 
-  const loadImageFromFile = useCallback((file: File) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      setImage(img);
-      setLoadedUrl(url);
-      setFileName(file.name.replace(/\.[^.]+$/, ''));
-    };
-    img.onerror = () => URL.revokeObjectURL(url);
-    img.crossOrigin = 'anonymous';
-    img.src = url;
+  const commitCanvasToCurrentItem = useCallback((): void => {
+    if (!canvasRef.current || currentIndex < 0) return;
+    try {
+      const dataUrl = canvasRef.current.toDataURL('image/png');
+      setItems((prev: ImgItem[]) => {
+        const next = [...prev];
+        const cur = next[currentIndex];
+        if (cur) {
+          next[currentIndex] = { ...cur, editedUrl: dataUrl };
+        }
+        return next;
+      });
+    } catch (e) {
+      // ignore
+    }
+  }, [currentIndex]);
+
+  const addFiles = useCallback((files: FileList | File[]): void => {
+    const arr = Array.from(files);
+    if (arr.length === 0) return;
+    const newItems: ImgItem[] = arr.map((f) => ({
+      id: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      name: f.name.replace(/\.[^.]+$/, ''),
+      originalUrl: URL.createObjectURL(f),
+      editedUrl: null,
+      bgUrl: null,
+    }));
+    setItems((prev: ImgItem[]) => {
+      const next = [...prev, ...newItems];
+      // If nothing selected before, select first of new batch
+      return next;
+    });
+    // Select first newly added if none selected
+    setCurrentIndex((idx: number) => {
+      if (idx >= 0) return idx;
+      return 0;
+    });
   }, []);
 
   const loadBgFromFile = useCallback((file: File) => {
     const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      setBgImage(img);
-    };
-    img.onerror = () => URL.revokeObjectURL(url);
-    img.crossOrigin = 'anonymous';
-    img.src = url;
-  }, []);
+    loadHtmlImage(url, setBgImage);
+    if (currentIndex >= 0) {
+      setItems((prev: ImgItem[]) => {
+        const next = [...prev];
+        const cur = next[currentIndex];
+        if (cur) next[currentIndex] = { ...cur, bgUrl: url };
+        return next;
+      });
+    }
+  }, [currentIndex, loadHtmlImage]);
+
+  const selectItem = useCallback((index: number) => {
+    if (index === currentIndex) return;
+    // commit current canvas before switching
+    if (currentIndex >= 0) commitCanvasToCurrentItem();
+    setCurrentIndex(index);
+  }, [currentIndex, commitCanvasToCurrentItem]);
+
+  // Load image and bg for current item when currentIndex or items change
+  useEffect(() => {
+    if (currentIndex < 0 || !items[currentIndex]) return;
+    const it = items[currentIndex];
+    const imgSrc = it.editedUrl || it.originalUrl;
+    loadHtmlImage(imgSrc, setImage);
+    if (it.bgUrl) {
+      loadHtmlImage(it.bgUrl, setBgImage);
+    } else {
+      setBgImage(null);
+    }
+  }, [items, currentIndex, loadHtmlImage]);
 
   const handlePointerDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -164,7 +232,11 @@ export default function ImgToolPage() {
 
   const handlePointerUp = useCallback(() => {
     setIsDraggingSel(false);
-  }, []);
+    // If painting, persist edits to current item
+    if (brushMode !== 'none') {
+      commitCanvasToCurrentItem();
+    }
+  }, [brushMode, commitCanvasToCurrentItem]);
 
   const paintAt = useCallback((x: number, y: number, apply: boolean) => {
     const canvas = canvasRef.current;
@@ -253,12 +325,19 @@ export default function ImgToolPage() {
     const octx = off.getContext('2d');
     if (!octx) return;
     octx.drawImage(src, x, y, w, h, 0, 0, off.width, off.height);
-    const img = new Image();
-    img.onload = () => {
+    const dataUrl = off.toDataURL('image/png');
+    loadHtmlImage(dataUrl, (img: HTMLImageElement) => {
       setImage(img);
       setSelection(null);
-    };
-    img.src = off.toDataURL('image/png');
+      // persist
+      setItems((prev: ImgItem[]) => {
+        if (currentIndex < 0) return prev;
+        const next = [...prev];
+        const cur = next[currentIndex];
+        if (cur) next[currentIndex] = { ...cur, editedUrl: dataUrl };
+        return next;
+      });
+    });
   }, [selection]);
 
   const applyResize = useCallback(() => {
@@ -283,9 +362,15 @@ export default function ImgToolPage() {
     octx.imageSmoothingEnabled = true;
     octx.imageSmoothingQuality = 'high';
     octx.drawImage(src, 0, 0, newW, newH);
-    const img = new Image();
-    img.onload = () => setImage(img);
-    img.src = off.toDataURL('image/png');
+    const dataUrl = off.toDataURL('image/png');
+    loadHtmlImage(dataUrl, (img: HTMLImageElement) => setImage(img));
+    setItems((prev: ImgItem[]) => {
+      if (currentIndex < 0) return prev;
+      const next = [...prev];
+      const cur = next[currentIndex];
+      if (cur) next[currentIndex] = { ...cur, editedUrl: dataUrl };
+      return next;
+    });
   }, [targetWidth, targetHeight, keepAspect]);
 
   const doRemoveBackground = useCallback(async () => {
@@ -297,28 +382,75 @@ export default function ImgToolPage() {
       const file = new File([blob], 'input.png', { type: 'image/png' });
       const output = await removeBackground(file);
       const url = URL.createObjectURL(output);
-      const img = new Image();
-      img.onload = () => {
-        setImage(img);
-      };
-      img.src = url;
+      loadHtmlImage(url, (img: HTMLImageElement) => setImage(img));
+      // store as edited for current item
+      setItems((prev: ImgItem[]) => {
+        if (currentIndex < 0) return prev;
+        const next = [...prev];
+        const cur = next[currentIndex];
+        if (cur) next[currentIndex] = { ...cur, editedUrl: url };
+        return next;
+      });
     } catch (e) {
       console.error(e);
     } finally {
       setIsProcessing(false);
     }
-  }, []);
+  }, [currentIndex, loadHtmlImage]);
 
   const exportImage = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || currentIndex < 0 || !currentItem) return;
     const dataUrl = canvas.toDataURL(format, quality);
     const a = document.createElement('a');
     a.href = dataUrl;
     const ext = format.split('/')[1] || 'png';
-    a.download = `${fileName || 'image'}.${ext}`;
+    a.download = `${currentItem.name || 'image'}.${ext}`;
     a.click();
-  }, [format, quality, fileName]);
+  }, [format, quality, currentIndex, currentItem]);
+
+  const exportAll = useCallback(async () => {
+    // Ensure current edits are saved
+    commitCanvasToCurrentItem();
+    const ext = format.split('/')[1] || 'png';
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      if (!it) continue;
+      // render offscreen
+      const baseUrl = it.editedUrl || it.originalUrl;
+      const off = document.createElement('canvas');
+      const baseImg = await new Promise<HTMLImageElement>((resolve) => loadHtmlImage(baseUrl, resolve));
+      off.width = baseImg.naturalWidth;
+      off.height = baseImg.naturalHeight;
+      const ctx = off.getContext('2d');
+      if (!ctx) continue;
+      ctx.clearRect(0, 0, off.width, off.height);
+      ctx.drawImage(baseImg, 0, 0);
+      if (it.bgUrl) {
+        const bgImg = await new Promise<HTMLImageElement>((resolve) => loadHtmlImage(it.bgUrl as string, resolve));
+        const scale = Math.max(off.width / bgImg.width, off.height / bgImg.height);
+        const dw = bgImg.width * scale;
+        const dh = bgImg.height * scale;
+        const dx = (off.width - dw) / 2;
+        const dy = (off.height - dh) / 2;
+        const under = document.createElement('canvas');
+        under.width = off.width;
+        under.height = off.height;
+        const uctx = under.getContext('2d');
+        if (uctx) {
+          uctx.drawImage(bgImg, dx, dy, dw, dh);
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.drawImage(under, 0, 0);
+          ctx.globalCompositeOperation = 'source-over';
+        }
+      }
+      const dataUrl = off.toDataURL(format, quality);
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `${it.name || 'image'}.${ext}`;
+      a.click();
+    }
+  }, [items, format, quality, commitCanvasToCurrentItem, loadHtmlImage]);
 
   const disabled = useMemo(() => !image, [image]);
 
@@ -340,17 +472,30 @@ export default function ImgToolPage() {
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
+                  multiple
                   className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) loadImageFromFile(f);
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      addFiles(e.target.files);
+                    }
+                    // reset to allow re-upload same files
+                    if (fileInputRef.current) fileInputRef.current.value = '';
                   }}
                 />
-                <Button onClick={() => fileInputRef.current?.click()}>选择图片</Button>
+                <Button onClick={() => fileInputRef.current?.click()}>选择图片（可多选）</Button>
                 <Input
                   placeholder="文件名（导出用）"
-                  value={fileName}
-                  onChange={(e) => setFileName(e.target.value)}
+                  value={currentItem?.name || ''}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const name = e.target.value;
+                    setItems((prev: ImgItem[]) => {
+                      if (currentIndex < 0) return prev;
+                      const next = [...prev];
+                      const cur = next[currentIndex];
+                      if (cur) next[currentIndex] = { ...cur, name };
+                      return next;
+                    });
+                  }}
                   inputSize="sm"
                   className="w-48"
                 />
@@ -360,7 +505,7 @@ export default function ImgToolPage() {
                   <select
                     className="px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
                     value={format}
-                    onChange={(e) => setFormat(e.target.value as ImageFormat)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormat(e.target.value as ImageFormat)}
                   >
                     <option value="image/png">PNG</option>
                     <option value="image/jpeg">JPEG</option>
@@ -374,13 +519,60 @@ export default function ImgToolPage() {
                     min={0.1}
                     max={1}
                     value={quality}
-                    onChange={(e) => setQuality(Math.max(0.1, Math.min(1, Number(e.target.value) || 0.92)))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuality(Math.max(0.1, Math.min(1, Number(e.target.value) || 0.92)))}
                     className="w-24 px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
                   />
                   <Button onClick={exportImage} disabled={disabled}>
                     导出
                   </Button>
+                  <Button variant="secondary" onClick={exportAll} disabled={items.length === 0}>
+                    导出全部
+                  </Button>
                 </div>
+              </div>
+            </Card>
+
+            <Card>
+              <div className="flex items-center gap-2 overflow-x-auto">
+                {items.map((it: ImgItem, idx: number) => (
+                  <div
+                    key={it.id}
+                    className={`flex items-center gap-2 px-2 py-1 rounded border ${idx === currentIndex ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-700'}`}
+                  >
+                    <button
+                      className="text-sm text-gray-800 dark:text-gray-100 hover:underline"
+                      onClick={() => selectItem(idx)}
+                    >
+                      {it.name}
+                    </button>
+                    <button
+                      className="text-xs text-red-500 ml-1"
+                      onClick={() => {
+                        // if removing current, adjust selection
+                        setItems((prev: ImgItem[]) => {
+                          const next = prev.filter((x: ImgItem) => x.id !== it.id);
+                          return next;
+                        });
+                        setCurrentIndex((prevIdx: number) => {
+                          if (prevIdx === idx) {
+                            const remain = items.length - 1;
+                            if (remain <= 0) return -1;
+                            return Math.min(idx, remain - 1);
+                          } else if (prevIdx > idx) {
+                            return prevIdx - 1;
+                          }
+                          return prevIdx;
+                        });
+                      }}
+                      title="移除"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {items.length === 0 && (
+                  <div className="text-sm text-gray-500">未选择图片，点击“选择图片（可多选）”导入</div>
+                )}
               </div>
             </Card>
 
@@ -392,7 +584,7 @@ export default function ImgToolPage() {
                     inputSize="sm"
                     type="number"
                     value={targetWidth}
-                    onChange={(e) => setTargetWidth(e.target.value === '' ? '' : Number(e.target.value))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTargetWidth(e.target.value === '' ? '' : Number(e.target.value))}
                     className="w-28"
                   />
                   <span className="text-sm text-gray-600 dark:text-gray-300">高</span>
@@ -400,11 +592,11 @@ export default function ImgToolPage() {
                     inputSize="sm"
                     type="number"
                     value={targetHeight}
-                    onChange={(e) => setTargetHeight(e.target.value === '' ? '' : Number(e.target.value))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTargetHeight(e.target.value === '' ? '' : Number(e.target.value))}
                     className="w-28"
                   />
                   <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 ml-2">
-                    <input type="checkbox" checked={keepAspect} onChange={(e) => setKeepAspect(e.target.checked)} />
+                    <input type="checkbox" checked={keepAspect} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeepAspect(e.target.checked)} />
                     保持比例
                   </label>
                 </div>
@@ -424,7 +616,7 @@ export default function ImgToolPage() {
                   <select
                     className="px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
                     value={brushMode}
-                    onChange={(e) => setBrushMode(e.target.value as BrushMode)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setBrushMode(e.target.value as BrushMode)}
                   >
                     <option value="none">无</option>
                     <option value="erase">去背景（擦除）</option>
@@ -438,7 +630,7 @@ export default function ImgToolPage() {
                     min={6}
                     max={128}
                     value={brushSize}
-                    onChange={(e) => setBrushSize(Number(e.target.value))}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBrushSize(Number(e.target.value))}
                   />
                   {brushMode === 'clone' && (
                     <span className="text-xs text-gray-500">按住 Alt 点击设置克隆源</span>
@@ -453,15 +645,29 @@ export default function ImgToolPage() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const f = e.target.files?.[0];
                       if (f) loadBgFromFile(f);
                     }}
                   />
-                  <Button variant="secondary" onClick={() => bgFileInputRef.current?.click()} disabled={disabled}>
+                  <Button variant="secondary" onClick={() => bgFileInputRef.current?.click()} disabled={disabled || currentIndex < 0}>
                     添加背景图
                   </Button>
-                  <Button variant="ghost" onClick={() => setBgImage(null)} disabled={!bgImage}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setBgImage(null);
+                      if (currentIndex >= 0) {
+                        setItems((prev: ImgItem[]) => {
+                          const next = [...prev];
+                          const cur = next[currentIndex];
+                          if (cur) next[currentIndex] = { ...cur, bgUrl: null };
+                          return next;
+                        });
+                      }
+                    }}
+                    disabled={currentIndex < 0 || (!bgImage && !currentItem?.bgUrl)}
+                  >
                     移除背景图
                   </Button>
                 </div>

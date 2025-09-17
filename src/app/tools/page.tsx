@@ -38,7 +38,7 @@ export default function ToolsPage() {
       title: '代码格式化',
       description: '支持多种编程语言的代码格式化和美化工具',
       icon: '🎨',
-      link: '#',
+      link: '/tools/formatter',
       isNew: true
     },
     {
@@ -55,6 +55,14 @@ export default function ToolsPage() {
       icon: '🧩',
       link: '/img2json',
       isFeatured: true
+    },
+    {
+      id: 'img2text',
+      title: '图片转文字 (OCR)',
+      description: '提取图片中的中文、英文或数字文本',
+      icon: '🈶',
+      link: '/tools/img2text',
+      isNew: true
     },
     {
       id: 'color-picker',
@@ -112,8 +120,16 @@ export default function ToolsPage() {
       title: '文本对比',
       description: '比较两个文本的差异，高亮显示变更内容',
       icon: '📊',
-      link: '#',
-      isComingSoon: true
+      link: '/tools/diff',
+      isNew: true
+    },
+    {
+      id: 'api-tester',
+      title: 'API 测试',
+      description: '构造请求、查看响应头与响应体，支持多种 HTTP 方法',
+      icon: '🧪',
+      link: '/tools/api',
+      isNew: true
     }
   ];
 

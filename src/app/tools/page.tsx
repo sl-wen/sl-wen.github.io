@@ -46,7 +46,7 @@ export default function ToolsPage() {
       title: 'JSON 解析器',
       description: '解析、验证和格式化 JSON 数据的在线工具',
       icon: '🔧',
-      link: '#'
+      link: '/tools/json'
     },
     {
       id: 'img2json',
@@ -69,51 +69,83 @@ export default function ToolsPage() {
       title: '颜色选择器',
       description: '专业的颜色选择工具，支持多种颜色格式转换',
       icon: '🎨',
-      link: '#'
+      link: '/tools/color'
     },
     {
       id: 'base64-converter',
       title: 'Base64 转换',
       description: '文本和文件的 Base64 编码解码工具',
       icon: '🔄',
-      link: '#'
+      link: '/tools/base64'
     },
     {
       id: 'qr-generator',
       title: '二维码生成器',
       description: '生成各种样式的二维码，支持 Logo 嵌入',
       icon: '📱',
-      link: '#',
-      isComingSoon: true
-    },
-    {
-      id: 'image-compressor',
-      title: '图片压缩',
-      description: '在线图片压缩工具，保持质量的同时减小文件大小',
-      icon: '🖼️',
-      link: '#',
-      isComingSoon: true
+      link: '/tools/qr',
+      isNew: true
     },
     {
       id: 'password-generator',
       title: '密码生成器',
       description: '生成安全可靠的密码，支持自定义规则',
       icon: '🔐',
-      link: '#'
+      link: '/tools/password'
     },
     {
       id: 'hash-calculator',
       title: 'Hash 计算器',
       description: '计算文本和文件的 MD5、SHA1、SHA256 等哈希值',
       icon: '🔒',
-      link: '#'
+      link: '/tools/hash'
     },
     {
       id: 'timestamp-converter',
       title: '时间戳转换',
       description: '时间戳与日期时间格式的双向转换工具',
       icon: '⏰',
-      link: '#'
+      link: '/tools/timestamp'
+    },
+    {
+      id: 'exchange-rates',
+      title: '实时汇率',
+      description: '多币种实时汇率换算，支持筛选和金额换算',
+      icon: '💱',
+      link: '/tools/rates',
+      isNew: true
+    },
+    {
+      id: 'crypto-prices',
+      title: '实时加密价格',
+      description: '主流加密货币实时行情，法币切换与筛选',
+      icon: '🪙',
+      link: '/tools/crypto',
+      isNew: true
+    },
+    {
+      id: 'unit-converter',
+      title: '单位换算',
+      description: '长度、质量、温度、面积、体积等常用单位转换',
+      icon: '🧮',
+      link: '/tools/convert',
+      isNew: true
+    },
+    {
+      id: 'mortgage-calc',
+      title: '房贷计算',
+      description: '等额本息每月还款、总利息与总还款额计算',
+      icon: '🏠',
+      link: '/tools/mortgage',
+      isNew: true
+    },
+    {
+      id: 'savings-calc',
+      title: '存款利率计算',
+      description: '支持单利/复利与频率设置，计算本息合计',
+      icon: '💰',
+      link: '/tools/savings',
+      isNew: true
     },
     {
       id: 'diff-checker',

@@ -108,6 +108,46 @@ export default function ToolsPage() {
       link: '/tools/timestamp'
     },
     {
+      id: 'exchange-rates',
+      title: '实时汇率',
+      description: '多币种实时汇率换算，支持筛选和金额换算',
+      icon: '💱',
+      link: '/tools/rates',
+      isNew: true
+    },
+    {
+      id: 'crypto-prices',
+      title: '实时加密价格',
+      description: '主流加密货币实时行情，法币切换与筛选',
+      icon: '🪙',
+      link: '/tools/crypto',
+      isNew: true
+    },
+    {
+      id: 'unit-converter',
+      title: '单位换算',
+      description: '长度、质量、温度、面积、体积等常用单位转换',
+      icon: '🧮',
+      link: '/tools/convert',
+      isNew: true
+    },
+    {
+      id: 'mortgage-calc',
+      title: '房贷计算',
+      description: '等额本息每月还款、总利息与总还款额计算',
+      icon: '🏠',
+      link: '/tools/mortgage',
+      isNew: true
+    },
+    {
+      id: 'savings-calc',
+      title: '存款利率计算',
+      description: '支持单利/复利与频率设置，计算本息合计',
+      icon: '💰',
+      link: '/tools/savings',
+      isNew: true
+    },
+    {
       id: 'diff-checker',
       title: '文本对比',
       description: '比较两个文本的差异，高亮显示变更内容',

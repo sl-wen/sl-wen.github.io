@@ -213,7 +213,7 @@ export default function HomePage() {
         className="py-4 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-950/30 dark:to-purple-950/30"
       >
         <div className="container mx-auto px-4">
-          <div className="max-w mx-auto">
+          <div className="max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto">
             {/* 使用Suspense包装懒加载组件，提供加载状态 */}
             <Suspense fallback={
               // 文章列表加载时的骨架屏

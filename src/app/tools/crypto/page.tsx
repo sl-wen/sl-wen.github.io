@@ -23,6 +23,7 @@ type Ticker = {
   current_price: number;
   price_change_percentage_24h: number;
   market_cap: number;
+  market_cap_rank?: number;
 };
 
 export default function CryptoPricesPage() {
@@ -39,7 +40,7 @@ export default function CryptoPricesPage() {
     setError(undefined);
     try {
       // Coingecko free endpoint (no-key), CORS enabled
-      const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${encodeURIComponent(vs)}&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`;
+      const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${encodeURIComponent(vs)}&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h`;
       const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as any[];
@@ -50,7 +51,8 @@ export default function CryptoPricesPage() {
           name: d.name,
           current_price: d.current_price,
           price_change_percentage_24h: d.price_change_percentage_24h || 0,
-          market_cap: d.market_cap
+          market_cap: d.market_cap,
+          market_cap_rank: d.market_cap_rank
         }))
       );
     } catch (e: any) {
@@ -73,7 +75,7 @@ export default function CryptoPricesPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">实时加密货币价格</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">市值前 20 加密货币</h1>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={fetchPrices} isLoading={loading}>刷新</Button>
           </div>
@@ -104,7 +106,14 @@ export default function CryptoPricesPage() {
           {filtered.map((c) => (
             <div key={c.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
               <div className="flex items-center justify-between">
-                <div className="font-semibold text-gray-900 dark:text-white">{c.name}</div>
+                <div className="flex items-center gap-2">
+                  {typeof c.market_cap_rank === 'number' && (
+                    <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+                      {c.market_cap_rank}
+                    </span>
+                  )}
+                  <span className="font-semibold text-gray-900 dark:text-white">{c.name}</span>
+                </div>
                 <div className={`text-sm ${c.price_change_percentage_24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {c.price_change_percentage_24h.toFixed(2)}%
                 </div>

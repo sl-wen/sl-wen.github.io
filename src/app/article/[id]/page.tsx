@@ -12,6 +12,7 @@ import { marked } from 'marked';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { cn } from '@/utils/cn';
 
 const addCopyButtons = () => {
   console.log('addCopyButtons called');
@@ -322,8 +323,8 @@ export default function ArticlePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-6 py-4 rounded-lg">
           {error}
         </div>
       </div>
@@ -336,92 +337,109 @@ export default function ArticlePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 操作按钮区域 */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           {userProfile?.user_id && (
-            <Link
-              href={`/article/${article.post_id}/edit`}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-            >
-              编辑文章
-            </Link>
+            <Button variant="primary" size="md" asChild>
+              <Link href={`/article/${article.post_id}/edit`}>
+                <i className="fas fa-edit mr-2"></i>
+                编辑文章
+              </Link>
+            </Button>
           )}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             <Button
               onClick={() => handlePostReaction('like')}
               disabled={isReactionLoading}
-              className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${PostReaction === 'like'
-                ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
-                : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
+              variant={PostReaction === 'like' ? 'success' : 'ghost'}
+              size="sm"
+              className={cn(
+                "transition-all duration-200",
+                PostReaction === 'like' && "scale-105"
+              )}
             >
               <i className="fas fa-thumbs-up text-sm"></i>
-              <span>{article.likes_count || 0}</span>
+              <span className="ml-1">{article.likes_count || 0}</span>
             </Button>
 
             <Button
               onClick={() => handlePostReaction('dislike')}
               disabled={isReactionLoading}
-              className={`flex items-center space-x-1 px-3 py-1 rounded-md transition-colors ${PostReaction === 'dislike'
-                ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300'
-                : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
+              variant={PostReaction === 'dislike' ? 'danger' : 'ghost'}
+              size="sm"
+              className={cn(
+                "transition-all duration-200",
+                PostReaction === 'dislike' && "scale-105"
+              )}
             >
               <i className="fas fa-thumbs-down text-sm"></i>
-              <span>{article.dislikes_count || 0}</span>
+              <span className="ml-1">{article.dislikes_count || 0}</span>
             </Button>
           </div>
         </div>
+
         {/* 文章头部 */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="card p-8 mb-8">
+          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
             {article.title}
           </h1>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <span className="flex items-center">
+              <i className="fas fa-user mr-2"></i>
+              {article.author}
+            </span>
+            <span className="flex items-center">
+              <i className="fas fa-calendar mr-2"></i>
+              {new Date(article.created_at).toLocaleDateString()}
+            </span>
+            <span className="flex items-center">
+              <i className="fas fa-eye mr-2"></i>
+              {article.views_count || 0} 次浏览
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* 文章内容 */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
-        <div
-          className="markdownBody prose prose-lg max-w-none dark:prose-invert"
-          dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(marked.parse(article.content) as string)
-          }}
-        />
-      </div>
-
-      {/* 相邻文章导航 */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
-        <div className="flex justify-between">
-          {prevArticle ? (
-            <Link
-              href={`/article/${prevArticle.post_id}`}
-              className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-            >
-              <i className="fas fa-chevron-left"></i>
-              <span>{prevArticle.title}</span>
-            </Link>
-          ) : (
-            <div></div>
-          )}
-
-          {nextArticle ? (
-            <Link
-              href={`/article/${nextArticle.post_id}`}
-              className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-            >
-              <span>{nextArticle.title}</span>
-              <i className="fas fa-chevron-right"></i>
-            </Link>
-          ) : (
-            <div></div>
-          )}
+        {/* 文章内容 */}
+        <div className="card p-8 mb-8">
+          <div
+            className="markdownBody prose prose-lg max-w-none dark:prose-invert"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(marked.parse(article.content) as string)
+            }}
+          />
         </div>
-      </div>
 
-      {/* 评论区 */}
-      <CommentSection postId={article.post_id} />
+        {/* 相邻文章导航 */}
+        <div className="card p-6 mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            {prevArticle ? (
+              <Button variant="ghost" size="md" asChild className="w-full sm:w-auto">
+                <Link href={`/article/${prevArticle.post_id}`}>
+                  <i className="fas fa-chevron-left mr-2"></i>
+                  <span className="truncate">{prevArticle.title}</span>
+                </Link>
+              </Button>
+            ) : (
+              <div className="w-full sm:w-auto"></div>
+            )}
+
+            {nextArticle ? (
+              <Button variant="ghost" size="md" asChild className="w-full sm:w-auto">
+                <Link href={`/article/${nextArticle.post_id}`}>
+                  <span className="truncate">{nextArticle.title}</span>
+                  <i className="fas fa-chevron-right ml-2"></i>
+                </Link>
+              </Button>
+            ) : (
+              <div className="w-full sm:w-auto"></div>
+            )}
+          </div>
+        </div>
+
+        {/* 评论区 */}
+        <CommentSection postId={article.post_id} />
+      </div>
     </div>
   );
 }

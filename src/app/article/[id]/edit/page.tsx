@@ -10,6 +10,8 @@ import {
   deleteArticle,
   renderMarkdown
 } from '@/utils/articleService';
+import { Button } from '@/components/ui/Button';
+import { cn } from '@/utils/cn';
 
 interface Post {
   post_id: string;
@@ -197,10 +199,10 @@ export default function EditArticlePage() {
 
   if (loading && !post) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="flex items-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-2 text-gray-600">加载中...</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
+          <span className="ml-2 text-gray-600 dark:text-gray-400">加载中...</span>
         </div>
       </div>
     );
@@ -208,8 +210,8 @@ export default function EditArticlePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-6 py-4 rounded-lg">
           {error}
         </div>
       </div>
@@ -221,23 +223,31 @@ export default function EditArticlePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {message && (
           <div
-            className={`mb-6 p-4 rounded-lg ${message.type === 'success'
-                ? 'bg-green-50 border border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300'
-                : 'bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300'
-              }`}
+            className={cn(
+              "mb-6 p-4 rounded-lg border transition-all duration-200",
+              message.type === 'success'
+                ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300'
+                : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300'
+            )}
           >
-            {message.text}
+            <div className="flex items-center">
+              <i className={cn(
+                "fas mr-2",
+                message.type === 'success' ? 'fa-check-circle text-green-600' : 'fa-exclamation-circle text-red-600'
+              )}></i>
+              {message.text}
+            </div>
           </div>
         )}
 
         {post && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="card p-0">
             {/* Header */}
-            <div className="border-b border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+            <div className="border-b border-gray-200 dark:border-gray-700 p-8">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
                   <svg
-                    className="w-5 h-5 text-blue-600 dark:text-blue-400"
+                    className="w-6 h-6 text-blue-600 dark:text-blue-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -251,20 +261,20 @@ export default function EditArticlePage() {
                   </svg>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">编辑文章</h1>
-                  <p className="text-gray-600 dark:text-gray-400">修改文章内容并实时预览</p>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">编辑文章</h1>
+                  <p className="text-gray-600 dark:text-gray-400 text-lg">修改文章内容并实时预览</p>
                 </div>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="p-8 space-y-8">
               {/* 基本信息 */}
-              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <div>
                     <label
                       htmlFor="title"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                      className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3"
                     >
                       文章标题
                     </label>
@@ -276,14 +286,19 @@ export default function EditArticlePage() {
                       onChange={handleInputChange}
                       required
                       placeholder="请输入文章标题..."
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className={cn(
+                        "w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg",
+                        "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                        "bg-white dark:bg-gray-700 text-gray-900 dark:text-white",
+                        "transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
+                      )}
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="author"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                      className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3"
                     >
                       作者
                     </label>
@@ -295,15 +310,20 @@ export default function EditArticlePage() {
                       onChange={handleInputChange}
                       required
                       placeholder="请输入作者名称..."
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      className={cn(
+                        "w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg",
+                        "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                        "bg-white dark:bg-gray-700 text-gray-900 dark:text-white",
+                        "transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
+                      )}
                     />
                   </div>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-8">
                   <label
                     htmlFor="tags"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3"
                   >
                     标签
                   </label>
@@ -314,9 +334,15 @@ export default function EditArticlePage() {
                     value={formData.tags.join(', ')}
                     onChange={handleTagsChange}
                     placeholder="用逗号分隔多个标签，如：技术, React, JavaScript"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className={cn(
+                      "w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg",
+                      "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+                      "bg-white dark:bg-gray-700 text-gray-900 dark:text-white",
+                      "transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500"
+                    )}
                   />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 flex items-center">
+                    <i className="fas fa-info-circle mr-2"></i>
                     用逗号分隔多个标签
                   </p>
                 </div>
@@ -326,18 +352,18 @@ export default function EditArticlePage() {
               <div>
                 <label
                   htmlFor="content"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4"
                 >
                   文章内容（支持 Markdown）
                 </label>
-                <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                <div className="border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-gray-800">
                   {/* 工具栏 */}
-                  <div className="bg-gray-50 dark:bg-gray-900 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                  <div className="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                        <span className="flex items-center gap-1">
+                      <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                        <span className="flex items-center gap-2">
                           <svg
-                            className="w-4 h-4"
+                            className="w-4 h-4 text-blue-600 dark:text-blue-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -351,9 +377,9 @@ export default function EditArticlePage() {
                           </svg>
                           编辑器
                         </span>
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-2">
                           <svg
-                            className="w-4 h-4"
+                            className="w-4 h-4 text-green-600 dark:text-green-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -374,14 +400,15 @@ export default function EditArticlePage() {
                           实时预览
                         </span>
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <i className="fas fa-code mr-2"></i>
                         支持 Markdown 语法
                       </div>
                     </div>
                   </div>
 
                   {/* 编辑器和预览区域 */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 h-96">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 min-h-[500px]">
                     {/* 编辑区 */}
                     <div className="border-r border-gray-200 dark:border-gray-700 h-full flex flex-col min-h-0">
                       <textarea
@@ -392,15 +419,20 @@ export default function EditArticlePage() {
                         onChange={handleInputChange}
                         onScroll={handleEditorScroll}
                         required
-                        className="w-full h-full border-0 resize-none focus:ring-0 focus:outline-none font-mono text-sm rounded-none overflow-y-auto p-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className={cn(
+                          "w-full h-full border-0 resize-none focus:ring-0 focus:outline-none",
+                          "font-mono text-sm rounded-none overflow-y-auto p-6",
+                          "bg-white dark:bg-gray-700 text-gray-900 dark:text-white",
+                          "placeholder-gray-400 dark:placeholder-gray-500"
+                        )}
                         placeholder="开始编写你的文章内容..."
                       />
                     </div>
                     {/* 预览区 */}
-                    <div className="bg-gray-50 dark:bg-gray-900 h-full flex-col min-h-0 hidden lg:block">
+                    <div className="bg-gray-50 dark:bg-gray-900 h-full flex-col min-h-0 hidden xl:block">
                       <div
                         ref={previewRef}
-                        className="h-full p-4 overflow-y-auto prose prose-sm dark:prose-invert max-w-none"
+                        className="h-full p-6 overflow-y-auto prose prose-sm dark:prose-invert max-w-none"
                         dangerouslySetInnerHTML={{ __html: preview }}
                       />
                     </div>
@@ -409,36 +441,50 @@ export default function EditArticlePage() {
               </div>
 
               {/* 操作按钮 */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <button
+              <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200 dark:border-gray-700">
+                <Button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 sm:flex-none px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                  variant="primary"
+                  size="lg"
+                  className="flex-1 sm:flex-none"
                 >
-                  {loading && (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      保存中...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-save mr-2"></i>
+                      保存修改
+                    </>
                   )}
-                  保存修改
-                </button>
+                </Button>
 
-                <button
+                <Button
                   type="button"
                   onClick={handleDelete}
                   disabled={loading}
-                  className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  variant="danger"
+                  size="lg"
+                  className="flex-1 sm:flex-none"
                 >
+                  <i className="fas fa-trash-alt mr-2"></i>
                   删除文章
-                </button>
+                </Button>
 
-                <Link href={`/article/${post?.post_id}`}>
-                  <button
-                    type="button"
-                    disabled={loading}
-                    className="w-full sm:w-auto px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  asChild
+                  className="flex-1 sm:flex-none"
+                >
+                  <Link href={`/article/${post?.post_id}`}>
+                    <i className="fas fa-times mr-2"></i>
                     取消编辑
-                  </button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             </form>
           </div>

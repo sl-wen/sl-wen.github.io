@@ -4,14 +4,14 @@ import CommentSection from '@/components/CommentSection';
 import Loading from '@/components/Loading';
 import { Button } from '@/components/ui/Button';
 import { Article, getAdjacentArticles, getArticleById } from '@/utils/articleService';
-import { addPostReaction, getPostReaction } from '@/utils/reactionService';
+import { addPostReaction, getPostReaction, clearAllReactionCache } from '@/utils/reactionService';
 import { recordPostsView } from '@/utils/stats';
 import { TASK_ACTIONS, useSafeTaskProgress } from '@/utils/task-hooks';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { cn } from '@/utils/cn';
 
 const addCopyButtons = () => {
@@ -123,13 +123,16 @@ export default function ArticlePage() {
     console.error('Failed to initialize task progress:', error);
   }
 
+  // 防抖的点赞处理函数
+  const debouncedHandleReaction = useCallback(
+    debounce((reactionType: 'like' | 'dislike') => {
+      handlePostReaction(reactionType);
+    }, 300),
+    [article, userProfile, PostReaction, updateProgress]
+  );
+
   // 处理点赞/点踩的函数
   const handlePostReaction = async (reactionType: 'like' | 'dislike') => {
-    // 防止重复点击
-    if (isReactionLoading) {
-      return;
-    }
-
     if (!userProfile?.user_id) {
       alert('请先登录');
       return;
@@ -139,46 +142,44 @@ export default function ArticlePage() {
       return;
     }
 
-    // 当用户点击点赞/点踩按钮
-    setIsReactionLoading(true);
-
-    const oldLikes = article.likes_count;
-    const oldDislikes = article.dislikes_count;
+    // 立即更新UI状态（乐观更新）
+    const oldLikes = article.likes_count || 0;
+    const oldDislikes = article.dislikes_count || 0;
     const oldReaction = PostReaction;
 
-    setArticle(prev => {
-      if (!prev) return prev;
-      let newLikes = oldLikes;
-      let newDislikes = oldDislikes;
-      let newReaction = oldReaction;
+    let newLikes = oldLikes;
+    let newDislikes = oldDislikes;
+    let newReaction = oldReaction;
 
-      // 计算新的点赞踩数量和反应类型
-      if (reactionType === 'like') {
-        if (oldReaction === 'like') {
-          newLikes -= 1;
-          newReaction = null;
-        } else {
-          newLikes += 1;
-          if (oldReaction === 'dislike') {
-            newDislikes -= 1;
-          }
-          newReaction = 'like';
-        }
-      } else if (reactionType === 'dislike') {
+    // 计算新的反应状态
+    if (reactionType === 'like') {
+      if (oldReaction === 'like') {
+        newLikes -= 1;
+        newReaction = null;
+      } else {
+        newLikes += 1;
         if (oldReaction === 'dislike') {
           newDislikes -= 1;
-          newReaction = null;
-        } else {
-          newDislikes += 1;
-          if (oldReaction === 'like') {
-            newLikes -= 1;
-          }
-          newReaction = 'dislike';
         }
+        newReaction = 'like';
       }
+    } else if (reactionType === 'dislike') {
+      if (oldReaction === 'dislike') {
+        newDislikes -= 1;
+        newReaction = null;
+      } else {
+        newDislikes += 1;
+        if (oldReaction === 'like') {
+          newLikes -= 1;
+        }
+        newReaction = 'dislike';
+      }
+    }
 
-      setPostReaction(newReaction);
-
+    // 立即更新UI
+    setPostReaction(newReaction);
+    setArticle(prev => {
+      if (!prev) return prev;
       return {
         ...prev,
         likes_count: newLikes,
@@ -187,26 +188,18 @@ export default function ArticlePage() {
     });
 
     try {
-      // 2. 再做请求
+      // 发送API请求
       const success = await addPostReaction(
         article.post_id,
         userProfile.user_id,
         reactionType,
-        oldLikes,
-        oldDislikes
+        newLikes,
+        newDislikes
       );
 
-      if (success) {
-        // 3. 更新任务进度
-        if (updateProgress) {
-          try {
-            await updateProgress(TASK_ACTIONS.LIKE, 1);
-          } catch (taskError) {
-            console.error('更新任务进度失败:', taskError);
-          }
-        }
-      } else {
+      if (!success) {
         // 如果请求失败，回滚状态
+        setPostReaction(oldReaction);
         setArticle(prev => {
           if (!prev) return prev;
           return {
@@ -215,11 +208,20 @@ export default function ArticlePage() {
             dislikes_count: oldDislikes,
           };
         });
-        setPostReaction(oldReaction);
+      } else {
+        // 更新任务进度
+        if (updateProgress) {
+          try {
+            await updateProgress(TASK_ACTIONS.LIKE, 1);
+          } catch (taskError) {
+            console.error('更新任务进度失败:', taskError);
+          }
+        }
       }
     } catch (error) {
       console.error('处理反应失败:', error);
       // 回滚状态
+      setPostReaction(oldReaction);
       setArticle(prev => {
         if (!prev) return prev;
         return {
@@ -228,11 +230,17 @@ export default function ArticlePage() {
           dislikes_count: oldDislikes,
         };
       });
-      setPostReaction(oldReaction);
-    } finally {
-      setIsReactionLoading(false);
     }
   };
+
+  // 防抖函数
+  function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
+    let timeout: NodeJS.Timeout;
+    return ((...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(null, args), wait);
+    }) as T;
+  }
 
   // 获取文章数据
   useEffect(() => {
@@ -307,6 +315,13 @@ export default function ArticlePage() {
     }
   }, [article, userProfile?.user_id]);
 
+  // 清理缓存
+  useEffect(() => {
+    return () => {
+      clearAllReactionCache();
+    };
+  }, []);
+
   // 添加复制按钮到代码块
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -350,12 +365,12 @@ export default function ArticlePage() {
           )}
           <div className="flex items-center space-x-3">
             <Button
-              onClick={() => handlePostReaction('like')}
+              onClick={() => debouncedHandleReaction('like')}
               disabled={isReactionLoading}
               variant={PostReaction === 'like' ? 'success' : 'ghost'}
               size="sm"
               className={cn(
-                "transition-all duration-200",
+                "transition-all duration-200 hover:scale-105",
                 PostReaction === 'like' && "scale-105"
               )}
             >
@@ -364,12 +379,12 @@ export default function ArticlePage() {
             </Button>
 
             <Button
-              onClick={() => handlePostReaction('dislike')}
+              onClick={() => debouncedHandleReaction('dislike')}
               disabled={isReactionLoading}
               variant={PostReaction === 'dislike' ? 'danger' : 'ghost'}
               size="sm"
               className={cn(
-                "transition-all duration-200",
+                "transition-all duration-200 hover:scale-105",
                 PostReaction === 'dislike' && "scale-105"
               )}
             >

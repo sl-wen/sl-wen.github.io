@@ -56,6 +56,9 @@ class MemoryCache {
 
 export const memoryCache = new MemoryCache();
 
+// In-flight promise registry to dedupe concurrent requests for the same key
+const inFlightPromises = new Map<string, Promise<any>>();
+
 // 定期清理过期缓存
 if (typeof window !== 'undefined') {
   setInterval(() => {
@@ -79,12 +82,23 @@ export const withCache = async <T>(
   if (cached !== null) {
     return cached;
   }
-
-  // 缓存未命中，执行获取函数
-  const data = await fetcher();
-  
-  // 存入缓存
-  memoryCache.set(key, data, ttl);
-  
-  return data;
+  // 如果有正在进行的相同键请求，复用该 Promise
+  const existingInFlight = inFlightPromises.get(key) as Promise<T> | undefined;
+  if (existingInFlight) {
+    return existingInFlight;
+  }
+  // 缓存未命中，执行获取函数，并登记 in-flight
+  const inFlight = (async () => {
+    try {
+      const data = await fetcher();
+      // 存入缓存
+      memoryCache.set(key, data, ttl);
+      return data;
+    } finally {
+      // 无论成功或失败都移除登记，避免泄漏
+      inFlightPromises.delete(key);
+    }
+  })();
+  inFlightPromises.set(key, inFlight);
+  return inFlight;
 };

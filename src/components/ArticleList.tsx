@@ -104,8 +104,14 @@ const ArticleList: React.FC = () => {
   }, [hasMore, preloadCache, initialLoad]);
 
   useEffect(() => {
-    loadArticles(1);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // 避免开发环境 StrictMode 造成的双调用
+    let didRun = false;
+    if (!didRun) {
+      didRun = true;
+      loadArticles(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleLoadMore = useCallback(() => {
     if (!loadingMore && hasMore) {

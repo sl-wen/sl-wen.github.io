@@ -255,21 +255,19 @@ export default function ArticlePage() {
         if (articleData) {
           setArticle(articleData);
 
-          // 记录文章浏览
-          try {
-            await recordPostsView(post_id);
-          } catch (viewError) {
+          // 同步发起：记录浏览与获取相邻文章，互不阻塞
+          const viewPromise = recordPostsView(post_id, articleData.views).catch((viewError) => {
             console.error('记录文章浏览失败:', viewError);
-          }
-
-          // 获取相邻文章
-          try {
-            const adjacentArticles = await getAdjacentArticles(post_id);
-            setPrevArticle(adjacentArticles.prev);
-            setNextArticle(adjacentArticles.next);
-          } catch (adjacentError) {
-            console.error('获取相邻文章失败:', adjacentError);
-          }
+          });
+          const adjacentPromise = getAdjacentArticles(post_id)
+            .then((adjacentArticles) => {
+              setPrevArticle(adjacentArticles.prev);
+              setNextArticle(adjacentArticles.next);
+            })
+            .catch((adjacentError) => {
+              console.error('获取相邻文章失败:', adjacentError);
+            });
+          await Promise.allSettled([viewPromise, adjacentPromise]);
         } else {
           setError('文章不存在');
         }

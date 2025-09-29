@@ -7,12 +7,12 @@ interface ArticleCardProps {
   article: Article;
 }
 
-const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
+const ArticleCard: React.FC<ArticleCardProps> = ({ article }: ArticleCardProps) => {
   // 计算阅读时间（基于字数，假设每分钟200字）
   const getReadingTime = (content: string) => {
     const wordsPerMinute = 200;
-    const words = content?.length || 0;
-    const readingTime = Math.ceil(words / wordsPerMinute);
+    const contentLength = (article as any).content_length ?? (content?.length || 0);
+    const readingTime = Math.ceil(contentLength / wordsPerMinute);
     return readingTime || 1;
   };
 

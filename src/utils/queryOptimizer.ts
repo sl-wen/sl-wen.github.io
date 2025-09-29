@@ -55,8 +55,8 @@ export class QueryBuilder {
   }
 
   // 获取数量
-  async count() {
-    const { count, error } = await this.query.select('*', { count: 'exact', head: true });
+  async count(countMethod: 'exact' | 'planned' | 'estimated' = 'exact') {
+    const { count, error } = await this.query.select('*', { count: countMethod as any, head: true });
     if (error) throw error;
     return count;
   }

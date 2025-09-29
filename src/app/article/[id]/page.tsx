@@ -235,7 +235,7 @@ export default function ArticlePage() {
 
   // 防抖函数
   function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
-    let timeout: NodeJS.Timeout;
+    let timeout: ReturnType<typeof setTimeout>;
     return ((...args: any[]) => {
       clearTimeout(timeout);
       timeout = setTimeout(() => func.apply(null, args), wait);
@@ -410,7 +410,7 @@ export default function ArticlePage() {
             </span>
             <span className="flex items-center">
               <i className="fas fa-eye mr-2"></i>
-              {article.views_count || 0} 次浏览
+              {article.views || 0} 次浏览
             </span>
           </div>
         </div>

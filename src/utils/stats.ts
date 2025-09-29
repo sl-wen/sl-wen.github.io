@@ -6,7 +6,11 @@ export const getVisitCount = async (): Promise<number> => {
   const cacheKey = getCacheKey('stats', 'visits');
   
   return withCache(cacheKey, async () => {
-    const { data, error } = await supabase.from('stats').select('total_views').single();
+    const { data, error } = await supabase
+      .from('stats')
+      .select('total_views')
+      .eq('stats_id', 'site')
+      .single();
 
     if (error) throw error;
     return data?.total_views || 0;
@@ -15,11 +19,7 @@ export const getVisitCount = async (): Promise<number> => {
 
 export const incrementVisitCount = async (): Promise<void> => {
   try {
-    const total_views = await getVisitCount();
-    const { error } = await supabase
-      .from('stats')
-      .update({ total_views: total_views + 1 })
-      .eq('status_id', 'views');
+    const { error } = await supabase.rpc('increment_site_views');
 
     if (error) throw error;
   } catch (error) {
@@ -29,11 +29,7 @@ export const incrementVisitCount = async (): Promise<void> => {
 
 export const recordPostsView = async (post_id: string): Promise<void> => {
   try {
-    const articleData = await getArticleById(post_id);
-    const { error } = await supabase
-      .from('posts')
-      .update({ views: articleData?.views || 0 + 1 })
-      .eq('post_id', post_id);
+    const { error } = await supabase.rpc('increment_post_views', { p_post_id: post_id });
 
     if (error) throw error;
   } catch (error) {

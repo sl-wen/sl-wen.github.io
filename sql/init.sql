@@ -85,6 +85,30 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 
 
+-- 索引优化：常用排序与过滤字段
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_posts_created_at'
+  ) THEN
+    CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_posts_user_id'
+  ) THEN
+    CREATE INDEX idx_posts_user_id ON posts(user_id);
+  END IF;
+
+  -- 如果会基于 tags 过滤/搜索，使用 GIN 索引
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_posts_tags_gin'
+  ) THEN
+    CREATE INDEX idx_posts_tags_gin ON posts USING GIN (tags);
+  END IF;
+END $$;
+
+
 -- 创建评论表
 CREATE TABLE IF NOT EXISTS comments (
     comment_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -98,6 +122,28 @@ CREATE TABLE IF NOT EXISTS comments (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 评论常用查询加索引
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_comments_post_approved'
+  ) THEN
+    CREATE INDEX idx_comments_post_approved ON comments(post_id, is_approved);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_comments_parent_id'
+  ) THEN
+    CREATE INDEX idx_comments_parent_id ON comments(parent_id);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_comments_created_at'
+  ) THEN
+    CREATE INDEX idx_comments_created_at ON comments(created_at);
+  END IF;
+END $$;
 
 -- 创建点赞表
 CREATE TABLE IF NOT EXISTS post_reactions (
@@ -113,6 +159,22 @@ CREATE TABLE IF NOT EXISTS comment_reactions (
     user_id UUID   REFERENCES profiles(user_id),
     type  TEXT -- like, dislike
 );
+
+-- 保证一个用户对一个目标只有一条反应记录 & 加速查询
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'uniq_post_reactions_post_user'
+  ) THEN
+    CREATE UNIQUE INDEX uniq_post_reactions_post_user ON post_reactions(post_id, user_id);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'uniq_comment_reactions_comment_user'
+  ) THEN
+    CREATE UNIQUE INDEX uniq_comment_reactions_comment_user ON comment_reactions(comment_id, user_id);
+  END IF;
+END $$;
 
 -- 用户等级表 (user_levels)
 CREATE TABLE user_levels (
@@ -254,6 +316,56 @@ CREATE TABLE IF NOT EXISTS stats (
     stats_id TEXT PRIMARY KEY,
     total_views INTEGER DEFAULT 0
 );
+
+-- 站点级默认统计记录
+INSERT INTO stats (stats_id, total_views)
+VALUES ('site', 0)
+ON CONFLICT (stats_id) DO NOTHING;
+
+-- 文章列表轻量视图：避免在列表页传输整篇 content
+CREATE OR REPLACE VIEW posts_list_view AS
+SELECT
+  post_id,
+  title,
+  author,
+  user_id,
+  tags,
+  views,
+  likes_count,
+  dislikes_count,
+  comments_count,
+  created_at,
+  updated_at,
+  LEFT(COALESCE(content, ''), 200) AS excerpt,
+  LENGTH(COALESCE(content, '')) AS content_length
+FROM posts;
+
+-- 原子自增 RPC：文章浏览量 +1，返回最新值
+CREATE OR REPLACE FUNCTION increment_post_views(p_post_id uuid)
+RETURNS INTEGER
+LANGUAGE sql
+AS $$
+  UPDATE posts
+  SET views = views + 1,
+      updated_at = CURRENT_TIMESTAMP
+  WHERE post_id = p_post_id
+  RETURNING views;
+$$;
+
+-- 原子自增 RPC：站点总浏览量 +1，返回最新值
+CREATE OR REPLACE FUNCTION increment_site_views()
+RETURNS INTEGER
+LANGUAGE sql
+AS $$
+  INSERT INTO stats (stats_id, total_views)
+  VALUES ('site', 0)
+  ON CONFLICT (stats_id) DO NOTHING;
+
+  UPDATE stats
+  SET total_views = total_views + 1
+  WHERE stats_id = 'site'
+  RETURNING total_views;
+$$;
 
 
 -- 创建一个函数来检查任务是否需要重置

@@ -16,6 +16,9 @@ export interface Article {
   comments_count: number;
   created_at: string;
   updated_at: string;
+  // 列表视图优化可选字段
+  excerpt?: string;
+  content_length?: number;
 }
 
 export const getArticles = async (page: number = 1, limit: number = 10): Promise<Article[]> => {
@@ -23,23 +26,19 @@ export const getArticles = async (page: number = 1, limit: number = 10): Promise
   
   return withCache(cacheKey, async () => {
     return withQueryPerformance(`getArticles-page-${page}`, async () => {
-      // 只查询必要的字段以减少数据传输
-      // 对于列表页面，不需要完整的content内容，只需要摘要
-      const columns = 'post_id,title,content,author,user_id,tags,views,likes_count,dislikes_count,comments_count,created_at,updated_at';
-      
-      const articles = await new QueryBuilder('posts')
+      // 使用轻量视图，避免传输完整 content
+      const columns = 'post_id,title,author,user_id,tags,views,likes_count,dislikes_count,comments_count,created_at,updated_at,excerpt,content_length';
+      const articles = await new QueryBuilder('posts_list_view')
         .select(columns)
         .order('created_at', false)
         .range((page - 1) * limit, page * limit - 1)
         .execute();
 
-      // 对内容进行截取以减少传输量
-      return articles.map((article: Article) => ({
-        ...article,
-        content: article.content.length > 200 
-          ? article.content.substring(0, 200) + '...' 
-          : article.content
-      }));
+      // 将 excerpt 映射为 content，保持下游类型不变
+      return (articles as any[]).map((row: any) => ({
+        ...row,
+        content: row.excerpt ?? ''
+      })) as Article[];
     });
   }, 5 * 60 * 1000); // 增加缓存时间到5分钟
 };
@@ -49,7 +48,7 @@ export const getArticlesCount = async (): Promise<number> => {
   
   return withCache(cacheKey, async () => {
     return withQueryPerformance('getArticlesCount', async () => {
-      return new QueryBuilder('posts').count() || 0;
+      return (await new QueryBuilder('posts').count('planned')) || 0;
     });
   }, 5 * 60 * 1000); // 5分钟缓存
 };
@@ -73,14 +72,24 @@ export const getAdjacentArticles = async (
   post_id: string
 ): Promise<{ prev: Article | null; next: Article | null }> => {
   try {
+    // 先获取当前文章的创建时间
+    const { data: current, error: currentError } = await supabase
+      .from('posts')
+      .select('created_at')
+      .eq('post_id', post_id)
+      .single();
+    if (currentError) throw currentError;
+
+    const createdAt = current?.created_at as string;
+
     // 获取上一篇文章（创建时间较早的最近一篇）
     const { data: prevData, error: prevError } = await supabase
       .from('posts')
       .select('post_id, title')
-      .lt('post_id', post_id)
-      .order('post_id', { ascending: false })
+      .lt('created_at', createdAt)
+      .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (prevError && prevError.code !== 'PGRST116') throw prevError;
 
@@ -88,10 +97,10 @@ export const getAdjacentArticles = async (
     const { data: nextData, error: nextError } = await supabase
       .from('posts')
       .select('post_id, title')
-      .gt('post_id', post_id)
-      .order('post_id', { ascending: true })
+      .gt('created_at', createdAt)
+      .order('created_at', { ascending: true })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (nextError && nextError.code !== 'PGRST116') throw nextError;
 

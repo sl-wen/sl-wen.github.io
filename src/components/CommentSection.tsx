@@ -77,15 +77,21 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
   const loadUserProfiles = useCallback(async () => {
     try {
       const profiles: { [key: string]: UserProfile | null } = {};
-      const newUserIds = comments
-        .filter((comment) => !commentUserProfiles[comment.user_id])
-        .map((comment) => comment.user_id);
+      const newUserIds: string[] = Array.from(
+        new Set<string>(
+          comments
+            .filter((comment) => !commentUserProfiles[comment.user_id])
+            .map((comment) => comment.user_id as string)
+        )
+      );
 
       if (newUserIds.length > 0) {
-        for (const userId of newUserIds) {
-          const profile = await getUserProfile(userId);
-          profiles[userId] = profile;
-        }
+        const results = await Promise.all(
+          newUserIds.map((userId) => getUserProfile(userId).catch(() => null))
+        );
+        newUserIds.forEach((userId, index) => {
+          profiles[userId] = results[index];
+        });
         setCommentUserProfiles((prev) => ({ ...prev, ...profiles }));
       }
     } catch (error) {
@@ -100,11 +106,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
   const loadReactions = useCallback(async () => {
     try {
       if (userProfile?.user_id && comments.length > 0) {
+        const ids = comments.map(c => c.comment_id);
+        const results = await Promise.all(
+          ids.map((id) => getCommentReaction(id, userProfile.user_id!).catch(() => null))
+        );
         const reactions: { [key: string]: 'like' | 'dislike' | null } = {};
-        for (const comment of comments) {
-          const reaction = await getCommentReaction(comment.comment_id, userProfile.user_id);
-          reactions[comment.comment_id] = reaction;
-        }
+        ids.forEach((id, index) => {
+          reactions[id] = results[index];
+        });
         setCommentReactions(reactions);
       }
     } catch (error) {

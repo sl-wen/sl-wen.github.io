@@ -242,7 +242,7 @@ export default function ArticlePage() {
     }) as T;
   }
 
-  // 获取文章数据
+  // 获取文章数据（将相邻文章和浏览记录解耦为非阻塞并行）
   useEffect(() => {
     const fetchArticle = async () => {
       if (!post_id) return;
@@ -251,28 +251,31 @@ export default function ArticlePage() {
         setLoading(true);
         setError(null);
 
+        // 并行启动相邻文章查询与浏览记录，无需阻塞主渲染
+        const adjacentPromise = getAdjacentArticles(post_id)
+          .then(adjacent => {
+            setPrevArticle(adjacent.prev);
+            setNextArticle(adjacent.next);
+          })
+          .catch(adjacentError => {
+            console.error('获取相邻文章失败:', adjacentError);
+          });
+
+        // 浏览记录无需阻塞
+        recordPostsView(post_id).catch(viewError => {
+          console.error('记录文章浏览失败:', viewError);
+        });
+
+        // 主查询：文章详情
         const articleData = await getArticleById(post_id);
         if (articleData) {
           setArticle(articleData);
-
-          // 记录文章浏览
-          try {
-            await recordPostsView(post_id);
-          } catch (viewError) {
-            console.error('记录文章浏览失败:', viewError);
-          }
-
-          // 获取相邻文章
-          try {
-            const adjacentArticles = await getAdjacentArticles(post_id);
-            setPrevArticle(adjacentArticles.prev);
-            setNextArticle(adjacentArticles.next);
-          } catch (adjacentError) {
-            console.error('获取相邻文章失败:', adjacentError);
-          }
         } else {
           setError('文章不存在');
         }
+
+        // 不等待相邻文章；但如果更快完成，上面的 then 已设置状态
+        void adjacentPromise;
       } catch (error) {
         console.error('获取文章失败:', error);
         setError('获取文章失败');

@@ -30,9 +30,10 @@ export const incrementVisitCount = async (): Promise<void> => {
 export const recordPostsView = async (post_id: string): Promise<void> => {
   try {
     const articleData = await getArticleById(post_id);
+    const nextViews = (articleData?.views ?? 0) + 1;
     const { error } = await supabase
       .from('posts')
-      .update({ views: articleData?.views || 0 + 1 })
+      .update({ views: nextViews })
       .eq('post_id', post_id);
 
     if (error) throw error;

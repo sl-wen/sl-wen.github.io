@@ -297,29 +297,32 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
     let newDislikes = oldDislikes;
     let newReaction = currentReaction;
 
-    // 乐观更新UI
+    // 乐观更新UI（严格遵循单一反应：切换时 +1/-1，取消时 -1）
     if (currentReaction === type) {
+      // 取消当前相同反应
       newReaction = null;
       if (type === 'like') {
-        newLikes--;
+        newLikes = Math.max(0, newLikes - 1);
       } else {
-        newDislikes--;
+        newDislikes = Math.max(0, newDislikes - 1);
       }
     } else if (currentReaction === null) {
+      // 从无到有
       newReaction = type;
       if (type === 'like') {
-        newLikes++;
+        newLikes = newLikes + 1;
       } else {
-        newDislikes++;
+        newDislikes = newDislikes + 1;
       }
     } else {
+      // 不同类型之间切换
       newReaction = type;
       if (type === 'like') {
-        newLikes += 2;
-        newDislikes--;
+        newLikes = newLikes + 1;
+        newDislikes = Math.max(0, newDislikes - 1);
       } else {
-        newDislikes += 2;
-        newLikes--;
+        newDislikes = newDislikes + 1;
+        newLikes = Math.max(0, newLikes - 1);
       }
     }
 

@@ -142,6 +142,8 @@ export default function ArticlePage() {
       return;
     }
 
+    setIsReactionLoading(true);
+
     // 立即更新UI状态（乐观更新）
     const oldLikes = article.likes_count || 0;
     const oldDislikes = article.dislikes_count || 0;
@@ -151,26 +153,26 @@ export default function ArticlePage() {
     let newDislikes = oldDislikes;
     let newReaction = oldReaction;
 
-    // 计算新的反应状态
+    // 计算新的反应状态（遵循切换+1/-1，取消-1）
     if (reactionType === 'like') {
       if (oldReaction === 'like') {
-        newLikes -= 1;
+        newLikes = Math.max(0, newLikes - 1);
         newReaction = null;
       } else {
-        newLikes += 1;
+        newLikes = newLikes + 1;
         if (oldReaction === 'dislike') {
-          newDislikes -= 1;
+          newDislikes = Math.max(0, newDislikes - 1);
         }
         newReaction = 'like';
       }
     } else if (reactionType === 'dislike') {
       if (oldReaction === 'dislike') {
-        newDislikes -= 1;
+        newDislikes = Math.max(0, newDislikes - 1);
         newReaction = null;
       } else {
-        newDislikes += 1;
+        newDislikes = newDislikes + 1;
         if (oldReaction === 'like') {
-          newLikes -= 1;
+          newLikes = Math.max(0, newLikes - 1);
         }
         newReaction = 'dislike';
       }
@@ -230,6 +232,8 @@ export default function ArticlePage() {
           dislikes_count: oldDislikes,
         };
       });
+    } finally {
+      setIsReactionLoading(false);
     }
   };
 

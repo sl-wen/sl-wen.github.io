@@ -187,69 +187,36 @@ export const addPostReaction = async (
   likesCount: number,
   dislikesCount: number
 ): Promise<boolean> => {
-  // 使用缓存键来防止重复请求
-  const cacheKey = getRequestCacheKey(post_id, user_id, type, 'post');
+  // 使用请求缓存键来防止重复请求
+  const requestKey = getRequestCacheKey(post_id, user_id, type, 'post');
 
   // 如果已经有相同请求在进行中，直接返回
-  if (requestCache.has(cacheKey)) {
-    return requestCache.get(cacheKey)!;
+  if (requestCache.has(requestKey)) {
+    return requestCache.get(requestKey)!;
   }
 
   const reactionPromise = (async () => {
     try {
-      // 先检查缓存的用户反应状态
-      const cacheKey = getReactionCacheKey(post_id, user_id, 'post');
-      let currentReaction = reactionCache.get(cacheKey);
+      // 读取缓存的用户反应状态
+      const reactionCacheKey = getReactionCacheKey(post_id, user_id, 'post');
+      let currentReaction = reactionCache.get(reactionCacheKey);
 
-      // 如果缓存中没有，则查询数据库
+      // 如果缓存没有，则查询数据库
       if (currentReaction === undefined) {
         const { data: existingReaction } = await supabase
           .from('post_reactions')
-          .select('*')
+          .select('type,reaction_id')
           .eq('post_id', post_id)
           .eq('user_id', user_id)
           .maybeSingle();
 
         currentReaction = existingReaction?.type || null;
-        reactionCache.set(cacheKey, currentReaction);
+        reactionCache.set(reactionCacheKey, currentReaction);
       }
 
-      let newReaction: 'like' | 'dislike' | null = currentReaction;
-      let newLikesCount = likesCount;
-      let newDislikesCount = dislikesCount;
-
-      // 计算新的反应状态和计数
+      // 根据当前状态执行切换/取消/添加
       if (currentReaction === type) {
-        // 如果点击相同类型，则取消反应
-        newReaction = null;
-        if (type === 'like') {
-          newLikesCount--;
-        } else {
-          newDislikesCount--;
-        }
-      } else if (currentReaction === null) {
-        // 如果没有反应，则添加新反应
-        newReaction = type;
-        if (type === 'like') {
-          newLikesCount++;
-        } else {
-          newDislikesCount++;
-        }
-      } else {
-        // 如果有不同类型的反应，则切换反应
-        newReaction = type;
-        if (type === 'like') {
-          newLikesCount += 2; // 取消踩 +1，添加赞 +1
-          newDislikesCount--;
-        } else {
-          newDislikesCount += 2; // 取消赞 +1，添加踩 +1
-          newLikesCount--;
-        }
-      }
-
-      // 更新数据库
-      if (currentReaction === type) {
-        // 取消反应
+        // 取消当前反应
         const { data: existingReaction } = await supabase
           .from('post_reactions')
           .select('reaction_id')
@@ -263,11 +230,17 @@ export const addPostReaction = async (
             .delete()
             .eq('reaction_id', existingReaction.reaction_id);
         }
+
+        // 更新缓存
+        reactionCache.set(reactionCacheKey, null);
       } else if (currentReaction === null) {
-        // 添加新反应
+        // 新增反应
         await supabase
           .from('post_reactions')
           .insert([{ post_id, user_id, type }]);
+
+        // 更新缓存
+        reactionCache.set(reactionCacheKey, type);
       } else {
         // 切换反应类型
         const { data: existingReaction } = await supabase
@@ -282,26 +255,43 @@ export const addPostReaction = async (
             .from('post_reactions')
             .update({ type })
             .eq('reaction_id', existingReaction.reaction_id);
+        } else {
+          // 容错：不存在则插入
+          await supabase
+            .from('post_reactions')
+            .insert([{ post_id, user_id, type }]);
         }
+
+        // 更新缓存
+        reactionCache.set(reactionCacheKey, type);
       }
 
-      // 更新计数
-      await updatePostReactionCount(post_id, newLikesCount, newDislikesCount);
+      // 变更后以数据库为准重新统计计数，避免并发和本地累加误差
+      const { count: likeCount } = await supabase
+        .from('post_reactions')
+        .select('*', { count: 'exact', head: true })
+        .eq('post_id', post_id)
+        .eq('type', 'like');
 
-      // 更新缓存
-      reactionCache.set(cacheKey, newReaction);
+      const { count: dislikeCount } = await supabase
+        .from('post_reactions')
+        .select('*', { count: 'exact', head: true })
+        .eq('post_id', post_id)
+        .eq('type', 'dislike');
+
+      await updatePostReactionCount(post_id, likeCount || 0, dislikeCount || 0);
 
       return true;
     } catch (error) {
       console.error('处理反应失败:', error);
       return false;
     } finally {
-      // 清理请求缓存
-      requestCache.delete(cacheKey);
+      // 清理请求缓存（使用请求键）
+      requestCache.delete(requestKey);
     }
   })();
 
-  requestCache.set(cacheKey, reactionPromise);
+  requestCache.set(requestKey, reactionPromise);
   return reactionPromise;
 };
 
@@ -312,69 +302,36 @@ export const addCommentReaction = async (
   likesCount: number,
   dislikesCount: number
 ): Promise<boolean> => {
-  // 使用缓存键来防止重复请求
-  const cacheKey = getRequestCacheKey(comment_id, user_id, type, 'comment');
+  // 使用请求缓存键来防止重复请求
+  const requestKey = getRequestCacheKey(comment_id, user_id, type, 'comment');
 
   // 如果已经有相同请求在进行中，直接返回
-  if (requestCache.has(cacheKey)) {
-    return requestCache.get(cacheKey)!;
+  if (requestCache.has(requestKey)) {
+    return requestCache.get(requestKey)!;
   }
 
   const reactionPromise = (async () => {
     try {
-      // 先检查缓存的用户反应状态
-      const cacheKey = getReactionCacheKey(comment_id, user_id, 'comment');
-      let currentReaction = reactionCache.get(cacheKey);
+      // 读取缓存的用户反应状态
+      const reactionCacheKey = getReactionCacheKey(comment_id, user_id, 'comment');
+      let currentReaction = reactionCache.get(reactionCacheKey);
 
       // 如果缓存中没有，则查询数据库
       if (currentReaction === undefined) {
         const { data: existingReaction } = await supabase
           .from('comment_reactions')
-          .select('*')
+          .select('type,reaction_id')
           .eq('comment_id', comment_id)
           .eq('user_id', user_id)
           .maybeSingle();
 
         currentReaction = existingReaction?.type || null;
-        reactionCache.set(cacheKey, currentReaction);
+        reactionCache.set(reactionCacheKey, currentReaction);
       }
 
-      let newReaction: 'like' | 'dislike' | null = currentReaction;
-      let newLikesCount = likesCount;
-      let newDislikesCount = dislikesCount;
-
-      // 计算新的反应状态和计数
+      // 根据当前状态执行切换/取消/添加
       if (currentReaction === type) {
-        // 如果点击相同类型，则取消反应
-        newReaction = null;
-        if (type === 'like') {
-          newLikesCount--;
-        } else {
-          newDislikesCount--;
-        }
-      } else if (currentReaction === null) {
-        // 如果没有反应，则添加新反应
-        newReaction = type;
-        if (type === 'like') {
-          newLikesCount++;
-        } else {
-          newDislikesCount++;
-        }
-      } else {
-        // 如果有不同类型的反应，则切换反应
-        newReaction = type;
-        if (type === 'like') {
-          newLikesCount += 2; // 取消踩 +1，添加赞 +1
-          newDislikesCount--;
-        } else {
-          newDislikesCount += 2; // 取消赞 +1，添加踩 +1
-          newLikesCount--;
-        }
-      }
-
-      // 更新数据库
-      if (currentReaction === type) {
-        // 取消反应
+        // 取消当前反应
         const { data: existingReaction } = await supabase
           .from('comment_reactions')
           .select('reaction_id')
@@ -388,11 +345,17 @@ export const addCommentReaction = async (
             .delete()
             .eq('reaction_id', existingReaction.reaction_id);
         }
+
+        // 更新缓存
+        reactionCache.set(reactionCacheKey, null);
       } else if (currentReaction === null) {
-        // 添加新反应
+        // 新增反应
         await supabase
           .from('comment_reactions')
           .insert([{ comment_id, user_id, type }]);
+
+        // 更新缓存
+        reactionCache.set(reactionCacheKey, type);
       } else {
         // 切换反应类型
         const { data: existingReaction } = await supabase
@@ -407,26 +370,43 @@ export const addCommentReaction = async (
             .from('comment_reactions')
             .update({ type })
             .eq('reaction_id', existingReaction.reaction_id);
+        } else {
+          // 容错：不存在则插入
+          await supabase
+            .from('comment_reactions')
+            .insert([{ comment_id, user_id, type }]);
         }
+
+        // 更新缓存
+        reactionCache.set(reactionCacheKey, type);
       }
 
-      // 更新计数
-      await updateCommentReactionCount(comment_id, newLikesCount, newDislikesCount);
+      // 变更后以数据库为准重新统计计数，避免并发和本地累加误差
+      const { count: likeCount } = await supabase
+        .from('comment_reactions')
+        .select('*', { count: 'exact', head: true })
+        .eq('comment_id', comment_id)
+        .eq('type', 'like');
 
-      // 更新缓存
-      reactionCache.set(cacheKey, newReaction);
+      const { count: dislikeCount } = await supabase
+        .from('comment_reactions')
+        .select('*', { count: 'exact', head: true })
+        .eq('comment_id', comment_id)
+        .eq('type', 'dislike');
+
+      await updateCommentReactionCount(comment_id, likeCount || 0, dislikeCount || 0);
 
       return true;
     } catch (error) {
       console.error('处理评论反应失败:', error);
       return false;
     } finally {
-      // 清理请求缓存
-      requestCache.delete(cacheKey);
+      // 清理请求缓存（使用请求键）
+      requestCache.delete(requestKey);
     }
   })();
 
-  requestCache.set(cacheKey, reactionPromise);
+  requestCache.set(requestKey, reactionPromise);
   return reactionPromise;
 };
 

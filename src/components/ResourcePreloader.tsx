@@ -112,14 +112,9 @@ export default function ResourcePreloader() {
         // 预加载其他页面
         const otherPages = [
           '/category',
-          '/post',
-          '/novel',
           '/tools',
           '/settings',
-          '/profile',
-          '/login',
-          '/privacy',
-          '/terms'
+          '/profile'
         ];
 
         otherPages.forEach(href => {

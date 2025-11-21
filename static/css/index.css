@@ -1,0 +1,84 @@
+/* 年份标题 */
+h1 {
+    font-size: 24px;
+    margin: 30px 0 15px 0;
+    font-weight: 500;
+}
+
+/* 文章列表样式 */
+.post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.post-list li {
+    margin-bottom: 5px;
+    padding: 3px 10px;
+    display: flex;
+    align-items: baseline;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-list li:hover {
+    transform: translateY(-5px);
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.post-date {
+    color: #666;
+    font-size: 14px;
+    margin-right: 10px;
+    white-space: nowrap;
+}
+
+.post-views {
+    color: #666;
+    font-size: 14px;
+    margin-left: auto;
+    text-align: right;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+}
+
+.post-list a {
+    color: #333;
+    text-decoration: none;
+    font-size: 16px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;                  /* Flex布局下防止被挤时溢出 */
+    max-width: 100%;               /* 防止超宽 */
+}
+
+.post-list a:hover {
+    color: #434446;
+    text-decoration: underline;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 18px;
+        margin: 5px 0 5px 0;
+    }
+    .post-list, .post-list li {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+    .post-list li {
+        padding-left: 5px;
+        padding-right: 5px;
+        word-break: break-all;
+        min-width: 0;
+        flex-wrap: wrap;
+    }
+}

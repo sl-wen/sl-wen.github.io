@@ -58,7 +58,7 @@ async function getPosts() {
         }
         
         if (!posts || posts.length === 0) {
-            container.innerHTML = '<div class="no-posts">暂无文章，请先<a href="pages/post.html">发布一篇文章</a></div>';
+            container.innerHTML = '<div class="no-posts">暂无文章，请先<a href="/pages/post.html">发布一篇文章</a></div>';
             return;
         }
         
@@ -90,7 +90,7 @@ async function getPosts() {
                 postsHtml += `
                     <li>
                         <span class="post-date">${date}</span>
-                        <a href="pages/article.html?post_id=${post.post_id}">${post.title}</a>
+                        <a href="/pages/article.html?post_id=${post.post_id}">${post.title}</a>
                         <span class="post-views">👁️‍🗨️ ${post.views}</span>
                     </li>
                 `;

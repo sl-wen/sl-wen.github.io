@@ -26,8 +26,8 @@ async function initAuth() {
           </div>
           <div class="dropdown-menu" id="userDropdownMenu">
             <ul class="dropdown-list">
-              <li><a href="pages/profile.html"><i class="icon-user"></i> 个人</a></li>
-              <li><a href="pages/settings.html"><i class="icon-settings"></i> 设置</a></li>
+              <li><a href="/pages/profile.html"><i class="icon-user"></i> 个人</a></li>
+              <li><a href="/pages/settings.html"><i class="icon-settings"></i> 设置</a></li>
               <li><a href="#" id="logout-btn"><i class="icon-logout"></i> 登出</a></li>
             </ul>
           </div>

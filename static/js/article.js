@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateArticleActions(post_id) {
     if (articleActions) {
       articleActions.innerHTML = `
-        <a href="pages/edit.html?post_id=${post_id}" class="edit-button">编辑</a>
+        <a href="/pages/edit.html?post_id=${post_id}" class="edit-button">编辑</a>
       `;
     }
   }

@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
       </div>
       </div>
       <nav class="nav">
-          <a href="">首页</a>                          <!-- 网站首页链接 -->
+          <a href="/">首页</a>                          <!-- 网站首页链接 -->
           <a href="/pages/categories.html">分类</a>     <!-- 文章分类页面链接 -->
           <a href="/pages/search.html">搜索</a>         <!-- 搜索页面链接 -->
           <a href="/pages/tools.html" id="toolsLink" style="display: none;">工具</a>          <!-- 工具页面链接 -->

@@ -31,8 +31,14 @@ const Header: React.FC = () => {
   // 确保组件已挂载，避免SSR/Client不一致 - 解决水合问题
   useEffect(() => {
     setMounted(true);
-    // 增加访问统计
-    incrementVisitCount();
+    // 增加访问统计（每个会话仅一次）
+    if (typeof window !== 'undefined') {
+      const flagKey = 'visitCountIncremented';
+      if (!sessionStorage.getItem(flagKey)) {
+        incrementVisitCount();
+        sessionStorage.setItem(flagKey, '1');
+      }
+    }
   }, []);
 
   // 点击外部关闭下拉菜单的事件监听

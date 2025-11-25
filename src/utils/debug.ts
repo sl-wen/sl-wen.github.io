@@ -168,11 +168,20 @@ if (typeof window !== 'undefined') {
     (window as Window & { debugArticleService?: typeof debugArticleService }).debugArticleService = debugArticleService;
     (window as Window & { debugNetworkStatus?: typeof debugNetworkStatus }).debugNetworkStatus = debugNetworkStatus;
 
-    // 自动运行调试
-    setTimeout(() => {
-        console.log('🚀 自动运行调试测试...');
-        debugSupabase();
-        debugArticleService();
-        debugNetworkStatus();
-    }, 2000);
-} 
+    // 仅在开发环境自动运行调试，避免生产环境额外网络请求
+    const isDev = (() => {
+        try {
+            return (globalThis as any).process?.env?.NODE_ENV === 'development';
+        } catch {
+            return false;
+        }
+    })();
+    if (isDev) {
+        setTimeout(() => {
+            console.log('🚀 自动运行调试测试...');
+            debugSupabase();
+            debugArticleService();
+            debugNetworkStatus();
+        }, 2000);
+    }
+}

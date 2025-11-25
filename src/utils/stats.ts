@@ -27,12 +27,16 @@ export const incrementVisitCount = async (): Promise<void> => {
   }
 };
 
-export const recordPostsView = async (post_id: string): Promise<void> => {
+export const recordPostsView = async (post_id: string, currentViews?: number): Promise<void> => {
   try {
-    const articleData = await getArticleById(post_id);
+    let baseViews = currentViews;
+    if (baseViews === undefined) {
+      const articleData = await getArticleById(post_id);
+      baseViews = articleData?.views ?? 0;
+    }
     const { error } = await supabase
       .from('posts')
-      .update({ views: articleData?.views || 0 + 1 })
+      .update({ views: (baseViews ?? 0) + 1 })
       .eq('post_id', post_id);
 
     if (error) throw error;

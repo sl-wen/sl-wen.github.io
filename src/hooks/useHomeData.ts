@@ -22,6 +22,8 @@ export const useHomeData = (): HomeData => {
 
   // 组件挂载时获取数据
   useEffect(() => {
+    // 避免 React 18 StrictMode 在开发环境触发的双执行
+    let didRun = false;
     const fetchData = async () => {
       try {
         // 设置加载状态并清除之前的错误
@@ -50,7 +52,10 @@ export const useHomeData = (): HomeData => {
       }
     };
 
-    fetchData(); // 执行数据获取
+    if (!didRun) {
+      didRun = true;
+      fetchData(); // 执行数据获取
+    }
   }, []); // 空依赖数组，仅在组件挂载时执行一次
 
   return data; // 返回当前数据状态

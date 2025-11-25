@@ -9,7 +9,7 @@ import {
   updateComment,
   deleteComment
 } from '@/utils/commentService';
-import { addCommentReaction, getCommentReaction } from '@/utils/reactionService';
+import { addCommentReaction, getCommentReaction, clearAllReactionCache } from '@/utils/reactionService';
 import { getUserProfile } from '@/utils/supabase-config';
 import { Button, Textarea, Card, Alert } from './ui';
 import { useSafeTaskProgress, TASK_ACTIONS } from '@/utils/task-hooks';
@@ -43,6 +43,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
   }>({});
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
+  const [reactionLoading, setReactionLoading] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   // Safely use the task progress hook
   let updateProgress: ((actionType: string, count?: number) => Promise<void>) | null = null;
@@ -112,6 +115,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
   useEffect(() => {
     loadReactions();
   }, [loadReactions]);
+
+  // 清理缓存
+  useEffect(() => {
+    return () => {
+      clearAllReactionCache();
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -269,27 +279,91 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
       return;
     }
 
-    try {
-      const comment = comments.find(c => c.comment_id === comment_id);
-      if (!comment) return;
+    if (reactionLoading[comment_id]) {
+      return;
+    }
 
+    const comment = comments.find(c => c.comment_id === comment_id);
+    if (!comment) return;
+
+    // 设置loading状态
+    setReactionLoading(prev => ({ ...prev, [comment_id]: true }));
+
+    const oldLikes = comment.likes_count || 0;
+    const oldDislikes = comment.dislikes_count || 0;
+    const currentReaction = commentReactions[comment_id];
+
+    let newLikes = oldLikes;
+    let newDislikes = oldDislikes;
+    let newReaction = currentReaction;
+
+    // 乐观更新UI（严格遵循单一反应：切换时 +1/-1，取消时 -1）
+    if (currentReaction === type) {
+      // 取消当前相同反应
+      newReaction = null;
+      if (type === 'like') {
+        newLikes = Math.max(0, newLikes - 1);
+      } else {
+        newDislikes = Math.max(0, newDislikes - 1);
+      }
+    } else if (currentReaction === null) {
+      // 从无到有
+      newReaction = type;
+      if (type === 'like') {
+        newLikes = newLikes + 1;
+      } else {
+        newDislikes = newDislikes + 1;
+      }
+    } else {
+      // 不同类型之间切换
+      newReaction = type;
+      if (type === 'like') {
+        newLikes = newLikes + 1;
+        newDislikes = Math.max(0, newDislikes - 1);
+      } else {
+        newDislikes = newDislikes + 1;
+        newLikes = Math.max(0, newLikes - 1);
+      }
+    }
+
+    // 立即更新UI
+    setCommentReactions(prev => ({ ...prev, [comment_id]: newReaction }));
+    setComments(prev => prev.map(c =>
+      c.comment_id === comment_id
+        ? { ...c, likes_count: newLikes, dislikes_count: newDislikes }
+        : c
+    ));
+
+    try {
       const success = await addCommentReaction(
         comment_id,
         userProfile.user_id,
         type,
-        comment.likes_count || 0,
-        comment.dislikes_count || 0
+        newLikes,
+        newDislikes
       );
 
-      if (success) {
-        setCommentReactions(prev => ({
-          ...prev,
-          [comment_id]: prev[comment_id] === type ? null : type
-        }));
+      if (!success) {
+        // 回滚状态
+        setCommentReactions(prev => ({ ...prev, [comment_id]: currentReaction }));
+        setComments(prev => prev.map(c =>
+          c.comment_id === comment_id
+            ? { ...c, likes_count: oldLikes, dislikes_count: oldDislikes }
+            : c
+        ));
       }
     } catch (error) {
       console.error('处理评论反应失败:', error);
       setError('操作失败，请稍后再试');
+      // 回滚状态
+      setCommentReactions(prev => ({ ...prev, [comment_id]: currentReaction }));
+      setComments(prev => prev.map(c =>
+        c.comment_id === comment_id
+          ? { ...c, likes_count: oldLikes, dislikes_count: oldDislikes }
+          : c
+      ));
+    } finally {
+      setReactionLoading(prev => ({ ...prev, [comment_id]: false }));
     }
   };
 
@@ -397,24 +471,28 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
                   {/* 点赞/点踩 */}
                   <button
                     onClick={() => handleReaction(comment.comment_id, 'like')}
-                    className={`flex items-center space-x-1 text-sm ${commentReactions[comment.comment_id] === 'like'
-                        ? 'text-blue-600 dark:text-blue-400'
-                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                      }`}
+                    disabled={reactionLoading[comment.comment_id]}
+                    className={`flex items-center space-x-1 text-sm transition-all duration-200 ${
+                      commentReactions[comment.comment_id] === 'like'
+                        ? 'text-blue-600 dark:text-blue-400 scale-105'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:scale-105'
+                    } ${reactionLoading[comment.comment_id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <i className="fas fa-thumbs-up"></i>
-                    <span>点赞</span>
+                    <span>点赞 ({comment.likes_count || 0})</span>
                   </button>
 
                   <button
                     onClick={() => handleReaction(comment.comment_id, 'dislike')}
-                    className={`flex items-center space-x-1 text-sm ${commentReactions[comment.comment_id] === 'dislike'
-                        ? 'text-red-600 dark:text-red-400'
-                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                      }`}
+                    disabled={reactionLoading[comment.comment_id]}
+                    className={`flex items-center space-x-1 text-sm transition-all duration-200 ${
+                      commentReactions[comment.comment_id] === 'dislike'
+                        ? 'text-red-600 dark:text-red-400 scale-105'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:scale-105'
+                    } ${reactionLoading[comment.comment_id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <i className="fas fa-thumbs-down"></i>
-                    <span>点踩</span>
+                    <span>点踩 ({comment.dislikes_count || 0})</span>
                   </button>
 
                   {/* 回复按钮 */}

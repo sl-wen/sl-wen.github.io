@@ -1,72 +1,345 @@
+#!/usr/bin/env node
+
 const fs = require('fs');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
-// === Supabase 配置信息 ===
-const supabaseUrl = 'https://pcwbtcsigmjnrigkfixm.supabase.co';
-const supabaseKey =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjd2J0Y3NpZ21qbnJpZ2tmaXhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1NzE0MDMsImV4cCI6MjA2MzE0NzQwM30.J97Dt4tOwS0bM9vALgBTga-VyCLdHN6wfFrPse6dORg'; // 一键拷贝你的 anon key
-const supabase = createClient(supabaseUrl, supabaseKey);
+// === 配置管理 ===
+class Config {
+  constructor() {
+    this.supabaseUrl = process.env.SUPABASE_URL || 'https://pcwbtcsigmjnrigkfixm.supabase.co';
+    this.supabaseKey = process.env.SUPABASE_ANON_KEY;
 
-// === 站点信息（请根据实际情况修改） ===
-const SITE_LINK = 'https://slwen.cn';
-const SITEMAP_PATH = '/var/www/blog/public/sitemap.xml';
+    if (!this.supabaseKey) {
+      console.error('错误: 未设置 SUPABASE_ANON_KEY 环境变量');
+      process.exit(1);
+    }
 
-function formatDate(dtStr) {
-  return new Date(dtStr).toISOString().split('T')[0]; // 只取 YYYY-MM-DD
-}
+    this.siteUrl = process.env.SITE_URL || 'https://slwen.cn';
+    this.outputPath = process.env.SITEMAP_PATH || path.join(process.cwd(), 'public', 'sitemap.xml');
+    this.maxUrls = parseInt(process.env.MAX_SITEMAP_URLS) || 50000; // 站点地图URL限制
+    this.batchSize = parseInt(process.env.BATCH_SIZE) || 1000; // 批处理大小
 
-// === 主逻辑 ===
-async function generateSitemap() {
-  // 查询所有需要收录的页面
-  const { data: posts, error } = await supabase
-    .from('posts')
-    .select('post_id, updated_at, created_at')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('查询出错:', error);
-    return;
+    // 验证站点URL格式
+    this.validateSiteUrl();
   }
 
-  // 首页、文章列表页等常规页面也建议收录
-  const now = new Date().toISOString().split('T')[0];
-  const baseUrls = [
-    { loc: SITE_LINK + '/', lastmod: now, changefreq: 'daily', priority: '1.0' },
-    { loc: SITE_LINK + '/article', lastmod: now, changefreq: 'daily', priority: '0.8' }
-  ];
+  validateSiteUrl() {
+    try {
+      new URL(this.siteUrl);
+    } catch (error) {
+      console.error(`错误: 无效的站点URL格式: ${this.siteUrl}`);
+      process.exit(1);
+    }
+  }
 
-  // 文章详情页
-  const postUrls = posts.map((post) => ({
-    loc: SITE_LINK.replace(/\/$/, '') + `/article/${post.post_id}`,
-    lastmod: formatDate(post.updated_at || post.created_at),
-    changefreq: 'monthly',
-    priority: '0.7'
-  }));
-
-  const allUrls = [...baseUrls, ...postUrls];
-
-  // 拼接 XML
-  const urlsXml = allUrls
-    .map(
-      (url) =>
-        `<url>
-            <loc>${url.loc}</loc>
-            <lastmod>${url.lastmod}</lastmod>
-            <changefreq>${url.changefreq}</changefreq>
-            <priority>${url.priority}</priority>
-         </url>`
-    )
-    .join('\n');
-
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-    ${urlsXml}
-    </urlset>`;
-
-  // 写入 sitemap.xml
-  fs.writeFileSync(SITEMAP_PATH, sitemap, 'utf8');
-  const runtime = new Date().toISOString();
-  console.log(`\n${runtime} sitemap.xml 文件已生成: ${SITEMAP_PATH}`);
+  getSupabaseClient() {
+    return createClient(this.supabaseUrl, this.supabaseKey);
+  }
 }
 
-generateSitemap();
+// === 工具函数 ===
+class Utils {
+  static formatDate(dtStr) {
+    if (!dtStr) return new Date().toISOString().split('T')[0];
+    try {
+      return new Date(dtStr).toISOString().split('T')[0];
+    } catch (error) {
+      console.warn(`警告: 无法解析日期 "${dtStr}", 使用当前日期`);
+      return new Date().toISOString().split('T')[0];
+    }
+  }
+
+  static escapeXml(str) {
+    if (typeof str !== 'string') return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  static normalizeUrl(baseUrl, path) {
+    const base = baseUrl.replace(/\/$/, '');
+    const cleanPath = path.replace(/^\/+/, '');
+    return `${base}/${cleanPath}`;
+  }
+
+  static validateUrl(url) {
+    try {
+      const parsedUrl = new URL(url);
+      return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+    } catch (error) {
+      return false;
+    }
+  }
+
+  static ensureDirectoryExists(filePath) {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  }
+}
+
+// === 日志管理 ===
+class Logger {
+  static log(message, level = 'INFO') {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] [${level}] ${message}`);
+  }
+
+  static info(message) {
+    this.log(message, 'INFO');
+  }
+
+  static warn(message) {
+    this.log(message, 'WARN');
+  }
+
+  static error(message) {
+    this.log(message, 'ERROR');
+  }
+}
+
+// === 站点地图生成器 ===
+class SitemapGenerator {
+  constructor(config) {
+    this.config = config;
+    this.supabase = config.getSupabaseClient();
+    this.logger = Logger;
+  }
+
+  async generate() {
+    try {
+      this.logger.info('开始生成站点地图...');
+
+      // 获取所有URL数据
+      const [baseUrls, postUrls, categoryUrls, tagUrls] = await Promise.all([
+        this.generateBaseUrls(),
+        this.generatePostUrls(),
+        this.generateCategoryUrls(),
+        this.generateTagUrls()
+      ]);
+
+      const allUrls = [...baseUrls, ...postUrls, ...categoryUrls, ...tagUrls];
+
+      // 限制URL数量
+      if (allUrls.length > this.config.maxUrls) {
+        this.logger.warn(`URL数量(${allUrls.length})超过限制(${this.config.maxUrls})，截取前${this.config.maxUrls}个`);
+        allUrls.splice(this.config.maxUrls);
+      }
+
+      // 生成XML
+      const sitemap = this.generateXml(allUrls);
+
+      // 写入文件
+      await this.writeSitemap(sitemap);
+
+      this.logger.info(`站点地图生成完成，共 ${allUrls.length} 个URL`);
+      return { success: true, urlCount: allUrls.length };
+
+    } catch (error) {
+      this.logger.error(`站点地图生成失败: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async generateBaseUrls() {
+    const now = Utils.formatDate(new Date());
+    const baseUrls = [
+      {
+        loc: this.config.siteUrl,
+        lastmod: now,
+        changefreq: 'daily',
+        priority: '1.0'
+      },
+      {
+        loc: Utils.normalizeUrl(this.config.siteUrl, '/article'),
+        lastmod: now,
+        changefreq: 'daily',
+        priority: '0.8'
+      },
+      {
+        loc: Utils.normalizeUrl(this.config.siteUrl, '/about'),
+        lastmod: now,
+        changefreq: 'monthly',
+        priority: '0.6'
+      },
+      {
+        loc: Utils.normalizeUrl(this.config.siteUrl, '/privacy'),
+        lastmod: now,
+        changefreq: 'monthly',
+        priority: '0.3'
+      },
+      {
+        loc: Utils.normalizeUrl(this.config.siteUrl, '/terms'),
+        lastmod: now,
+        changefreq: 'monthly',
+        priority: '0.3'
+      }
+    ];
+
+    return baseUrls.filter(url => Utils.validateUrl(url.loc));
+  }
+
+  async generatePostUrls() {
+    try {
+      const { data: posts, error } = await this.supabase
+        .from('posts')
+        .select('post_id, title, updated_at, created_at, status')
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
+        .limit(this.config.batchSize);
+
+      if (error) {
+        this.logger.error(`查询文章数据失败: ${error.message}`);
+        return [];
+      }
+
+      if (!posts || posts.length === 0) {
+        this.logger.info('未找到已发布的文章');
+        return [];
+      }
+
+      return posts
+        .filter(post => post.post_id && (post.updated_at || post.created_at))
+        .map(post => ({
+          loc: Utils.normalizeUrl(this.config.siteUrl, `/article/${post.post_id}`),
+          lastmod: Utils.formatDate(post.updated_at || post.created_at),
+          changefreq: 'monthly',
+          priority: '0.7'
+        }))
+        .filter(url => Utils.validateUrl(url.loc));
+
+    } catch (error) {
+      this.logger.error(`生成文章URL失败: ${error.message}`);
+      return [];
+    }
+  }
+
+  async generateCategoryUrls() {
+    try {
+      const { data: categories, error } = await this.supabase
+        .from('categories')
+        .select('id, name, updated_at')
+        .order('name');
+
+      if (error) {
+        this.logger.warn(`查询分类数据失败: ${error.message}`);
+        return [];
+      }
+
+      if (!categories || categories.length === 0) {
+        return [];
+      }
+
+      return categories
+        .filter(cat => cat.id && cat.name)
+        .map(category => ({
+          loc: Utils.normalizeUrl(this.config.siteUrl, `/category/${encodeURIComponent(category.name)}`),
+          lastmod: Utils.formatDate(category.updated_at),
+          changefreq: 'weekly',
+          priority: '0.6'
+        }))
+        .filter(url => Utils.validateUrl(url.loc));
+
+    } catch (error) {
+      this.logger.warn(`生成分类URL失败: ${error.message}`);
+      return [];
+    }
+  }
+
+  async generateTagUrls() {
+    try {
+      const { data: tags, error } = await this.supabase
+        .from('tags')
+        .select('id, name, updated_at')
+        .order('name');
+
+      if (error) {
+        this.logger.warn(`查询标签数据失败: ${error.message}`);
+        return [];
+      }
+
+      if (!tags || tags.length === 0) {
+        return [];
+      }
+
+      return tags
+        .filter(tag => tag.id && tag.name)
+        .map(tag => ({
+          loc: Utils.normalizeUrl(this.config.siteUrl, `/tag/${encodeURIComponent(tag.name)}`),
+          lastmod: Utils.formatDate(tag.updated_at),
+          changefreq: 'weekly',
+          priority: '0.5'
+        }))
+        .filter(url => Utils.validateUrl(url.loc));
+
+    } catch (error) {
+      this.logger.warn(`生成标签URL失败: ${error.message}`);
+      return [];
+    }
+  }
+
+  generateXml(urls) {
+    const urlsXml = urls
+      .map(url => {
+        const escapedLoc = Utils.escapeXml(url.loc);
+        const escapedLastmod = Utils.escapeXml(url.lastmod);
+        const escapedChangefreq = Utils.escapeXml(url.changefreq);
+        const escapedPriority = Utils.escapeXml(url.priority);
+
+        return `    <url>
+      <loc>${escapedLoc}</loc>
+      <lastmod>${escapedLastmod}</lastmod>
+      <changefreq>${escapedChangefreq}</changefreq>
+      <priority>${escapedPriority}</priority>
+    </url>`;
+      })
+      .join('\n');
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+${urlsXml}
+</urlset>`;
+  }
+
+  async writeSitemap(sitemap) {
+    try {
+      Utils.ensureDirectoryExists(this.config.outputPath);
+      fs.writeFileSync(this.config.outputPath, sitemap, 'utf8');
+      this.logger.info(`站点地图已写入: ${this.config.outputPath}`);
+    } catch (error) {
+      throw new Error(`写入站点地图文件失败: ${error.message}`);
+    }
+  }
+}
+
+// === 主函数 ===
+async function main() {
+  try {
+    const config = new Config();
+    const generator = new SitemapGenerator(config);
+    const result = await generator.generate();
+
+    if (result.success) {
+      Logger.info('站点地图生成任务完成');
+      process.exit(0);
+    }
+  } catch (error) {
+    Logger.error(`站点地图生成失败: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+// === 执行主函数 ===
+if (require.main === module) {
+  main();
+}
+
+module.exports = { SitemapGenerator, Config, Utils, Logger };

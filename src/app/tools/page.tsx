@@ -41,7 +41,7 @@ export default function ToolsPage() {
       description:
         '裁剪、分辨率/尺寸调整、压缩、格式转换、人物背景去/加、水印去除',
       icon: '🖼️',
-      link: '/img',
+      link: '/tools/img',
       isFeatured: true,
       isNew: true
     },
@@ -50,7 +50,7 @@ export default function ToolsPage() {
       title: '小说搜索器',
       description: '小说聚合搜索与下载',
       icon: '📝',
-      link: '/novel',
+      link: '/tools/novel',
       isFeatured: true
     },
     {
@@ -73,7 +73,7 @@ export default function ToolsPage() {
       title: '图集转JSON (img2json)',
       description: '拖拽图集、框选子素材并导出 JSON（含聚合）',
       icon: '🧩',
-      link: '/img2json',
+      link: '/tools/img2json',
       isFeatured: true
     },
     {

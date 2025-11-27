@@ -484,12 +484,12 @@ export default function ImgToolPage() {
             <Card>
               <div className="space-y-2 text-sm text-gray-700 dark:text-gray-200">
                 <div>1. 选择图片后，画布将按原始分辨率显示。</div>
-                <div>2. 拖拽画布创建裁剪选区，然后点击"裁剪选区"。</div>
-                <div>3. 设置宽高并"调整尺寸/分辨率"。</div>
+                <div>2. 拖拽画布创建裁剪选区，然后点击裁剪选区。</div>
+                <div>3. 设置宽高并调整尺寸/分辨率。</div>
                 <div>4. 选择画笔：擦除/还原/模糊/克隆，用于背景与水印处理。</div>
-                <div>5. "一键人物去背景"将自动抠图，可再用画笔微调。</div>
+                <div>5. 一键人物去背景将自动抠图，可再用画笔微调。</div>
                 <div>6. 可添加背景图，导出时与前景合成。</div>
-                <div>7. 选择导出格式与质量，点击"导出"。</div>
+                <div>7. 选择导出格式与质量，点击导出。</div>
               </div>
             </Card>
           </div>

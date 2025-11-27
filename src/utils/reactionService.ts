@@ -60,7 +60,7 @@ export const setCachedReaction = (
   reaction: 'like' | 'dislike' | null
 ): void => {
   const key = getReactionCacheKey(targetId, userId, type);
-  reactionCache.set(key, reaction);
+  reactionCache.set(key, reaction as ('like' | 'dislike' | null));
 };
 
 // 清理缓存
@@ -211,7 +211,7 @@ export const addPostReaction = async (
           .maybeSingle();
 
         currentReaction = existingReaction?.type || null;
-        reactionCache.set(reactionCacheKey, currentReaction);
+        reactionCache.set(reactionCacheKey, currentReaction as ('like' | 'dislike' | null));
       }
 
       // 根据当前状态执行切换/取消/添加
@@ -326,7 +326,7 @@ export const addCommentReaction = async (
           .maybeSingle();
 
         currentReaction = existingReaction?.type || null;
-        reactionCache.set(reactionCacheKey, currentReaction);
+        reactionCache.set(reactionCacheKey, currentReaction as ('like' | 'dislike' | null));
       }
 
       // 根据当前状态执行切换/取消/添加
@@ -431,7 +431,7 @@ export const getPostReaction = async (
 
     if (error) return null;
     const reaction = data?.type || null;
-    reactionCache.set(cacheKey, reaction);
+    reactionCache.set(cacheKey, reaction as ('like' | 'dislike' | null));
     return reaction;
   } catch (error) {
     console.error('获取用户文章反应失败:', error);
@@ -460,7 +460,7 @@ export const getCommentReaction = async (
 
     if (error) return null;
     const reaction = data?.type || null;
-    reactionCache.set(cacheKey, reaction);
+    reactionCache.set(cacheKey, reaction as ('like' | 'dislike' | null));
     return reaction;
   } catch (error) {
     console.error('获取用户评论反应失败:', error);

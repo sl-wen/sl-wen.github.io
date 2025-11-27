@@ -477,7 +477,6 @@ export default function EditArticlePage() {
                 <Button
                   variant="ghost"
                   size="lg"
-                  asChild
                   className="flex-1 sm:flex-none"
                 >
                   <Link href={`/article/${post?.post_id}`}>

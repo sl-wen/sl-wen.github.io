@@ -16,7 +16,6 @@ interface BeforeInstallPromptEvent extends Event {
 interface PWAState {
   isInstallable: boolean; // 是否可以安装为PWA
   isInstalled: boolean; // 是否已经安装为PWA
-  isOffline: boolean; // 是否处于离线状态
   isIOS: boolean; // 是否为iOS设备
   isAndroid: boolean; // 是否为Android设备
   deferredPrompt: BeforeInstallPromptEvent | null; // 延迟的安装提示事件
@@ -28,7 +27,6 @@ export function usePWA() {
   const [state, setState] = useState<PWAState>({
     isInstallable: false, // 初始不可安装
     isInstalled: false, // 初始未安装
-    isOffline: false, // 初始在线状态
     isIOS: false, // 初始非iOS设备
     isAndroid: false, // 初始非Android设备
     deferredPrompt: null // 初始无安装提示
@@ -45,16 +43,13 @@ export function usePWA() {
       window.matchMedia('(display-mode: standalone)').matches || // 标准PWA检测
       (window.navigator as any).standalone === true; // iOS Safari检测
 
-    // 检测当前网络连接状态
-    const isOffline = !navigator.onLine;
 
     // 更新设备和安装状态
     setState(prev => ({
       ...prev,
       isIOS,
       isAndroid,
-      isInstalled,
-      isOffline
+      isInstalled
     }));
 
     // PWA安装提示事件处理器 - 拦截浏览器默认的安装提示
@@ -66,16 +61,6 @@ export function usePWA() {
         isInstallable: true, // 标记为可安装
         deferredPrompt: promptEvent // 保存安装提示事件
       }));
-    };
-
-    // 网络连接恢复事件处理器
-    const handleOnline = () => {
-      setState(prev => ({ ...prev, isOffline: false }));
-    };
-
-    // 网络连接断开事件处理器
-    const handleOffline = () => {
-      setState(prev => ({ ...prev, isOffline: true }));
     };
 
     // PWA安装完成事件处理器
@@ -90,15 +75,11 @@ export function usePWA() {
 
     // 添加事件监听器
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
     window.addEventListener('appinstalled', handleAppInstalled);
 
     // 清理事件监听器
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);

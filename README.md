@@ -113,7 +113,6 @@ src/
 │   ├── layout.tsx         # 根布局
 │   ├── login/             # 登录页面
 │   ├── novel/             # 小说阅读器
-│   ├── offline/           # 离线页面
 │   ├── page.tsx           # 首页
 │   ├── post/              # 发布文章页面
 │   ├── privacy/           # 隐私政策页面

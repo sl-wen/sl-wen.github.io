@@ -358,7 +358,7 @@ export default function ArticlePage() {
         {/* 操作按钮区域 */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           {userProfile?.user_id && (
-            <Button variant="primary" size="md" asChild>
+            <Button variant="primary" size="md" >
               <Link href={`/article/${article.post_id}/edit`}>
                 <i className="fas fa-edit mr-2"></i>
                 编辑文章
@@ -412,7 +412,7 @@ export default function ArticlePage() {
             </span>
             <span className="flex items-center">
               <i className="fas fa-eye mr-2"></i>
-              {article.views_count || 0} 次浏览
+              {article.views || 0} 次浏览
             </span>
           </div>
         </div>
@@ -431,7 +431,7 @@ export default function ArticlePage() {
         <div className="card p-6 mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             {prevArticle ? (
-              <Button variant="ghost" size="md" asChild className="w-full sm:w-auto">
+              <Button variant="ghost" size="md" className="w-full sm:w-auto">
                 <Link href={`/article/${prevArticle.post_id}`}>
                   <i className="fas fa-chevron-left mr-2"></i>
                   <span className="truncate">{prevArticle.title}</span>
@@ -442,7 +442,7 @@ export default function ArticlePage() {
             )}
 
             {nextArticle ? (
-              <Button variant="ghost" size="md" asChild className="w-full sm:w-auto">
+              <Button variant="ghost" size="md" className="w-full sm:w-auto">
                 <Link href={`/article/${nextArticle.post_id}`}>
                   <span className="truncate">{nextArticle.title}</span>
                   <i className="fas fa-chevron-right ml-2"></i>

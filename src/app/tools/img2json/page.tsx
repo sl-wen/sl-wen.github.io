@@ -357,7 +357,7 @@ export default function Img2JsonPage() {
               {!imported ? (
                 <div className="flex flex-col items-center justify-center h-72 text-gray-500">
                   <div className="text-5xl mb-4">🖼️</div>
-                  <div>拖拽图片到此处，或点击"选择图片"</div>
+                  <div>拖拽图片到此处，或点击选择图片</div>
                 </div>
               ) : (
                 <div className="overflow-auto" style={{ maxHeight: '70vh' }}>

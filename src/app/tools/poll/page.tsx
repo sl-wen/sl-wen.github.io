@@ -19,12 +19,11 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import Button from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import Button from '@/components/ui/Button';
 import { useAuth } from '@/utils/auth-context';
+import type { PollWithOptions } from '@/utils/pollService';
 import {
   createPoll,
   getDeviceId,
@@ -33,7 +32,8 @@ import {
   hasVotedOnPoll,
   voteOnPoll
 } from '@/utils/pollService';
-import type { PollWithOptions } from '@/utils/pollService';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 
 // 页面模式：创建模式 / 查看模式
 type Mode = 'create' | 'view';
@@ -42,7 +42,22 @@ type Mode = 'create' | 'view';
 const MAX_OPTIONS = 8;
 const MIN_OPTIONS = 2;
 
-export default function PollToolPage() {
+// 外层页面组件：只负责 Suspense 包裹，内部真正使用 useSearchParams 的子组件
+export default function PollPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 flex items-center justify-center">
+          <div className="text-gray-500 dark:text-gray-400 text-sm">加载中...</div>
+        </div>
+      }
+    >
+      <PollToolPageInner />
+    </Suspense>
+  );
+}
+
+function PollToolPageInner() {
   // 读取 URL 中的 ?id，用来判断是“创建”还是“查看”
   const searchParams = useSearchParams();
   const pollIdFromUrl = searchParams.get('id');
@@ -446,7 +461,11 @@ export default function PollToolPage() {
                 </div>
 
                 {!hasVoted && (
-                  <Button onClick={handleVote} isLoading={submittingVote} disabled={selectedOptions.size === 0}>
+                  <Button
+                    onClick={handleVote}
+                    isLoading={submittingVote}
+                    disabled={selectedOptions.size === 0}
+                  >
                     提交投票
                   </Button>
                 )}

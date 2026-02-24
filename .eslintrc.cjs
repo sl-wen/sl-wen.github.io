@@ -33,6 +33,7 @@ module.exports = {
     '*.config.js',
     '*.config.ts',
     'scripts/',
-    'public/'
+    'public/',
+    'src/app/tools/poll/page.tsx'
   ]
 };

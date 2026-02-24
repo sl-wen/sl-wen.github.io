@@ -182,6 +182,14 @@ export default function ToolsPage() {
       icon: '🧪',
       link: '/tools/api',
       isNew: true
+    },
+    {
+      id: 'poll',
+      title: '投票器',
+      description: '发起并分享自定义投票，游客与登录用户均可参与',
+      icon: '📊',
+      link: '/tools/poll',
+      isNew: true
     }
   ];
 

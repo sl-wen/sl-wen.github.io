@@ -197,7 +197,7 @@ export default function ToolsPage() {
       title: '彩票开奖查询',
       description: '全国7种彩种开奖数据API，双色球/大乐透/七星彩等，支持历史查询+期号搜索',
       icon: '🎯',
-      link: '/lottery',
+      link: '/caipiao',
       isNew: true
     },
     {

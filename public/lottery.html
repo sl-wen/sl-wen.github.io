@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>彩票开奖 · API</title>
+<style>
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --text2: #666;
+  --text3: #999;
+  --line: #eee;
+  --accent: #2563eb;
+  --r: #e8483f;
+  --b: #2563eb;
+  --shadow: 0 1px 3px rgba(0,0,0,.06);
+  --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --text: #f0f0f0;
+    --text2: #aaa;
+    --text3: #777;
+    --line: #2a2a2a;
+    --shadow: 0 1px 3px rgba(0,0,0,.3);
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC','Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:680px;margin:0 auto;padding:16px}
+
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 16px}
+.header h1{font-size:22px;font-weight:700;letter-spacing:-.3px}
+.header h1 .emoji{font-weight:400}
+.header .badge{font-size:11px;color:var(--accent);background:rgba(37,99,235,.08);padding:3px 10px;border-radius:20px;white-space:nowrap}
+
+/* 主 tab（开奖 / 玩法） */
+.main-tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.main-tab{flex:1;text-align:center;padding:10px 0;font-size:14px;color:var(--text2);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .15s;font-weight:500}
+.main-tab.active{color:var(--text);border-bottom-color:var(--text);font-weight:600}
+.main-tab:hover{color:var(--text)}
+
+/* 面板切换 */
+.panel{display:none}
+.panel.active{display:block}
+
+/* 彩种切换 */
+.tabs{display:flex;gap:0;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid var(--line)}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:10px 14px;font-size:14px;color:var(--text2);white-space:nowrap;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{color:var(--text);border-bottom-color:var(--text);font-weight:600}
+.tab:hover{color:var(--text)}
+
+/* 搜索栏 */
+.search-bar{display:flex;gap:8px;margin-bottom:16px}
+.search-bar input{flex:1;padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:var(--surface);color:var(--text);outline:none;transition:border-color .15s}
+.search-bar input:focus{border-color:var(--accent)}
+.search-bar input::placeholder{color:var(--text3)}
+.search-bar button{padding:10px 18px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.search-bar button.primary{background:var(--accent);color:#fff}
+.search-bar button.primary:hover{opacity:.85}
+.search-bar button.ghost{background:transparent;color:var(--text2);border:1px solid var(--line)}
+.search-bar button.ghost:hover{border-color:var(--text3)}
+
+/* 搜索结果 */
+.search-result{background:var(--surface);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow);display:none}
+.search-result.show{display:block}
+.search-result .sr-label{font-size:13px;color:var(--text3);margin-bottom:12px}
+.search-result .sr-balls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px}
+.search-result .sr-date{text-align:center;font-size:13px;color:var(--text3)}
+.search-result .sr-notfound{text-align:center;color:var(--text3);padding:12px}
+
+/* 最新开奖卡片 */
+.latest{background:var(--surface);border-radius:var(--radius);padding:24px 20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.latest-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px}
+.latest-top .label{font-size:13px;color:var(--text3)}
+.latest-top .issue{font-size:13px;color:var(--text2);font-variant-numeric:tabular-nums}
+.balls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px}
+.ball{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;flex-shrink:0}
+.ball.r{background:var(--r);color:#fff}
+.ball.b{background:var(--b);color:#fff}
+.ball.g{background:var(--text3);color:var(--surface)}
+.latest-date{text-align:center;font-size:13px;color:var(--text3)}
+
+/* 历史表格 */
+.history{background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.history-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
+.history-header h2{font-size:15px;font-weight:600}
+.history-header .count{font-size:12px;color:var(--text3)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{display:none}
+tr{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);gap:12px}
+tr:last-child{border-bottom:none}
+td{display:flex;align-items:center}
+td.issue{font-variant-numeric:tabular-nums;color:var(--text2);min-width:64px;font-size:12px}
+td.nums{flex:1;gap:5px;flex-wrap:wrap}
+td.date{font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums;text-align:right;min-width:80px}
+td .b-s{width:26px;height:26px;border-radius:50%;font-size:13px}
+.ball.b-s{width:26px;height:26px;font-size:13px}
+td .sep{width:2px;height:16px;background:var(--line);margin:0 2px}
+
+/* 分页 */
+.pager{display:flex;align-items:center;justify-content:center;gap:6px;padding:14px 16px;border-top:1px solid var(--line)}
+.pager button{min-width:36px;height:36px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.pager button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.pager button.active{background:var(--text);color:var(--surface);border-color:var(--text)}
+.pager button:disabled{opacity:.3;cursor:default}
+.pager .dots{color:var(--text3);padding:0 2px}
+.pager .page-info{font-size:12px;color:var(--text3);margin:0 8px;font-variant-numeric:tabular-nums}
+
+/* ====== 玩法说明 ====== */
+.rule-tabs{display:flex;gap:0;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid var(--line)}
+.rule-tabs::-webkit-scrollbar{display:none}
+.rule-tab{padding:10px 14px;font-size:14px;color:var(--text2);white-space:nowrap;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .15s}
+.rule-tab.active{color:var(--text);border-bottom-color:var(--text);font-weight:600}
+.rule-tab:hover{color:var(--text)}
+
+.rule-card{background:var(--surface);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.rule-card h2{font-size:18px;font-weight:700;margin-bottom:4px}
+.rule-card .sub{font-size:12px;color:var(--text3);margin-bottom:16px}
+.rule-card .sub b{font-weight:600}
+.rule-section{margin-bottom:18px}
+.rule-section:last-child{margin-bottom:0}
+.rule-section h3{font-size:14px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.rule-section h3 .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.rule-section p,.rule-section li{font-size:13px;color:var(--text2);line-height:1.8}
+.rule-section ul{list-style:none;padding:0}
+.rule-section li{padding-left:16px;position:relative}
+.rule-section li::before{content:'·';position:absolute;left:2px;color:var(--accent);font-weight:700}
+.rule-example{background:var(--bg);border-radius:8px;padding:14px;margin-top:8px}
+.rule-example .ex-label{font-size:11px;color:var(--text3);margin-bottom:10px}
+.ex-group{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.ex-group:last-child{margin-bottom:0}
+.ex-group .ex-tag{font-size:11px;color:var(--text3);min-width:72px;white-space:nowrap}
+.ex-group .ex-balls{display:flex;gap:6px;flex-wrap:wrap}
+.ex-group .eb{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.ex-group .eb.r{background:var(--r)}
+.ex-group .eb.b{background:var(--b)}
+.ex-group .eb.g{background:var(--text3)}
+.ex-result{font-size:12px;color:var(--accent);margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+
+/* API 区块 */
+.api{background:var(--surface);border-radius:var(--radius);padding:20px;margin-top:16px;box-shadow:var(--shadow)}
+.api h2{font-size:15px;font-weight:600;margin-bottom:12px}
+.api-item{display:flex;align-items:center;padding:8px 0;font-size:13px;color:var(--text2)}
+.api-item code{font-family:'SF Mono','Fira Code',monospace;font-size:12px}
+.api-item .method{font-weight:700;color:var(--accent);min-width:42px;font-size:11px}
+.api-links{display:flex;gap:10px;margin-top:16px}
+.api-links a{flex:1;text-align:center;padding:8px 14px;border-radius:8px;font-size:13px;text-decoration:none;transition:all .15s}
+.api-links .doc{background:var(--text);color:var(--surface)}
+.api-links .doc:hover{opacity:.85}
+.api-links .schema{border:1px solid var(--line);color:var(--text2)}
+.api-links .schema:hover{border-color:var(--text3)}
+
+footer{text-align:center;padding:24px 0 8px;font-size:12px;color:var(--text3)}
+
+@media (max-width:420px){
+  .wrap{padding:12px}
+  .header h1{font-size:19px}
+  .ball{width:40px;height:40px;font-size:17px}
+  .ball.b-s{width:24px;height:24px;font-size:11px}
+  .latest{padding:20px 16px}
+  tr{padding:10px 12px;gap:8px}
+  td.issue{min-width:52px;font-size:11px}
+  td.date{min-width:68px;font-size:10px}
+  .search-bar input{padding:9px 12px;font-size:13px}
+  .search-bar button{padding:9px 14px;font-size:13px}
+  .rule-card{padding:16px}
+  .rule-card h2{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1><span class="emoji">🎯</span> 开奖查询</h1>
+    <span class="badge">AI API</span>
+  </div>
+
+  <!-- 主 tab -->
+  <div class="main-tabs">
+    <button class="main-tab active" onclick="switchMain('draw')">开奖查询</button>
+    <button class="main-tab" onclick="switchMain('rules')">玩法说明</button>
+  </div>
+
+  <!-- ====== 开奖查询面板 ====== -->
+  <div class="panel active" id="panel-draw">
+    <div class="tabs" id="tabs"></div>
+
+    <div class="search-bar">
+      <input type="text" id="issue-input" placeholder="输入期号查询，如 26072" enterkeyhint="search">
+      <button class="ghost" onclick="searchIssue()">查询</button>
+    </div>
+
+    <div class="search-result" id="search-result"></div>
+
+    <div class="latest" id="latest" style="display:none">
+      <div class="latest-top">
+        <span class="label">最新开奖</span>
+        <span class="issue" id="latest-issue"></span>
+      </div>
+      <div class="balls" id="latest-balls"></div>
+      <div class="latest-date" id="latest-date"></div>
+    </div>
+
+    <div class="history">
+      <div class="history-header">
+        <h2>历史开奖</h2>
+        <span class="count" id="hist-count"></span>
+      </div>
+      <table><tbody id="hist-body"></tbody></table>
+      <div class="pager" id="pager"></div>
+    </div>
+
+    <div class="api">
+      <h2>API 接口</h2>
+      <div class="api-item"><span class="method">GET</span><code>/api/v1/lotteries</code></div>
+      <div class="api-item"><span class="method">GET</span><code>/api/v1/{id}/latest</code></div>
+      <div class="api-item"><span class="method">GET</span><code>/api/v1/{id}/history?limit=30&page=1</code></div>
+      <div class="api-item"><span class="method">GET</span><code>/api/v1/{id}/{issue}</code></div>
+      <div class="api-links">
+        <a class="doc" href="/lottery/docs" target="_blank">API 文档</a>
+        <a class="schema" href="/lottery/openapi.json" target="_blank">Schema</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 玩法说明面板 ====== -->
+  <div class="panel" id="panel-rules">
+    <div class="rule-tabs" id="rule-tabs"></div>
+    <div id="rule-content"></div>
+  </div>
+
+  <footer>数据仅供参考 · 以官方公告为准</footer>
+</div>
+
+<script>
+const API = '/lottery/api/v1';
+let currentLot = 'ssq';
+let currentPage = 1;
+const PAGE_SIZE = 30;
+let totalPages = 1;
+let lotMeta = {};
+
+// ========== 玩法数据 ==========
+const RULES = {
+  ssq: {
+    name: '双色球',
+    sub: '中国福利彩票 · 每注 2 元',
+    sections: [
+      { title: '玩法规则', type: 'p', text: '从 1-33 中选 6 个红球 + 从 1-16 中选 1 个蓝球组成一注。单注最高奖金 1000 万元（浮动）。每周二、四、日 21:15 开奖。' },
+      { title: '中奖条件', type: 'list', items: [
+        '一等奖：6 红 + 1 蓝 → 浮动（最高 1000 万）',
+        '二等奖：6 红 + 0 蓝 → 浮动（最高 500 万）',
+        '三等奖：5 红 + 1 蓝 → 3000 元',
+        '四等奖：5 红 + 0 蓝，或 4 红 + 1 蓝 → 200 元',
+        '五等奖：4 红 + 0 蓝，或 3 红 + 1 蓝，或 2 红 + 1 蓝 → 10 元',
+        '六等奖：1 红 + 1 蓝，或 0 红 + 1 蓝 → 5 元',
+      ]},
+      { title: '投注方式', type: 'list', items: [
+        '单式：自选 6 红 + 1 蓝',
+        '复式：多选号码，覆盖更多组合',
+        '胆拖：指定胆码（必选）+ 拖码（任选）',
+        '蓝色球号码胆拖：蓝球胆码 ≥ 1 个',
+      ]},
+      { title: '示例', type: 'example', groups: [
+        { label: '红球（选6）', color: 'r', balls: [7,8,12,15,17,21] },
+        { label: '蓝球（选1）', color: 'b', balls: [1] },
+      ], result: '→ 若全中，中一等奖（浮动，最高 1000 万）' },
+    ]
+  },
+  dlt: {
+    name: '超级大乐透',
+    sub: '中国体育彩票 · 每注 2 元',
+    sections: [
+      { title: '玩法规则', type: 'p', text: '从 1-35 中选 5 个前区号码 + 从 1-12 中选 2 个后区号码组成一注。追加投注每注 3 元，可提高各奖级奖金。每周一、三、六 20:30 开奖。' },
+      { title: '中奖条件', type: 'list', items: [
+        '一等奖（基本）：5 前 + 2 后 → 浮动（最高 1000 万）',
+        '一等奖（追加）：浮动（最高 1800 万）',
+        '二等奖（基本）：5 前 + 1 后 → 浮动',
+        '二等奖（追加）：浮动',
+        '三等奖（基本）：5 前 + 0 后 → 10000 元',
+        '三等奖（追加）：15000 元',
+        '四等奖：4 前 + 2 后 → 3000 元（追加 4500）',
+        '五等奖：4 前 + 1 后，或 3 前 + 2 后 → 500 元（追加 750）',
+        '六等奖：4 前 + 0 后，或 3 前 + 1 后，或 2 前 + 2 后 → 200 元（追加 300）',
+        '七等奖：3 前 + 0 后，或 2 前 + 1 后，或 1 前 + 2 后，或 0 前 + 2 后 → 100 元（追加 150）',
+        '八等奖：2 前 + 0 后，或 1 前 + 1 后，或 0 前 + 1 后 → 15 元（追加 30）',
+        '九等奖：1 前 + 0 后，或 0 前 + 0 后 → 5 元（追加 5）',
+      ]},
+      { title: '追加投注', type: 'p', text: '在基本投注基础上额外加 1 元（共 3 元/注），一等奖最高可达 1800 万元。其他奖级奖金也相应提高 50%。' },
+      { title: '示例', type: 'example', groups: [
+        { label: '前区（选5）', color: 'r', balls: [5,13,22,26,32] },
+        { label: '后区（选2）', color: 'b', balls: [2,3] },
+      ], result: '→ 若全中，基本投注中一等奖（最高 1000 万），追加投注最高 1800 万' },
+    ]
+  },
+  qlc: {
+    name: '七乐彩',
+    sub: '中国福利彩票 · 每注 2 元',
+    sections: [
+      { title: '玩法规则', type: 'p', text: '从 1-30 中选 7 个号码 + 1 个特别号码组成一注。特别号码由系统附加产生，无需玩家选择。每周一、三、五 20:30 开奖。' },
+      { title: '中奖条件', type: 'list', items: [
+        '一等奖：7 个基本号码全中 → 浮动（最高 500 万）',
+        '二等奖：中 6 个基本号码 + 特别号码 → 浮动',
+        '三等奖：中 6 个基本号码 → 3000 元',
+        '四等奖：中 5 个基本号码 + 特别号码 → 500 元',
+        '五等奖：中 5 个基本号码，或 4 个基本 + 特别号码 → 50 元',
+        '六等奖：中 4 个基本号码，或 3 个基本 + 特别号码 → 10 元',
+        '七等奖：中 2 个基本号码 + 特别号码 → 5 元',
+      ]},
+      { title: '投注方式', type: 'list', items: [
+        '单式：自选 7 个号码（1-30）',
+        '复式：选 8-16 个号码，系统自动组合',
+        '胆拖：指定胆码 + 拖码',
+      ]},
+      { title: '示例', type: 'example', groups: [
+        { label: '基本号码（选7）', color: 'r', balls: [14,16,17,24,25,27,28] },
+        { label: '特别号码（系统开出）', color: 'b', balls: [9] },
+      ], result: '→ 7 个基本号码全中，中一等奖（浮动，最高 500 万）' },
+    ]
+  },
+  pls: {
+    name: '排列三',
+    sub: '中国体育彩票 · 每注 2 元',
+    sections: [
+      { title: '玩法规则', type: 'p', text: '从 0-9 中选 3 个数字组成一注（百位、十位、个位各一个数字，可重复）。每天 20:30 开奖。' },
+      { title: '中奖条件', type: 'list', items: [
+        '直选奖：3 个数字与位置完全一致 → 1040 元',
+        '组选三：3 个数字中有 2 个相同（对子），不分位置 → 346 元',
+        '组选六：3 个数字各不相同，不分位置 → 173 元',
+        '1D：任意一位正确 → 10 元',
+      ]},
+      { title: '直选 vs 组选', type: 'p', text: '「直选」要求数字和位置都匹配（如开奖 1-9-2，投注 1-9-2 才中奖）。「组选」不要求位置，只需数字匹配即可。' },
+      { title: '示例', type: 'example', groups: [
+        { label: '你的投注', color: 'g', balls: [1,9,2] },
+      ], result: '→ 开奖号也是 1-9-2，直选中奖 1040 元' },
+    ]
+  },
+  plw: {
+    name: '排列五',
+    sub: '中国体育彩票 · 每注 2 元',
+    sections: [
+      { title: '玩法规则', type: 'p', text: '从 0-9 中选 5 个数字组成一注（万位、千位、百位、十位、个位各一个数字，可重复）。每天 20:30 开奖。' },
+      { title: '中奖条件', type: 'list', items: [
+        '直选奖：5 个数字与位置完全一致 → 100000 元',
+        '其他奖级：前 4 位匹配、前 3 位匹配等均有奖',
+      ]},
+      { title: '投注方式', type: 'list', items: [
+        '直选：5 位全定位',
+        '组选：部分位不定位（如组选 3、组选 4）',
+        '定位胆：选 1 位数字，猜中即中奖',
+      ]},
+      { title: '示例', type: 'example', groups: [
+        { label: '你的投注', color: 'g', balls: [1,9,2,7,4] },
+      ], result: '→ 5 位全中，中奖 100,000 元' },
+    ]
+  },
+  qxc: {
+    name: '七星彩',
+    sub: '中国体育彩票 · 每注 2 元',
+    sections: [
+      { title: '玩法规则', type: 'p', text: '从 0-9 中选 7 个数字组成一注（百万位到个位，每位一个数字，可重复）。每周二、五、日 20:30 开奖。' },
+      { title: '中奖条件', type: 'list', items: [
+        '一等奖：7 位全中（位置一致）→ 浮动（最高 500 万）',
+        '二等奖：中连续 6 位 → 浮动',
+        '三等奖：中连续 5 位 → 3000 元',
+        '四等奖：中连续 4 位 → 500 元',
+        '五等奖：中连续 3 位 → 30 元',
+        '六等奖：中连续 2 位 → 10 元',
+      ]},
+      { title: '投注方式', type: 'list', items: [
+        '单式：直选 7 位',
+        '复式：某一位或多 位选多个数字',
+        '胆拖：指定胆码位 + 拖码',
+      ]},
+      { title: '示例', type: 'example', groups: [
+        { label: '你的投注', color: 'g', balls: [0,8,3,4,5,6,6] },
+      ], result: '→ 7 位全中，中一等奖（浮动，最高 500 万）' },
+    ]
+  },
+  fc3d: {
+    name: '福彩 3D',
+    sub: '中国福利彩票 · 每注 2 元',
+    sections: [
+      { title: '玩法规则', type: 'p', text: '从 0-9 中选 3 个数字组成一注（百位、十位、个位各一个数字，可重复）。每天 20:30 开奖。玩法与排列三相同，分属福利彩票体系。' },
+      { title: '中奖条件', type: 'list', items: [
+        '直选奖：3 个数字与位置完全一致 → 1040 元',
+        '组选三（豹子/对子）：3 个数字中有 2 个相同 → 346 元',
+        '组选六：3 个数字各不相同 → 173 元',
+        '1D：任意一位正确 → 10 元',
+        '猜中一：任一位与开奖号一致 → 2 元',
+        '通选一：任一位匹配（位置不限）→ 4.6 元',
+      ]},
+      { title: '投注方式', type: 'list', items: [
+        '单式：自选 3 个数字',
+        '复式：每位选多个数字',
+        '胆拖：指定某位 + 其他位多选',
+      ]},
+      { title: '示例', type: 'example', groups: [
+        { label: '你的投注', color: 'g', balls: [1,3,0] },
+      ], result: '→ 开奖号也是 1-3-0，直选中奖 1040 元' },
+    ]
+  }
+};
+
+// ========== 主 tab 切换 ==========
+function switchMain(tab) {
+  document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.main-tab[onclick="switchMain('${tab}')"]`).classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+// ========== 初始化 ==========
+async function init() {
+  const res = await fetch(`${API}/lotteries`);
+  const json = await res.json();
+  const tabs = document.getElementById('tabs');
+  json.data.forEach(l => {
+    lotMeta[l.id] = l;
+    const el = document.createElement('button');
+    el.className = 'tab' + (l.id === currentLot ? ' active' : '');
+    el.textContent = l.name;
+    el.onclick = () => switchLottery(l.id);
+    tabs.appendChild(el);
+  });
+  // 玩法 tab
+  initRules();
+  switchLottery(currentLot);
+}
+
+// ========== 玩法说明 ==========
+function initRules() {
+  const tabsEl = document.getElementById('rule-tabs');
+  const contentEl = document.getElementById('rule-content');
+  const order = ['ssq','dlt','qlc','pls','plw','qxc','fc3d'];
+  order.forEach((id, i) => {
+    const r = RULES[id];
+    const el = document.createElement('button');
+    el.className = 'rule-tab' + (i === 0 ? ' active' : '');
+    el.textContent = r.name;
+    el.onclick = () => {
+      document.querySelectorAll('.rule-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      renderRule(id);
+    };
+    tabsEl.appendChild(el);
+  });
+  renderRule('ssq');
+}
+
+function renderRule(id) {
+  const r = RULES[id];
+  const el = document.getElementById('rule-content');
+  let html = `<div class="rule-card"><h2>${r.name}</h2><div class="sub"><b>${r.sub}</b></div>`;
+  r.sections.forEach(s => {
+    html += `<div class="rule-section"><h3><span class="dot"></span>${s.title}</h3>`;
+    if (s.type === 'p') {
+      html += `<p>${s.text}</p>`;
+    } else if (s.type === 'list') {
+      html += '<ul>';
+      s.items.forEach(item => { html += `<li>${item}</li>`; });
+      html += '</ul>';
+    } else if (s.type === 'example') {
+      html += `<div class="rule-example"><div class="ex-label">投注示例</div>`;
+      s.groups.forEach(g => {
+        const balls = g.balls.map(n => `<div class="eb ${g.color}">${String(n).padStart(2,'0')}</div>`).join('');
+        html += `<div class="ex-group"><span class="ex-tag">${g.label}</span><div class="ex-balls">${balls}</div></div>`;
+      });
+      if (s.result) html += `<div class="ex-result">${s.result}</div>`;
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ========== 彩种切换 ==========
+function switchLottery(id) {
+  currentLot = id;
+  currentPage = 1;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    if (Object.keys(lotMeta)[i] === id) t.classList.add('active');
+  });
+  document.getElementById('search-result').classList.remove('show');
+  document.getElementById('issue-input').value = '';
+  loadLatest(id);
+  loadHistory(id, 1);
+}
+
+// ========== 球渲染 ==========
+function ballHTML(n, cls) {
+  return `<div class="ball ${cls}">${String(n).padStart(2,'0')}</div>`;
+}
+
+function ballsHTML(numbers, small) {
+  let html = '';
+  if (numbers.red) numbers.red.forEach(n => html += ballHTML(n, 'r'));
+  if (numbers.blue) numbers.blue.forEach(n => html += ballHTML(n, 'b'));
+  if (numbers.front) numbers.front.forEach(n => html += ballHTML(n, 'r'));
+  if (numbers.back) numbers.back.forEach(n => html += ballHTML(n, 'b'));
+  if (numbers.basic) numbers.basic.forEach(n => html += ballHTML(n, 'r'));
+  if (numbers.special) {
+    if (small) html += '<div class="sep"></div>';
+    numbers.special.forEach(n => html += ballHTML(n, 'b'));
+  }
+  if (numbers.number) numbers.number.forEach(n => html += ballHTML(n, 'g'));
+  if (small) html = html.replace(/class="ball /g, 'class="ball b-s ');
+  return html;
+}
+
+// ========== 最新开奖 ==========
+async function loadLatest(id) {
+  try {
+    const r = await fetch(`${API}/${id}/latest`);
+    const j = await r.json();
+    const el = document.getElementById('latest');
+    if (j.success) {
+      el.style.display = 'block';
+      document.getElementById('latest-issue').textContent = `第 ${j.data.issue} 期`;
+      document.getElementById('latest-balls').innerHTML = ballsHTML(j.data.numbers);
+      document.getElementById('latest-date').textContent = `${j.data.draw_date} · ${j.data.weekday}`;
+    } else {
+      el.style.display = 'none';
+    }
+  } catch(e) {
+    document.getElementById('latest').style.display = 'none';
+  }
+}
+
+// ========== 历史开奖（分页）==========
+async function loadHistory(id, page) {
+  currentPage = page;
+  const r = await fetch(`${API}/${id}/history?limit=${PAGE_SIZE}&page=${page}`);
+  const j = await r.json();
+  totalPages = j.total_pages || 1;
+  document.getElementById('hist-count').textContent = `共 ${j.total||0} 期`;
+  const body = document.getElementById('hist-body');
+  if (!j.data || !j.data.length) {
+    body.innerHTML = `<tr><td style="color:var(--text3);text-align:center;width:100%">暂无数据</td></tr>`;
+    document.getElementById('pager').innerHTML = '';
+    return;
+  }
+  body.innerHTML = j.data.map(d => `
+    <tr>
+      <td class="issue">${d.issue}</td>
+      <td class="nums">${ballsHTML(d.numbers, true)}</td>
+      <td class="date">${d.draw_date}</td>
+    </tr>
+  `).join('');
+  renderPager(page, totalPages);
+}
+
+// ========== 分页控件 ==========
+function renderPager(page, total) {
+  const pager = document.getElementById('pager');
+  if (total <= 1) { pager.innerHTML = ''; return; }
+  let html = '';
+  html += `<button onclick="loadHistory('${currentLot}',${page-1})" ${page<=1?'disabled':''}>‹</button>`;
+  const pages = new Set([1, total, page]);
+  if (page > 1) pages.add(page - 1);
+  if (page < total) pages.add(page + 1);
+  const sorted = [...pages].sort((a,b) => a - b);
+  let prev = 0;
+  for (const p of sorted) {
+    if (p - prev > 1) html += `<span class="dots">···</span>`;
+    html += `<button class="${p===page?'active':''}" onclick="loadHistory('${currentLot}',${p})">${p}</button>`;
+    prev = p;
+  }
+  html += `<button onclick="loadHistory('${currentLot}',${page+1})" ${page>=total?'disabled':''}>›</button>`;
+  pager.innerHTML = html;
+}
+
+// ========== 按期号查询 ==========
+async function searchIssue() {
+  const input = document.getElementById('issue-input');
+  const issue = input.value.trim();
+  const el = document.getElementById('search-result');
+  if (!issue) { el.classList.remove('show'); return; }
+  el.classList.add('show');
+  el.innerHTML = `<div class="sr-notfound">查询中...</div>`;
+  try {
+    const r = await fetch(`${API}/${currentLot}/${issue}`);
+    const j = await r.json();
+    if (j.success) {
+      const d = j.data;
+      el.innerHTML = `
+        <div class="sr-label">第 ${d.issue} 期 · ${lotMeta[currentLot]?.name||''}</div>
+        <div class="sr-balls">${ballsHTML(d.numbers)}</div>
+        <div class="sr-date">${d.draw_date} ${d.weekday||''}</div>
+      `;
+    } else {
+      el.innerHTML = `<div class="sr-notfound">未找到 ${lotMeta[currentLot]?.name||currentLot} 第 ${issue} 期</div>`;
+    }
+  } catch(e) {
+    el.innerHTML = `<div class="sr-notfound">查询失败，请检查期号</div>`;
+  }
+}
+
+document.getElementById('issue-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchIssue();
+});
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>诗词知识图谱 — 47万首中国古典诗词检索 | slwen.cn</title>
+<meta name="description" content="收录47万首中国古典诗词，覆盖先秦至近现代及外国翻译诗。支持按诗人、朝代、主题、意象、情感多维度检索。李白、杜甫、苏轼、李清照等17729位诗人作品。">
+<meta name="keywords" content="诗词,古诗,唐诗,宋词,元曲,诗经,楚辞,李白,杜甫,苏轼,白居易,李清照,诗词检索,古典诗词">
+<meta property="og:title" content="诗词知识图谱 — 47万首中国古典诗词检索">
+<meta property="og:description" content="收录47万首中国古典诗词，覆盖先秦至近现代及外国翻译诗。">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://slwen.cn/shici">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #faf8f5; color: #333; }
+.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+h1 { text-align: center; font-size: 1.6em; font-weight: 300; margin: 20px 0 5px; letter-spacing: 8px; color: #2c2c2c; }
+.subtitle { text-align: center; font-size: 0.85em; color: #999; margin-bottom: 20px; }
+.stats { display: flex; justify-content: center; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
+.stat-item { text-align: center; }
+.stat-num { font-size: 1.5em; font-weight: 600; color: #c0392b; }
+.stat-label { font-size: 0.75em; color: #999; }
+
+.search-box { position: relative; margin-bottom: 20px; }
+.search-box input {
+    width: 100%; padding: 14px 16px; border: 1px solid #e0dcd5; border-radius: 8px;
+    font-size: 1em; background: #fff; outline: none; transition: border-color 0.2s;
+}
+.search-box input:focus { border-color: #c0392b; }
+.search-box button {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    padding: 8px 20px; background: #c0392b; color: #fff; border: none; border-radius: 6px;
+    cursor: pointer; font-size: 0.9em;
+}
+.search-box button:hover { background: #a93226; }
+
+.filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.filter-btn {
+    padding: 6px 14px; border: 1px solid #e0dcd5; border-radius: 20px;
+    background: #fff; font-size: 0.85em; cursor: pointer; transition: all 0.2s;
+}
+.filter-btn:hover, .filter-btn.active { background: #c0392b; color: #fff; border-color: #c0392b; }
+
+.poem-card {
+    background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 16px;
+    border: 1px solid #e8e4dd; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: border-color 0.2s;
+}
+.poem-card:hover { border-color: #d4c9b8; }
+.poem-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.poem-title { font-size: 1.1em; font-weight: 600; }
+.poem-title a { color: #333; text-decoration: none; }
+.poem-title a:hover { color: #c0392b; }
+.poem-meta { font-size: 0.8em; color: #999; }
+.poem-meta a { color: #999; text-decoration: none; }
+.poem-meta a:hover { color: #c0392b; }
+.poem-text { font-size: 1em; line-height: 2; margin-bottom: 12px; color: #555; }
+.poem-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag {
+    display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75em;
+}
+.tag-theme { background: #f0e6d3; color: #8b6914; }
+.tag-imagery { background: #e8f0e8; color: #3d7a3d; }
+.tag-emotion { background: #e8e0f0; color: #6b4d8b; }
+.famous-line { font-style: italic; color: #c0392b; border-left: 3px solid #c0392b; padding-left: 12px; margin-top: 10px; font-size: 0.95em; }
+.summary { font-size: 0.85em; color: #888; margin-top: 8px; }
+
+.graph-section { margin-top: 16px; padding-top: 12px; border-top: 1px dashed #e0dcd5; }
+.graph-title { font-size: 0.85em; color: #999; margin-bottom: 8px; }
+.related-list { display: flex; flex-direction: column; gap: 6px; }
+.related-item { font-size: 0.85em; color: #666; padding: 6px 10px; background: #faf8f5; border-radius: 6px; }
+.related-item .relation { color: #c0392b; font-size: 0.85em; }
+.related-item a { color: #666; text-decoration: none; }
+.related-item a:hover { color: #c0392b; }
+
+#result-count { text-align: center; color: #999; font-size: 0.85em; margin-bottom: 16px; }
+
+.tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid #e0dcd5; }
+.tab {
+    padding: 10px 20px; cursor: pointer; font-size: 0.95em; color: #999;
+    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+}
+.tab.active { color: #c0392b; border-bottom-color: #c0392b; }
+
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 20px 0; }
+.tag-cloud-item {
+    padding: 6px 16px; border-radius: 20px; font-size: 0.85em;
+    cursor: pointer; transition: all 0.2s; border: 1px solid #e0dcd5; background: #fff;
+}
+.tag-cloud-item:hover { background: #c0392b; color: #fff; border-color: #c0392b; }
+.tag-cloud-item .count { font-size: 0.75em; color: #bbb; margin-left: 4px; }
+
+/* pagination */
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.page-btn {
+    padding: 8px 14px; border: 1px solid #e0dcd5; border-radius: 6px;
+    background: #fff; cursor: pointer; font-size: 0.85em; color: #666; transition: all 0.2s;
+}
+.page-btn:hover { border-color: #c0392b; color: #c0392b; }
+.page-btn.active { background: #c0392b; color: #fff; border-color: #c0392b; }
+.page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+@media (max-width: 600px) {
+    .container { padding: 12px; }
+    h1 { font-size: 1.3em; letter-spacing: 5px; }
+    .stats { gap: 16px; }
+    .poem-text { font-size: 0.95em; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>诗词知识图谱</h1>
+    <div class="subtitle">面向 AI Agent 的中国古典诗词知识库</div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('search')">诗词检索</div>
+        <div class="tab" onclick="switchTab('themes')">主题标签</div>
+        <div class="tab" onclick="switchTab('imagery')">意象标签</div>
+    </div>
+
+    <!-- Search Tab -->
+    <div id="tab-search">
+        <div class="search-box">
+            <input type="text" id="keyword" placeholder="搜索标题、正文或诗人（如：静夜思、明月、李白）..." onkeydown="if(event.key==='Enter')search(0)">
+            <button onclick="search(0)">搜索</button>
+        </div>
+        <div class="filters" id="filter-dynasty">
+            <div class="filter-btn active" data-val="" onclick="toggleFilter(this,'dynasty')">全部</div>
+            <div class="filter-btn" data-val="先秦" onclick="toggleFilter(this,'dynasty')">先秦</div>
+            <div class="filter-btn" data-val="唐" onclick="toggleFilter(this,'dynasty')">唐诗</div>
+            <div class="filter-btn" data-val="五代" onclick="toggleFilter(this,'dynasty')">五代</div>
+            <div class="filter-btn" data-val="宋" onclick="toggleFilter(this,'dynasty')">宋词</div>
+            <div class="filter-btn" data-val="元" onclick="toggleFilter(this,'dynasty')">元曲</div>
+            <div class="filter-btn" data-val="清" onclick="toggleFilter(this,'dynasty')">清代</div>
+            <div class="filter-btn" data-val="近现代" onclick="toggleFilter(this,'dynasty')">近现代</div>
+            <div class="filter-btn" data-val="外国" onclick="toggleFilter(this,'dynasty')">外国</div>
+        </div>
+        <div class="filters" id="filter-collection" style="margin-top:-8px">
+            <div class="filter-btn" data-val="" onclick="toggleFilter(this,'collection')">全部</div>
+            <div class="filter-btn active" data-val="唐诗三百首" onclick="toggleFilter(this,'collection')">唐诗三百首</div>
+            <div class="filter-btn" data-val="华语现代诗" onclick="toggleFilter(this,'collection')">华语现代诗</div>
+            <div class="filter-btn" data-val="楚辞" onclick="toggleFilter(this,'collection')">楚辞</div>
+            <div class="filter-btn" data-val="诗经" onclick="toggleFilter(this,'collection')">诗经</div>
+            <div class="filter-btn" data-val="花间集" onclick="toggleFilter(this,'collection')">花间集</div>
+            <div class="filter-btn" data-val="南唐二主词" onclick="toggleFilter(this,'collection')">南唐二主词</div>
+            <div class="filter-btn" data-val="宋词精选" onclick="toggleFilter(this,'collection')">宋词精选</div>
+            <div class="filter-btn" data-val="千家诗" onclick="toggleFilter(this,'collection')">千家诗</div>
+            <div class="filter-btn" data-val="纳兰性德" onclick="toggleFilter(this,'collection')">纳兰性德</div>
+        </div>
+        <div id="result-count"></div>
+        <div id="results"></div>
+        <div id="pagination" class="pagination"></div>
+    </div>
+
+    <!-- Themes Tab -->
+    <div id="tab-themes" style="display:none">
+        <div class="tag-cloud" id="theme-cloud"></div>
+    </div>
+
+    <!-- Imagery Tab -->
+    <div id="tab-imagery" style="display:none">
+        <div class="tag-cloud" id="imagery-cloud"></div>
+    </div>
+</div>
+
+<script>
+const API = '/shici';
+let currentFilters = { dynasty: '', theme: '', imagery: '', emotion: '', poet: '', collection: '唐诗三百首' };
+let currentPage = 0;
+const PAGE_SIZE = 20;
+
+async function loadStats() {
+    const r = await fetch(API + '/api/v1/stats');
+    const d = await r.json();
+    if (d.code === 0) {
+        document.getElementById('stats').innerHTML = `
+            <div class="stat-item"><div class="stat-num">${d.data.poems.toLocaleString()}</div><div class="stat-label">诗词</div></div>
+            <div class="stat-item"><div class="stat-num">${d.data.poets.toLocaleString()}</div><div class="stat-label">诗人</div></div>
+            <div class="stat-item"><div class="stat-num">${d.data.themes}</div><div class="stat-label">主题</div></div>
+            <div class="stat-item"><div class="stat-num">${d.data.imagery.toLocaleString()}</div><div class="stat-label">意象</div></div>
+        `;
+    }
+}
+
+function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    ['search','themes','imagery'].forEach(t => {
+        document.getElementById('tab-' + t).style.display = t === name ? '' : 'none';
+    });
+    if (name === 'themes') loadThemes();
+    if (name === 'imagery') loadImagery();
+}
+
+function toggleFilter(el, type) {
+    el.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    currentFilters[type] = el.dataset.val;
+    search(0);
+}
+
+async function search(page) {
+    currentPage = page || 0;
+    const keyword = document.getElementById('keyword').value;
+    let url = API + '/api/v1/poems?limit=' + PAGE_SIZE + '&offset=' + (currentPage * PAGE_SIZE);
+    if (keyword) url += '&keyword=' + encodeURIComponent(keyword);
+    Object.entries(currentFilters).forEach(([k, v]) => {
+        if (v) url += `&${k}=${encodeURIComponent(v)}`;
+    });
+
+    const r = await fetch(url);
+    const d = await r.json();
+    const count = document.getElementById('result-count');
+    const results = document.getElementById('results');
+
+    if (!d.data || d.data.length === 0) {
+        count.textContent = '';
+        results.innerHTML = '<div style="text-align:center;color:#ccc;padding:40px">暂无数据</div>';
+        document.getElementById('pagination').innerHTML = '';
+        return;
+    }
+
+    count.textContent = `共 ${d.total.toLocaleString()} 条结果`;
+    results.innerHTML = d.data.map(p => `
+        <div class="poem-card">
+            <div class="poem-header">
+                <div class="poem-title"><a href="${API}/poem/${p.id}">《${esc(p.title)}》</a></div>
+                <div class="poem-meta">
+                    ${p.poet_id ? `<a href="${API}/poet/${p.poet_id}">${esc(p.poet_name)}</a>` : esc(p.poet_name)}
+                    · ${p.dynasty}${p.type ? ' · ' + esc(p.type) : ''}${p.collection && p.collection !== '唐诗三百首' ? ' · ' + esc(p.collection) : ''}
+                </div>
+            </div>
+            <div class="poem-text">${esc(p.text)}</div>
+            ${p.summary ? `<div class="summary">💡 ${esc(p.summary)}</div>` : ''}
+            ${p.famous_lines ? `<div class="famous-line">${esc(p.famous_lines)}</div>` : ''}
+            <div class="poem-tags" id="tags-${p.id}"></div>
+            <button onclick="loadGraph(${p.id})" style="margin-top:10px;padding:6px 16px;border:1px solid #e0dcd5;border-radius:6px;background:#fff;cursor:pointer;font-size:0.85em">查看关联图谱</button>
+            <div id="graph-${p.id}"></div>
+        </div>
+    `).join('');
+
+    // Load tags for each poem
+    d.data.forEach(async p => {
+        const r2 = await fetch(API + `/api/v1/poems/${p.id}`);
+        const d2 = await r2.json();
+        if (d2.code === 0) {
+            const tags = document.getElementById('tags-' + p.id);
+            if (tags && d2.data) {
+                tags.innerHTML =
+                    (d2.data.themes||[]).map(t => `<span class="tag tag-theme">${esc(t)}</span>`).join('') +
+                    (d2.data.imagery||[]).map(t => `<span class="tag tag-imagery">${esc(t)}</span>`).join('') +
+                    (d2.data.emotion||[]).map(t => `<span class="tag tag-emotion">${esc(t)}</span>`).join('');
+            }
+        }
+    });
+
+    // Pagination
+    renderPagination(d.total, currentPage);
+}
+
+function renderPagination(total, page) {
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    if (totalPages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+    let html = '';
+    // prev
+    html += `<button class="page-btn" ${page === 0 ? 'disabled' : ''} onclick="search(${page - 1})">上一页</button>`;
+    // page numbers (show max 7)
+    let start = Math.max(0, page - 3);
+    let end = Math.min(totalPages, start + 7);
+    start = Math.max(0, end - 7);
+    if (start > 0) html += `<button class="page-btn" onclick="search(0)">1</button><span style="padding:8px;color:#ccc">...</span>`;
+    for (let i = start; i < end; i++) {
+        html += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="search(${i})">${i + 1}</button>`;
+    }
+    if (end < totalPages) html += `<span style="padding:8px;color:#ccc">...</span><button class="page-btn" onclick="search(${totalPages - 1})">${totalPages}</button>`;
+    // next
+    html += `<button class="page-btn" ${page >= totalPages - 1 ? 'disabled' : ''} onclick="search(${page + 1})">下一页</button>`;
+    document.getElementById('pagination').innerHTML = html;
+    // scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function loadGraph(id) {
+    const el = document.getElementById('graph-' + id);
+    if (el.dataset.loaded) { el.innerHTML = ''; delete el.dataset.loaded; return; }
+    el.innerHTML = '<div style="text-align:center;color:#ccc">加载中...</div>';
+    const r = await fetch(API + '/api/v1/graph/' + id);
+    const d = await r.json();
+    if (d.code !== 0) { el.innerHTML = ''; return; }
+    el.dataset.loaded = '1';
+    const rel = d.data.related;
+    let html = '<div class="graph-section"><div class="graph-title">🔍 知识图谱关联</div><div class="related-list">';
+    if (rel.same_theme && rel.same_theme.length) {
+        html += rel.same_theme.map(r => `<div class="related-item">📌 同主题「${esc(r.relation)}」: <a href="${API}/poem/${r.id}">《${esc(r.title)}》</a> — ${esc(r.poet)}</div>`).join('');
+    }
+    if (rel.shared_imagery && rel.shared_imagery.length) {
+        html += rel.shared_imagery.map(r => `<div class="related-item">🌙 共享意象「${esc(r.relation)}」: <a href="${API}/poem/${r.id}">《${esc(r.title)}》</a> — ${esc(r.poet)}</div>`).join('');
+    }
+    if (rel.same_poet && rel.same_poet.length) {
+        html += rel.same_poet.map(r => `<div class="related-item">✍️ 同作者: <a href="${API}/poem/${r.id}">《${esc(r.title)}》</a></div>`).join('');
+    }
+    html += '</div></div>';
+    el.innerHTML = html;
+}
+
+async function loadThemes() {
+    const r = await fetch(API + '/api/v1/themes');
+    const d = await r.json();
+    if (d.code === 0) {
+        document.getElementById('theme-cloud').innerHTML = d.data.map(t =>
+            `<div class="tag-cloud-item" onclick="searchByTag('theme','${esc(t.name)}')">${esc(t.name)}<span class="count">${t.count}</span></div>`
+        ).join('');
+    }
+}
+
+async function loadImagery() {
+    const r = await fetch(API + '/api/v1/imagery');
+    const d = await r.json();
+    if (d.code === 0) {
+        document.getElementById('imagery-cloud').innerHTML = d.data.map(t =>
+            `<div class="tag-cloud-item" onclick="searchByTag('imagery','${esc(t.name)}')">${esc(t.name)}<span class="count">${t.count}</span></div>`
+        ).join('');
+    }
+}
+
+function searchByTag(type, val) {
+    currentFilters[type] = val;
+    // reset collection filter when searching by tag
+    currentFilters.collection = '';
+    document.querySelectorAll('#filter-collection .filter-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.val === '');
+    });
+    switchTab('search');
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.tab').classList.add('active');
+    search(0);
+}
+
+function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+loadStats();
+search(0);
+</script>
+</body>
+</html>

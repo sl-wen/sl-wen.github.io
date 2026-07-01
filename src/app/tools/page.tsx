@@ -184,6 +184,23 @@ export default function ToolsPage() {
       isNew: true
     },
     {
+      id: 'shici',
+      title: '诗词知识图谱',
+      description: '47万首中国古典诗词检索，覆盖先秦至近现代及外国翻译诗，支持多维检索+知识图谱',
+      icon: '📚',
+      link: '/shici',
+      isFeatured: true,
+      isNew: true
+    },
+    {
+      id: 'lottery',
+      title: '彩票开奖查询',
+      description: '全国7种彩种开奖数据API，双色球/大乐透/七星彩等，支持历史查询+期号搜索',
+      icon: '🎯',
+      link: '/lottery',
+      isNew: true
+    },
+    {
       id: 'poll',
       title: '投票器',
       description: '发起并分享自定义投票，游客与登录用户均可参与',

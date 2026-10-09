@@ -34,17 +34,33 @@ const StatusMessages = dynamic(() => import('@/components/ClientStatusMessages')
 
 // SEO元数据配置 - 定义网站的基本信息用于搜索引擎优化
 export const metadata: Metadata = {
-  title: '鱼鱼的博客', // 网站标题
-  description: '一个现代化的个人博客网站', // 网站描述
-  keywords: ['博客', '技术', '编程', '生活'], // 关键词
-  authors: [{ name: '鱼鱼' }], // 作者信息
-  creator: '鱼鱼', // 创建者
-  publisher: '鱼鱼的博客', // 发布者
+  title: {
+    default: '鱼鱼的博客',
+    template: '%s | 鱼鱼的博客',
+  },
+  description: '分享技术见解、记录生活感悟、探索创意思考的个人博客。提供诗词知识图谱、开奖查询、小说聚合搜索等实用工具。',
+  keywords: ['博客', '技术', '编程', '生活', '诗词', '工具'],
+  authors: [{ name: '鱼鱼' }],
+  creator: '鱼鱼',
+  publisher: '鱼鱼的博客',
+  metadataBase: new URL('https://slwen.cn'),
+  alternates: {
+    canonical: '/',
+    types: {
+      'application/rss+xml': '/rss.xml',
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'zh_CN',
+    siteName: '鱼鱼的博客',
+    url: 'https://slwen.cn',
+  },
   formatDetection: {
-    email: false, // 禁用邮箱自动检测
-    address: false, // 禁用地址自动检测
-    telephone: false // 禁用电话自动检测
-  }
+    email: false,
+    address: false,
+    telephone: false,
+  },
 };
 
 // 视口配置 - 控制页面在移动设备上的显示方式
@@ -102,28 +118,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" sizes="192x192" href="/pwa-192x192.png" />
         <link rel="icon" sizes="512x512" href="/pwa-512x512.png" />
 
-        {/* 预连接关键域名 - 提前建立与重要服务的连接以提升性能 */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-        <link rel="preconnect" href="https://ui-avatars.com" />
-        <link rel="preconnect" href="https://pcwbtcsigmjnrigkfixm.supabase.co" />
+        {/* 预连接关键域名 - 仅保留必要的 */}
 
-        {/* 预加载关键资源 - 提前加载重要的CSS文件 */}
-        <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" />
-
-        {/* Font Awesome图标库 - 提供丰富的图标资源 */}
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        />
-
-        {/* DNS预取 - 提前解析域名以减少延迟 */}
-        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
-        <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
-        <link rel="dns-prefetch" href="//ui-avatars.com" />
-        <link rel="dns-prefetch" href="//pcwbtcsigmjnrigkfixm.supabase.co" />
+        {/* DNS预取 */}
 
         {/* Google AdSense 账户配置 */}
         <meta name="google-adsense-account" content="ca-pub-1720681484068261" />

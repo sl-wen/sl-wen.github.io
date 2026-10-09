@@ -2,160 +2,25 @@
 
 import { useEffect } from 'react';
 
+/**
+ * 资源预加载（2026-10-10 性能修复版）
+ * 旧版在首屏用 JS preload 4 张 PWA 图标（最大 440KB）+ prefetch 7 个页面 + Google Fonts 外链，
+ * 全部和首屏 JS 抢带宽，4G 下把可交互时间拖慢 3 秒以上 —— 已全部移除。
+ * 现在只做：空闲时预连接第三方头像服务（真实在用的外域）。
+ */
 export default function ResourcePreloader() {
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // 预加载关键资源
-      const preloadResources = () => {
-        // 预加载字体
-        const fontLinks = [
-          'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
-        ];
-
-        fontLinks.forEach(href => {
-          try {
-            const link = document.createElement('link');
-            link.rel = 'preload';
-            link.as = 'style';
-            link.href = href;
-            link.onerror = () => {
-              console.warn(`Failed to preload font: ${href}`);
-              document.head.removeChild(link);
-            };
-            document.head.appendChild(link);
-          } catch (error) {
-            console.warn(`Error preloading font ${href}:`, error);
-          }
-        });
-
-        // 预加载关键图片
-        const imageUrls = [
-          '/favicon.ico',
-          '/apple-touch-icon.png',
-          '/pwa-192x192.png',
-          '/pwa-512x512.png'
-        ];
-
-        imageUrls.forEach(src => {
-          try {
-            const link = document.createElement('link');
-            link.rel = 'preload';
-            link.as = 'image';
-            link.href = src;
-            link.onerror = () => {
-              console.warn(`Failed to preload image: ${src}`);
-              document.head.removeChild(link);
-            };
-            document.head.appendChild(link);
-          } catch (error) {
-            console.warn(`Error preloading image ${src}:`, error);
-          }
-        });
-
-        // 预加载关键页面
-        const pageUrls = [
-          '/about',
-          '/post',
-          '/search'
-        ];
-
-        pageUrls.forEach(href => {
-          try {
-            const link = document.createElement('link');
-            link.rel = 'prefetch';
-            link.href = href;
-            link.onerror = () => {
-              console.warn(`Failed to preload page: ${href}`);
-              document.head.removeChild(link);
-            };
-            document.head.appendChild(link);
-          } catch (error) {
-            console.warn(`Error preloading page ${href}:`, error);
-          }
-        });
-
-        // 预连接到外部域名
-        const domains = [
-          'https://fonts.googleapis.com',
-          'https://fonts.gstatic.com',
-          'https://cdnjs.cloudflare.com',
-          'https://ui-avatars.com',
-          'https://pcwbtcsigmjnrigkfixm.supabase.co'
-        ];
-
-        domains.forEach(domain => {
-          const link = document.createElement('link');
-          link.rel = 'preconnect';
-          link.href = domain;
-          document.head.appendChild(link);
-        });
-
-        // DNS 预取
-        const dnsDomains = [
-          '//fonts.googleapis.com',
-          '//fonts.gstatic.com',
-          '//cdnjs.cloudflare.com',
-          '//ui-avatars.com',
-          '//pcwbtcsigmjnrigkfixm.supabase.co'
-        ];
-
-        dnsDomains.forEach(domain => {
-          const link = document.createElement('link');
-          link.rel = 'dns-prefetch';
-          link.href = domain;
-          document.head.appendChild(link);
-        });
-      };
-
-      // 延迟预加载非关键资源
-      const preloadNonCriticalResources = () => {
-        // 预加载其他页面
-        const otherPages = [
-          '/category',
-          '/tools',
-          '/settings',
-          '/profile'
-        ];
-
-        otherPages.forEach(href => {
-          try {
-            const link = document.createElement('link');
-            link.rel = 'prefetch';
-            link.href = href;
-            // 添加错误处理
-            link.onerror = () => {
-              console.warn(`Failed to preload: ${href}`);
-              document.head.removeChild(link);
-            };
-            document.head.appendChild(link);
-          } catch (error) {
-            console.warn(`Error preloading ${href}:`, error);
-          }
-        });
-      };
-
-      // 立即预加载关键资源
-      preloadResources();
-
-      // 延迟预加载非关键资源
-      setTimeout(preloadNonCriticalResources, 2000);
-
-      // 监听用户交互，预加载相关资源
-      const handleUserInteraction = () => {
-        // 用户开始交互后，预加载更多资源
-        preloadNonCriticalResources();
-
-        // 移除事件监听器，避免重复执行
-        document.removeEventListener('mousemove', handleUserInteraction);
-        document.removeEventListener('touchstart', handleUserInteraction);
-        document.removeEventListener('scroll', handleUserInteraction);
-      };
-
-      // 添加用户交互监听器
-      document.addEventListener('mousemove', handleUserInteraction, { once: true });
-      document.addEventListener('touchstart', handleUserInteraction, { once: true });
-      document.addEventListener('scroll', handleUserInteraction, { once: true });
-    }
+    const timer = setTimeout(() => {
+      try {
+        const link = document.createElement('link');
+        link.rel = 'preconnect';
+        link.href = 'https://ui-avatars.com';
+        document.head.appendChild(link);
+      } catch {
+        /* noop */
+      }
+    }, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   return null;

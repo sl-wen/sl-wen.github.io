@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Tailwind v4 需显式声明 JS 插件（v4 不再自动读 tailwind.config.js 的 plugins）
+   没有 .prose 样式 = 文章页 markdown 裸奔（2026-10-09 修复） */
+@plugin "@tailwindcss/typography";
+
 /* 关键渲染路径优化 */
 @layer base {
 
@@ -108,17 +112,19 @@
   /* 移动端按钮优化 */
   @media (max-width: 768px) {
 
-    button,
-    .button {
-      /* 增加触摸目标大小 */
+    /* 只对表单主按钮保证触摸目标，普通小按钮保持原尺寸 */
+    button[type="submit"],
+    button[type="button"].btn-primary,
+    .button.btn-primary {
       min-height: 44px;
-      min-width: 44px;
       /* 改善触摸反馈 */
       -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
     }
 
     input[type="number"],
     input[type="text"],
+    input[type="email"],
+    input[type="password"],
     select,
     textarea {
       /* 增加表单元素大小 */
@@ -282,7 +288,7 @@
 
   /* 按钮组件 */
   .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
   }
 
   .btn-secondary {
@@ -291,7 +297,7 @@
 
   /* 卡片组件 */
   .card {
-    @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700;
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg transition-all duration-300 border border-gray-200/80 dark:border-gray-700/80 hover:shadow-xl hover:border-blue-200/70 dark:hover:border-blue-800/60 hover:-translate-y-0.5;
   }
 
   /* 输入框组件 */
@@ -338,24 +344,28 @@
 
   /* 导航链接样式 */
   .nav-link {
-    @apply relative text-gray-700 text-2xl dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300;
+    @apply relative text-gray-700 text-base md:text-lg dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 px-3 py-1.5 rounded-full;
   }
 
   .nav-link::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-300;
+    @apply absolute bottom-0.5 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300;
   }
 
   .nav-link:hover::after {
-    @apply w-full;
+    @apply w-1/2;
+  }
+
+  .nav-link:hover {
+    @apply bg-gray-100/70 dark:bg-gray-800/70;
   }
 
   .nav-link-active {
-    @apply text-blue-600 dark:text-blue-400 font-semibold;
+    @apply text-blue-600 dark:text-blue-400 font-semibold bg-blue-50/80 dark:bg-blue-950/40;
   }
 
   .nav-link-active::after {
-    @apply w-full;
+    @apply w-1/2;
   }
 
 
@@ -382,6 +392,74 @@
 
 /* 工具类 */
 @layer utilities {
+
+  /* ======== UI 升级：2026-10-09 ======== */
+
+  /* 漂浮动画（首页装饰球用，之前缺 keyframes 一直是静止的） */
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-18px) rotate(3deg); }
+  }
+  @keyframes float-delayed {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(14px) rotate(-4deg); }
+  }
+  @keyframes float-slow {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.15); }
+  }
+  .animate-float { animation: float 6s ease-in-out infinite; }
+  .animate-float-delayed { animation: float-delayed 8s ease-in-out infinite; }
+  .animate-float-slow { animation: float-slow 10s ease-in-out infinite; }
+
+  /* 网格纹理背景（hero 氛围） */
+  .bg-grid-fade {
+    background-image:
+      linear-gradient(to right, rgba(100, 116, 139, 0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(100, 116, 139, 0.08) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
+  }
+  .dark .bg-grid-fade {
+    background-image:
+      linear-gradient(to right, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+  }
+
+  /* 主标题渐变字 */
+  .text-gradient-hero {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #2563eb 0%, #7c3aed 45%, #db2777 100%);
+  }
+  .dark .text-gradient-hero {
+    background-image: linear-gradient(135deg, #60a5fa 0%, #a78bfa 45%, #f472b6 100%);
+  }
+
+  /* 玻璃拟态统计卡 */
+  .glass-stat {
+    @apply rounded-2xl border border-white/60 dark:border-white/10 backdrop-blur-md;
+    background: linear-gradient(145deg, rgba(255,255,255,0.75), rgba(255,255,255,0.45));
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.08), inset 0 1px 0 rgba(255,255,255,0.6);
+    transition: transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s;
+  }
+  .glass-stat:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(59, 130, 246, 0.14), inset 0 1px 0 rgba(255,255,255,0.6);
+  }
+  .dark .glass-stat {
+    background: linear-gradient(145deg, rgba(30,41,59,0.7), rgba(15,23,42,0.55));
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+
+  /* 卡片入场动画（列表逐条上浮） */
+  @keyframes rise-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-rise-in {
+    animation: rise-in .5s cubic-bezier(.22,1,.36,1) both;
+  }
 
   /* 文本选择优化 */
   .select-none {
@@ -750,5 +828,61 @@ canvas {
   .touch-feedback:active {
     transform: scale(0.95);
     transition: transform 0.1s ease;
+  }
+}
+
+/* ===== 文章 markdown 渲染兜底（2026-10-09） =====
+   typography 插件管排版基调，这里管移动端溢出和行内 code 样式 */
+.markdownBody {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.markdownBody pre {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.markdownBody pre code {
+  white-space: pre;
+  font-size: 0.875rem;
+}
+
+.markdownBody :not(pre) > code {
+  font-size: 0.875em;
+  padding: 0.15em 0.4em;
+  border-radius: 0.375rem;
+  background-color: rgb(241 245 249);
+  color: rgb(190 18 60);
+}
+
+.dark .markdownBody :not(pre) > code {
+  background-color: rgb(30 41 59);
+  color: rgb(251 113 133);
+}
+
+.markdownBody table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.markdownBody img {
+  margin-inline: auto;
+  border-radius: 0.5rem;
+}
+
+.markdownBody a {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .markdownBody {
+    font-size: 0.95rem;
+  }
+  .markdownBody pre code {
+    font-size: 0.8rem;
   }
 }

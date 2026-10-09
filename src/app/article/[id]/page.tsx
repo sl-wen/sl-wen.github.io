@@ -1,10 +1,12 @@
 'use client';
+import Icon from '@/components/Icon';
 
 import CommentSection from '@/components/CommentSection';
 import Loading from '@/components/Loading';
 import { Button } from '@/components/ui/Button';
 import { Article, getAdjacentArticles, getArticleById } from '@/utils/articleService';
-import { addPostReaction, getPostReaction, clearAllReactionCache } from '@/utils/reactionService';
+import { getPostReaction, clearAllReactionCache } from '@/utils/reactionService';
+import { togglePostReaction } from '@/utils/interactionRpc';
 import { recordPostsView } from '@/utils/stats';
 import { TASK_ACTIONS, useSafeTaskProgress } from '@/utils/task-hooks';
 import DOMPurify from 'dompurify';
@@ -91,9 +93,11 @@ const addCopyButtons = () => {
   });
 };
 
-// 配置 marked 为同步模式
+// 配置 marked：breaks 让单个换行渲染为 <br>（很多文章靠单换行分段）
 marked.setOptions({
-  async: false
+  async: false,
+  gfm: true,
+  breaks: true
 });
 
 export default function ArticlePage() {
@@ -190,17 +194,15 @@ export default function ArticlePage() {
     });
 
     try {
-      // 发送API请求
-      const success = await addPostReaction(
+      // 服务端幂等切换（RPC），返回权威计数；失败返回 null
+      const result = await togglePostReaction(
         article.post_id,
         userProfile.user_id,
-        reactionType,
-        newLikes,
-        newDislikes
+        reactionType
       );
 
-      if (!success) {
-        // 如果请求失败，回滚状态
+      if (!result) {
+        // RPC 失败，回滚状态
         setPostReaction(oldReaction);
         setArticle(prev => {
           if (!prev) return prev;
@@ -211,6 +213,16 @@ export default function ArticlePage() {
           };
         });
       } else {
+        // 以服务端计数为准
+        setPostReaction(result.reaction);
+        setArticle(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            likes_count: result.likes,
+            dislikes_count: result.dislikes,
+          };
+        });
         // 更新任务进度
         if (updateProgress) {
           try {
@@ -259,8 +271,19 @@ export default function ArticlePage() {
         if (articleData) {
           setArticle(articleData);
 
-          // 同步发起：记录浏览与获取相邻文章，互不阻塞
-          const viewPromise = recordPostsView(post_id, articleData.views).catch((viewError) => {
+          // 记录浏览：RPC 原子自增 + sessionStorage 会话去重（同会话刷文章不重复计数）
+          const viewKey = `viewed_${post_id}`;
+          const viewPromise = (async () => {
+            if (typeof window !== 'undefined' && sessionStorage.getItem(viewKey)) {
+              return; // 本会话已计过，不重复 +1
+            }
+            await recordPostsView(post_id, articleData.views);
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem(viewKey, '1');
+            }
+            // 成功后立即更新 views 数字，让用户看到 +1
+            setArticle(prev => prev ? { ...prev, views: (prev.views || 0) + 1 } : prev);
+          })().catch((viewError) => {
             console.error('记录文章浏览失败:', viewError);
           });
           const adjacentPromise = getAdjacentArticles(post_id)
@@ -360,7 +383,7 @@ export default function ArticlePage() {
           {userProfile?.user_id && (
             <Button variant="primary" size="md" >
               <Link href={`/article/${article.post_id}/edit`}>
-                <i className="fas fa-edit mr-2"></i>
+                <Icon name="edit" className="mr-2" />
                 编辑文章
               </Link>
             </Button>
@@ -376,7 +399,7 @@ export default function ArticlePage() {
                 PostReaction === 'like' && "scale-105"
               )}
             >
-              <i className="fas fa-thumbs-up text-sm"></i>
+              <Icon name="thumbs-up" className="text-sm" />
               <span className="ml-1">{article.likes_count || 0}</span>
             </Button>
 
@@ -390,7 +413,7 @@ export default function ArticlePage() {
                 PostReaction === 'dislike' && "scale-105"
               )}
             >
-              <i className="fas fa-thumbs-down text-sm"></i>
+              <Icon name="thumbs-down" className="text-sm" />
               <span className="ml-1">{article.dislikes_count || 0}</span>
             </Button>
           </div>
@@ -403,15 +426,15 @@ export default function ArticlePage() {
           </h1>
           <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
             <span className="flex items-center">
-              <i className="fas fa-user mr-2"></i>
+              <Icon name="user" className="mr-2" />
               {article.author}
             </span>
             <span className="flex items-center">
-              <i className="fas fa-calendar mr-2"></i>
+              <Icon name="calendar" className="mr-2" />
               {new Date(article.created_at).toLocaleDateString()}
             </span>
             <span className="flex items-center">
-              <i className="fas fa-eye mr-2"></i>
+              <Icon name="eye" className="mr-2" />
               {article.views || 0} 次浏览
             </span>
           </div>
@@ -433,7 +456,7 @@ export default function ArticlePage() {
             {prevArticle ? (
               <Button variant="ghost" size="md" className="w-full sm:w-auto">
                 <Link href={`/article/${prevArticle.post_id}`}>
-                  <i className="fas fa-chevron-left mr-2"></i>
+                  <Icon name="chevron-left" className="mr-2" />
                   <span className="truncate">{prevArticle.title}</span>
                 </Link>
               </Button>
@@ -445,7 +468,7 @@ export default function ArticlePage() {
               <Button variant="ghost" size="md" className="w-full sm:w-auto">
                 <Link href={`/article/${nextArticle.post_id}`}>
                   <span className="truncate">{nextArticle.title}</span>
-                  <i className="fas fa-chevron-right ml-2"></i>
+                  <Icon name="chevron-right" className="ml-2" />
                 </Link>
               </Button>
             ) : (

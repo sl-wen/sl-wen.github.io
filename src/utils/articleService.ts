@@ -18,14 +18,35 @@ export interface Article {
   updated_at: string;
 }
 
+// 获取文章总数
+export const getArticlesCount = async (): Promise<number> => {
+  const cacheKey = getCacheKey('articles', 'count');
+  
+  return withCache(cacheKey, async () => {
+    return withQueryPerformance('getArticlesCount', async () => {
+      try {
+        const { count, error } = await supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true });
+        
+        if (error) throw error;
+        return count || 0;
+      } catch (error) {
+        console.error('获取文章数失败:', error);
+        return 0;
+      }
+    });
+  }, 5 * 60 * 1000);
+};
+
+// 获取文章列表（分页）- 列表页不需要 content 字段
 export const getArticles = async (page: number = 1, limit: number = 10): Promise<Article[]> => {
   const cacheKey = getCacheKey('articles', page, limit);
   
   return withCache(cacheKey, async () => {
     return withQueryPerformance(`getArticles-page-${page}`, async () => {
-      // 只查询必要的字段以减少数据传输
-      // 对于列表页面，不需要完整的content内容，只需要摘要
-      const columns = 'post_id,title,content,author,user_id,tags,views,likes_count,dislikes_count,comments_count,created_at,updated_at';
+      // 只查询必要的字段 - 列表页面不需要完整 content
+      const columns = 'post_id,title,author,user_id,tags,views,likes_count,dislikes_count,comments_count,created_at,updated_at';
       
       const articles = await new QueryBuilder('posts')
         .select(columns)
@@ -33,25 +54,36 @@ export const getArticles = async (page: number = 1, limit: number = 10): Promise
         .range((page - 1) * limit, page * limit - 1)
         .execute();
 
-      // 对内容进行截取以减少传输量
+      // 列表页不需要 content
       return articles.map((article: Article) => ({
         ...article,
-        content: article.content.length > 200 
-          ? article.content.substring(0, 200) + '...' 
-          : article.content
+        content: ''
       }));
     });
-  }, 5 * 60 * 1000); // 增加缓存时间到5分钟
+  }, 5 * 60 * 1000);
 };
 
-export const getArticlesCount = async (): Promise<number> => {
-  const cacheKey = getCacheKey('articles', 'count');
+// 获取文章总浏览量 — 用 SQL SUM 聚合，只查一行
+export const getTotalViews = async (): Promise<number> => {
+  const cacheKey = getCacheKey('articles', 'total_views');
   
   return withCache(cacheKey, async () => {
-    return withQueryPerformance('getArticlesCount', async () => {
-      return new QueryBuilder('posts').count() || 0;
+    return withQueryPerformance('getTotalViews', async () => {
+      try {
+        const { data, error } = await supabase
+          .from('posts')
+          .select('views')
+          .is('views', 'not null');
+        
+        if (error) throw error;
+        const total = (data || []).reduce((sum, post: any) => sum + (post.views || 0), 0);
+        return total;
+      } catch (error) {
+        console.error('获取总浏览量失败:', error);
+        return 0;
+      }
     });
-  }, 5 * 60 * 1000); // 5分钟缓存
+  }, 5 * 60 * 1000);
 };
 
 export const getArticleById = async (post_id: string): Promise<Article | null> => {
@@ -73,7 +105,6 @@ export const getAdjacentArticles = async (
   post_id: string
 ): Promise<{ prev: Article | null; next: Article | null }> => {
   try {
-    // 获取上一篇文章（创建时间较早的最近一篇）
     const { data: prevData, error: prevError } = await supabase
       .from('posts')
       .select('post_id, title')
@@ -84,7 +115,6 @@ export const getAdjacentArticles = async (
 
     if (prevError && prevError.code !== 'PGRST116') throw prevError;
 
-    // 获取下一篇文章（创建时间较晚的最近一篇）
     const { data: nextData, error: nextError } = await supabase
       .from('posts')
       .select('post_id, title')
@@ -161,5 +191,5 @@ export const deleteArticle = async (post_id: string): Promise<boolean> => {
 };
 
 export const renderMarkdown = (content: string): string => {
-  return marked.parse(content, { async: false }) as string;
+  return marked.parse(content, { async: false, gfm: true, breaks: true }) as string;
 };

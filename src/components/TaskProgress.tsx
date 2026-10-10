@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button, Alert } from '@/components/ui';
-import { getUserTasks, claimTaskReward, TaskProgress, initUserTasks } from '@/utils/task';
+import { getUserTasks, initUserTasks, TaskProgress } from '@/utils/task';
+import { claimTaskRewardRpc } from '@/utils/claimRpc';
 import { useAuth } from '@/utils/auth-context';
 
 interface TaskProgressProps {
@@ -80,14 +81,18 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
 
     try {
       setClaimingId(userTaskId);
-      await claimTaskReward(userTaskId, userProfile.user_id);
+      const result = await claimTaskRewardRpc(userTaskId);
 
-      // 刷新用户资料（金币/经验/等级）并重新加载任务
-      await refreshProfile();
-      await loadTasks();
-
-      setMessage('奖励领取成功');
-      setMessageType('success');
+      if (result.ok) {
+        // RPC 返回资产快照，直接刷新服务端数据保持一致
+        await refreshProfile();
+        await loadTasks();
+        setMessage(`奖励领取成功：+${result.coins_gained} 金币 · +${result.exp_gained} 经验`);
+        setMessageType('success');
+      } else {
+        setMessage(result.message || '领取失败');
+        setMessageType('error');
+      }
     } catch (error) {
       console.error('领取奖励失败:', error);
       setMessage(error instanceof Error ? error.message : '领取奖励失败');

@@ -24,19 +24,17 @@
     "buffer": "6.0.3",
     "classnames": "2.5.1",
     "critters": "0.0.25",
-    "dompurify": "3.2.6",
-    "framer-motion": "12.23.12",
-    "gray-matter": "4.0.3",
+    "dompurify": "^3.4.16",
+    "framer-motion": "^12.42.2",
     "grid-engine": "2.48.1",
-    "lodash": "4.17.21",
+    "lodash": "^4.18.1",
     "marked": "16.2.1",
-    "next": "15.5.3",
-    "next-pwa": "5.6.0",
+    "next": "^16.2.10",
     "phaser": "3.90.0",
     "qrcode": "^1.5.4",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "sharp": "0.34.3",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "sharp": "^0.35.5",
     "spark-md5": "^3.0.2",
     "tesseract.js": "^6.0.1"
   },
@@ -58,12 +56,10 @@
     "eslint-config-next": "15.5.3",
     "eslint-plugin-react-hooks": "5.2.0",
     "fast-xml-parser": "^5.2.5",
-    "postcss": "8.5.6",
+    "postcss": "^8.5.23",
     "prettier": "3.6.2",
     "rimraf": "6.0.1",
     "tailwindcss": "4.1.13",
-    "tmx-parser": "^1.5.0",
-    "tmx2json": "^0.1.1",
     "typescript": "^5.9.2"
   },
   "description": "Modern React blog with Next.js, TypeScript, and Tailwind CSS",
@@ -76,5 +72,11 @@
     "pwa"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "overrides": {
+    "braces": "^3.0.3",
+    "serialize-javascript": "^7.0.3",
+    "postcss-selector-parser": "^7.1.6",
+    "sprintf-js": "^1.1.3"
+  }
 }

@@ -98,7 +98,7 @@ export default function ProfilePage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">加载中...</p>
+          <p className="text-gray-600 dark:text-gray-400">加载中...</p>
         </div>
       </div>
     );
@@ -117,16 +117,16 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* 页面标题 */}
         <div className="text-center mb-2">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">个人中心</h1>
-          <p className="text-gray-600">管理您的账户信息和任务进度</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">个人中心</h1>
+          <p className="text-gray-600 dark:text-gray-400">管理您的账户信息和任务进度</p>
         </div>
 
         {/* 用户统计信息 */}
-        <div className="grid grid-cols-4 md:grid-cols-4 gap-3 mb-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-2">
           <Card className="text-center">
             <div className="text-sm text-gray-600">等级</div>
             <div className="text-md p-1 text-center font-bold text-blue-600 mb-1">{formData.level}</div>
@@ -148,10 +148,10 @@ export default function ProfilePage() {
         </div>
 
         {/* 标签页导航 */}
-        <div className="flex border-b border-gray-200 mb-8">
+        <div className="flex border-b border-gray-200 mb-8 overflow-x-auto">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'profile'
+            className={`flex-1 min-w-[80px] px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'profile'
               ? 'border-blue-500 text-blue-600'
               : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
@@ -160,7 +160,7 @@ export default function ProfilePage() {
           </button>
           <button
             onClick={() => setActiveTab('tasks')}
-            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'tasks'
+            className={`flex-1 min-w-[80px] px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'tasks'
               ? 'border-blue-500 text-blue-600'
               : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
@@ -169,7 +169,7 @@ export default function ProfilePage() {
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'history'
+            className={`flex-1 min-w-[80px] px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'history'
               ? 'border-blue-500 text-blue-600'
               : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}

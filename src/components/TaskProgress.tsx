@@ -164,7 +164,7 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
                       <h3 className="font-semibold text-gray-900">{task.task_name}</h3>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-1 text-sm">
+                    <div className="grid grid-cols-2 gap-1 text-sm sm:grid-cols-4">
                       <div>
                         <span className="text-sm text-gray-600 mb-2">{task.task_description}</span>
                       </div>

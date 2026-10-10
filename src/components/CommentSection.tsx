@@ -1,4 +1,5 @@
 'use client';
+import Icon from '@/components/Icon';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
@@ -9,10 +10,11 @@ import {
   updateComment,
   deleteComment
 } from '@/utils/commentService';
-import { addCommentReaction, getCommentReaction, clearAllReactionCache } from '@/utils/reactionService';
+import { clearAllReactionCache } from '@/utils/reactionService';
 import { getUserProfile } from '@/utils/supabase-config';
 import { Button, Textarea, Card, Alert } from './ui';
 import { useSafeTaskProgress, TASK_ACTIONS } from '@/utils/task-hooks';
+import { toggleCommentReaction, fetchCommentReactions } from '@/utils/interactionRpc';
 
 interface UserProfile {
   username: string;
@@ -100,11 +102,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
   const loadReactions = useCallback(async () => {
     try {
       if (userProfile?.user_id && comments.length > 0) {
-        const reactions: { [key: string]: 'like' | 'dislike' | null } = {};
-        for (const comment of comments) {
-          const reaction = await getCommentReaction(comment.comment_id, userProfile.user_id);
-          reactions[comment.comment_id] = reaction;
-        }
+        // 批量拉取（1 次查询替代逐条 N 次）
+        const reactions = await fetchCommentReactions(
+          comments.map(c => c.comment_id),
+          userProfile.user_id
+        );
         setCommentReactions(reactions);
       }
     } catch (error) {
@@ -326,7 +328,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
       }
     }
 
-    // 立即更新UI
+    // 立即更新UI（乐观）
     setCommentReactions(prev => ({ ...prev, [comment_id]: newReaction }));
     setComments(prev => prev.map(c =>
       c.comment_id === comment_id
@@ -335,20 +337,23 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
     ));
 
     try {
-      const success = await addCommentReaction(
-        comment_id,
-        userProfile.user_id,
-        type,
-        newLikes,
-        newDislikes
-      );
+      // 服务端幂等切换，返回权威计数；失败返回 null
+      const result = await toggleCommentReaction(comment_id, userProfile.user_id, type);
 
-      if (!success) {
-        // 回滚状态
+      if (!result) {
+        // RPC 失败，回滚状态
         setCommentReactions(prev => ({ ...prev, [comment_id]: currentReaction }));
         setComments(prev => prev.map(c =>
           c.comment_id === comment_id
             ? { ...c, likes_count: oldLikes, dislikes_count: oldDislikes }
+            : c
+        ));
+      } else {
+        // 以服务端计数为准（防止乐观估算漂移）
+        setCommentReactions(prev => ({ ...prev, [comment_id]: result.reaction }));
+        setComments(prev => prev.map(c =>
+          c.comment_id === comment_id
+            ? { ...c, likes_count: result.likes, dislikes_count: result.dislikes }
             : c
         ));
       }
@@ -478,7 +483,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:scale-105'
                     } ${reactionLoading[comment.comment_id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    <i className="fas fa-thumbs-up"></i>
+                    <Icon name="thumbs-up" />
                     <span>点赞 ({comment.likes_count || 0})</span>
                   </button>
 
@@ -491,7 +496,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:scale-105'
                     } ${reactionLoading[comment.comment_id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    <i className="fas fa-thumbs-down"></i>
+                    <Icon name="thumbs-down" />
                     <span>点踩 ({comment.dislikes_count || 0})</span>
                   </button>
 

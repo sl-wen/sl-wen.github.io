@@ -14,23 +14,23 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const buttonVariants = {
-  primary:
-    'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white shadow-md hover:shadow-lg border-blue-600',
-  secondary: 'bg-white hover:bg-gray-50 text-gray-900 border-gray-300 shadow-sm hover:shadow-md',
-  ghost: 'bg-transparent hover:bg-blue-50 text-blue-600 hover:text-blue-700 border-transparent',
-  danger:
-    'bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white shadow-md hover:shadow-lg border-red-600',
+  primary: 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md border-blue-600',
+  secondary:
+    'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 shadow-sm',
+  ghost:
+    'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border-transparent',
+  danger: 'bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md border-red-600',
   success:
-    'bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white shadow-md hover:shadow-lg border-green-600',
+    'bg-green-600 hover:bg-green-700 text-white shadow-sm hover:shadow-md border-green-600',
   warning:
-    'bg-gradient-to-r from-yellow-500 to-yellow-700 hover:from-yellow-600 hover:to-yellow-800 text-white shadow-md hover:shadow-lg border-yellow-600'
+    'bg-amber-500 hover:bg-amber-600 text-white shadow-sm hover:shadow-md border-amber-500'
 };
 
 const buttonSizes = {
-  sm: 'px-2 py-1 text-sm min-h-[1.5rem]',
-  md: 'px-3 py-2 text-base min-h-[2rem]',
-  lg: 'px-4 py-3 text-lg min-h-[2.5rem]',
-  xl: 'px-5 py-4 text-xl min-h-[3rem]'
+  sm: 'px-3 py-1.5 text-sm min-h-[2rem]',
+  md: 'px-4 py-2 text-sm min-h-[2.25rem]',
+  lg: 'px-5 py-2.5 text-base min-h-[2.75rem]',
+  xl: 'px-6 py-3 text-base min-h-[3rem]'
 };
 
 export const Button: React.FC<ButtonProps> = ({
@@ -48,13 +48,13 @@ export const Button: React.FC<ButtonProps> = ({
   const baseClasses = [
     'relative inline-flex items-center justify-center gap-2',
     'font-medium leading-6 text-center no-underline',
-    'border-2 border-solid rounded-lg cursor-pointer',
+    'border rounded-lg cursor-pointer',
     'transition-all duration-200 ease-out outline-none',
     'select-none whitespace-nowrap overflow-hidden',
     'focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2',
     'disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none',
-    'active:scale-[0.98] hover:-translate-y-0.5',
-    'touch-manipulation tap-highlight-transparent'
+    'active:translate-y-px',
+    'touch-manipulation'
   ];
 
   const variantClasses = buttonVariants[variant];
@@ -76,7 +76,7 @@ export const Button: React.FC<ButtonProps> = ({
       {/* 加载状态图标 */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
             <circle
               cx="12"
               cy="12"

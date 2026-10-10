@@ -20,7 +20,7 @@ interface CodeBlock {
   code: string;
 }
 
-// 辅助函数，和你原版基本一致
+// 辅助函数：从 markdown 提取纯文本与代码块
 function extractTextFromMarkdown(markdown: string) {
   if (!markdown) return { text: '', codeBlocks: [] as CodeBlock[] };
 
@@ -59,14 +59,14 @@ function extractTextFromMarkdown(markdown: string) {
   return { text, codeBlocks };
 }
 
-// 高亮关键词 (返回安全 HTML 字符串)
+// 高亮关键词（返回安全 HTML 字符串）
 function highlightKeyword(html: string, keyword: string) {
   if (!keyword) return html;
   const safeKey = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const regex = new RegExp(`(${safeKey})`, 'gi');
   return html.replace(
     regex,
-    `<span class="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">$1</span>`
+    `<span class="bg-amber-100 dark:bg-amber-900/40 px-0.5 rounded">$1</span>`
   );
 }
 
@@ -94,7 +94,7 @@ export default function SearchPage() {
     fetchArticles();
   }, []);
 
-  // 用 useMemo 优化过滤
+  // useMemo 优化过滤
   const results = useMemo(() => {
     if (!keyword.trim()) return [];
     const lowerKey = keyword.toLowerCase();
@@ -116,33 +116,22 @@ export default function SearchPage() {
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* 搜索标题 */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            文章搜索
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
+      <div className="container mx-auto px-4 max-w-3xl">
+        {/* 页面标题 */}
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+            搜索
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400">搜索文章标题、内容、代码和标签</p>
-          <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto mt-4"></div>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">搜索标题、内容、代码和标签</p>
         </div>
 
         {/* 搜索输入框 */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8 hover:shadow-xl transition-shadow">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 rounded-xl p-5 mb-6">
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg
-                className="w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
               </svg>
             </div>
             <input
@@ -150,42 +139,21 @@ export default function SearchPage() {
               type="text"
               value={keyword}
               onChange={handleInput}
-              placeholder="请输入搜索关键词（支持搜索标题、内容、代码和标签）..."
-              className="w-full pl-10 pr-4 py-3 text-lg border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              placeholder="输入关键词…"
+              className="w-full pl-10 pr-4 py-2.5 text-base border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-shadow"
             />
           </div>
 
-          {/* 搜索统计和提示 */}
-          <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {keyword && (
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                找到{' '}
-                <span className="font-semibold text-blue-600 dark:text-blue-400 text-lg">
-                  {results.length}
-                </span>{' '}
-                个相关结果
-              </div>
-            )}
-
-            <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
-                <span>📝</span>
-                标题
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
-                <span>📄</span>
-                内容
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
-                <span>💻</span>
-                代码
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
-                <span>🏷️</span>
-                标签
-              </span>
+          {/* 搜索统计 */}
+          {keyword && (
+            <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+              找到{' '}
+              <span className="font-semibold text-blue-600 dark:text-blue-400 tabular-nums">
+                {results.length}
+              </span>{' '}
+              个结果
             </div>
-          </div>
+          )}
         </div>
 
         {/* 搜索结果 */}
@@ -193,24 +161,22 @@ export default function SearchPage() {
           {/* 加载状态 */}
           {loading && (
             <div className="text-center py-12">
-              <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <div className="text-gray-600 dark:text-gray-400">加载文章中...</div>
+              <div className="inline-block h-7 w-7 border-2 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+              <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">加载文章中…</div>
             </div>
           )}
 
           {/* 错误状态 */}
           {error && (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4 opacity-20">⚠️</div>
-              <div className="text-red-600 dark:text-red-400">加载失败：{error}</div>
+              <div className="text-gray-700 dark:text-gray-300">{error}</div>
             </div>
           )}
 
-          {/* 空状态 */}
+          {/* 空状态（未输入） */}
           {!loading && !error && !keyword && (
             <div className="text-center py-16">
-              <div className="text-6xl mb-4 opacity-20">🔍</div>
-              <div className="text-gray-500 dark:text-gray-400 text-lg">请输入搜索关键词</div>
+              <div className="text-gray-500 dark:text-gray-400 text-base">输入关键词开始搜索</div>
               <div className="text-gray-400 dark:text-gray-500 text-sm mt-2">
                 支持搜索标题、内容、代码和标签
               </div>
@@ -220,17 +186,16 @@ export default function SearchPage() {
           {/* 无结果状态 */}
           {!loading && !error && keyword && results.length === 0 && (
             <div className="text-center py-16">
-              <div className="text-6xl mb-4 opacity-20">😔</div>
-              <div className="text-gray-500 dark:text-gray-400 text-lg">没有找到相关文章</div>
+              <div className="text-gray-500 dark:text-gray-400 text-base">没有找到相关文章</div>
               <div className="text-gray-400 dark:text-gray-500 text-sm mt-2">
-                尝试使用不同的关键词或检查拼写
+                试试其他关键词，或检查拼写
               </div>
             </div>
           )}
 
           {/* 搜索结果列表 */}
           {!loading && !error && results.length > 0 && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {results.map((post) => {
                 // 预处理文案和代码高亮
                 const { codeBlocks } = extractTextFromMarkdown(post.content);
@@ -243,10 +208,10 @@ export default function SearchPage() {
                 return (
                   <article
                     key={post.post_id}
-                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200"
+                    className="bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 rounded-xl p-5 hover:border-gray-300 dark:hover:border-gray-700 transition-colors duration-200"
                   >
                     {/* 文章标题 */}
-                    <h2 className="text-xl md:text-2xl font-bold mb-4">
+                    <h2 className="text-lg font-bold tracking-tight mb-2 leading-snug">
                       <Link
                         href={`/article/${post.post_id}`}
                         className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
@@ -257,11 +222,11 @@ export default function SearchPage() {
                     </h2>
 
                     {/* 文章预览 */}
-                    <div className="mb-4">
+                    <div className="mb-3">
                       {matchingCodeBlock ? (
-                        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 overflow-x-auto">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                            代码匹配 - {matchingCodeBlock.language}
+                        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3.5 overflow-x-auto border border-gray-100 dark:border-gray-800">
+                          <div className="text-xs text-gray-400 dark:text-gray-500 mb-1.5 font-mono">
+                            {matchingCodeBlock.language}
                           </div>
                           <pre className="text-sm">
                             <code
@@ -274,7 +239,7 @@ export default function SearchPage() {
                                 __html: highlightKeyword(
                                   DOMPurify.sanitize(
                                     matchingCodeBlock.code.substring(0, 200) +
-                                      (matchingCodeBlock.code.length > 200 ? '...' : '')
+                                      (matchingCodeBlock.code.length > 200 ? '…' : '')
                                   ),
                                   keyword
                                 )
@@ -284,13 +249,13 @@ export default function SearchPage() {
                         </div>
                       ) : (
                         <div
-                          className="prose prose-sm dark:prose-invert max-w-none line-clamp-3"
+                          className="prose prose-sm dark:prose-invert max-w-none line-clamp-3 text-gray-500 dark:text-gray-400"
                           dangerouslySetInnerHTML={{
                             __html: highlightKeyword(
                               DOMPurify.sanitize(
                                 marked.parse(
                                   post.content.substring(0, 300) +
-                                    (post.content.length > 300 ? '...' : ''),
+                                    (post.content.length > 300 ? '…' : ''),
                                   { async: false }
                                 ) as string
                               ),
@@ -302,37 +267,29 @@ export default function SearchPage() {
                     </div>
 
                     {/* 文章元信息 */}
-                    <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-400 dark:text-gray-500">
                       {/* 作者 */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500 dark:text-gray-400">✍️</span>
-                        <span
-                          className="text-sm text-gray-600 dark:text-gray-400"
-                          dangerouslySetInnerHTML={{
-                            __html: highlightKeyword(
-                              DOMPurify.sanitize(post.author || '匿名'),
-                              keyword
-                            )
-                          }}
-                        />
-                      </div>
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: highlightKeyword(
+                            DOMPurify.sanitize(post.author || '匿名'),
+                            keyword
+                          )
+                        }}
+                      />
 
                       {/* 发布时间 */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500 dark:text-gray-400">📅</span>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {new Date(post.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
+                      <time className="tabular-nums">
+                        {new Date(post.created_at).toLocaleDateString()}
+                      </time>
 
                       {/* 标签 */}
                       {post.tags && post.tags.length > 0 && (
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-gray-500 dark:text-gray-400">🏷️</span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           {post.tags.map((tag) => (
                             <span
                               key={tag}
-                              className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                              className="inline-flex items-center px-2 py-0.5 rounded-full font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
                               dangerouslySetInnerHTML={{
                                 __html: highlightKeyword(DOMPurify.sanitize(tag), keyword)
                               }}

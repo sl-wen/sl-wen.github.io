@@ -1,31 +1,23 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { getArticles, Article } from '@/utils/articleService';
 import ArticleCard from './ArticleCard';
 import { Alert } from './ui';
 import Loading from './Loading';
 
-// 骨架屏组件
+// 骨架屏组件（对齐 ArticleCard v3 布局：meta 行 + 标题 + 摘要 + 底栏）
 const ArticleSkeleton: React.FC = () => (
-  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 animate-pulse">
-    <div className="flex items-center space-x-3 mb-4">
-      <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-      <div className="space-y-2">
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
-        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-      </div>
+  <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200/80 dark:border-gray-800 p-6 animate-pulse">
+    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-3"></div>
+    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3"></div>
+    <div className="space-y-2 mb-4">
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
     </div>
-    <div className="space-y-3 mb-4">
-      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
-    </div>
-    <div className="flex items-center space-x-4">
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+    <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-800">
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-14"></div>
     </div>
   </div>
 );
@@ -85,7 +77,7 @@ const ArticleList: React.FC = () => {
             });
           } catch (error) {
             // 静默处理预加载失败
-            console.warn('预加载失败:', error);
+            console.warn('预加载失败', error);
           }
         }, 200);
       }
@@ -103,6 +95,12 @@ const ArticleList: React.FC = () => {
     }
   }, [hasMore, preloadCache, initialLoad]);
 
+  // 始终指向最新 loadArticles 的 ref（供 focus 刷新回调使用，避免闭包过期）
+  const loadArticlesRef = useRef(loadArticles);
+  useEffect(() => {
+    loadArticlesRef.current = loadArticles;
+  }, [loadArticles]);
+
   useEffect(() => {
     // 避免开发环境 StrictMode 造成的双调用
     let didRun = false;
@@ -110,6 +108,37 @@ const ArticleList: React.FC = () => {
       didRun = true;
       loadArticles(1);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 发布文章等数据变更后，返回首页时静默刷新第一页（App Router 会复用组件，不会自动重取）
+  useEffect(() => {
+    let lastHidden = document.visibilityState === 'visible';
+
+    const refreshFirstPage = () => {
+      if (document.visibilityState !== 'visible') return;
+      setPreloadCache(prev => {
+        const c = new Map(prev);
+        c.delete(1);
+        return c;
+      });
+      loadArticlesRef.current(1);
+    };
+
+    const onVisible = () => {
+      if (!lastHidden && document.visibilityState === 'visible') {
+        refreshFirstPage();
+      }
+      lastHidden = document.visibilityState === 'visible';
+    };
+
+    const onFocus = () => refreshFirstPage();
+    window.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      window.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -140,25 +169,25 @@ const ArticleList: React.FC = () => {
         {loading && initialLoad ? (
           renderSkeletons
         ) : (
-          articles.map((article) => (
-            <ArticleCard key={article.post_id} article={article} />
+          articles.map((article, idx) => (
+            <ArticleCard key={article.post_id} article={article} index={idx} />
           ))
         )}
       </div>
 
       {/* 加载更多按钮 */}
       {hasMore && !initialLoad && (
-        <div className="flex justify-center py-8">
+        <div className="flex justify-center py-6">
           <button
-            className="btn-primary px-8 py-3 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:transform hover:scale-105"
+            className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors duration-200 active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleLoadMore}
             disabled={loadingMore}
           >
             {loadingMore ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                加载中...
-              </div>
+              <>
+                <span className="inline-block h-3.5 w-3.5 border-2 border-gray-400 dark:border-gray-500 border-t-transparent rounded-full animate-spin"></span>
+                加载中…
+              </>
             ) : (
               '加载更多'
             )}
@@ -168,30 +197,18 @@ const ArticleList: React.FC = () => {
 
       {/* 没有更多文章提示 */}
       {!loading && !loadingMore && !hasMore && articles.length > 0 && (
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-          <div className="inline-flex items-center gap-2 text-sm">
-            <div className="w-16 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent"></div>
-            没有更多文章了
-            <div className="w-16 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent"></div>
-          </div>
+        <div className="text-center py-6 text-gray-400 dark:text-gray-500 text-sm">
+          已经到底了
         </div>
       )}
 
       {/* 暂无文章提示 */}
       {!loading && !initialLoad && articles.length === 0 && (
         <div className="text-center py-16">
-          <div className="text-6xl mb-4 opacity-20">📝</div>
           <div className="text-gray-500 dark:text-gray-400 text-lg">暂无文章</div>
           <div className="text-gray-400 dark:text-gray-500 text-sm mt-2">
-            等待第一篇精彩文章的诞生
+            等待第一篇文章的诞生
           </div>
-        </div>
-      )}
-
-      {/* 全局加载状态（用于初始加载失败的情况） */}
-      {loading && !initialLoad && (
-        <div className="flex justify-center py-8">
-          <Loading size="medium" text="加载中" />
         </div>
       )}
     </div>

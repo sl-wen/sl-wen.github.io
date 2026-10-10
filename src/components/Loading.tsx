@@ -9,11 +9,11 @@ interface LoadingProps {
 }
 
 const Loading: React.FC<LoadingProps> = memo(({
-  text = '加载中...',
+  text = '加载中…',
   size = 'medium',
   variant = 'spinner',
   className = '',
-  showBackground = true
+  showBackground = false
 }) => {
   const getSizeClasses = (size: string) => {
     switch (size) {
@@ -26,45 +26,44 @@ const Loading: React.FC<LoadingProps> = memo(({
     }
   };
 
-  const renderSpinner = () => <div className={`loading-spinner ${getSizeClasses(size)}`}></div>;
+  const dotSize = size === 'small' ? 'w-1.5 h-1.5' : size === 'large' ? 'w-3 h-3' : 'w-2 h-2';
 
-  const renderDots = () => (
-    <div className="flex space-x-1">
-      <div
-        className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-bounce`}
-      ></div>
-      <div
-        className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-bounce`}
-        style={{ animationDelay: '0.1s' }}
-      ></div>
-      <div
-        className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-bounce`}
-        style={{ animationDelay: '0.2s' }}
-      ></div>
-    </div>
+  const renderSpinner = () => (
+    <div
+      className={`${getSizeClasses(size)} border-2 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin`}
+      role="status"
+      aria-label={text}
+    ></div>
   );
 
-  const renderPulse = () => (
-    <div className="flex space-x-1">
+  const renderDots = () => (
+    <div className="flex space-x-1.5" role="status" aria-label={text}>
+      <div className={`bg-blue-600 dark:bg-blue-400 rounded-full ${dotSize} animate-pulse`}></div>
       <div
-        className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-pulse`}
-      ></div>
-      <div
-        className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-pulse`}
+        className={`bg-blue-600 dark:bg-blue-400 rounded-full ${dotSize} animate-pulse`}
         style={{ animationDelay: '0.2s' }}
       ></div>
       <div
-        className={`bg-primary-600 rounded-full ${size === 'small' ? 'w-2 h-2' : size === 'large' ? 'w-4 h-4' : 'w-3 h-3'} animate-pulse`}
+        className={`bg-blue-600 dark:bg-blue-400 rounded-full ${dotSize} animate-pulse`}
         style={{ animationDelay: '0.4s' }}
       ></div>
     </div>
   );
 
+  const renderPulse = () => (
+    <div className={`${getSizeClasses(size)} relative`} role="status" aria-label={text}>
+      <div className="absolute inset-0 bg-blue-600/20 dark:bg-blue-400/20 rounded-full animate-ping"></div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-1/2 h-1/2 bg-blue-600 dark:bg-blue-400 rounded-full animate-pulse"></div>
+      </div>
+    </div>
+  );
+
   const renderSkeleton = () => (
-    <div className="space-y-3 w-full max-w-sm">
-      <div className="bg-gray-200 rounded-md h-4 animate-pulse"></div>
-      <div className="bg-gray-200 rounded-md h-4 animate-pulse w-3/4"></div>
-      <div className="bg-gray-200 rounded-md h-4 animate-pulse w-1/2"></div>
+    <div className="space-y-3 w-full max-w-sm" role="status" aria-label={text}>
+      <div className="bg-gray-200 dark:bg-gray-700 rounded-md h-4 animate-pulse"></div>
+      <div className="bg-gray-200 dark:bg-gray-700 rounded-md h-4 animate-pulse w-3/4"></div>
+      <div className="bg-gray-200 dark:bg-gray-700 rounded-md h-4 animate-pulse w-1/2"></div>
     </div>
   );
 
@@ -93,41 +92,10 @@ const Loading: React.FC<LoadingProps> = memo(({
       {renderLoadingContent()}
       {variant !== 'skeleton' && text && (
         <p
-          className={`mt-4 text-gray-600 dark:text-gray-300 font-medium ${size === 'small' ? 'text-sm' : size === 'large' ? 'text-lg' : 'text-base'}`}
+          className={`mt-3 text-gray-500 dark:text-gray-400 ${size === 'small' ? 'text-xs' : size === 'large' ? 'text-base' : 'text-sm'}`}
         >
           {text}
-          <span className="inline-flex">
-            <span className="animate-bounce">.</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>
-              .
-            </span>
-            <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>
-              .
-            </span>
-          </span>
         </p>
-      )}
-
-      {/* 装饰性背景 */}
-      {showBackground && (
-        <div className="absolute inset-0 -z-10 opacity-20 pointer-events-none">
-          <div
-            className="absolute top-1/4 left-1/4 w-2 h-2 bg-primary-400 rounded-full animate-bounce"
-            style={{ animationDelay: '0s' }}
-          ></div>
-          <div
-            className="absolute top-1/3 right-1/4 w-1 h-1 bg-primary-500 rounded-full animate-bounce"
-            style={{ animationDelay: '0.5s' }}
-          ></div>
-          <div
-            className="absolute bottom-1/3 left-1/3 w-3 h-3 bg-primary-300 rounded-full animate-bounce"
-            style={{ animationDelay: '1s' }}
-          ></div>
-          <div
-            className="absolute bottom-1/4 right-1/3 w-1 h-1 bg-primary-600 rounded-full animate-bounce"
-            style={{ animationDelay: '1.5s' }}
-          ></div>
-        </div>
       )}
     </div>
   );
@@ -136,8 +104,8 @@ const Loading: React.FC<LoadingProps> = memo(({
 // 简单的加载组件，用于保持向后兼容
 export const SimpleLoading: React.FC = memo(() => (
   <div className="flex flex-col items-center justify-center p-8">
-    <div className="loading-spinner w-8 h-8 mb-4"></div>
-    <p className="text-gray-600 dark:text-gray-300 font-medium">加载中...</p>
+    <div className="w-8 h-8 border-2 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <p className="text-gray-500 dark:text-gray-400 text-sm">加载中…</p>
   </div>
 ));
 

@@ -80,10 +80,10 @@ export default function SettingsPage() {
 
   if (!userProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">需要登录</h1>
-          <p className="text-gray-600 mb-4">请先登录以访问设置页面</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">请先登录以访问设置页面</p>
           <Button onClick={() => router.push('/login')}>前往登录</Button>
         </div>
       </div>
@@ -91,12 +91,12 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
       <div className="max-w-2xl mx-auto px-4">
         <Card size="lg" variant="elevated" className="shadow-lg">
           {/* 页面标题 */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">账户设置</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">账户设置</h1>
             <p className="text-gray-600">管理您的账户偏好设置</p>
           </div>
 
@@ -110,12 +110,12 @@ export default function SettingsPage() {
           {/* 设置选项 */}
           <div className="space-y-6">
             {/* 账户管理 */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">账户管理</h2>
 
               <div className="space-y-4">
                 {/* 个人资料 */}
-                <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-800">
                   <div>
                     <h3 className="font-medium text-gray-900">个人资料</h3>
                     <p className="text-sm text-gray-600">编辑您的用户名、头像等信息</p>
@@ -126,7 +126,7 @@ export default function SettingsPage() {
                 </div>
 
                 {/* 更改密码 */}
-                <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-800">
                   <div>
                     <h3 className="font-medium text-gray-900">更改密码</h3>
                     <p className="text-sm text-gray-600">通过邮箱重置您的密码</p>
@@ -137,7 +137,7 @@ export default function SettingsPage() {
                 </div>
 
                 {/* 登出 */}
-                <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-800">
                   <div>
                     <h3 className="font-medium text-gray-900">退出登录</h3>
                     <p className="text-sm text-gray-600">安全退出您的账户</p>
@@ -150,7 +150,7 @@ export default function SettingsPage() {
             </div>
 
             {/* 外观设置 */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">外观设置</h2>
 
               <div className="space-y-4">
@@ -160,7 +160,7 @@ export default function SettingsPage() {
                     <h3 className="font-medium text-gray-900">主题模式</h3>
                     <p className="text-sm text-gray-600">选择浅色或深色主题</p>
                   </div>
-                  <select className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <select className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="light">浅色</option>
                     <option value="dark">深色</option>
                     <option value="system">跟随系统</option>
@@ -170,12 +170,12 @@ export default function SettingsPage() {
             </div>
 
             {/* 隐私设置 */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">隐私设置</h2>
 
               <div className="space-y-4">
                 {/* 数据导出 */}
-                <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-800">
                   <div>
                     <h3 className="font-medium text-gray-900">数据导出</h3>
                     <p className="text-sm text-gray-600">下载您的所有数据</p>

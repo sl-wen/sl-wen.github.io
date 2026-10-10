@@ -254,7 +254,7 @@ export default function ToolsPage() {
             实用工具集
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400">精选开发者工具，提升工作效率</p>
-          <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto mt-4"></div>
+          
         </div>
 
         {/* 工具网格：自适应响应式列数 */}
@@ -266,24 +266,24 @@ export default function ToolsPage() {
               onClick={() => handleToolClick(tool)}
             >
               {/* 工具图标：放大过渡增强动态感 */}
-              <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+              <div className="text-4xl mb-4">
                 {tool.icon}
               </div>
 
               {/* 标签：推荐 / 新品 / 即将上线 角标 */}
               <div className="absolute top-4 right-4 flex flex-col gap-2">
                 {tool.isFeatured && (
-                  <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs px-2 py-1 rounded-full">
+                  <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
                     推荐
                   </span>
                 )}
                 {tool.isNew && (
-                  <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-1 rounded-full">
+                  <span className="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">
                     新品
                   </span>
                 )}
                 {tool.isComingSoon && (
-                  <span className="bg-gradient-to-r from-gray-400 to-gray-500 text-white text-xs px-2 py-1 rounded-full">
+                  <span className="bg-gray-400 text-white text-xs px-2 py-0.5 rounded-full">
                     即将上线
                   </span>
                 )}
@@ -325,9 +325,6 @@ export default function ToolsPage() {
               </div>
 
               {/* 悬浮效果：仅对可用卡片叠加轻微色彩渐变 */}
-              {!tool.isComingSoon && (
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-              )}
             </div>
           ))}
         </div>

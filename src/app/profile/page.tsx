@@ -97,7 +97,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-300 dark:border-gray-700 border-t-blue-600 dark:border-t-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">加载中...</p>
         </div>
       </div>
@@ -108,8 +108,8 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">需要登录</h1>
-          <p className="text-gray-600 mb-4">请先登录以访问个人资料页面</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">需要登录</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">请先登录以访问个人资料页面</p>
           <Button onClick={() => router.push('/login')}>前往登录</Button>
         </div>
       </div>
@@ -122,69 +122,57 @@ export default function ProfilePage() {
         {/* 页面标题 */}
         <div className="text-center mb-2">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">个人中心</h1>
-          <p className="text-gray-600 dark:text-gray-400">管理您的账户信息和任务进度</p>
+          <p className="text-gray-500 dark:text-gray-400">管理您的账户信息和任务进度</p>
         </div>
 
         {/* 用户统计信息 */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-2">
-          <Card className="text-center">
-            <div className="text-sm text-gray-600">等级</div>
-            <div className="text-md p-1 text-center font-bold text-blue-600 mb-1">{formData.level}</div>
+          <Card className="text-center py-3">
+            <div className="text-sm text-gray-500 dark:text-gray-400">等级</div>
+            <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{formData.level}</div>
           </Card>
-          <Card className="text-center">
-            <div className="text-sm text-gray-600">金币</div>
-            <div className="text-md p-1 text-center font-bold text-yellow-600 mb-1">{formData.coins}</div>
+          <Card className="text-center py-3">
+            <div className="text-sm text-gray-500 dark:text-gray-400">金币</div>
+            <div className="text-lg font-bold text-amber-600 dark:text-amber-400">{formData.coins}</div>
           </Card>
-          <Card className="text-center">
-            <div className="text-sm text-gray-600">经验</div>
-            <div className="text-md font-bold text-green-600 mb-1">{formData.experience}</div>
+          <Card className="text-center py-3">
+            <div className="text-sm text-gray-500 dark:text-gray-400">经验</div>
+            <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{formData.experience}</div>
           </Card>
-          <Card className="text-center">
-            <div className="text-sm text-gray-600">登录</div>
-            <div className="text-md font-bold text-purple-600 mb-1">
-              {userProfile.consecutive_logins || 0}
-            </div>
+          <Card className="text-center py-3">
+            <div className="text-sm text-gray-500 dark:text-gray-400">连续登录</div>
+            <div className="text-lg font-bold text-gray-900 dark:text-white">{userProfile.consecutive_logins || 0} 天</div>
           </Card>
         </div>
 
         {/* 标签页导航 */}
-        <div className="flex border-b border-gray-200 mb-8 overflow-x-auto">
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`flex-1 min-w-[80px] px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'profile'
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+        <div className="flex border-b border-gray-200 dark:border-gray-800 mb-8 overflow-x-auto">
+          {([
+            ['profile', '个人资料'],
+            ['tasks', '任务进度'],
+            ['history', '任务历史']
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={`flex-1 min-w-[80px] px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === key
+                  ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
               }`}
-          >
-            个人资料
-          </button>
-          <button
-            onClick={() => setActiveTab('tasks')}
-            className={`flex-1 min-w-[80px] px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'tasks'
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-          >
-            任务进度
-          </button>
-          <button
-            onClick={() => setActiveTab('history')}
-            className={`flex-1 min-w-[80px] px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'history'
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-          >
-            任务历史
-          </button>
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* 标签页内容 */}
         {activeTab === 'profile' && (
-          <Card size="md" variant="elevated" className="shadow-lg">
+          <Card size="md">
             {/* 用户头像区域 */}
             <div className="text-center mb-8">
               <div className="relative inline-block">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                <div className="w-24 h-24 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
                   {formData.avatar_url ? (
                     <Image
                       src={formData.avatar_url}

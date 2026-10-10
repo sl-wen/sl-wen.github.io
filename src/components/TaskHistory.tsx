@@ -9,6 +9,15 @@ interface TaskHistoryProps {
   className?: string;
 }
 
+const ACTION_LABEL: Record<string, string> = {
+  login: '登录',
+  like: '点赞',
+  comment: '评论',
+  post: '发帖',
+  be_liked: '被点赞',
+  consecutive_login: '连续登录'
+};
+
 export default function TaskHistoryComponent({ className = '' }: TaskHistoryProps) {
   const { userProfile } = useAuth();
   const [history, setHistory] = useState<TaskRewardHistory[]>([]);
@@ -51,87 +60,47 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
     });
   };
 
-  const getActionTypeLabel = (actionType: string) => {
-    switch (actionType) {
-      case 'login':
-        return '登录';
-      case 'like':
-        return '点赞';
-      case 'comment':
-        return '评论';
-      case 'post':
-        return '发帖';
-      case 'be_liked':
-        return '被点赞';
-      case 'consecutive_login':
-        return '连续登录';
-      default:
-        return actionType;
-    }
-  };
+  const getActionTypeLabel = (actionType: string) => ACTION_LABEL[actionType] || actionType;
 
   return (
-    <Card className={`p-2 ${className}`}>
-
+    <Card className={`p-5 ${className}`}>
       {message && (
-        <Alert variant={messageType} className="mb-2">
+        <Alert variant={messageType} className="mb-5">
           {message}
         </Alert>
       )}
 
       {loading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">加载中...</p>
+        <div className="py-10 text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 dark:border-gray-700 dark:border-t-blue-500"></div>
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">加载中…</p>
         </div>
       ) : history.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
           暂无任务历史记录
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="divide-y divide-gray-100 dark:divide-gray-800">
           {history.map((record) => (
-            <div key={record.task_reward_history_id} className="border rounded-lg p-3 bg-white">
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      已完成
-                    </span>
-                    <h3 className="font-semibold text-gray-900">{record.task_name}</h3>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-1 text-sm">
-                    <div>
-                      <span className="text-gray-500">任务类型:</span>
-                      <span className="font-medium text-red-600">
-                        {getActionTypeLabel(record.action_type || 'login')}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600 mb-3">{record.task_description}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">金币奖励:</span>
-                      <span className="font-medium text-yellow-600">
-                        +{record.coins_gained}💰
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">经验奖励:</span>
-                      <span className="font-medium text-green-600">
-                        +{record.experience_gained}⭐
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-500">领取时间:</span>
-                    <span className="text-sm font-medium text-gray-600">
-                      {formatDate(record.claimed_at)}
-                    </span>
-                  </div>
+            <div key={record.task_reward_history_id} className="py-4 first:pt-0 last:pb-0">
+              <div className="mb-1 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                    {record.task_name}
+                  </h3>
+                  <p className="mt-0.5 truncate text-sm text-gray-500 dark:text-gray-400">
+                    {getActionTypeLabel(record.action_type || 'login')} · {formatDate(record.claimed_at)}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right text-xs">
+                  <span className="font-medium text-amber-600 dark:text-amber-400">+{record.coins_gained} 金币</span>
+                  <span className="mx-1 text-gray-300 dark:text-gray-600">·</span>
+                  <span className="font-medium text-emerald-600 dark:text-emerald-400">+{record.experience_gained} 经验</span>
                 </div>
               </div>
+              {record.task_description && (
+                <p className="text-xs text-gray-400 dark:text-gray-500">{record.task_description}</p>
+              )}
             </div>
           ))}
         </div>
@@ -139,30 +108,29 @@ export default function TaskHistoryComponent({ className = '' }: TaskHistoryProp
 
       {/* 统计信息 */}
       {history.length > 0 && (
-        <div className="mt-2 p-2 bg-gray-50 rounded-lg">
-          <h3 className="font-semibold text-gray-900 mb-3">统计信息</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="text-center">
-              <div className="text-xl font-bold text-blue-600">{history.length}</div>
-              <div className="text-gray-600">完成任务</div>
+        <div className="mt-5 border-t border-gray-100 pt-4 dark:border-gray-800">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div>
+              <div className="text-lg font-bold text-gray-900 dark:text-white">{history.length}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">完成任务</div>
             </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-purple-600">
+            <div>
+              <div className="text-lg font-bold text-gray-900 dark:text-white">
                 {new Set(history.map(record => record.action_type)).size}
               </div>
-              <div className="text-gray-600">任务类型</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">任务类型</div>
             </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-yellow-600">
+            <div>
+              <div className="text-lg font-bold text-amber-600 dark:text-amber-400">
                 {history.reduce((sum, record) => sum + record.coins_gained, 0)}
               </div>
-              <div className="text-gray-600">总金币</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">总金币</div>
             </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-green-600">
+            <div>
+              <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                 {history.reduce((sum, record) => sum + record.experience_gained, 0)}
               </div>
-              <div className="text-gray-600">总经验</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">总经验</div>
             </div>
           </div>
         </div>

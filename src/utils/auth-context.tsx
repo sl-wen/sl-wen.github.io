@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { supabase } from './supabase-config';
-import { initUserTasks, updateTaskProgress } from './task';
+import { initUserTasks } from './task';
 
 export interface UserProfile {
   user_id?: string;
@@ -68,15 +68,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         data: { session }
       } = await supabase.auth.getSession();
       if (session?.user) {
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', session.user.id)
-          .single();
+          .maybeSingle();
 
         if (profile) {
           localStorage.setItem('userProfile', JSON.stringify(profile));
           setUserProfile(profile);
+        } else if (!error) {
+          // profiles 表里没有该用户的记录（如 Supabase 恢复后数据丢失）
+          // 从 auth session 构造一个最小 profile 并写入 DB
+          const fallbackProfile = {
+            user_id: session.user.id,
+            email: session.user.email || '',
+            username: (session.user.email || 'user').split('@')[0],
+            level: 1,
+            coins: 0,
+            experience: 0,
+            consecutive_logins: 1,
+            last_login: new Date().toISOString()
+          };
+          const { data: inserted } = await supabase
+            .from('profiles')
+            .upsert(fallbackProfile, { onConflict: 'user_id' })
+            .select()
+            .maybeSingle();
+
+          const finalProfile = inserted || fallbackProfile;
+          localStorage.setItem('userProfile', JSON.stringify(finalProfile));
+          setUserProfile(finalProfile as UserProfile);
+        } else {
+          setUserProfile(null);
         }
       } else {
         setUserProfile(null);
@@ -108,14 +132,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const initializeUserTasks = useCallback(async (userId: string) => {
     try {
-      // 异步初始化用户任务，不阻塞登录流程
+      // 幂等初始化：已初始化则只做每日/每周重置检查，不阻塞登录流程
+      // 登录进度上报统一在登录页完成（带"当天首次"判断），此处不再上报，避免同一次登录重复计数
       await initUserTasks(userId);
-      console.log('用户任务初始化完成');
-      
-      // 初始化完成后更新登录任务进度
-      await updateTaskProgress(userId, 'login', 1);
-      console.log('登录任务进度更新完成');
-      
       // 刷新用户资料以反映最新状态
       await refreshProfile();
     } catch (error) {
@@ -154,14 +173,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
 
-      console.log('Auth state changed:', event);
-
       if (event === 'SIGNED_IN' && session?.user) {
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', session.user.id)
-          .single();
+          .maybeSingle();
 
         if (profile && isMounted) {
           localStorage.setItem('userProfile', JSON.stringify(profile));
@@ -169,6 +186,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
           // 处理用户登录
           await handleUserLogin(profile);
+        } else if (!error && isMounted) {
+          // profiles 表无记录（Supabase 恢复后数据丢失场景），自动补建
+          const fallbackProfile = {
+            user_id: session.user.id,
+            email: session.user.email || '',
+            username: (session.user.email || 'user').split('@')[0],
+            level: 1,
+            coins: 0,
+            experience: 0,
+            consecutive_logins: 1,
+            last_login: new Date().toISOString()
+          };
+          const { data: inserted } = await supabase
+            .from('profiles')
+            .upsert(fallbackProfile, { onConflict: 'user_id' })
+            .select()
+            .maybeSingle();
+
+          const finalProfile = inserted || fallbackProfile;
+          localStorage.setItem('userProfile', JSON.stringify(finalProfile));
+          setUserProfile(finalProfile as UserProfile);
         }
       } else if (event === 'SIGNED_OUT' && isMounted) {
         localStorage.removeItem('userProfile');

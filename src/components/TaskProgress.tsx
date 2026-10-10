@@ -9,35 +9,47 @@ interface TaskProgressProps {
   className?: string;
 }
 
+const TYPE_LABEL: Record<string, string> = {
+  daily: '每日',
+  weekly: '每周',
+  achievement: '成就',
+  behavior: '行为'
+};
+
+const TYPE_BADGE: Record<string, string> = {
+  daily: 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900',
+  weekly: 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900',
+  achievement: 'bg-violet-50 text-violet-700 border-violet-100 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-900',
+  behavior: 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900'
+};
+
+const DEFAULT_BADGE = 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
+
 export default function TaskProgressComponent({ className = '' }: TaskProgressProps) {
   const { userProfile, refreshProfile } = useAuth();
   const [tasks, setTasks] = useState<TaskProgress[]>([]);
   const [loading, setLoading] = useState(false);
+  const [claimingId, setClaimingId] = useState<string | null>(null);
+  const [showClaimed, setShowClaimed] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'info' | 'success' | 'warning' | 'error'>('info');
 
   const loadTasks = useCallback(async () => {
-    if (!userProfile?.user_id) {
-      console.log('用户ID不存在，跳过加载任务');
-      return;
-    }
+    if (!userProfile?.user_id) return;
+
     try {
-      console.log('开始加载任务，用户ID:', userProfile.user_id);
       setLoading(true);
       const userTasks = await getUserTasks(userProfile.user_id);
-      console.log('获取到的任务数据:', userTasks);
+
       if (userTasks && userTasks.length > 0) {
         setTasks(userTasks);
       } else {
-        console.log('没有获取到任务数据，尝试初始化任务');
+        // 无任务记录时初始化一次，再重试拉取
         try {
           await initUserTasks(userProfile.user_id);
-          // 重新获取任务
           const retryTasks = await getUserTasks(userProfile.user_id);
           if (retryTasks && retryTasks.length > 0) {
             setTasks(retryTasks);
-            setMessage('任务初始化成功');
-            setMessageType('success');
           } else {
             setMessage('暂无任务数据');
             setMessageType('info');
@@ -64,41 +76,24 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
   }, [userProfile?.user_id, loadTasks]);
 
   const handleClaimReward = async (userTaskId: string) => {
-    if (!userProfile?.user_id) return;
+    if (!userProfile?.user_id || claimingId) return;
 
     try {
-      setLoading(true);
+      setClaimingId(userTaskId);
       await claimTaskReward(userTaskId, userProfile.user_id);
 
-      // 刷新用户资料以更新金币和经验值
+      // 刷新用户资料（金币/经验/等级）并重新加载任务
       await refreshProfile();
-
-      // 重新加载任务
       await loadTasks();
 
-      setMessage('奖励领取成功！');
+      setMessage('奖励领取成功');
       setMessageType('success');
     } catch (error) {
       console.error('领取奖励失败:', error);
       setMessage(error instanceof Error ? error.message : '领取奖励失败');
       setMessageType('error');
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const getTaskTypeColor = (taskType: string) => {
-    switch (taskType) {
-      case 'daily':
-        return 'bg-blue-100 text-blue-800';
-      case 'weekly':
-        return 'bg-green-100 text-green-800';
-      case 'achievement':
-        return 'bg-purple-100 text-purple-800';
-      case 'behavior':
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      setClaimingId(null);
     }
   };
 
@@ -106,122 +101,133 @@ export default function TaskProgressComponent({ className = '' }: TaskProgressPr
     return Math.min((current / required) * 100, 100);
   };
 
-  const getProgressColor = (current: number, required: number) => {
-    const percentage = getProgressPercentage(current, required);
-    if (percentage >= 100) return 'bg-green-500';
-    if (percentage >= 50) return 'bg-yellow-500';
-    return 'bg-blue-500';
-  };
+  const visibleTasks = tasks
+    .filter(task => showClaimed || !task.is_claimed)
+    .sort((a, b) => {
+      // 可领取 > 进行中 > 已领取；同级按类型排序
+      const status = (t: TaskProgress) =>
+        t.is_claimed ? 2 : t.current_count >= t.required_count ? 0 : 1;
+      const byStatus = status(a) - status(b);
+      if (byStatus !== 0) return byStatus;
+
+      const typeOrder: Record<string, number> = { daily: 1, weekly: 2, achievement: 3, behavior: 4 };
+      return (typeOrder[a.name] || 9) - (typeOrder[b.name] || 9);
+    });
+
+  const claimedCount = tasks.filter(t => t.is_claimed).length;
+  const claimableCount = tasks.filter(t => !t.is_claimed && t.current_count >= t.required_count).length;
 
   return (
-    <Card className={`p-2 ${className}`}>
-
+    <Card className={`p-5 ${className}`}>
       {message && (
-        <Alert variant={messageType} className="mb-6">
+        <Alert variant={messageType} className="mb-5">
           {message}
         </Alert>
       )}
 
       {loading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">加载中...</p>
+        <div className="py-10 text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600 dark:border-gray-700 dark:border-t-blue-500"></div>
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">加载中…</p>
         </div>
       ) : tasks.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
           暂无任务数据
         </div>
       ) : (
-        <div className="space-y-4">
-          {tasks
-            .filter(task => !task.is_claimed) // 过滤掉已领取的任务
-            .sort((a, b) => {
-              // 优先显示可领取的任务（已完成但未领取）
-              const aCanClaim = a.current_count >= a.required_count;
-              const bCanClaim = b.current_count >= b.required_count;
+        <>
+          {/* 概要：可领取数 + 已领取开关 */}
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {claimableCount > 0 ? (
+                <>
+                  有 <span className="font-semibold text-blue-600 dark:text-blue-400">{claimableCount}</span> 个任务可领取奖励
+                </>
+              ) : (
+                '完成任务后可领取金币与经验奖励'
+              )}
+            </p>
+            {claimedCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowClaimed(v => !v)}
+                className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+              >
+                {showClaimed ? '隐藏已领取' : `显示已领取（${claimedCount}）`}
+              </button>
+            )}
+          </div>
 
-              if (aCanClaim && !bCanClaim) return -1;
-              if (!aCanClaim && bCanClaim) return 1;
+          {visibleTasks.length === 0 ? (
+            <div className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+              已领取的任务暂被隐藏
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              {visibleTasks.map(task => {
+                const isComplete = task.current_count >= task.required_count;
+                const pct = getProgressPercentage(task.current_count, task.required_count);
+                const isClaiming = claimingId === task.usertask_id;
 
-              // 如果都是可领取或都不可领取，按任务类型排序
-              const typeOrder = { daily: 1, weekly: 2, achievement: 3, behavior: 4 };
-              const aTypeOrder = typeOrder[a.name as keyof typeof typeOrder] || 5;
-              const bTypeOrder = typeOrder[b.name as keyof typeof typeOrder] || 5;
-
-              return aTypeOrder - bTypeOrder;
-            })
-            .map((task) => (
-              <div key={task.usertask_id} className="border rounded-lg p-3 bg-white">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTaskTypeColor(task.name)}`}>
-                        {task.name === 'daily' ? '每日' :
-                          task.name === 'weekly' ? '每周' :
-                            task.name === 'achievement' ? '成就' :
-                              task.name === 'behavior' ? '行为' : task.name}
+                return (
+                  <div key={task.usertask_id} className="py-4 first:pt-0 last:pb-0">
+                    {/* 标题行：类型 + 名称 + 奖励 */}
+                    <div className="mb-1.5 flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium ${TYPE_BADGE[task.name] || DEFAULT_BADGE}`}>
+                          {TYPE_LABEL[task.name] || task.name}
+                        </span>
+                        <h3 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                          {task.task_name}
+                        </h3>
+                      </div>
+                      <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">
+                        +{task.coins_reward} 金币 · +{task.exp_reward} 经验
                       </span>
-                      <h3 className="font-semibold text-gray-900">{task.task_name}</h3>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-1 text-sm sm:grid-cols-4">
-                      <div>
-                        <span className="text-sm text-gray-600 mb-2">{task.task_description}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">进度:</span>
-                        <span className="font-medium text-red-600">
-                          {task.current_count}/{task.required_count}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">金币奖励:</span>
-                        <span className="font-medium text-yellow-600">
-                          {task.coins_reward}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">经验奖励:</span>
-                        <span className="font-medium text-green-600">
-                          {task.exp_reward}
-                        </span>
-                      </div>
+                    {/* 描述 */}
+                    <p className="mb-3 text-sm text-gray-500 dark:text-gray-400">{task.task_description}</p>
+
+                    {/* 进度条 */}
+                    <div className="mb-1 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                      <span>{task.is_claimed ? '已完成' : isComplete ? '待领取' : '进行中'}</span>
+                      <span className={isComplete && !task.is_claimed ? 'font-semibold text-green-600 dark:text-green-400' : ''}>
+                        {task.current_count}/{task.required_count}
+                      </span>
                     </div>
-                  </div>
-                </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${
+                          task.is_claimed
+                            ? 'bg-gray-300 dark:bg-gray-600'
+                            : pct >= 100
+                              ? 'bg-green-500'
+                              : 'bg-blue-600 dark:bg-blue-500'
+                        }`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
 
-                {/* 进度条 */}
-                <div className="mb-2">
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
-                    <span>进度</span>
-                    <span>{Math.round(getProgressPercentage(task.current_count, task.required_count))}%</span>
+                    {/* 领取按钮 */}
+                    {isComplete && !task.is_claimed && (
+                      <div className="mt-3 flex justify-end">
+                        <Button
+                          onClick={() => handleClaimReward(task.usertask_id)}
+                          disabled={isClaiming}
+                          variant="primary"
+                          size="sm"
+                        >
+                          {isClaiming ? '领取中…' : '领取奖励'}
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${getProgressColor(task.current_count, task.required_count)}`}
-                      style={{ width: `${getProgressPercentage(task.current_count, task.required_count)}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* 操作按钮 */}
-                <div className="flex justify-end">
-                  {task.current_count >= task.required_count ? (
-                    <Button
-                      onClick={() => handleClaimReward(task.usertask_id)}
-                      disabled={loading}
-                      variant="primary"
-                      size="sm"
-                    >
-                      {loading ? '领取中...' : '领取奖励'}
-                    </Button>
-                  ) : (
-                    <span className="text-gray-500 text-sm">继续完成任务</span>
-                  )}
-                </div>
-              </div>
-            ))}
-        </div>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
     </Card>
   );

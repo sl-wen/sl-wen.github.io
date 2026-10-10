@@ -226,20 +226,16 @@ export const getConsecutiveLogins = (lastLogin: string | null, consecutiveLogins
 
 
 
-// 初始化用户任务系统 - 为新用户创建任务或重置现有任务
+// 初始化用户任务系统 - 为新用户创建任务或重置现有任务（幂等，可重复调用）
 export const initUserTasks = async (userId: string): Promise<void> => {
   try {
-    console.log('初始化任务开始');
     const userTasksData = await getUserTasks(userId);
-    console.log('userTasksData:', userTasksData);
 
     if (!userTasksData || userTasksData.length === 0) {
       // 首次初始化 - 为新用户创建所有可用任务的进度记录
       const tasksData = await getAllTasks();
-      console.log('tasksData:', tasksData);
 
       if (tasksData && tasksData.length > 0) {
-        console.log('首次初始化开始');
         const userTaskPromises = tasksData.map(taskData => {
           // 为每个任务创建用户进度记录
           const newUserTask = {
@@ -253,10 +249,9 @@ export const initUserTasks = async (userId: string): Promise<void> => {
             console.warn('用户任务进度初期追加失败', error);
           });
         });
-        
+
         // 并行创建所有任务进度记录
         await Promise.all(userTaskPromises);
-        console.log('首次初始化完成');
       }
     } else {
       // 检查并重置需要重置的任务（针对现有用户）
@@ -270,7 +265,7 @@ export const initUserTasks = async (userId: string): Promise<void> => {
             shouldReset = true;
             resetReason = 'daily';
           }
-          
+
           // 检查每周任务重置条件
           if (userTaskData.reset_frequency === 'weekly' && isFirstLoginOfWeek(userTaskData.updated_at)) {
             shouldReset = true;
@@ -279,7 +274,6 @@ export const initUserTasks = async (userId: string): Promise<void> => {
 
           if (shouldReset) {
             await resetUserTask(userTaskData.usertask_id);
-            console.log(`${resetReason}任务进度重置完成:`, userTaskData.task_name, userTaskData.usertask_id);
           }
         } catch (error) {
           console.warn('任务重置失败:', userTaskData.task_name, error);
@@ -288,7 +282,6 @@ export const initUserTasks = async (userId: string): Promise<void> => {
 
       // 并行重置所有需要重置的任务
       await Promise.all(resetPromises);
-      console.log('任务重置检查完成');
     }
   } catch (error) {
     console.error('初始化任务进度失败', error);
@@ -509,12 +502,17 @@ export const claimTaskReward = async (userTaskId: string, userId: string): Promi
 
     if (profileError) throw profileError;
 
+    // 重算等级（经验值增加后等级可能提升）
+    const newExperience = (profile.experience || 0) + userTask.exp_reward;
+    const newLevel = calculateLevel(newExperience);
+
     // 更新用户的金币和经验值
     const { error: updateProfileError } = await supabase
       .from('profiles')
       .update({
         coins: (profile.coins || 0) + userTask.coins_reward, // 增加金币
-        experience: (profile.experience || 0) + userTask.exp_reward, // 增加经验
+        experience: newExperience, // 增加经验
+        level: newLevel, // 同步等级
         updated_at: new Date().toISOString()
       })
       .eq('user_id', userId);
@@ -528,7 +526,8 @@ export const claimTaskReward = async (userTaskId: string, userId: string): Promi
 };
 
 // 更新任务进度 - 根据用户行为自动更新相关任务的完成进度
-export const updateTaskProgress = async (userId: string, actionType: string, count: number = 1): Promise<void> => {
+// absolute=true 时按绝对值设置（如连续登录天数），否则累加
+export const updateTaskProgress = async (userId: string, actionType: string, count: number = 1, absolute: boolean = false): Promise<void> => {
   try {
     // 获取用户的所有任务进度
     const userTasks = await getUserTasks(userId);
@@ -539,7 +538,9 @@ export const updateTaskProgress = async (userId: string, actionType: string, cou
       // 只更新匹配动作类型且未领取奖励的任务
       if (userTask.action_type === actionType && !userTask.is_claimed) {
         // 确保进度不会超过任务要求的次数
-        const newCount = Math.min(userTask.current_count + count, userTask.required_count);
+        const newCount = absolute
+          ? Math.min(count, userTask.required_count)
+          : Math.min(userTask.current_count + count, userTask.required_count);
 
         const { error } = await supabase
           .from('user_tasks')
@@ -585,64 +586,6 @@ export const getTaskProgress = async (user_id: string) => {
 
     if (error) throw error;
     return data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const startTask = async (userId: string, taskId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('task_progress')
-      .insert({
-        user_id: userId,
-        task_id: taskId,
-        status: 'in_progress',
-        started_at: new Date().toISOString()
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const completeTask = async (userId: string, taskId: string) => {
-  try {
-    const { data: task, error: taskError } = await supabase
-      .from('tasks')
-      .select('reward_coins, reward_exp')
-      .eq('id', taskId)
-      .single();
-
-    if (taskError) throw taskError;
-
-    const { data: progress, error: progressError } = await supabase
-      .from('task_progress')
-      .update({
-        status: 'completed',
-        completed_at: new Date().toISOString()
-      })
-      .eq('user_id', userId)
-      .eq('task_id', taskId)
-      .select()
-      .single();
-
-    if (progressError) throw progressError;
-
-    // 更新用户的金币和经验值
-    const { error: updateError } = await supabase.rpc('update_user_rewards', {
-      user_id: userId,
-      coins: task.reward_coins,
-      exp: task.reward_exp
-    });
-
-    if (updateError) throw updateError;
-
-    return progress;
   } catch (error) {
     throw error;
   }

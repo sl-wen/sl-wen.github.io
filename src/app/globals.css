@@ -35,12 +35,8 @@
     height: auto;
   }
 
-  /* 优化动画性能 */
-  * {
-    -webkit-transform: translateZ(0);
-    -moz-transform: translateZ(0);
-    -ms-transform: translateZ(0);
-    -o-transform: translateZ(0);
+  /* 优化动画性能（仅游戏容器需要强制图层，不再全局 *） */
+  .game-container {
     transform: translateZ(0);
   }
 
@@ -286,18 +282,18 @@
 /* 自定义组件样式 */
 @layer components {
 
-  /* 按钮组件 */
+  /* 按钮组件（实心主色，去彩虹渐变） */
   .btn-primary {
-    @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
   }
 
   .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100 font-medium py-2 px-4 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-200;
   }
 
-  /* 卡片组件 */
+  /* 卡片组件（轻度阴影，hover 微抬升，蓝框只作提示不抢戏） */
   .card {
-    @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg transition-all duration-300 border border-gray-200/80 dark:border-gray-700/80 hover:shadow-xl hover:border-blue-200/70 dark:hover:border-blue-800/60 hover:-translate-y-0.5;
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm transition-all duration-300 border border-gray-200/80 dark:border-gray-700/80 hover:shadow-md hover:border-gray-300/80 dark:hover:border-gray-600/80 hover:-translate-y-0.5;
   }
 
   /* 输入框组件 */
@@ -342,22 +338,18 @@
     }
   }
 
-  /* 导航链接样式 */
+  /* 导航链接样式（单色 accent，去渐变下划线） */
   .nav-link {
-    @apply relative text-gray-700 text-base md:text-lg dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 px-3 py-1.5 rounded-full;
+    @apply relative text-gray-600 text-sm md:text-base dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200 px-3 py-1.5 rounded-full;
   }
 
   .nav-link::after {
     content: '';
-    @apply absolute bottom-0.5 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300;
+    @apply absolute bottom-0.5 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-full transition-all duration-200;
   }
 
   .nav-link:hover::after {
     @apply w-1/2;
-  }
-
-  .nav-link:hover {
-    @apply bg-gray-100/70 dark:bg-gray-800/70;
   }
 
   .nav-link-active {
@@ -393,25 +385,16 @@
 /* 工具类 */
 @layer utilities {
 
-  /* ======== UI 升级：2026-10-09 ======== */
+  /* ======== UI 风格收敛：2026-10-10（去彩虹渐变/装饰堆叠，单一蓝 accent + 中性灰基底） ======== */
 
-  /* 漂浮动画（首页装饰球用，之前缺 keyframes 一直是静止的） */
-  @keyframes float {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-18px) rotate(3deg); }
+  /* 主标题强调（同字体加粗，不再渐变字；保留类名兼容旧引用） */
+  .text-gradient-hero {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #1d4ed8 0%, #1d4ed8 100%);
   }
-  @keyframes float-delayed {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(14px) rotate(-4deg); }
+  .dark .text-gradient-hero {
+    background-image: linear-gradient(135deg, #93c5fd 0%, #93c5fd 100%);
   }
-  @keyframes float-slow {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); }
-    50% { transform: translate(-50%, -50%) scale(1.15); }
-  }
-  .animate-float { animation: float 6s ease-in-out infinite; }
-  .animate-float-delayed { animation: float-delayed 8s ease-in-out infinite; }
-  .animate-float-slow { animation: float-slow 10s ease-in-out infinite; }
-
   /* 网格纹理背景（hero 氛围） */
   .bg-grid-fade {
     background-image:
@@ -427,16 +410,7 @@
       linear-gradient(to bottom, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
   }
 
-  /* 主标题渐变字 */
-  .text-gradient-hero {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #2563eb 0%, #7c3aed 45%, #db2777 100%);
-  }
-  .dark .text-gradient-hero {
-    background-image: linear-gradient(135deg, #60a5fa 0%, #a78bfa 45%, #f472b6 100%);
-  }
-
-  /* 玻璃拟态统计卡 */
+  /* 玻璃拟态统计卡（首页已改内联数字，此类保留兜底；hover 阴影同步收蓝） */
   .glass-stat {
     @apply rounded-2xl border border-white/60 dark:border-white/10 backdrop-blur-md;
     background: linear-gradient(145deg, rgba(255,255,255,0.75), rgba(255,255,255,0.45));

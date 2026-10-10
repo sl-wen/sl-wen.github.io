@@ -24,6 +24,8 @@ const Header: React.FC = () => {
   const router = useRouter();
   // 当前路径钩子
   const pathname = usePathname();
+  // 页面滚动状态 - 滚动后导航栏加阴影收窄
+  const [scrolled, setScrolled] = useState(false);
   // 默认logo图片URL
   const defaultLogoUrl =
     'https://gss0.bdstatic.com/6LZ1dD3d1sgCo2Kml5_Y_D3/sys/portrait/item/tb.1.7e293cdd.cfUL8Z5IOqpEDaQ0zOUSZg';
@@ -39,6 +41,23 @@ const Header: React.FC = () => {
         sessionStorage.setItem(flagKey, '1');
       }
     }
+  }, []);
+
+  // 滚动感知 - IntersectionObserver 哨兵方案，替代 scroll 事件监听
+  useEffect(() => {
+    const sentinel = document.createElement('div');
+    sentinel.setAttribute('aria-hidden', 'true');
+    sentinel.style.cssText = 'position:absolute;top:0;height:9px;width:1px;pointer-events:none;visibility:hidden;';
+    document.body.prepend(sentinel);
+    const observer = new IntersectionObserver(
+      ([entry]) => setScrolled(!entry.isIntersecting),
+      { rootMargin: '0px' }
+    );
+    observer.observe(sentinel);
+    return () => {
+      observer.disconnect();
+      sentinel.remove();
+    };
   }, []);
 
   // 点击外部关闭下拉菜单的事件监听
@@ -77,27 +96,29 @@ const Header: React.FC = () => {
     return pathname.startsWith(path);
   };
 
-  // 基础导航项配置 - 所有用户都可见的导航选项
+  // 基础导航项配置 - 所有用户都可见的导航选项（纯文字，不用 emoji 图标）
   const baseNavItems = [
-    { href: '/', label: '首页', icon: '🏠' },
-    { href: '/category', label: '分类', icon: '📁' },
-    { href: '/search', label: '搜索', icon: '🔍' },
-    { href: '/about', label: '关于', icon: 'ℹ️' },
-    { href: '/tools', label: '工具', icon: '🛠️' },
-    { href: '/topdown', label: 'topdown', icon: '🎮' }
+    { href: '/', label: '首页' },
+    { href: '/category', label: '分类' },
+    { href: '/search', label: '搜索' },
+    { href: '/about', label: '关于' },
+    { href: '/tools', label: '工具' }
   ];
 
   // 用户专属导航项 - 仅登录用户可见的功能
   const userNavItems = [
-    { href: '/post', label: '发布', icon: '✏️' }
+    { href: '/post', label: '发布' }
   ];
 
   // 根据用户状态动态组合导航项
   const navItems =
-    mounted && userProfile
-      ? [...baseNavItems.slice(0, 5), ...userNavItems, baseNavItems[5]]
-      : baseNavItems;
+    mounted && userProfile ? [...baseNavItems, ...userNavItems] : baseNavItems;
 
+  const headerCls = `sticky top-0 z-40 w-full border-b backdrop-blur transition-all duration-300 pwa-safe-header supports-[backdrop-filter]:bg-white/60 ${
+    scrolled
+      ? 'border-gray-200/80 dark:border-gray-700/80 bg-white/85 dark:bg-gray-900/85 shadow-sm'
+      : 'border-transparent bg-white/60 dark:bg-gray-900/60'
+  }`;
   // 在组件挂载之前返回占位内容 - 避免布局偏移
   if (!mounted) {
     return (
@@ -112,7 +133,7 @@ const Header: React.FC = () => {
               <div className="relative h-8 w-8 rounded-full overflow-hidden">
                 <Image src={defaultLogoUrl} alt="Logo" fill className="object-cover" />
               </div>
-              <span className="text-xl font-bold text-gray-900">鱼鱼的博客</span>
+              <span className="text-lg md:text-xl font-bold tracking-tight text-gray-900 dark:text-white">鱼鱼的博客</span>
             </Link>
 
             {/* 桌面端导航菜单 */}
@@ -121,7 +142,6 @@ const Header: React.FC = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  prefetch={item.href === '/topdown' ? false : undefined}
                   className={`nav-link ${isActive(item.href) ? 'nav-link-active' : ''}`}
                 >
                   {item.label}
@@ -134,13 +154,12 @@ const Header: React.FC = () => {
               <Link href="/login" className="btn-primary">
                 登录
               </Link>
-              <button className="md:hidden rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+              <button className="md:hidden rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 <span className="sr-only">打开菜单</span>
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
                     d="M4 6h16M4 12h16M4 18h16"
                   />
                 </svg>
@@ -155,9 +174,9 @@ const Header: React.FC = () => {
   return (
     <>
       {/* 桌面端头部导航 */}
-      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 pwa-safe-header">
+      <header className={headerCls}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between pwa-header-content">
+          <div className={`flex items-center justify-between pwa-header-content transition-all duration-300 ${scrolled ? 'h-13' : 'h-16'}`}>
             {/* Logo和网站标题 */}
             <Link
               href="/"
@@ -178,7 +197,7 @@ const Header: React.FC = () => {
                   }}
                 />
               </div>
-              <span className="text-xl font-bold text-gray-900">鱼鱼的博客</span>
+              <span className="text-lg md:text-xl font-bold tracking-tight text-gray-900 dark:text-white">鱼鱼的博客</span>
             </Link>
 
             {/* 桌面端导航菜单 */}
@@ -187,7 +206,6 @@ const Header: React.FC = () => {
                 <Link
                   key={item.href}
                   href={item.href}
-                  prefetch={item.href === '/topdown' ? false : undefined}
                   className={`nav-link ${isActive(item.href) ? 'nav-link-active' : ''}`}
                 >
                   {item.label}
@@ -202,19 +220,19 @@ const Header: React.FC = () => {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center space-x-2 rounded-full bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                    className="flex items-center space-x-2 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   >
                     <span>欢迎 {userProfile?.username}</span>
                     <svg
                       className={`h-4 w-4 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                       fill="none"
                       stroke="currentColor"
+                      strokeWidth={2}
                       viewBox="0 0 24 24"
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeWidth={2}
                         d="M19 9l-7 7-7-7"
                       />
                     </svg>
@@ -222,18 +240,18 @@ const Header: React.FC = () => {
 
                   {/* 用户下拉菜单内容 */}
                   {isDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white dark:bg-gray-800 py-1.5 shadow-lg ring-1 ring-gray-200/80 dark:ring-gray-700 focus:outline-none">
                       <Link
                         href="/profile"
                         onClick={() => setIsDropdownOpen(false)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                       >
                         个人中心
                       </Link>
                       <Link
                         href="/settings"
                         onClick={() => setIsDropdownOpen(false)}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                       >
                         设置
                       </Link>
@@ -242,7 +260,7 @@ const Header: React.FC = () => {
                           handleLogout();
                           setIsDropdownOpen(false);
                         }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                       >
                         登出
                       </button>
@@ -259,7 +277,7 @@ const Header: React.FC = () => {
               {/* 移动端菜单按钮 */}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                className="md:hidden rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 <span className="sr-only">打开菜单</span>
                 {/* 汉堡菜单图标 */}
@@ -267,12 +285,12 @@ const Header: React.FC = () => {
                   className={`h-6 w-6 ${isMenuOpen ? 'hidden' : 'block'}`}
                   fill="none"
                   stroke="currentColor"
+                  strokeWidth={2}
                   viewBox="0 0 24 24"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
                     d="M4 6h16M4 12h16M4 18h16"
                   />
                 </svg>
@@ -281,12 +299,12 @@ const Header: React.FC = () => {
                   className={`h-6 w-6 ${isMenuOpen ? 'block' : 'hidden'}`}
                   fill="none"
                   stroke="currentColor"
+                  strokeWidth={2}
                   viewBox="0 0 24 24"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
@@ -297,20 +315,18 @@ const Header: React.FC = () => {
 
         {/* 移动端展开菜单 */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 bg-white">
+          <div className="md:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
             <div className="space-y-1 px-4 pb-3 pt-2">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  prefetch={item.href === '/topdown' ? false : undefined}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`block px-3 py-2 text-base font-medium rounded-md ${isActive(item.href)
-                    ? 'text-primary-600 bg-primary-50'
-                    : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
+                  className={`block px-3 py-2 text-base font-medium rounded-lg ${isActive(item.href)
+                    ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40'
+                    : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                 >
-                  <span className="mr-2">{item.icon}</span>
                   {item.label}
                 </Link>
               ))}

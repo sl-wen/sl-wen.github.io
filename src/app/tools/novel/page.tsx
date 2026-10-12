@@ -54,12 +54,19 @@ export default function NovelPage() {
     return url.toString();
   };
 
+  // 清洗简介：去掉源站推广前缀（“xxx小说由全本免费小说提供精彩免费全文阅读:”）和空白噪音
+  const cleanIntro = (raw: string): string => {
+    let s = (raw || '').replace(/\s+/g, ' ').trim();
+    s = s.replace(/^[^：:]{0,30}(?:小说|免费)(?:由|网)?[^：:]{0,20}(?:提供|网)[^：:]{0,20}(?:精彩)?免费全文阅读\s*[：:]\s*/, '');
+    return s;
+  };
+
   // 将不同字段风格（snake_case/camelCase）统一为前端使用的结构
   const normalizeNovel = (item: any): Novel => ({
     title: item.title,
     author: item.author,
     url: item.url,
-    intro: item.intro || '',
+    intro: cleanIntro(item.intro || ''),
     latest_chapter: item.latest_chapter || item.latestChapter,
     update_time: item.update_time || item.lastUpdateTime,
     source_id: item.source_id ?? item.sourceId,
@@ -515,7 +522,13 @@ export default function NovelPage() {
                   <span className="text-sm text-gray-600 ml-1">{novel.word_count}</span>
                   <span className="text-sm text-gray-700 ml-1">{novel.status}</span>
                 </div>
-                <div className="text-gray-600 mb-2">简介: {(novel.intro || '').substring(0, 50)}</div>
+                <div className="text-gray-600 mb-2">
+                  简介: {novel.intro
+                    ? novel.intro.length > 80
+                      ? novel.intro.substring(0, 80) + '…'
+                      : novel.intro
+                    : '暂无简介'}
+                </div>
                 <div className="text-gray-600 mb-2">来源: {novel.source_name}</div>
                 {novel.latest_chapter && (
                   <div className="text-gray-700 mb-2">最新章节：{novel.latest_chapter}</div>

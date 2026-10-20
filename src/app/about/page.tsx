@@ -45,7 +45,7 @@ export default function AboutPage() {
                 ].map((tech) => (
                   <div
                     key={tech}
-                    className="flex items-center px-3 py-2.5 bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 break-all"
+                    className="flex items-center px-3 py-2.5 bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 min-w-0"
                   >
                     {tech}
                   </div>

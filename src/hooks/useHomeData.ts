@@ -10,8 +10,8 @@ interface HomeData {
   error: string | null; // 错误信息
 }
 
-// 首页数据获取Hook - 用于获取首页展示所需的统计数据
-export const useHomeData = (): HomeData => {
+// 首页数据获取Hook - 用于获取首页展示所需的统计数据（totalViews 为访问量别名）
+export const useHomeData = (): HomeData & { totalViews: number | null } => {
   // 初始化状态数据
   const [data, setData] = useState<HomeData>({
     visitCount: null, // 初始访问量为空
@@ -58,5 +58,5 @@ export const useHomeData = (): HomeData => {
     }
   }, []); // 空依赖数组，仅在组件挂载时执行一次
 
-  return data; // 返回当前数据状态
+  return { ...data, totalViews: data.visitCount }; // 返回当前数据状态
 };

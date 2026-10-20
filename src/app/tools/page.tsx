@@ -225,21 +225,21 @@ export default function ToolsPage() {
 
   /**
    * 根据工具属性拼接卡片样式
-   * - 即将上线：降低不透明度并禁用 hover 位移
-   * - 推荐：添加蓝色描边以提升权重
+   * - 即将上线：降低不透明度并禁用 hover
+   * - 推荐：蓝色描边提升权重
    */
   const getCardClasses = (tool: Tool) => {
     let baseClasses =
-      'group relative bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 cursor-pointer border border-gray-200 dark:border-gray-700';
+      'group relative bg-white dark:bg-gray-800 rounded-xl transition-colors duration-200 p-5 cursor-pointer border border-gray-200 dark:border-gray-700';
 
     if (tool.isComingSoon) {
       baseClasses += ' opacity-60 cursor-not-allowed';
     } else {
-      baseClasses += ' hover:-translate-y-2';
+      baseClasses += ' hover:border-blue-300 dark:hover:border-blue-600';
     }
 
     if (tool.isFeatured) {
-      baseClasses += ' ring-2 ring-blue-500 ring-opacity-50';
+      baseClasses += ' border-blue-300 dark:border-blue-700';
     }
 
     return baseClasses;
@@ -248,13 +248,12 @@ export default function ToolsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="container mx-auto px-4 max-w-7xl">
-        {/* 页面标题：主标题 + 装饰线条 */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+        {/* 页面标题 */}
+        <div className="text-center mb-10">
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 dark:text-white mb-2">
             实用工具集
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400">精选开发者工具，提升工作效率</p>
-          
+          <p className="text-gray-500 dark:text-gray-400">精选开发者工具，提升工作效率</p>
         </div>
 
         {/* 工具网格：自适应响应式列数 */}
@@ -265,10 +264,8 @@ export default function ToolsPage() {
               className={getCardClasses(tool)}
               onClick={() => handleToolClick(tool)}
             >
-              {/* 工具图标：放大过渡增强动态感 */}
-              <div className="text-4xl mb-4">
-                {tool.icon}
-              </div>
+              {/* 工具图标 */}
+              <div className="text-3xl mb-4">{tool.icon}</div>
 
               {/* 标签：推荐 / 新品 / 即将上线 角标 */}
               <div className="absolute top-4 right-4 flex flex-col gap-2">
@@ -290,12 +287,12 @@ export default function ToolsPage() {
               </div>
 
               {/* 工具标题：hover 时高亮 */}
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {tool.title}
               </h3>
 
               {/* 工具描述：次要信息，柔和色 */}
-              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4 flex-grow">
+              <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-4 flex-grow">
                 {tool.description}
               </p>
 
@@ -323,34 +320,32 @@ export default function ToolsPage() {
                   </span>
                 </a>
               </div>
-
-              {/* 悬浮效果：仅对可用卡片叠加轻微色彩渐变 */}
             </div>
           ))}
         </div>
 
         {/* 底部说明：引导反馈与开源地址 */}
-        <div className="text-center mt-16 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="text-center mt-12 p-8 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
             更多工具正在开发中
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
             我们持续开发新的工具来帮助开发者提高效率。如果您有任何建议或需求，欢迎联系我们！
           </p>
           <div className="flex justify-center gap-4">
             <a
               href="mailto:sl-wen@outlook.com"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
             >
-              📧 联系我们
+              联系我们
             </a>
             <a
               href="https://github.com/sl-wen/sl-wen.github.io"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium transition-colors"
             >
-              🔗 GitHub
+              GitHub
             </a>
           </div>
         </div>

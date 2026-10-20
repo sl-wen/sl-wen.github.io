@@ -230,7 +230,7 @@ export default function ToolsPage() {
    */
   const getCardClasses = (tool: Tool) => {
     let baseClasses =
-      'group relative bg-white dark:bg-gray-800 rounded-xl transition-colors duration-200 p-5 cursor-pointer border border-gray-200 dark:border-gray-700';
+      'group relative bg-white dark:bg-gray-800 rounded-xl transition-colors duration-200 p-3.5 sm:p-5 cursor-pointer border border-gray-200 dark:border-gray-700';
 
     if (tool.isComingSoon) {
       baseClasses += ' opacity-60 cursor-not-allowed';
@@ -256,8 +256,8 @@ export default function ToolsPage() {
           <p className="text-gray-500 dark:text-gray-400">精选开发者工具，提升工作效率</p>
         </div>
 
-        {/* 工具网格：自适应响应式列数 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* 工具网格：移动端双列，桌面自适应 */}
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
           {tools.map((tool) => (
             <div
               key={tool.id}
@@ -265,34 +265,34 @@ export default function ToolsPage() {
               onClick={() => handleToolClick(tool)}
             >
               {/* 工具图标 */}
-              <div className="text-3xl mb-4">{tool.icon}</div>
+              <div className="text-2xl sm:text-3xl mb-2.5 sm:mb-4">{tool.icon}</div>
 
               {/* 标签：推荐 / 新品 / 即将上线 角标 */}
-              <div className="absolute top-4 right-4 flex flex-col gap-2">
+              <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex flex-col gap-1.5 sm:gap-2">
                 {tool.isFeatured && (
-                  <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
+                  <span className="bg-blue-600 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full">
                     推荐
                   </span>
                 )}
                 {tool.isNew && (
-                  <span className="bg-green-600 text-white text-xs px-2 py-0.5 rounded-full">
+                  <span className="bg-green-600 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full">
                     新品
                   </span>
                 )}
                 {tool.isComingSoon && (
-                  <span className="bg-gray-400 text-white text-xs px-2 py-0.5 rounded-full">
+                  <span className="bg-gray-400 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full">
                     即将上线
                   </span>
                 )}
               </div>
 
               {/* 工具标题：hover 时高亮 */}
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white mb-1 sm:mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug">
                 {tool.title}
               </h3>
 
-              {/* 工具描述：次要信息，柔和色 */}
-              <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-4 flex-grow">
+              {/* 工具描述：固定两行截断，保证卡片等高对齐 */}
+              <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 flex-grow line-clamp-2">
                 {tool.description}
               </p>
 
@@ -300,7 +300,7 @@ export default function ToolsPage() {
               <div className="mt-auto">
                 <a
                   href={tool.link}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors text-sm ${tool.isComingSoon
+                  className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm transition-colors ${tool.isComingSoon
                     ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
                     : 'bg-blue-600 hover:bg-blue-700 text-white group-hover:bg-blue-700'
                     }`}

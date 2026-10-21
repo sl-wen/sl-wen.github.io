@@ -348,6 +348,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
             ? { ...c, likes_count: oldLikes, dislikes_count: oldDislikes }
             : c
         ));
+      } else if (result.likes === -1) {
+        // 回退路径成功但无服务端计数：保持乐观值，仅修正反应状态
+        setCommentReactions(prev => ({ ...prev, [comment_id]: result.reaction ?? newReaction }));
       } else {
         // 以服务端计数为准（防止乐观估算漂移）
         setCommentReactions(prev => ({ ...prev, [comment_id]: result.reaction }));
@@ -410,8 +413,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
       {/* 评论列表 */}
       <div className="space-y-4">
         {comments.map((comment) => (
-          <Card key={comment.comment_id} className="p-4">
-            <div className="flex items-start space-x-3">
+          <Card key={comment.comment_id} className="p-3 sm:p-4">
+            <div className="flex items-start gap-2.5 sm:gap-3">
               {/* 用户头像 */}
               <div className="flex-shrink-0">
                 <Image
@@ -425,14 +428,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
 
               <div className="flex-1 min-w-0">
                 {/* 用户信息 */}
-                <div className="flex items-center space-x-2 mb-2">
-                  <span className="font-medium text-gray-900 dark:text-white">
+                <div className="mb-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="max-w-[9rem] truncate font-medium text-gray-900 dark:text-white">
                     {commentUserProfiles[comment.user_id]?.username || '未知用户'}
                   </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                  <span className="shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-xs leading-none text-gray-500 dark:bg-gray-800 dark:text-gray-400">
                     Lv.{commentUserProfiles[comment.user_id]?.level || 1}
                   </span>
-                  <span className="text-sm text-gray-400 dark:text-gray-500">
+                  <span className="whitespace-nowrap text-xs text-gray-400 dark:text-gray-500 sm:text-sm">
                     {new Date(comment.created_at).toLocaleString()}
                   </span>
                 </div>
@@ -472,12 +475,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
                 )}
 
                 {/* 操作按钮 */}
-                <div className="flex items-center space-x-4">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:gap-x-4">
                   {/* 点赞/点踩 */}
                   <button
                     onClick={() => handleReaction(comment.comment_id, 'like')}
                     disabled={reactionLoading[comment.comment_id]}
-                    className={`flex items-center space-x-1 text-sm transition-all duration-200 ${
+                    className={`flex shrink-0 items-center space-x-1 whitespace-nowrap text-sm transition-all duration-200 ${
                       commentReactions[comment.comment_id] === 'like'
                         ? 'text-blue-600 dark:text-blue-400 scale-105'
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:scale-105'
@@ -490,7 +493,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
                   <button
                     onClick={() => handleReaction(comment.comment_id, 'dislike')}
                     disabled={reactionLoading[comment.comment_id]}
-                    className={`flex items-center space-x-1 text-sm transition-all duration-200 ${
+                    className={`flex shrink-0 items-center space-x-1 whitespace-nowrap text-sm transition-all duration-200 ${
                       commentReactions[comment.comment_id] === 'dislike'
                         ? 'text-red-600 dark:text-red-400 scale-105'
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:scale-105'
@@ -503,7 +506,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
                   {/* 回复按钮 */}
                   <button
                     onClick={() => handleReply(comment.comment_id)}
-                    className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    className="shrink-0 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                   >
                     回复
                   </button>
@@ -513,13 +516,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
                     <>
                       <button
                         onClick={() => handleEdit(comment)}
-                        className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                        className="shrink-0 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                       >
                         编辑
                       </button>
                       <button
                         onClick={() => handleDelete(comment.comment_id)}
-                        className="text-sm text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                        className="shrink-0 whitespace-nowrap text-sm text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                       >
                         删除
                       </button>

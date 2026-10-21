@@ -7,7 +7,7 @@ const { createClient } = require('@supabase/supabase-js');
 // === 配置管理 ===
 class Config {
   constructor() {
-    this.supabaseUrl = process.env.SUPABASE_URL || 'https://pcwbtcsigmjnrigkfixm.supabase.co';
+    this.supabaseUrl = process.env.SUPABASE_URL || 'https://tdiknrktmgbetvcyhdav.supabase.co';
     this.supabaseKey = process.env.SUPABASE_ANON_KEY;
 
     if (!this.supabaseKey) {

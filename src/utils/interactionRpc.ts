@@ -1,14 +1,20 @@
 'use client';
 
 /**
- * interactionRpc — 文章点赞/点踩的幂等切换
+ * interactionRpc — 交互四件套的 RPC 封装（原子操作 + 服务端权威计数）
  *
- * 依赖 reactionService 的现有 post_reactions 表逻辑（切换/取消/改类型），
- * 返回服务端权威计数，供文章页乐观更新回填。
- * 与 addPostReaction 的区别：本函数感知当前状态，返回切换后的精确状态，
- * 且不依赖调用方传入本地计数（避免并发误差）。
+ * 线上已部署的 Supabase RPC：
+ *   toggle_post_reaction(p_post_id, p_user_id, p_type)    → [{likes,dislikes,reaction}]
+ *   toggle_comment_reaction(p_comment_id, p_user_id, p_type) → 同上
+ *   increment_post_views(p_post_id)                       → 原子 +1
+ *   increment_site_views()                                → 原子 +1（003 修复触发器豁免）
+ *
+ * 兼容策略：RPC 未部署（PGRST202）→ 回退到旧客户端三步写路径，
+ * 保证渐进增强，不让站点在迁移间隙挂掉。
  */
 import { supabase } from '@/utils/supabase-config';
+import { addPostReaction, addCommentReaction } from './reactionService';
+import { getVisitCount } from './stats';
 
 export interface ToggleReactionResult {
   reaction: 'like' | 'dislike' | null;
@@ -16,68 +22,46 @@ export interface ToggleReactionResult {
   dislikes: number;
 }
 
+/** RPC 未部署时回退旧路径成功后的哨兵返回值：无服务端计数，调用方保持乐观值 */
+const REACTION_PENDING: ToggleReactionResult = { reaction: null, likes: -1, dislikes: -1 };
+
+/** PGRST202 = function not found in schema cache → RPC 未部署 */
+const isRpcMissing = (error: { code?: string; message?: string } | null): boolean => {
+  if (!error) return false;
+  return error.code === 'PGRST202' || /Could not find the function/i.test(error.message || '');
+};
+
+/**
+ * 文章点赞/点踩幂等切换（服务端 RPC）
+ * 返回切换后的权威状态；RPC 未部署时回退旧路径（成功返回哨兵值 likes=-1）
+ */
 export const togglePostReaction = async (
   post_id: string,
   user_id: string,
   type: 'like' | 'dislike'
 ): Promise<ToggleReactionResult | null> => {
   try {
-    // 1. 读取当前反应状态
-    const { data: existing, error: readError } = await supabase
-      .from('post_reactions')
-      .select('reaction_id,type')
-      .eq('post_id', post_id)
-      .eq('user_id', user_id)
-      .maybeSingle();
+    const { data, error } = await supabase.rpc('toggle_post_reaction', {
+      p_post_id: post_id,
+      p_user_id: user_id,
+      p_type: type
+    });
 
-    if (readError) throw readError;
-
-    let newReaction: 'like' | 'dislike' | null = type;
-
-    if (existing && existing.type === type) {
-      // 2a. 重复点击同一类型 → 取消
-      const { error: delError } = await supabase
-        .from('post_reactions')
-        .delete()
-        .eq('reaction_id', existing.reaction_id);
-      if (delError) throw delError;
-      newReaction = null;
-    } else if (existing) {
-      // 2b. 切换类型
-      const { error: updError } = await supabase
-        .from('post_reactions')
-        .update({ type })
-        .eq('reaction_id', existing.reaction_id);
-      if (updError) throw updError;
-      newReaction = type;
-    } else {
-      // 2c. 新增反应
-      const { error: insError } = await supabase
-        .from('post_reactions')
-        .insert([{ post_id, user_id, type }]);
-      if (insError) throw insError;
-      newReaction = type;
+    if (error) {
+      if (isRpcMissing(error)) {
+        const ok = await addPostReaction(post_id, user_id, type, 0, 0);
+        return ok ? REACTION_PENDING : null;
+      }
+      console.error('togglePostReaction RPC failed:', error.message);
+      return null;
     }
 
-    // 3. 以数据库为准统计计数
-    const { count: likes, error: likeError } = await supabase
-      .from('post_reactions')
-      .select('*', { count: 'exact', head: true })
-      .eq('post_id', post_id)
-      .eq('type', 'like');
-    if (likeError) throw likeError;
-
-    const { count: dislikes, error: dislikeError } = await supabase
-      .from('post_reactions')
-      .select('*', { count: 'exact', head: true })
-      .eq('post_id', post_id)
-      .eq('type', 'dislike');
-    if (dislikeError) throw dislikeError;
-
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) return null;
     return {
-      reaction: newReaction,
-      likes: likes || 0,
-      dislikes: dislikes || 0
+      reaction: (row.reaction as 'like' | 'dislike' | null) ?? null,
+      likes: row.likes ?? 0,
+      dislikes: row.dislikes ?? 0
     };
   } catch (error) {
     console.error('togglePostReaction failed:', error);
@@ -103,7 +87,6 @@ export const fetchCommentReactions = async (
       .in('comment_id', commentIds);
     if (error) throw error;
 
-    // 先全部置 null，再用查询结果覆盖
     for (const id of commentIds) result[id] = null;
     for (const row of data || []) {
       result[row.comment_id] = row.type as 'like' | 'dislike';
@@ -116,7 +99,7 @@ export const fetchCommentReactions = async (
 };
 
 /**
- * 评论点赞/点踩的幂等切换，返回服务端权威计数
+ * 评论点赞/点踩幂等切换（服务端 RPC）
  */
 export const toggleCommentReaction = async (
   comment_id: string,
@@ -124,59 +107,85 @@ export const toggleCommentReaction = async (
   type: 'like' | 'dislike'
 ): Promise<ToggleReactionResult | null> => {
   try {
-    const { data: existing, error: readError } = await supabase
-      .from('comment_reactions')
-      .select('reaction_id,type')
-      .eq('comment_id', comment_id)
-      .eq('user_id', user_id)
-      .maybeSingle();
-    if (readError) throw readError;
+    const { data, error } = await supabase.rpc('toggle_comment_reaction', {
+      p_comment_id: comment_id,
+      p_user_id: user_id,
+      p_type: type
+    });
 
-    let newReaction: 'like' | 'dislike' | null = type;
-
-    if (existing && existing.type === type) {
-      const { error: delError } = await supabase
-        .from('comment_reactions')
-        .delete()
-        .eq('reaction_id', existing.reaction_id);
-      if (delError) throw delError;
-      newReaction = null;
-    } else if (existing) {
-      const { error: updError } = await supabase
-        .from('comment_reactions')
-        .update({ type })
-        .eq('reaction_id', existing.reaction_id);
-      if (updError) throw updError;
-      newReaction = type;
-    } else {
-      const { error: insError } = await supabase
-        .from('comment_reactions')
-        .insert([{ comment_id, user_id, type }]);
-      if (insError) throw insError;
-      newReaction = type;
+    if (error) {
+      if (isRpcMissing(error)) {
+        const ok = await addCommentReaction(comment_id, user_id, type, 0, 0);
+        return ok ? REACTION_PENDING : null;
+      }
+      console.error('toggleCommentReaction RPC failed:', error.message);
+      return null;
     }
 
-    const { count: likes, error: likeError } = await supabase
-      .from('comment_reactions')
-      .select('*', { count: 'exact', head: true })
-      .eq('comment_id', comment_id)
-      .eq('type', 'like');
-    if (likeError) throw likeError;
-
-    const { count: dislikes, error: dislikeError } = await supabase
-      .from('comment_reactions')
-      .select('*', { count: 'exact', head: true })
-      .eq('comment_id', comment_id)
-      .eq('type', 'dislike');
-    if (dislikeError) throw dislikeError;
-
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) return null;
     return {
-      reaction: newReaction,
-      likes: likes || 0,
-      dislikes: dislikes || 0
+      reaction: (row.reaction as 'like' | 'dislike' | null) ?? null,
+      likes: row.likes ?? 0,
+      dislikes: row.dislikes ?? 0
     };
   } catch (error) {
     console.error('toggleCommentReaction failed:', error);
     return null;
+  }
+};
+
+/**
+ * 文章浏览量原子 +1（服务端 RPC；未部署时回退旧读改写）
+ */
+export const bumpPostView = async (post_id: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase.rpc('increment_post_views', { p_post_id: post_id });
+    if (error) {
+      if (isRpcMissing(error)) {
+        const { data: post } = await supabase
+          .from('posts')
+          .select('views')
+          .eq('post_id', post_id)
+          .maybeSingle();
+        const { error: updError } = await supabase
+          .from('posts')
+          .update({ views: (post?.views ?? 0) + 1 })
+          .eq('post_id', post_id);
+        return !updError;
+      }
+      console.error('bumpPostView RPC failed:', error.message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('bumpPostView failed:', error);
+    return false;
+  }
+};
+
+/**
+ * 站点访问量原子 +1（服务端 RPC；未部署时回退旧读改写）
+ */
+export const bumpSiteVisit = async (): Promise<boolean> => {
+  try {
+    const { error } = await supabase.rpc('increment_site_views');
+    if (error) {
+      if (isRpcMissing(error)) {
+        // 回退旧读改写
+        const total = await getVisitCount();
+        const { error: updError } = await supabase
+          .from('stats')
+          .update({ total_views: (total ?? 0) + 1 })
+          .eq('status_id', 'views');
+        return !updError;
+      }
+      console.error('bumpSiteVisit RPC failed:', error.message);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('bumpSiteVisit failed:', error);
+    return false;
   }
 };

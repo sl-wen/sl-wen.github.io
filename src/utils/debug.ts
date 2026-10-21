@@ -153,7 +153,7 @@ export const debugNetworkStatus = () => {
     console.log('- RTT:', (navigator as Navigator & { connection?: { rtt?: number } }).connection?.rtt || 'unknown');
 
     // 测试网络连接
-    fetch('https://pcwbtcsigmjnrigkfixm.supabase.co')
+    fetch(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tdiknrktmgbetvcyhdav.supabase.co')
         .then(response => {
             console.log('✅ Supabase域名可访问:', response.status);
         })

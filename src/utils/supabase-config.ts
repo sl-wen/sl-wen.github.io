@@ -1,10 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://pcwbtcsigmjnrigkfixm.supabase.co';
-const supabaseKey =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjd2J0Y3NpZ21qbnJpZ2tmaXhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1NzE0MDMsImV4cCI6MjA2MzE0NzQwM30.J97Dt4tOwS0bM9vALgBTga-VyCLdHN6wfFrPse6dORg';
+// 新 Supabase 项目（2026-10-21 迁移）：环境变量优先，构建时内联
+// 兼容两种命名：NEXT_PUBLIC_SUPABASE_ANON_KEY（老）/ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY（新）
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tdiknrktmgbetvcyhdav.supabase.co';
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  '';
+
+if (!supabaseAnonKey) {
+  console.warn('[supabase-config] NEXT_PUBLIC_SUPABASE_ANON_KEY 未配置');
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,

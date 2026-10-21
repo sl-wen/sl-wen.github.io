@@ -53,7 +53,7 @@ export const autoOptimize = () => {
   
   // 预连接重要域名
   const domains = [
-    'https://pcwbtcsigmjnrigkfixm.supabase.co',
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://tdiknrktmgbetvcyhdav.supabase.co',
     'https://fonts.googleapis.com',
     'https://cdnjs.cloudflare.com'
   ];

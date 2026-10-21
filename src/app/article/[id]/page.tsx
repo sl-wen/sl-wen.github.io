@@ -12,7 +12,7 @@ import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/utils/cn';
 
 const addCopyButtons = () => {
@@ -125,13 +125,8 @@ export default function ArticlePage() {
     console.error('Failed to initialize task progress:', error);
   }
 
-  // 防抖的点赞处理函数
-  const debouncedHandleReaction = useCallback(
-    debounce((reactionType: 'like' | 'dislike') => {
-      handlePostReaction(reactionType);
-    }, 300),
-    [article, userProfile, PostReaction, updateProgress]
-  );
+  // 防抖已移除：按钮 disabled={isReactionLoading} 已防重复提交，
+  // 旧 debounce 在乐观更新触发重渲染后会重建实例，旧 timeout 泄漏可能造成双发请求
 
   // 处理点赞/点踩的函数
   const handlePostReaction = async (reactionType: 'like' | 'dislike') => {
@@ -210,6 +205,9 @@ export default function ArticlePage() {
             dislikes_count: oldDislikes,
           };
         });
+      } else if (result.likes === -1) {
+        // 回退路径成功但无服务端计数：保持乐观值，只修正反应状态
+        setPostReaction(result.reaction ?? newReaction);
       } else {
         // 以服务端计数为准
         setPostReaction(result.reaction);
@@ -221,13 +219,14 @@ export default function ArticlePage() {
             dislikes_count: result.dislikes,
           };
         });
-        // 更新任务进度
-        if (updateProgress) {
-          try {
-            await updateProgress(TASK_ACTIONS.LIKE, 1);
-          } catch (taskError) {
-            console.error('更新任务进度失败:', taskError);
-          }
+      }
+
+      // 更新任务进度（无论 RPC 还是回退，成功即计）
+      if (updateProgress) {
+        try {
+          await updateProgress(TASK_ACTIONS.LIKE, 1);
+        } catch (taskError) {
+          console.error('更新任务进度失败:', taskError);
         }
       }
     } catch (error) {
@@ -247,15 +246,6 @@ export default function ArticlePage() {
     }
   };
 
-  // 防抖函数
-  function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
-    let timeout: NodeJS.Timeout;
-    return ((...args: any[]) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => func.apply(null, args), wait);
-    }) as T;
-  }
-
   // 获取文章数据
   useEffect(() => {
     const fetchArticle = async () => {
@@ -268,6 +258,9 @@ export default function ArticlePage() {
         const articleData = await getArticleById(post_id);
         if (articleData) {
           setArticle(articleData);
+          // 文章到手立即结束 loading：浏览计数和相邻文章都属非关键路径，
+          // 它们各自要占一次 Supabase 往返（实测 0.5~0.9s），串在后面会把首屏拖到 1.5s+
+          setLoading(false);
 
           // 记录浏览：RPC 原子自增 + sessionStorage 会话去重（同会话刷新文章不重复计数）
           const viewKey = `viewed_${post_id}`;
@@ -293,7 +286,7 @@ export default function ArticlePage() {
             .catch((adjacentError) => {
               console.error('获取相邻文章失败:', adjacentError);
             });
-          await Promise.allSettled([viewPromise, adjacentPromise]);
+          void Promise.allSettled([viewPromise, adjacentPromise]);
         } else {
           setError('文章不存在');
         }
@@ -415,7 +408,7 @@ export default function ArticlePage() {
         <div className="flex items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-2.5">
             <button
-              onClick={() => debouncedHandleReaction('like')}
+              onClick={() => handlePostReaction('like')}
               disabled={isReactionLoading}
               aria-pressed={PostReaction === 'like'}
               className={cn(
@@ -432,7 +425,7 @@ export default function ArticlePage() {
             </button>
 
             <button
-              onClick={() => debouncedHandleReaction('dislike')}
+              onClick={() => handlePostReaction('dislike')}
               disabled={isReactionLoading}
               aria-pressed={PostReaction === 'dislike'}
               className={cn(

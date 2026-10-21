@@ -53,9 +53,13 @@ export default function ProfilePage() {
     setMessage('');
 
     try {
+      // 读本地会话即可（零网络往返）。安全性由 RLS 保证：
+      // profiles_update_own 策略以服务端校验过的 JWT uid 为准，客户端伪造无效。
+      // 原实现用 auth.getUser()，每次都会走一次网络校验，遇到 token 刷新时甚至长时间挂住。
       const {
-        data: { user }
-      } = await supabase.auth.getUser();
+        data: { session }
+      } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) throw new Error('用户未登录');
 
       const { error } = await supabase

@@ -179,13 +179,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
         setNewComment('');
         setError(null);
 
-        // 更新任务进度
+        // 更新任务进度：不阻塞，内容已落库就立即释放 UI（少等一次往返）
         if (updateProgress) {
-          try {
-            await updateProgress(TASK_ACTIONS.COMMENT, 1);
-          } catch (taskError) {
+          updateProgress(TASK_ACTIONS.COMMENT, 1).catch((taskError) => {
             console.error('更新任务进度失败:', taskError);
-          }
+          });
         }
       } else {
         setError('添加评论失败，请稍后再试');
@@ -285,13 +283,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
         setReplyContent('');
         setError(null);
 
-        // 更新任务进度
+        // 更新任务进度：不阻塞，内容已落库就立即释放 UI（少等一次往返）
         if (updateProgress) {
-          try {
-            await updateProgress(TASK_ACTIONS.COMMENT, 1);
-          } catch (taskError) {
+          updateProgress(TASK_ACTIONS.COMMENT, 1).catch((taskError) => {
             console.error('更新任务进度失败:', taskError);
-          }
+          });
         }
       } else {
         setError('添加回复失败，请稍后再试');

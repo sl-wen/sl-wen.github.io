@@ -11,7 +11,7 @@ import {
   deleteComment
 } from '@/utils/commentService';
 import { clearAllReactionCache } from '@/utils/reactionService';
-import { getUserProfile } from '@/utils/supabase-config';
+import { supabase } from '@/utils/supabase-config';
 import { Button, Textarea, Card, Alert } from './ui';
 import { useSafeTaskProgress, TASK_ACTIONS } from '@/utils/task-hooks';
 import { toggleCommentReaction, fetchCommentReactions } from '@/utils/interactionRpc';
@@ -78,18 +78,45 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
 
   const loadUserProfiles = useCallback(async () => {
     try {
-      const profiles: { [key: string]: UserProfile | null } = {};
-      const newUserIds = comments
-        .filter((comment) => !commentUserProfiles[comment.user_id])
-        .map((comment) => comment.user_id);
+      const newUserIds = Array.from(
+        new Set(
+          comments
+            .filter((comment) => !commentUserProfiles[comment.user_id])
+            .map((comment) => comment.user_id)
+        )
+      );
 
-      if (newUserIds.length > 0) {
-        for (const userId of newUserIds) {
-          const profile = await getUserProfile(userId);
-          profiles[userId] = profile;
-        }
-        setCommentUserProfiles((prev) => ({ ...prev, ...profiles }));
-      }
+      if (newUserIds.length === 0) return;
+
+      // 走 profiles_public 视图：仅含 user_id/username/avatar_url/level
+      // 匿名可读（评论区访客需要看到昵称头像），但不暴露 email/adress 等隐私列
+      const { data, error } = await supabase
+        .from('profiles_public')
+        .select('user_id, username, avatar_url, level')
+        .in('user_id', newUserIds);
+
+      if (error) throw error;
+
+      type PublicProfileRow = {
+        user_id: string;
+        username: string | null;
+        avatar_url: string | null;
+        level: number | null;
+      };
+
+      const profiles: { [key: string]: UserProfile | null } = {};
+      newUserIds.forEach((id) => {
+        profiles[id] = null;
+      });
+      ((data || []) as PublicProfileRow[]).forEach((row) => {
+        profiles[row.user_id] = {
+          username: row.username ?? '',
+          avatar_url: row.avatar_url ?? '',
+          level: row.level ?? 1
+        };
+      });
+
+      setCommentUserProfiles((prev) => ({ ...prev, ...profiles }));
     } catch (error) {
       console.error('Failed to load user profiles:', error);
     }
@@ -142,7 +169,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
         user_id: userProfile.user_id,
         parent_id: null,
         content: newComment.trim(),
-        is_approved: false,
+        is_approved: true,
         likes_count: 0,
         dislikes_count: 0
       });
@@ -247,7 +274,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
         user_id: userProfile.user_id,
         parent_id: replyingToId,
         content: replyContent.trim(),
-        is_approved: false,
+        is_approved: true,
         likes_count: 0,
         dislikes_count: 0
       });
